@@ -30,10 +30,32 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('*', function ($view) {
-            $view->with('siteSettings', SiteSetting::current());
-            $view->with('navItems', Page::navItems());
-            $view->with('headerMenu', Menu::forLocation('header'));
-            $view->with('footerMenu', Menu::forLocation('footer'));
+            try {
+                $settings = SiteSetting::current();
+            } catch (\Throwable $e) {
+                $settings = null;
+            }
+
+            // Garantizar que siempre exista un objeto con defaults
+            if (!$settings) {
+                $settings = new SiteSetting([
+                    'site_name' => 'Home del Valle',
+                    'primary_color' => '#667eea',
+                    'secondary_color' => '#764ba2',
+                ]);
+            }
+
+            $view->with('siteSettings', $settings);
+
+            try {
+                $view->with('navItems', Page::navItems());
+                $view->with('headerMenu', Menu::forLocation('header'));
+                $view->with('footerMenu', Menu::forLocation('footer'));
+            } catch (\Throwable $e) {
+                $view->with('navItems', collect());
+                $view->with('headerMenu', collect());
+                $view->with('footerMenu', collect());
+            }
         });
 
         RateLimiter::for('login', function (Request $request) {

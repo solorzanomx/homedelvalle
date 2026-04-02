@@ -1,8 +1,9 @@
 #!/bin/bash
 # ============================================
 # Script de deploy para cPanel
-# Ejecutar desde Terminal de cPanel:
-# bash /home/homed0b1/repositories/homedelvalle/cpanel-deploy.sh
+# Ejecutar en Terminal de cPanel:
+#   cd /home/homed0b1/repositories/homedelvalle
+#   bash cpanel-deploy.sh
 # ============================================
 
 REPO="/home/homed0b1/repositories/homedelvalle"
@@ -10,7 +11,7 @@ PUBLIC_HTML="/home/homed0b1/public_html"
 
 echo "=== Deploy Home del Valle CRM ==="
 
-# 1. Copiar index.php modificado para cPanel
+# 1. Crear index.php para cPanel
 cat > "$PUBLIC_HTML/index.php" << 'PHPEOF'
 <?php
 
@@ -19,18 +20,14 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// Path al repositorio
 $basePath = '/home/homed0b1/repositories/homedelvalle';
 
-// Maintenance mode
 if (file_exists($maintenance = $basePath.'/storage/framework/maintenance.php')) {
     require $maintenance;
 }
 
-// Composer autoloader
 require $basePath.'/vendor/autoload.php';
 
-// Bootstrap Laravel
 /** @var Application $app */
 $app = require_once $basePath.'/bootstrap/app.php';
 
@@ -39,52 +36,70 @@ $app->usePublicPath(__DIR__);
 
 $app->handleRequest(Request::capture());
 PHPEOF
-echo "✓ index.php creado"
+echo "[OK] index.php"
 
-# 2. Copiar .htaccess de Laravel
+# 2. Copiar .htaccess
 cp "$REPO/public/.htaccess" "$PUBLIC_HTML/.htaccess"
-echo "✓ .htaccess copiado"
+echo "[OK] .htaccess"
 
-# 3. Copiar favicon y robots
-cp "$REPO/public/favicon.ico" "$PUBLIC_HTML/favicon.ico" 2>/dev/null
-cp "$REPO/public/robots.txt" "$PUBLIC_HTML/robots.txt" 2>/dev/null
-echo "✓ favicon y robots copiados"
+# 3. Copiar archivos estaticos
+cp "$REPO/public/favicon.ico" "$PUBLIC_HTML/" 2>/dev/null
+cp "$REPO/public/robots.txt" "$PUBLIC_HTML/" 2>/dev/null
+echo "[OK] favicon, robots"
 
-# 4. Crear symlinks para assets
-# Build (CSS/JS compilados)
+# 4. Copiar build (CSS/JS) - usar copia, no symlink
 rm -rf "$PUBLIC_HTML/build"
-ln -sf "$REPO/public/build" "$PUBLIC_HTML/build"
-echo "✓ Symlink build/ creado"
+cp -r "$REPO/public/build" "$PUBLIC_HTML/build"
+echo "[OK] build/ copiado (CSS/JS)"
 
-# Storage (fotos, uploads)
+# 5. Storage link
 rm -rf "$PUBLIC_HTML/storage"
-ln -sf "$REPO/storage/app/public" "$PUBLIC_HTML/storage"
-echo "✓ Symlink storage/ creado"
+ln -sf "$REPO/storage/app/public" "$PUBLIC_HTML/storage" 2>/dev/null
+# Si symlink falla, copiar
+if [ ! -L "$PUBLIC_HTML/storage" ]; then
+    mkdir -p "$PUBLIC_HTML/storage"
+    cp -r "$REPO/storage/app/public/"* "$PUBLIC_HTML/storage/" 2>/dev/null
+fi
+echo "[OK] storage/"
 
-# Vendor (tinymce, etc)
+# 6. Vendor assets (tinymce, etc)
 if [ -d "$REPO/public/vendor" ]; then
     rm -rf "$PUBLIC_HTML/vendor"
-    ln -sf "$REPO/public/vendor" "$PUBLIC_HTML/vendor"
-    echo "✓ Symlink vendor/ creado"
+    cp -r "$REPO/public/vendor" "$PUBLIC_HTML/vendor"
+    echo "[OK] vendor/"
 fi
 
-# 5. Permisos
+# 7. Permisos
 chmod -R 775 "$REPO/storage" 2>/dev/null
 chmod -R 775 "$REPO/bootstrap/cache" 2>/dev/null
-echo "✓ Permisos ajustados"
+echo "[OK] permisos"
 
-# 6. Limpiar cache
+# 8. Composer install (si no existe vendor)
+if [ ! -d "$REPO/vendor" ]; then
+    cd "$REPO"
+    composer install --no-dev --optimize-autoloader 2>&1
+    echo "[OK] composer install"
+fi
+
+# 9. Limpiar cache
 cd "$REPO"
 php artisan config:clear 2>/dev/null
 php artisan cache:clear 2>/dev/null
 php artisan view:clear 2>/dev/null
 php artisan route:clear 2>/dev/null
-echo "✓ Cache limpiado"
+echo "[OK] cache limpiado"
 
-# 7. Migrar base de datos
-php artisan migrate --force 2>/dev/null
-echo "✓ Migraciones ejecutadas"
+# 10. Migraciones
+php artisan migrate --force 2>&1
+echo "[OK] migraciones"
 
+# 11. Verificar
+echo ""
+echo "=== Verificacion ==="
+echo "PHP: $(php -v | head -1)"
+echo "Laravel: $(php artisan --version)"
+echo "Build CSS: $(ls -la $PUBLIC_HTML/build/assets/*.css 2>/dev/null | wc -l) archivos"
+echo "Build JS: $(ls -la $PUBLIC_HTML/build/assets/*.js 2>/dev/null | wc -l) archivos"
 echo ""
 echo "=== Deploy completado ==="
-echo "Verifica en tu navegador que el sitio cargue correctamente."
+echo "Visita https://homedelvalle.mx para verificar"
