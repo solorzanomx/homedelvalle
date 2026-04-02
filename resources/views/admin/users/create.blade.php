@@ -35,6 +35,29 @@
 .role-card-desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; }
 .role-card-perms { font-size: 0.62rem; color: var(--primary); margin-top: 0.25rem; font-weight: 500; }
 
+/* Avatar upload */
+.avatar-upload {
+    display: flex; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;
+}
+.avatar-circle {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    overflow: hidden; cursor: pointer; position: relative;
+    font-size: 2rem; color: var(--text-muted); transition: border-color 0.15s;
+    border: 2px dashed var(--border);
+}
+.avatar-circle:hover { border-color: var(--primary); }
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-circle-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: none;
+    align-items: center; justify-content: center; color: #fff; font-size: 1.1rem;
+    border-radius: 50%;
+}
+.avatar-circle img ~ .avatar-circle-overlay { display: flex; opacity: 0; transition: opacity 0.2s; }
+.avatar-circle:hover .avatar-circle-overlay { opacity: 1; }
+.avatar-upload-info { font-size: 0.75rem; color: var(--text-muted); }
+.avatar-upload-info span { display: block; font-size: 0.82rem; font-weight: 600; color: var(--primary); cursor: pointer; }
+
 @media (max-width: 640px) { .role-cards { grid-template-columns: repeat(2, 1fr); } }
 </style>
 @endsection
@@ -55,10 +78,22 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.users.store') }}">
+        <form method="POST" action="{{ route('admin.users.store') }}" enctype="multipart/form-data">
             @csrf
 
-            <div class="form-grid">
+            <div class="avatar-upload">
+                <div class="avatar-circle" onclick="document.getElementById('avatarFile').click()">
+                    <span id="avatarPlaceholder">&#128100;</span>
+                    <div class="avatar-circle-overlay">&#128247;</div>
+                </div>
+                <input type="file" id="avatarFile" name="avatar" accept="image/jpeg,image/png,image/jpg,image/webp" style="display:none;" onchange="previewAvatar(this)">
+                <div class="avatar-upload-info">
+                    <span onclick="document.getElementById('avatarFile').click()">Subir foto de perfil</span>
+                    JPG, PNG o WebP. Max 5MB.
+                </div>
+            </div>
+
+            <div class="section-label" style="margin-top:1rem;">Informacion</div>
                 <div class="form-group">
                     <label class="form-label">Nombre <span class="required">*</span></label>
                     <input type="text" name="name" class="form-input" value="{{ old('name') }}" required autofocus placeholder="Nombre">
@@ -112,4 +147,28 @@
         </form>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function previewAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var circle = document.querySelector('.avatar-circle');
+        var existing = circle.querySelector('img');
+        if (existing) {
+            existing.src = e.target.result;
+        } else {
+            var placeholder = document.getElementById('avatarPlaceholder');
+            if (placeholder) placeholder.style.display = 'none';
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            circle.insertBefore(img, circle.firstChild);
+            circle.querySelector('.avatar-circle-overlay').style.display = 'flex';
+        }
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+</script>
 @endsection

@@ -62,6 +62,7 @@ class UserAdminController extends Controller
             'password' => 'required|min:6',
             'phone' => 'nullable|string|max:20',
             'rbac_role_id' => 'required|exists:roles,id',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
         $plainPassword = $validated['password'];
@@ -84,8 +85,12 @@ class UserAdminController extends Controller
             default => ['can_read' => true, 'can_edit' => false, 'can_delete' => false],
         };
 
-        $userData = collect($validated)->except('rbac_role_id')->toArray();
+        $userData = collect($validated)->except('rbac_role_id', 'avatar')->toArray();
         $userData['role'] = $legacyRole;
+
+        if ($request->hasFile('avatar')) {
+            $userData['avatar_path'] = $request->file('avatar')->store('avatars', 'public');
+        }
 
         $user = User::create(array_merge($userData, $permissions));
 
