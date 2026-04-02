@@ -6,40 +6,76 @@
 .prop-layout { display: grid; grid-template-columns: 1fr 360px; gap: 1.25rem; align-items: start; }
 @media (max-width: 1024px) { .prop-layout { grid-template-columns: 1fr; } }
 
-/* Hero */
+/* Hero gallery */
 .prop-hero {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
     overflow: hidden; margin-bottom: 1.25rem;
 }
-.prop-hero-img { position: relative; height: 320px; overflow: hidden; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
-.prop-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.prop-hero-img .placeholder-icon { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-size: 4rem; }
-.prop-hero-overlay {
-    position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem;
-    background: linear-gradient(transparent, rgba(0,0,0,0.7));
+.prop-gallery { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 200px 200px; gap: 3px; position: relative; }
+.prop-gallery.single { grid-template-columns: 1fr; grid-template-rows: 380px; }
+.prop-gallery.two { grid-template-columns: 1fr 1fr; grid-template-rows: 380px; }
+.prop-gallery.three-plus .gal-main { grid-row: 1 / 3; }
+.prop-gallery-item { overflow: hidden; cursor: pointer; position: relative; }
+.prop-gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.prop-gallery-item:hover img { transform: scale(1.03); }
+.gal-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: rgba(255,255,255,0.4); font-size: 4rem; }
+.gal-more {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center;
+    justify-content: center; color: #fff; font-size: 1.2rem; font-weight: 600;
 }
-.prop-hero-price { font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
-.prop-hero-title { font-size: 1.1rem; font-weight: 500; color: rgba(255,255,255,0.9); }
-.prop-hero-loc { font-size: 0.82rem; color: rgba(255,255,255,0.7); }
 
-/* Thumbnail strip */
-.gallery-strip { display: flex; gap: 4px; padding: 0.5rem 1rem; overflow-x: auto; }
-.gallery-strip-thumb {
-    width: 64px; height: 48px; border-radius: 6px; overflow: hidden; cursor: pointer;
-    border: 2px solid transparent; flex-shrink: 0; transition: border-color 0.15s;
+/* Lightbox */
+.lb-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000;
+    align-items: center; justify-content: center; flex-direction: column;
 }
-.gallery-strip-thumb.active { border-color: var(--primary); }
-.gallery-strip-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lb-overlay.show { display: flex; }
+.lb-img { max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 8px; }
+.lb-nav {
+    position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.15);
+    border: none; color: #fff; font-size: 1.5rem; width: 44px; height: 44px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s;
+}
+.lb-nav:hover { background: rgba(255,255,255,0.3); }
+.lb-prev { left: 16px; }
+.lb-next { right: 16px; }
+.lb-close {
+    position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15);
+    border: none; color: #fff; font-size: 1.3rem; width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.lb-counter { color: rgba(255,255,255,0.6); font-size: 0.82rem; margin-top: 0.75rem; }
+.lb-desc { color: rgba(255,255,255,0.8); font-size: 0.78rem; margin-top: 0.4rem; max-width: 600px; text-align: center; }
+
+/* Property header */
+.prop-header { padding: 1.25rem; }
+.prop-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+.prop-price { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1; }
+.prop-currency { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-left: 0.25rem; }
+.prop-title { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 0.2rem; }
+.prop-loc { font-size: 0.82rem; color: var(--text-muted); }
+
+/* Badges row */
+.prop-badges-row { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0 1.25rem 0.75rem; }
+.badge-purple { background: #f3f0ff; color: #6d28d9; }
+
+/* Quick specs bar */
+.prop-specs-bar {
+    display: flex; gap: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.prop-spec-item {
+    flex: 1; text-align: center; padding: 0.65rem 0.5rem; border-right: 1px solid var(--border);
+    font-size: 0.78rem;
+}
+.prop-spec-item:last-child { border-right: none; }
+.prop-spec-val { font-weight: 700; font-size: 1rem; color: var(--text); }
+.prop-spec-lbl { font-size: 0.68rem; color: var(--text-muted); }
 
 /* Action bar */
 .prop-actions {
-    display: flex; gap: 0.5rem; padding: 0.75rem 1rem; border-top: 1px solid var(--border);
+    display: flex; gap: 0.5rem; padding: 0.75rem 1.25rem;
 }
 .prop-actions .btn { flex: 1; justify-content: center; }
-
-/* Badges row */
-.prop-badges-row { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0.75rem 1rem; border-top: 1px solid var(--border); }
-.badge-purple { background: #f3f0ff; color: #6d28d9; }
 
 /* Detail grid */
 .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.25rem; }
@@ -173,9 +209,14 @@
 .email-date { font-size: 0.7rem; color: var(--text-muted); }
 
 @media (max-width: 768px) {
-    .prop-hero-img { height: 220px; }
+    .prop-gallery { grid-template-rows: 180px 180px; }
+    .prop-gallery.single { grid-template-rows: 240px; }
+    .prop-gallery.two { grid-template-rows: 240px; }
     .feature-cards { grid-template-columns: repeat(2, 1fr); }
     .deal-row, .op-row { flex-wrap: wrap; }
+    .prop-header-top { flex-direction: column; }
+    .prop-specs-bar { flex-wrap: wrap; }
+    .prop-spec-item { flex: 1 1 auto; min-width: 25%; }
 }
 </style>
 @endsection
@@ -207,28 +248,54 @@
 
 {{-- Hero Card --}}
 <div class="prop-hero">
-    <div class="prop-hero-img" id="heroImg">
-        @if($mainSrc)
-            <img src="{{ $mainSrc }}" alt="{{ $property->title }}" id="mainImg">
+    {{-- Gallery Grid --}}
+    @php
+        $photoCount = $photos->count();
+        $galClass = $photoCount === 0 ? 'single' : ($photoCount === 1 ? 'single' : ($photoCount === 2 ? 'two' : 'three-plus'));
+    @endphp
+    <div class="prop-gallery {{ $galClass }}">
+        @if($photoCount === 0)
+            <div class="prop-gallery-item"><div class="gal-placeholder">&#8962;</div></div>
+        @elseif($photoCount === 1)
+            <div class="prop-gallery-item" onclick="openLightbox(0)">
+                <img src="{{ asset('storage/' . $photos[0]->path) }}" alt="{{ $property->title }}">
+            </div>
+        @elseif($photoCount === 2)
+            @foreach($photos->take(2) as $i => $photo)
+            <div class="prop-gallery-item" onclick="openLightbox({{ $i }})">
+                <img src="{{ asset('storage/' . $photo->path) }}" alt="">
+            </div>
+            @endforeach
         @else
-            <div class="placeholder-icon">&#8962;</div>
+            <div class="prop-gallery-item gal-main" onclick="openLightbox(0)">
+                <img src="{{ asset('storage/' . $photos[0]->path) }}" alt="{{ $property->title }}">
+            </div>
+            @foreach($photos->slice(1, 2) as $i => $photo)
+            <div class="prop-gallery-item" onclick="openLightbox({{ $loop->index + 1 }})" style="position:relative;">
+                <img src="{{ asset('storage/' . $photo->path) }}" alt="">
+                @if($loop->last && $photoCount > 3)
+                <div class="gal-more">+{{ $photoCount - 3 }} mas</div>
+                @endif
+            </div>
+            @endforeach
         @endif
-        <div class="prop-hero-overlay">
-            <div class="prop-hero-price">${{ number_format($property->price, 0) }} {{ $property->currency ?? 'MXN' }}</div>
-            <div class="prop-hero-title">{{ $property->title }}</div>
-            <div class="prop-hero-loc">{{ implode(', ', array_filter([$property->address, $property->colony, $property->city])) ?: 'Sin ubicacion' }}@if($property->zipcode) &middot; C.P. {{ $property->zipcode }}@endif</div>
-        </div>
     </div>
 
-    @if($photos->count() > 1)
-    <div class="gallery-strip">
-        @foreach($photos as $photo)
-        <div class="gallery-strip-thumb {{ $photo->is_primary ? 'active' : '' }}" onclick="switchPhoto(this, '{{ asset('storage/' . $photo->path) }}')">
-            <img src="{{ asset('storage/' . $photo->path) }}" alt="">
+    {{-- Property Header --}}
+    <div class="prop-header">
+        <div class="prop-header-top">
+            <div>
+                <div class="prop-price">${{ number_format($property->price, 0) }}<span class="prop-currency">{{ $property->currency ?? 'MXN' }}</span></div>
+            </div>
+            <div style="display:flex; gap:0.35rem;">
+                <button class="btn btn-sm btn-outline" onclick="shareWhatsApp()" title="WhatsApp" style="color:#25d366; border-color:#25d366;">&#128172;</button>
+                <button class="btn btn-sm btn-outline" onclick="shareEmail()" title="Email">&#9993;</button>
+                <button class="btn btn-sm btn-outline" onclick="copyPropertyLink(this)" title="Copiar enlace">&#128279;</button>
+            </div>
         </div>
-        @endforeach
+        <div class="prop-title">{{ $property->title }}</div>
+        <div class="prop-loc">{{ implode(', ', array_filter([$property->address, $property->colony, $property->city])) ?: 'Sin ubicacion' }}@if($property->zipcode) &middot; C.P. {{ $property->zipcode }}@endif</div>
     </div>
-    @endif
 
     <div class="prop-badges-row">
         <span class="badge badge-blue">{{ $types[$property->property_type] ?? $property->property_type }}</span>
@@ -237,6 +304,24 @@
         @if($property->isPublishedToEasyBroker())<span class="badge" style="background:#ecfdf5; color:#065f46;">EasyBroker</span>@endif
     </div>
 
+    {{-- Quick Specs --}}
+    @if($property->bedrooms !== null || $property->bathrooms !== null || $property->area || $property->parking !== null)
+    <div class="prop-specs-bar">
+        @if($property->bedrooms !== null)
+        <div class="prop-spec-item"><div class="prop-spec-val">{{ $property->bedrooms }}</div><div class="prop-spec-lbl">Recamaras</div></div>
+        @endif
+        @if($property->bathrooms !== null)
+        <div class="prop-spec-item"><div class="prop-spec-val">{{ $property->bathrooms }}</div><div class="prop-spec-lbl">Banos</div></div>
+        @endif
+        @if($property->area)
+        <div class="prop-spec-item"><div class="prop-spec-val">{{ number_format($property->area, 0) }}</div><div class="prop-spec-lbl">m&sup2;</div></div>
+        @endif
+        @if($property->parking !== null)
+        <div class="prop-spec-item"><div class="prop-spec-val">{{ $property->parking }}</div><div class="prop-spec-lbl">Estacionam.</div></div>
+        @endif
+    </div>
+    @endif
+
     <div class="prop-actions">
         <a href="{{ route('properties.edit', $property) }}" class="btn btn-primary">&#9998; Editar</a>
         @if($property->broker && $property->broker->phone)
@@ -244,6 +329,16 @@
         @endif
         <a href="{{ route('properties.index') }}" class="btn btn-outline">Volver</a>
     </div>
+</div>
+
+{{-- Lightbox --}}
+<div class="lb-overlay" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+    <button class="lb-close" onclick="closeLightbox()">&times;</button>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1)">&#8249;</button>
+    <img class="lb-img" id="lbImg" src="" alt="">
+    <button class="lb-nav lb-next" onclick="lbNav(1)">&#8250;</button>
+    <div class="lb-counter" id="lbCounter"></div>
+    <div class="lb-desc" id="lbDesc"></div>
 </div>
 
 <div class="prop-layout">
@@ -677,22 +772,75 @@
 
 @section('scripts')
 <script>
-function switchPhoto(thumb, src) {
-    var img = document.getElementById('mainImg');
-    if (img) img.src = src;
-    document.querySelectorAll('.gallery-strip-thumb').forEach(function(t) { t.classList.remove('active'); });
-    thumb.classList.add('active');
+// Gallery photos data
+@php
+    $lbPhotosData = $photos->map(function($p) { return ['src' => asset('storage/' . $p->path), 'desc' => $p->description ?? '']; })->values();
+@endphp
+var lbPhotos = @json($lbPhotosData);
+var lbIndex = 0;
+
+function openLightbox(i) {
+    lbIndex = i;
+    updateLightbox();
+    document.getElementById('lightbox').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function lbNav(dir) {
+    lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length;
+    updateLightbox();
+}
+
+function updateLightbox() {
+    if (!lbPhotos.length) return;
+    document.getElementById('lbImg').src = lbPhotos[lbIndex].src;
+    document.getElementById('lbCounter').textContent = (lbIndex + 1) + ' / ' + lbPhotos.length;
+    document.getElementById('lbDesc').textContent = lbPhotos[lbIndex].desc || '';
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+    if (!document.getElementById('lightbox').classList.contains('show')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') lbNav(-1);
+    if (e.key === 'ArrowRight') lbNav(1);
+});
+
+// Share functions
+var propUrl = '{{ route("propiedades.show", [$property->id, $property->slug]) }}';
+var propTitle = @json($property->title);
+var propPrice = '${{ number_format($property->price, 0) }} {{ $property->currency ?? "MXN" }}';
+var propFullUrl = window.location.origin + propUrl;
+
+function shareWhatsApp() {
+    var msg = propTitle + '\n' + propPrice + '\n' + propFullUrl;
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function shareEmail() {
+    var subject = encodeURIComponent(propTitle + ' - ' + propPrice);
+    var body = encodeURIComponent(propTitle + '\nPrecio: ' + propPrice + '\n\nVer propiedad: ' + propFullUrl);
+    window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+}
+
+function copyPropertyLink(btn) {
+    navigator.clipboard.writeText(propFullUrl).then(function() {
+        var orig = btn.innerHTML;
+        btn.innerHTML = '&#10003;';
+        setTimeout(function() { btn.innerHTML = orig; }, 2000);
+    });
 }
 
 function filterTimeline(type, btn) {
     document.querySelectorAll('.crm-tab').forEach(function(t) { t.classList.remove('active'); });
     btn.classList.add('active');
     document.querySelectorAll('#timelineBody .timeline-item').forEach(function(item) {
-        if (type === 'all' || item.dataset.type === type) {
-            item.style.display = '';
-        } else {
-            item.style.display = 'none';
-        }
+        item.style.display = (type === 'all' || item.dataset.type === type) ? '' : 'none';
     });
 }
 </script>

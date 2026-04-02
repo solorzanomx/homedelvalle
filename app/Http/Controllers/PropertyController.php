@@ -13,7 +13,7 @@ class PropertyController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Property::with('photos');
+        $query = Property::with('photos', 'owner');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -43,9 +43,21 @@ class PropertyController extends Controller
             $query->where('broker_id', $brokerId);
         }
 
-        $properties = $query->latest()->paginate(12)->withQueryString();
+        $properties = $query->latest()->paginate(18)->withQueryString();
         $brokers = Broker::where('status', 'active')->orderBy('name')->get();
-        return view('properties.index', compact('properties', 'brokers'));
+
+        $stats = [
+            'total'     => Property::count(),
+            'available' => Property::where('status', 'available')->count(),
+            'sold'      => Property::where('status', 'sold')->count(),
+            'rented'    => Property::where('status', 'rented')->count(),
+        ];
+
+        if ($request->ajax()) {
+            return view('properties._grid', compact('properties'))->render();
+        }
+
+        return view('properties.index', compact('properties', 'brokers', 'stats'));
     }
 
     public function create()

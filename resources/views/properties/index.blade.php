@@ -3,103 +3,167 @@
 
 @section('styles')
 <style>
-/* ===== VIEW TOGGLE ===== */
-.view-toggle { display: flex; gap: 2px; background: var(--bg); border-radius: var(--radius); padding: 3px; }
-.view-toggle .vt-btn {
-    padding: 0.35rem 0.6rem; border: none; background: none; cursor: pointer; border-radius: 6px;
-    font-size: 14px; color: var(--text-muted); transition: all 0.15s; line-height: 1;
+/* ===== Stats (same pattern as users) ===== */
+.p-stats { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+.p-stat {
+    flex: 1; min-width: 0; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
 }
-.view-toggle .vt-btn.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.p-stat-icon {
+    width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.p-stat-val { font-size: 1.4rem; font-weight: 700; line-height: 1; }
+.p-stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; }
 
-/* ===== QUICK STATS ===== */
-.prop-stats {
-    display: flex; gap: 1.5rem; margin-bottom: 1.25rem; padding: 0.8rem 1.25rem;
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto;
+/* ===== Toolbar ===== */
+.p-toolbar {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;
 }
-.prop-stat { display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
-.prop-stat-val { font-size: 1.1rem; font-weight: 700; }
-.prop-stat-lbl { font-size: 0.75rem; color: var(--text-muted); }
-.prop-stat-div { width: 1px; background: var(--border); align-self: stretch; }
+.p-search { flex: 1; min-width: 200px; position: relative; }
+.p-search input {
+    width: 100%; padding: 0.55rem 0.75rem 0.55rem 2.2rem; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.82rem; background: var(--card); color: var(--text);
+    outline: none; transition: border-color 0.15s;
+}
+.p-search input:focus { border-color: var(--primary); }
+.p-search-icon {
+    position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 0.9rem; pointer-events: none;
+}
 
-/* ===== FILTER BAR ===== */
-.filter-bar {
-    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
-    margin-bottom: 1.25rem; overflow: hidden;
+/* ===== Status Tabs ===== */
+.p-tabs {
+    display: flex; gap: 2px; background: var(--bg); border-radius: 8px; padding: 3px;
+    border: 1px solid var(--border); overflow-x: auto;
 }
-.filter-bar-toggle {
-    display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.25rem; cursor: pointer;
-    font-size: 0.82rem; font-weight: 500; color: var(--text-muted); user-select: none;
+.p-tab {
+    padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.78rem; font-weight: 500;
+    border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    white-space: nowrap; transition: all 0.15s;
 }
-.filter-bar-toggle:hover { color: var(--text); }
-.filter-bar-body { padding: 0 1.25rem 1rem; display: none; }
-.filter-bar-body.show { display: block; }
-.filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 0.75rem; align-items: end; }
-.filter-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+.p-tab:hover { color: var(--text); }
+.p-tab.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.p-tab .p-tab-count {
+    font-size: 0.65rem; background: var(--bg); padding: 0 5px; border-radius: 8px;
+    margin-left: 3px; font-weight: 600; color: var(--text-muted);
+}
+.p-tab.active .p-tab-count { background: rgba(102,126,234,0.12); color: var(--primary); }
 
-/* ===== PROPERTY CARDS ===== */
-.property-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-@media (max-width: 1200px) { .property-cards { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .property-cards { grid-template-columns: 1fr; } }
+/* ===== Filters Toggle ===== */
+.p-filters-toggle {
+    padding: 0.45rem 0.85rem; border-radius: 8px; font-size: 0.78rem; font-weight: 500;
+    border: 1px solid var(--border); background: var(--card); color: var(--text-muted);
+    cursor: pointer; white-space: nowrap; transition: all 0.15s;
+}
+.p-filters-toggle:hover { border-color: var(--primary); color: var(--primary); }
+.p-filters-toggle.active { border-color: var(--primary); color: var(--primary); background: rgba(102,126,234,0.04); }
+.p-filters-panel {
+    display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem 1.25rem; margin-bottom: 1.25rem;
+}
+.p-filters-panel.show { display: block; }
+.p-filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; align-items: end; }
 
-.prop-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    overflow: hidden; transition: box-shadow 0.2s, transform 0.2s; cursor: pointer; position: relative;
+/* ===== Property Grid ===== */
+.p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; }
+.p-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; transition: all 0.2s; position: relative;
 }
-.prop-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
-.prop-card-img {
-    position: relative; height: 170px; overflow: hidden;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+.p-card:hover { border-color: var(--primary); box-shadow: 0 4px 20px rgba(0,0,0,0.06); transform: translateY(-1px); }
+.p-card-img {
+    display: block; position: relative; height: 180px; overflow: hidden;
+    background: linear-gradient(135deg, #667eea, #764ba2); text-decoration: none;
 }
-.prop-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.prop-card-img .placeholder-icon {
+.p-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.p-card:hover .p-card-img img { transform: scale(1.03); }
+.p-card-placeholder {
     width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-    color: rgba(255,255,255,0.5); font-size: 2.5rem;
+    color: rgba(255,255,255,0.4); font-size: 2.5rem;
 }
-.prop-card-badges { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
-.prop-card-badges .cbadge {
-    padding: 2px 8px; font-size: 0.68rem; font-weight: 600; border-radius: 4px; backdrop-filter: blur(8px);
+.p-card-badges { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
+.p-badge { padding: 2px 8px; font-size: 0.66rem; font-weight: 600; border-radius: 4px; backdrop-filter: blur(8px); }
+.p-badge-type { background: rgba(255,255,255,0.92); color: var(--text); }
+.p-badge-op { background: rgba(102,126,234,0.9); color: #fff; }
+.p-card-status {
+    position: absolute; top: 8px; right: 8px; padding: 2px 8px;
+    font-size: 0.66rem; font-weight: 600; border-radius: 4px; backdrop-filter: blur(8px);
 }
-.cbadge-type { background: rgba(255,255,255,0.9); color: var(--text); }
-.cbadge-op { background: rgba(102,126,234,0.9); color: #fff; }
-.cbadge-status-available { background: rgba(16,185,129,0.9); color: #fff; }
-.cbadge-status-sold { background: rgba(239,68,68,0.9); color: #fff; }
-.cbadge-status-rented { background: rgba(245,158,11,0.9); color: #fff; }
-.prop-card-price-tag {
-    position: absolute; bottom: 8px; right: 8px; padding: 4px 10px;
-    background: rgba(0,0,0,0.7); color: #fff; font-weight: 700; font-size: 0.88rem;
+.p-status-available { background: rgba(16,185,129,0.9); color: #fff; }
+.p-status-sold { background: rgba(239,68,68,0.9); color: #fff; }
+.p-status-rented { background: rgba(245,158,11,0.9); color: #fff; }
+.p-card-price {
+    position: absolute; bottom: 8px; right: 8px; padding: 3px 10px;
+    background: rgba(0,0,0,0.7); color: #fff; font-weight: 700; font-size: 0.85rem;
     border-radius: 6px; backdrop-filter: blur(4px);
 }
-.prop-card-body { padding: 0.8rem 1rem; }
-.prop-card-title { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.2rem; }
-.prop-card-loc { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.prop-card-features { display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-muted); }
-.prop-card-features span { display: flex; align-items: center; gap: 3px; }
-.prop-card-footer { display: flex; gap: 0.4rem; padding: 0.6rem 1rem; border-top: 1px solid var(--border); }
-.prop-card-footer .btn { flex: 1; justify-content: center; font-size: 0.78rem; padding: 0.35rem 0.5rem; }
+.p-card-body { padding: 0.75rem 1rem 0.5rem; }
+.p-card-title {
+    display: block; font-weight: 600; font-size: 0.88rem; color: var(--text); text-decoration: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.15rem;
+}
+.p-card-title:hover { color: var(--primary); }
+.p-card-loc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.p-card-specs { display: flex; gap: 0.65rem; font-size: 0.73rem; color: var(--text-muted); margin-bottom: 0.4rem; }
+.p-card-specs span { display: flex; align-items: center; gap: 3px; }
+.p-card-owner {
+    font-size: 0.7rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;
+    padding-top: 0.4rem; border-top: 1px solid var(--border);
+}
+.p-owner-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); flex-shrink: 0; }
+.p-card-actions {
+    display: flex; gap: 0.35rem; padding: 0.5rem 0.75rem; border-top: 1px solid var(--border);
+}
 
-/* ===== TABLE ===== */
-.thumb-cell img { width: 48px; height: 36px; object-fit: cover; border-radius: 4px; }
-.thumb-cell .thumb-placeholder { width: 48px; height: 36px; border-radius: 4px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); opacity: 0.4; }
-.eb-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; }
+/* ===== Empty ===== */
+.p-empty {
+    text-align: center; padding: 4rem 2rem; color: var(--text-muted);
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+}
+.p-empty-icon { font-size: 3rem; opacity: 0.2; margin-bottom: 0.75rem; }
 
-/* ===== EMPTY STATE ===== */
-.empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
-.empty-state-icon { font-size: 3rem; margin-bottom: 0.75rem; opacity: 0.4; }
+/* ===== Share Modal ===== */
+.p-share-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999;
+    align-items: center; justify-content: center;
+}
+.p-share-overlay.show { display: flex; }
+.p-share-modal {
+    background: var(--card); border-radius: 14px; padding: 1.5rem; width: 360px; max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+}
+.p-share-modal h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; }
+.p-share-btn {
+    display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.65rem 0.85rem;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+    cursor: pointer; font-size: 0.82rem; transition: all 0.15s; margin-bottom: 0.5rem;
+    color: var(--text); text-decoration: none;
+}
+.p-share-btn:hover { border-color: var(--primary); background: rgba(102,126,234,0.04); }
+.p-share-icon { font-size: 1.1rem; width: 24px; text-align: center; }
 
 /* ===== FAB ===== */
-.prop-fab {
+.p-fab {
     display: none; position: fixed; bottom: 80px; right: 16px; z-index: 91;
     width: 52px; height: 52px; border-radius: 50%; border: none;
     background: var(--primary); color: #fff; font-size: 26px; font-weight: 300;
     box-shadow: 0 4px 14px rgba(102,126,234,0.4);
     align-items: center; justify-content: center; cursor: pointer; text-decoration: none;
 }
+
+@media (max-width: 1200px) { .p-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
-    .prop-fab { display: flex; }
-    .prop-card-img { height: 140px; }
-    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .p-grid { grid-template-columns: 1fr; }
+    .p-stats { flex-wrap: wrap; }
+    .p-stat { flex: 1 1 calc(50% - 0.75rem); }
+    .p-fab { display: flex; }
+    .p-toolbar { flex-direction: column; align-items: stretch; }
+    .p-card-img { height: 160px; }
 }
-@media (max-width: 480px) { .filter-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) {
+    .p-filter-grid { grid-template-columns: 1fr; }
+}
 </style>
 @endsection
 
@@ -109,181 +173,176 @@
     $opLabels = ['sale'=>'Venta','rental'=>'Renta','temporary_rental'=>'Renta Temporal'];
 @endphp
 
-<div class="page-header">
-    <div>
-        <h2>Propiedades</h2>
-        <p class="text-muted">{{ $properties->total() }} propiedad{{ $properties->total() !== 1 ? 'es' : '' }}</p>
+{{-- Stats --}}
+<div class="p-stats" style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:0.75rem; margin-bottom:1.5rem;">
+    <div class="p-stat" style="flex:1;">
+        <div class="p-stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#8962;</div>
+        <div><div class="p-stat-val">{{ $stats['total'] }}</div><div class="p-stat-label">Total</div></div>
     </div>
-    <div style="display:flex; gap:0.75rem; align-items:center;">
-        <div class="view-toggle">
-            <button type="button" class="vt-btn" id="btnCards" onclick="setView('cards')" title="Tarjetas">&#9638;</button>
-            <button type="button" class="vt-btn" id="btnList" onclick="setView('list')" title="Lista">&#9776;</button>
-        </div>
-        <a href="{{ route('properties.create') }}" class="btn btn-primary" style="white-space:nowrap;">+ Nueva</a>
+    <div class="p-stat" style="flex:1;">
+        <div class="p-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">&#10003;</div>
+        <div><div class="p-stat-val">{{ $stats['available'] }}</div><div class="p-stat-label">Disponibles</div></div>
     </div>
-</div>
-
-{{-- Quick Stats --}}
-<div class="prop-stats">
-    <div class="prop-stat">
-        <div><div class="prop-stat-val">{{ $properties->total() }}</div><div class="prop-stat-lbl">Total</div></div>
+    <div class="p-stat" style="flex:1;">
+        <div class="p-stat-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;">&#9679;</div>
+        <div><div class="p-stat-val">{{ $stats['sold'] }}</div><div class="p-stat-label">Vendidas</div></div>
     </div>
-    <div class="prop-stat-div"></div>
-    <div class="prop-stat">
-        <div><div class="prop-stat-val" style="color:var(--success);">{{ $properties->getCollection()->where('status','available')->count() }}</div><div class="prop-stat-lbl">Disponibles</div></div>
-    </div>
-    <div class="prop-stat-div"></div>
-    <div class="prop-stat">
-        <div><div class="prop-stat-val" style="color:var(--danger);">{{ $properties->getCollection()->where('status','sold')->count() }}</div><div class="prop-stat-lbl">Vendidas</div></div>
-    </div>
-    <div class="prop-stat-div"></div>
-    <div class="prop-stat">
-        <div><div class="prop-stat-val" style="color:#f59e0b;">{{ $properties->getCollection()->where('status','rented')->count() }}</div><div class="prop-stat-lbl">Rentadas</div></div>
+    <div class="p-stat" style="flex:1;">
+        <div class="p-stat-icon" style="background:rgba(245,158,11,0.1); color:#f59e0b;">&#128196;</div>
+        <div><div class="p-stat-val">{{ $stats['rented'] }}</div><div class="p-stat-label">Rentadas</div></div>
     </div>
 </div>
 
-{{-- Filters --}}
-<div class="filter-bar">
-    <div class="filter-bar-toggle" onclick="this.nextElementSibling.classList.toggle('show'); this.querySelector('.fchev').style.transform = this.nextElementSibling.classList.contains('show') ? 'rotate(180deg)' : '';">
-        &#128269; Filtros {{ request()->hasAny(['search','property_type','status','operation_type','broker_id','price_min','price_max']) ? '(activos)' : '' }}
-        <span class="fchev" style="font-size:0.7rem; transition:transform 0.2s;">&#9660;</span>
+{{-- Toolbar --}}
+<div class="p-toolbar">
+    <div class="p-search">
+        <span class="p-search-icon">&#128269;</span>
+        <input type="text" id="propSearch" placeholder="Buscar por titulo, ciudad, colonia..." value="{{ request('search') }}" autocomplete="off">
     </div>
-    <form method="GET" action="{{ route('properties.index') }}" class="filter-bar-body {{ request()->hasAny(['search','property_type','status','operation_type','broker_id','price_min','price_max']) ? 'show' : '' }}">
-        <div class="filter-grid">
-            <div class="form-group" style="margin:0;"><label class="form-label">Buscar</label><input type="text" name="search" class="form-input" value="{{ request('search') }}" placeholder="Titulo, ciudad..."></div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Tipo</label>
-                <select name="property_type" class="form-select"><option value="">Todos</option>@foreach($types as $val => $label)<option value="{{ $val }}" {{ request('property_type') === $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach</select>
-            </div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Estado</label>
-                <select name="status" class="form-select"><option value="">Todos</option><option value="available" {{ request('status') === 'available' ? 'selected' : '' }}>Disponible</option><option value="sold" {{ request('status') === 'sold' ? 'selected' : '' }}>Vendido</option><option value="rented" {{ request('status') === 'rented' ? 'selected' : '' }}>Rentado</option></select>
-            </div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Operacion</label>
-                <select name="operation_type" class="form-select"><option value="">Todas</option><option value="sale" {{ request('operation_type') === 'sale' ? 'selected' : '' }}>Venta</option><option value="rental" {{ request('operation_type') === 'rental' ? 'selected' : '' }}>Renta</option><option value="temporary_rental" {{ request('operation_type') === 'temporary_rental' ? 'selected' : '' }}>Temporal</option></select>
-            </div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Broker</label>
-                <select name="broker_id" class="form-select"><option value="">Todos</option>@foreach($brokers as $broker)<option value="{{ $broker->id }}" {{ request('broker_id') == $broker->id ? 'selected' : '' }}>{{ $broker->name }}</option>@endforeach</select>
-            </div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Precio min</label><input type="number" name="price_min" class="form-input" value="{{ request('price_min') }}" placeholder="0"></div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Precio max</label><input type="number" name="price_max" class="form-input" value="{{ request('price_max') }}" placeholder="Sin limite"></div>
-        </div>
-        <div class="filter-actions">
-            <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
-            <a href="{{ route('properties.index') }}" class="btn btn-outline btn-sm">Limpiar</a>
-        </div>
-    </form>
+    <div class="p-tabs" id="statusTabs">
+        <button class="p-tab {{ !request('status') ? 'active' : '' }}" data-status="">Todas <span class="p-tab-count">{{ $stats['total'] }}</span></button>
+        <button class="p-tab {{ request('status') === 'available' ? 'active' : '' }}" data-status="available">Disponibles <span class="p-tab-count">{{ $stats['available'] }}</span></button>
+        <button class="p-tab {{ request('status') === 'sold' ? 'active' : '' }}" data-status="sold">Vendidas <span class="p-tab-count">{{ $stats['sold'] }}</span></button>
+        <button class="p-tab {{ request('status') === 'rented' ? 'active' : '' }}" data-status="rented">Rentadas <span class="p-tab-count">{{ $stats['rented'] }}</span></button>
+    </div>
+    <button type="button" class="p-filters-toggle {{ request()->hasAny(['property_type','operation_type','broker_id','price_min','price_max']) ? 'active' : '' }}" onclick="toggleFilters()">
+        &#9776; Filtros
+    </button>
+    <a href="{{ route('properties.create') }}" class="btn btn-primary" style="white-space:nowrap; padding:0.5rem 1rem;">+ Nueva</a>
 </div>
 
-{{-- ===== CARD VIEW ===== --}}
-<div id="viewCards" style="display:none;">
-    @if($properties->count())
-    <div class="property-cards">
-        @foreach($properties as $property)
-        <div class="prop-card" onclick="window.location='{{ route('properties.show', $property) }}'">
-            <div class="prop-card-img">
-                @if($property->photo)
-                    <img src="{{ asset('storage/' . $property->photo) }}" alt="{{ $property->title }}">
-                @else
-                    <div class="placeholder-icon">&#8962;</div>
-                @endif
-                <div class="prop-card-badges">
-                    <span class="cbadge cbadge-type">{{ $types[$property->property_type] ?? $property->property_type ?? '—' }}</span>
-                    @if($property->operation_type)
-                        <span class="cbadge cbadge-op">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>
-                    @endif
-                    <span class="cbadge cbadge-status-{{ $property->status ?? 'available' }}">
-                        {{ $property->status === 'sold' ? 'Vendido' : ($property->status === 'rented' ? 'Rentado' : 'Disponible') }}
-                    </span>
-                </div>
-                <div class="prop-card-price-tag">${{ number_format($property->price, 0) }} {{ $property->currency ?? 'MXN' }}</div>
-            </div>
-            <div class="prop-card-body">
-                <div class="prop-card-title">{{ $property->title }}</div>
-                <div class="prop-card-loc">{{ implode(', ', array_filter([$property->colony, $property->city])) ?: 'Sin ubicacion' }}</div>
-                <div class="prop-card-features">
-                    @if($property->bedrooms !== null)<span>&#128716; {{ $property->bedrooms }}</span>@endif
-                    @if($property->bathrooms !== null)<span>&#128703; {{ $property->bathrooms }}</span>@endif
-                    @if($property->area !== null)<span>&#9633; {{ $property->area }}m&sup2;</span>@endif
-                    @if($property->parking !== null)<span>&#127359; {{ $property->parking }}</span>@endif
-                </div>
-            </div>
-            <div class="prop-card-footer" onclick="event.stopPropagation();">
-                <a href="{{ route('properties.show', $property) }}" class="btn btn-sm btn-outline">Ver</a>
-                <a href="{{ route('properties.edit', $property) }}" class="btn btn-sm btn-outline">Editar</a>
-            </div>
+{{-- Advanced Filters --}}
+<div class="p-filters-panel {{ request()->hasAny(['property_type','operation_type','broker_id','price_min','price_max']) ? 'show' : '' }}" id="filtersPanel">
+    <div class="p-filter-grid">
+        <div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.72rem;">Tipo</label>
+            <select id="fType" class="form-select" onchange="loadProperties()"><option value="">Todos</option>@foreach($types as $val => $label)<option value="{{ $val }}" {{ request('property_type') === $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach</select>
         </div>
-        @endforeach
-    </div>
-    @if($properties->hasPages())
-    <div style="margin-top:1.25rem; text-align:center;">{{ $properties->links() }}</div>
-    @endif
-    @else
-    <div class="card"><div class="empty-state"><div class="empty-state-icon">&#8962;</div><div style="font-size:0.95rem; margin-bottom:1rem;">No hay propiedades registradas</div><a href="{{ route('properties.create') }}" class="btn btn-primary">+ Agregar primera propiedad</a></div></div>
-    @endif
-</div>
-
-{{-- ===== TABLE VIEW ===== --}}
-<div id="viewList">
-    <div class="card">
-        <div class="card-body" style="padding:0;">
-            <div class="table-wrap">
-                <table class="data-table">
-                    <thead><tr><th></th><th>Propiedad</th><th>Precio</th><th>Tipo</th><th>Estado</th><th>Caracteristicas</th><th>EB</th><th></th></tr></thead>
-                    <tbody>
-                        @forelse($properties as $property)
-                        <tr style="cursor:pointer;" onclick="window.location='{{ route('properties.show', $property) }}'">
-                            <td class="thumb-cell" style="width:56px;">
-                                @if($property->photo)<img src="{{ asset('storage/' . $property->photo) }}" alt="">@else<div class="thumb-placeholder"></div>@endif
-                            </td>
-                            <td>
-                                <div style="font-weight:500;">{{ $property->title }}</div>
-                                <div style="font-size:0.78rem; color:var(--text-muted);">{{ implode(', ', array_filter([$property->colony, $property->city])) ?: '—' }}</div>
-                            </td>
-                            <td style="font-weight:600; white-space:nowrap;">${{ number_format($property->price, 0) }} {{ $property->currency ?? 'MXN' }}</td>
-                            <td>
-                                <span class="badge badge-blue">{{ $types[$property->property_type] ?? $property->property_type ?? '—' }}</span>
-                                @if($property->operation_type)<span class="badge" style="background:#f3f0ff; color:#6d28d9;">{{ $opLabels[$property->operation_type] ?? '' }}</span>@endif
-                            </td>
-                            <td>
-                                @if($property->status === 'sold')<span class="badge badge-red">Vendido</span>@elseif($property->status === 'rented')<span class="badge badge-yellow">Rentado</span>@else<span class="badge badge-green">Disponible</span>@endif
-                            </td>
-                            <td style="font-size:0.78rem; color:var(--text-muted); white-space:nowrap;">
-                                @if($property->bedrooms !== null){{ $property->bedrooms }}rec @endif
-                                @if($property->bathrooms !== null){{ $property->bathrooms }}ban @endif
-                                @if($property->area){{ $property->area }}m² @endif
-                            </td>
-                            <td>
-                                @if($property->isPublishedToEasyBroker())<span class="eb-dot" style="background:var(--success);" title="Publicada"></span>@elseif($property->hasEasyBrokerId())<span class="eb-dot" style="background:#eab308;" title="Despublicada"></span>@else<span class="eb-dot" style="background:var(--border);" title="No publicada"></span>@endif
-                            </td>
-                            <td onclick="event.stopPropagation();"><div class="action-btns"><a href="{{ route('properties.edit', $property) }}" class="btn btn-sm btn-outline">Editar</a></div></td>
-                        </tr>
-                        @empty
-                        <tr><td colspan="8" class="text-center text-muted" style="padding:3rem;">No hay propiedades. <a href="{{ route('properties.create') }}" style="color:var(--primary); font-weight:500;">+ Agregar primera</a></td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            @if($properties->hasPages())<div style="padding:0.75rem 1.25rem; border-top:1px solid var(--border);">{{ $properties->links() }}</div>@endif
+        <div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.72rem;">Operacion</label>
+            <select id="fOp" class="form-select" onchange="loadProperties()"><option value="">Todas</option><option value="sale" {{ request('operation_type') === 'sale' ? 'selected' : '' }}>Venta</option><option value="rental" {{ request('operation_type') === 'rental' ? 'selected' : '' }}>Renta</option><option value="temporary_rental" {{ request('operation_type') === 'temporary_rental' ? 'selected' : '' }}>Temporal</option></select>
+        </div>
+        <div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.72rem;">Broker</label>
+            <select id="fBroker" class="form-select" onchange="loadProperties()"><option value="">Todos</option>@foreach($brokers as $broker)<option value="{{ $broker->id }}" {{ request('broker_id') == $broker->id ? 'selected' : '' }}>{{ $broker->name }}</option>@endforeach</select>
+        </div>
+        <div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.72rem;">Precio min</label>
+            <input type="number" id="fPriceMin" class="form-input" value="{{ request('price_min') }}" placeholder="0" onchange="loadProperties()">
+        </div>
+        <div class="form-group" style="margin:0;"><label class="form-label" style="font-size:0.72rem;">Precio max</label>
+            <input type="number" id="fPriceMax" class="form-input" value="{{ request('price_max') }}" placeholder="Sin limite" onchange="loadProperties()">
+        </div>
+        <div class="form-group" style="margin:0; display:flex; align-items:flex-end;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="clearFilters()" style="width:100%;">Limpiar</button>
         </div>
     </div>
 </div>
 
-<a href="{{ route('properties.create') }}" class="prop-fab">+</a>
+{{-- Property Grid --}}
+<div id="propGrid">
+    @include('properties._grid', ['properties' => $properties])
+</div>
+
+<a href="{{ route('properties.create') }}" class="p-fab">+</a>
+
+{{-- Share Modal --}}
+<div class="p-share-overlay" id="shareOverlay" onclick="if(event.target===this) closeShare()">
+    <div class="p-share-modal">
+        <h4>Compartir propiedad</h4>
+        <a id="shareWhatsApp" href="#" target="_blank" class="p-share-btn">
+            <span class="p-share-icon">&#128172;</span> Enviar por WhatsApp
+        </a>
+        <a id="shareEmail" href="#" class="p-share-btn">
+            <span class="p-share-icon">&#9993;</span> Enviar por correo
+        </a>
+        <button type="button" class="p-share-btn" onclick="copyLink()">
+            <span class="p-share-icon">&#128279;</span> <span id="copyText">Copiar enlace</span>
+        </button>
+        <button type="button" class="btn btn-outline" style="width:100%; margin-top:0.5rem;" onclick="closeShare()">Cerrar</button>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
 <script>
-function setView(mode) {
-    var cards = document.getElementById('viewCards'), list = document.getElementById('viewList');
-    var btnC = document.getElementById('btnCards'), btnL = document.getElementById('btnList');
-    if (mode === 'cards') {
-        cards.style.display = ''; list.style.display = 'none';
-        btnC.classList.add('active'); btnL.classList.remove('active');
-    } else {
-        cards.style.display = 'none'; list.style.display = '';
-        btnL.classList.add('active'); btnC.classList.remove('active');
-    }
-    try { localStorage.setItem('properties_view', mode); } catch(e) {}
+var searchTimer, currentStatus = '{{ request('status', '') }}';
+var shareUrl = '';
+
+// Status tab click
+document.querySelectorAll('.p-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.p-tab').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        currentStatus = this.dataset.status;
+        loadProperties();
+    });
+});
+
+// Search with debounce
+document.getElementById('propSearch').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(function() { loadProperties(); }, 350);
+});
+
+function loadProperties() {
+    var params = new URLSearchParams();
+    var search = document.getElementById('propSearch').value;
+    if (search) params.set('search', search);
+    if (currentStatus) params.set('status', currentStatus);
+
+    var fType = document.getElementById('fType').value;
+    var fOp = document.getElementById('fOp').value;
+    var fBroker = document.getElementById('fBroker').value;
+    var fPriceMin = document.getElementById('fPriceMin').value;
+    var fPriceMax = document.getElementById('fPriceMax').value;
+
+    if (fType) params.set('property_type', fType);
+    if (fOp) params.set('operation_type', fOp);
+    if (fBroker) params.set('broker_id', fBroker);
+    if (fPriceMin) params.set('price_min', fPriceMin);
+    if (fPriceMax) params.set('price_max', fPriceMax);
+
+    var url = '{{ route("properties.index") }}?' + params.toString();
+    document.getElementById('propGrid').style.opacity = '0.5';
+
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r) { return r.text(); })
+    .then(function(html) {
+        document.getElementById('propGrid').innerHTML = html;
+        document.getElementById('propGrid').style.opacity = '1';
+    });
 }
-(function() { var s = 'cards'; try { s = localStorage.getItem('properties_view') || 'cards'; } catch(e) {} setView(s); })();
+
+function toggleFilters() {
+    var panel = document.getElementById('filtersPanel');
+    var btn = document.querySelector('.p-filters-toggle');
+    panel.classList.toggle('show');
+    btn.classList.toggle('active');
+}
+
+function clearFilters() {
+    document.getElementById('fType').value = '';
+    document.getElementById('fOp').value = '';
+    document.getElementById('fBroker').value = '';
+    document.getElementById('fPriceMin').value = '';
+    document.getElementById('fPriceMax').value = '';
+    loadProperties();
+}
+
+function shareProperty(id, title, url) {
+    shareUrl = url;
+    var fullUrl = window.location.origin + url;
+    var msg = encodeURIComponent(title + '\n' + fullUrl);
+    document.getElementById('shareWhatsApp').href = 'https://wa.me/?text=' + msg;
+    document.getElementById('shareEmail').href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + msg;
+    document.getElementById('shareOverlay').classList.add('show');
+}
+
+function closeShare() { document.getElementById('shareOverlay').classList.remove('show'); }
+
+function copyLink() {
+    var fullUrl = window.location.origin + shareUrl;
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        document.getElementById('copyText').textContent = 'Copiado!';
+        setTimeout(function() { document.getElementById('copyText').textContent = 'Copiar enlace'; }, 2000);
+    });
+}
 </script>
 @endsection
