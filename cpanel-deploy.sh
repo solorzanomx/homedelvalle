@@ -2,12 +2,14 @@
 # ============================================
 # Script de deploy para cPanel
 # Ejecutar en Terminal de cPanel:
-#   cd /home/homed0b1/repositories/homedelvalle
+#   cd ~/repositories/homedelvalle
 #   bash cpanel-deploy.sh
 # ============================================
 
-REPO="/home/homed0b1/repositories/homedelvalle"
-PUBLIC_HTML="/home/homed0b1/public_html"
+# Detectar home real automaticamente
+HOME_DIR="$(cd ~ && pwd -P)"
+REPO="$HOME_DIR/repositories/homedelvalle"
+PUBLIC_HTML="$HOME_DIR/public_html"
 
 echo "=== Deploy Home del Valle CRM ==="
 
@@ -18,29 +20,28 @@ if [ -f "$PUBLIC_HTML/index.html" ]; then
 fi
 
 # 1. Crear index.php para cPanel
-cat > "$PUBLIC_HTML/index.php" << 'PHPEOF'
+cat > "$PUBLIC_HTML/index.php" << PHPEOF
 <?php
 
 use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-$basePath = '/home/homed0b1/repositories/homedelvalle';
+\$basePath = '$REPO';
 
-if (file_exists($maintenance = $basePath.'/storage/framework/maintenance.php')) {
-    require $maintenance;
+if (file_exists(\$maintenance = \$basePath.'/storage/framework/maintenance.php')) {
+    require \$maintenance;
 }
 
-require $basePath.'/vendor/autoload.php';
+require \$basePath.'/vendor/autoload.php';
 
-$app = require_once $basePath.'/bootstrap/app.php';
+\$app = require_once \$basePath.'/bootstrap/app.php';
 
-// Decirle a Laravel que public_html es la carpeta publica
-$app->usePublicPath('/home/homed0b1/public_html');
+\$app->usePublicPath('$PUBLIC_HTML');
 
-$app->handleRequest(Request::capture());
+\$app->handleRequest(Request::capture());
 PHPEOF
-echo "[OK] index.php creado"
+echo "[OK] index.php creado (basePath: $REPO)"
 
 # 2. Copiar .htaccess con DirectoryIndex
 cat > "$PUBLIC_HTML/.htaccess" << 'HTEOF'
