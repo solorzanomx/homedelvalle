@@ -13,7 +13,7 @@ class SegmentController extends Controller
 
     public function index()
     {
-        $segments = Segment::withCount(['clients' => fn($q) => $q->wherePivotNull('exited_at')])
+        $segments = Segment::withCount('clients')
             ->orderBy('name')
             ->get();
 
