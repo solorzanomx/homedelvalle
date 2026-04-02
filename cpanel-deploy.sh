@@ -108,6 +108,7 @@ mkdir -p "$REPO/storage/framework/sessions"
 mkdir -p "$REPO/storage/framework/views"
 mkdir -p "$REPO/storage/framework/cache"
 mkdir -p "$REPO/storage/logs"
+mkdir -p "$REPO/storage/app/public/avatars"
 echo "[OK] permisos y directorios"
 
 # 8. Composer install
