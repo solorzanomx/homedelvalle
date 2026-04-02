@@ -364,29 +364,22 @@
     <div class="step-nav-item active" onclick="goStep(1)">
         <span class="step-num">1</span>
         <div class="step-info">
-            <div class="step-title">Tipo y Operacion</div>
-            <div class="step-subtitle">Que tipo de propiedad es</div>
+            <div class="step-title">General</div>
+            <div class="step-subtitle">Tipo, precio, ubicacion</div>
         </div>
     </div>
     <div class="step-nav-item" onclick="goStep(2)">
         <span class="step-num">2</span>
         <div class="step-info">
-            <div class="step-title">Detalles</div>
-            <div class="step-subtitle">Precio, ubicacion, broker</div>
+            <div class="step-title">Caracteristicas</div>
+            <div class="step-subtitle">Recamaras, banos, area</div>
         </div>
     </div>
     <div class="step-nav-item" onclick="goStep(3)">
         <span class="step-num">3</span>
         <div class="step-info">
-            <div class="step-title">Caracteristicas</div>
-            <div class="step-subtitle">Recamaras, banos, area</div>
-        </div>
-    </div>
-    <div class="step-nav-item" onclick="goStep(4)">
-        <span class="step-num">4</span>
-        <div class="step-info">
             <div class="step-title">Media</div>
-            <div class="step-subtitle">Fotos, video, descripcion</div>
+            <div class="step-subtitle">Fotos y video</div>
         </div>
     </div>
 </div>
@@ -394,7 +387,7 @@
 <form method="POST" action="{{ route('properties.store') }}" enctype="multipart/form-data" id="propertyForm">
     @csrf
 
-    {{-- ===== STEP 1: Type & Operation ===== --}}
+    {{-- ===== STEP 1: General ===== --}}
     <div class="step-panel active" id="step1">
         <div class="card">
             <div class="card-body">
@@ -435,19 +428,7 @@
                 </div>
                 <input type="hidden" name="operation_type" id="operationType" value="{{ old('operation_type', 'sale') }}">
 
-                <div class="step-actions">
-                    <div></div>
-                    <button type="button" class="btn btn-primary" onclick="goStep(2)">Siguiente &rarr;</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- ===== STEP 2: Details ===== --}}
-    <div class="step-panel" id="step2">
-        <div class="card">
-            <div class="card-body">
-                <div class="section-label">Informacion principal</div>
+                <div class="section-label" style="margin-top:1.5rem;">Informacion principal</div>
                 <div class="form-group">
                     <label class="form-label">Titulo del anuncio <span class="required">*</span></label>
                     <input type="text" name="title" class="form-input" value="{{ old('title') }}" required placeholder="Ej: Hermosa casa en la zona dorada">
@@ -504,6 +485,11 @@
                     <p class="form-hint">Cliente dueno de la propiedad (opcional)</p>
                 </div>
 
+                <div class="section-label" style="margin-top:1.25rem;">Descripcion del anuncio</div>
+                <div class="form-group">
+                    <textarea name="description" class="form-textarea" rows="4" placeholder="Describe la propiedad: ambientes, acabados, amenidades, ubicacion...">{{ old('description') }}</textarea>
+                </div>
+
                 <div class="section-label" style="margin-top:1.25rem;">Ubicacion</div>
                 <div class="form-group">
                     <label class="form-label">Direccion</label>
@@ -525,15 +511,15 @@
                 </div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-outline" onclick="goStep(1)">&larr; Anterior</button>
-                    <button type="button" class="btn btn-primary" onclick="goStep(3)">Siguiente &rarr;</button>
+                    <div></div>
+                    <button type="button" class="btn btn-primary" onclick="goStep(2)">Siguiente &rarr;</button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ===== STEP 3: Features ===== --}}
-    <div class="step-panel" id="step3">
+    {{-- ===== STEP 2: Features ===== --}}
+    <div class="step-panel" id="step2">
         <div class="card">
             <div class="card-body">
                 <div class="section-label">Espacios</div>
@@ -632,15 +618,15 @@
                 </div>
 
                 <div class="step-actions">
-                    <button type="button" class="btn btn-outline" onclick="goStep(2)">&larr; Anterior</button>
-                    <button type="button" class="btn btn-primary" onclick="goStep(4)">Siguiente &rarr;</button>
+                    <button type="button" class="btn btn-outline" onclick="goStep(1)">&larr; Anterior</button>
+                    <button type="button" class="btn btn-primary" onclick="goStep(3)">Siguiente &rarr;</button>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- ===== STEP 4: Media ===== --}}
-    <div class="step-panel" id="step4">
+    {{-- ===== STEP 3: Media ===== --}}
+    <div class="step-panel" id="step3">
         <div class="card">
             <div class="card-body">
                 <div class="section-label">Fotografias <span style="font-weight:400; font-size:0.72rem; color:var(--text-muted);">(max 20, la primera sera la principal)</span></div>
@@ -661,13 +647,8 @@
                 </div>
                 <div id="ytPreviewContainer"></div>
 
-                <div class="section-label" style="margin-top:1.5rem;">Descripcion</div>
-                <div class="form-group">
-                    <textarea name="description" class="form-textarea" rows="5" placeholder="Describe la propiedad: ambientes, acabados, amenidades, ubicacion...">{{ old('description') }}</textarea>
-                </div>
-
                 <div class="step-actions">
-                    <button type="button" class="btn btn-outline" onclick="goStep(3)">&larr; Anterior</button>
+                    <button type="button" class="btn btn-outline" onclick="goStep(2)">&larr; Anterior</button>
                     <button type="submit" class="btn btn-primary">Crear Propiedad</button>
                 </div>
             </div>
@@ -679,7 +660,7 @@
 @section('scripts')
 <script>
 var currentStep = 1;
-var totalSteps = 4;
+var totalSteps = 3;
 
 function goStep(n) {
     if (n < 1 || n > totalSteps) return;
