@@ -105,20 +105,32 @@
 .photo-thumb.is-primary { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
 .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
 .photo-thumb:hover img { transform: scale(1.05); }
-.photo-thumb-overlay {
-    position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 100%);
-    display: none; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; padding: 6px;
-}
-.photo-thumb:hover .photo-thumb-overlay { display: flex; }
-.photo-thumb-overlay .btn {
-    padding: 0.15rem 0.4rem; font-size: 0.6rem; border-radius: 4px;
-    width: 100%; text-align: center;
-}
 .photo-primary-badge {
     position: absolute; top: 4px; left: 4px; font-size: 0.55rem;
     background: var(--primary); color: #fff; padding: 0.1rem 0.35rem;
     border-radius: 4px; font-weight: 600; letter-spacing: 0.02em;
 }
+.photo-star-btn {
+    position: absolute; bottom: 4px; left: 4px; width: 22px; height: 22px;
+    border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; transition: all 0.15s; z-index: 2;
+    background: rgba(0,0,0,0.45); color: rgba(255,255,255,0.7);
+}
+.photo-star-btn:hover { background: var(--primary); color: #fff; transform: scale(1.15); }
+.photo-thumb.is-primary .photo-star-btn {
+    background: var(--primary); color: #fff;
+}
+.photo-delete-btn {
+    position: absolute; bottom: 4px; right: 4px; width: 22px; height: 22px;
+    border-radius: 50%; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.6rem; z-index: 2; transition: all 0.15s;
+    background: rgba(0,0,0,0.45); color: rgba(255,255,255,0.7);
+    opacity: 0;
+}
+.photo-thumb:hover .photo-delete-btn { opacity: 1; }
+.photo-delete-btn:hover { background: var(--danger); color: #fff; transform: scale(1.15); }
 .photo-count-badge {
     position: absolute; top: 4px; right: 4px; font-size: 0.55rem;
     background: rgba(0,0,0,0.5); color: #fff; padding: 0.1rem 0.35rem;
@@ -550,13 +562,8 @@
                     <div class="photo-thumb {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
                         <img src="{{ asset('storage/' . $photo->path) }}" alt="" loading="lazy">
                         @if($photo->is_primary)<span class="photo-primary-badge">&#9733; Principal</span>@endif
-                        <span class="photo-count-badge">{{ $loop->iteration }}</span>
-                        <div class="photo-thumb-overlay">
-                            @if(!$photo->is_primary)
-                            <button type="button" class="btn btn-sm" style="background:rgba(255,255,255,0.9); color:var(--text); width:100%;" onclick="setPrimary({{ $photo->id }})">&#9733; Principal</button>
-                            @endif
-                            <button type="button" class="btn btn-sm" style="background:rgba(239,68,68,0.9); color:#fff; width:100%;" onclick="deletePhoto({{ $photo->id }})">&#10005; Eliminar</button>
-                        </div>
+                        <button type="button" class="photo-star-btn" onclick="setPrimary({{ $photo->id }})" title="Marcar como principal">&#9733;</button>
+                        <button type="button" class="photo-delete-btn" onclick="deletePhoto({{ $photo->id }})" title="Eliminar">&#10005;</button>
                     </div>
                     @endforeach
                 </div>
@@ -697,11 +704,8 @@ function addPhotoThumb(photo) {
     div.innerHTML =
         '<img src="' + photo.url + '" alt="" loading="lazy">' +
         (photo.is_primary ? '<span class="photo-primary-badge">&#9733; Principal</span>' : '') +
-        '<span class="photo-count-badge"></span>' +
-        '<div class="photo-thumb-overlay">' +
-            (!photo.is_primary ? '<button type="button" class="btn btn-sm" style="background:rgba(255,255,255,0.9);color:var(--text);width:100%;" onclick="setPrimary(' + photo.id + ')">&#9733; Principal</button>' : '') +
-            '<button type="button" class="btn btn-sm" style="background:rgba(239,68,68,0.9);color:#fff;width:100%;" onclick="deletePhoto(' + photo.id + ')">&#10005; Eliminar</button>' +
-        '</div>';
+        '<button type="button" class="photo-star-btn" onclick="setPrimary(' + photo.id + ')" title="Marcar como principal">&#9733;</button>' +
+        '<button type="button" class="photo-delete-btn" onclick="deletePhoto(' + photo.id + ')" title="Eliminar">&#10005;</button>';
     grid.appendChild(div);
 }
 
@@ -715,35 +719,19 @@ function setPrimary(photoId) {
     .then(function(data) {
         if (data.success) {
             // Remove all primary states
-            document.querySelectorAll('.photo-thumb').forEach(function(t) {
+            document.querySelectorAll('#photoGrid .photo-thumb').forEach(function(t) {
                 t.classList.remove('is-primary');
                 var badge = t.querySelector('.photo-primary-badge');
                 if (badge) badge.remove();
-                // Re-add "set primary" button if missing
-                var overlay = t.querySelector('.photo-thumb-overlay');
-                if (overlay && !overlay.querySelector('[onclick^="setPrimary"]')) {
-                    var id = t.dataset.id;
-                    var btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'btn btn-sm';
-                    btn.style.cssText = 'background:rgba(255,255,255,0.9);color:var(--text);width:100%;';
-                    btn.innerHTML = '&#9733; Principal';
-                    btn.onclick = function() { setPrimary(id); };
-                    overlay.insertBefore(btn, overlay.firstChild);
-                }
             });
             // Set new primary
             var el = document.getElementById('photo-' + photoId);
             if (el) {
                 el.classList.add('is-primary');
-                var img = el.querySelector('img');
                 var badge = document.createElement('span');
                 badge.className = 'photo-primary-badge';
                 badge.innerHTML = '&#9733; Principal';
-                el.insertBefore(badge, img.nextSibling);
-                // Remove "set primary" button from this one
-                var setBtn = el.querySelector('[onclick^="setPrimary"]');
-                if (setBtn) setBtn.remove();
+                el.appendChild(badge);
             }
         }
     });
