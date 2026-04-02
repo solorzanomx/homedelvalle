@@ -117,20 +117,20 @@
 @endphp
 
 {{-- Stats --}}
-<div class="u-stats">
-    <div class="u-stat">
+<div class="u-stats" style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:0.75rem; margin-bottom:1.5rem;">
+    <div class="u-stat" style="flex:1;">
         <div class="u-stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#9823;</div>
         <div><div class="u-stat-val">{{ $stats['total'] }}</div><div class="u-stat-label">Total</div></div>
     </div>
-    <div class="u-stat">
+    <div class="u-stat" style="flex:1;">
         <div class="u-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">&#10003;</div>
         <div><div class="u-stat-val">{{ $stats['active'] }}</div><div class="u-stat-label">Activos</div></div>
     </div>
-    <div class="u-stat">
+    <div class="u-stat" style="flex:1;">
         <div class="u-stat-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;">&#9733;</div>
         <div><div class="u-stat-val">{{ $stats['admins'] }}</div><div class="u-stat-label">Admins</div></div>
     </div>
-    <div class="u-stat">
+    <div class="u-stat" style="flex:1;">
         <div class="u-stat-icon" style="background:rgba(249,115,22,0.1); color:#f97316;">&#128188;</div>
         <div><div class="u-stat-val">{{ $stats['brokers'] }}</div><div class="u-stat-label">Brokers</div></div>
     </div>
