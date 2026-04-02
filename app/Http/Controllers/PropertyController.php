@@ -124,6 +124,8 @@ class PropertyController extends Controller
             'broker_id' => 'nullable|exists:brokers,id',
             'client_id' => 'nullable|exists:clients,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photos' => 'nullable|array|max:20',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'youtube_url' => 'nullable|url|max:500',
         ]);
 
@@ -131,8 +133,25 @@ class PropertyController extends Controller
             $validated['photo'] = $request->file('photo')->store('properties', 'public');
         }
 
+        unset($validated['photos']);
         $property = Property::create($validated);
-        return redirect()->route('properties.edit', $property)->with('success', 'Propiedad creada — ahora puedes agregar fotos.');
+
+        // Handle multiple photos
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $i => $file) {
+                $path = $file->store('properties/photos', 'public');
+                $property->photos()->create([
+                    'path' => $path,
+                    'is_primary' => $i === 0,
+                    'sort_order' => $i + 1,
+                ]);
+                if ($i === 0) {
+                    $property->update(['photo' => $path]);
+                }
+            }
+        }
+
+        return redirect()->route('properties.edit', $property)->with('success', 'Propiedad creada exitosamente.');
     }
 
     public function edit(Property $property)

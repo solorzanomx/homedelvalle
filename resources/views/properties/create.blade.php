@@ -643,15 +643,16 @@
     <div class="step-panel" id="step4">
         <div class="card">
             <div class="card-body">
-                <div class="section-label">Foto principal</div>
+                <div class="section-label">Fotografias <span style="font-weight:400; font-size:0.72rem; color:var(--text-muted);">(max 20, la primera sera la principal)</span></div>
                 <div class="photo-upload-zone" id="photoZone" onclick="document.getElementById('photoInput').click()">
-                    <input type="file" id="photoInput" name="photo" accept="image/*" style="display:none" onchange="previewMainPhoto(this)">
-                    <div id="photoPreview">
+                    <input type="file" id="photoInput" name="photos[]" accept="image/*" multiple style="display:none" onchange="previewPhotos(this)">
+                    <div id="photoPlaceholder">
                         <div class="photo-upload-icon">&#128247;</div>
-                        <p>Arrastra o haz clic para subir la foto principal</p>
-                        <p class="hint">JPG, PNG, GIF — max 2MB. Podras agregar mas fotos despues de crear.</p>
+                        <p>Arrastra o haz clic para subir fotos</p>
+                        <p class="hint">JPG, PNG, GIF, WebP — max 5MB cada una, hasta 20 fotos</p>
                     </div>
                 </div>
+                <div class="preview-grid" id="previewGrid" style="display:none;"></div>
 
                 <div class="section-label" style="margin-top:1.5rem;">Video de YouTube</div>
                 <div class="form-group">
@@ -731,16 +732,61 @@ function updateCurrency() {
     document.getElementById('currTag').textContent = sel.value === 'USD' ? 'US$' : '$';
 }
 
-function previewMainPhoto(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('photoPreview').innerHTML =
-                '<img src="' + e.target.result + '" style="max-height:200px; border-radius:var(--radius); margin-bottom:0.5rem;">' +
-                '<p style="font-size:0.82rem; color:var(--text-muted);">' + input.files[0].name + '</p>';
-        };
-        reader.readAsDataURL(input.files[0]);
+var selectedFiles = [];
+function previewPhotos(input) {
+    if (!input.files || input.files.length === 0) return;
+    for (var i = 0; i < input.files.length && selectedFiles.length < 20; i++) {
+        selectedFiles.push(input.files[i]);
     }
+    renderPreviews();
+}
+function renderPreviews() {
+    var grid = document.getElementById('previewGrid');
+    var placeholder = document.getElementById('photoPlaceholder');
+    if (selectedFiles.length === 0) {
+        grid.style.display = 'none';
+        placeholder.style.display = '';
+        return;
+    }
+    placeholder.style.display = 'none';
+    grid.style.display = '';
+    grid.innerHTML = '';
+    selectedFiles.forEach(function(file, idx) {
+        var div = document.createElement('div');
+        div.className = 'preview-item' + (idx === 0 ? ' is-primary' : '');
+        var img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        div.appendChild(img);
+        if (idx === 0) {
+            div.innerHTML += '<span class="preview-primary-badge">Principal</span>';
+        }
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preview-remove';
+        btn.innerHTML = '&#10005;';
+        btn.onclick = function() { removePhoto(idx); };
+        div.appendChild(btn);
+        grid.appendChild(div);
+    });
+    // Add "add more" tile
+    if (selectedFiles.length < 20) {
+        var addTile = document.createElement('div');
+        addTile.className = 'preview-item';
+        addTile.style.cssText = 'display:flex; align-items:center; justify-content:center; cursor:pointer; background:var(--bg); border-style:dashed;';
+        addTile.innerHTML = '<span style="font-size:1.5rem; color:var(--text-muted);">+</span>';
+        addTile.onclick = function() { document.getElementById('photoInput').click(); };
+        grid.appendChild(addTile);
+    }
+    rebuildFileInput();
+}
+function removePhoto(idx) {
+    selectedFiles.splice(idx, 1);
+    renderPreviews();
+}
+function rebuildFileInput() {
+    var dt = new DataTransfer();
+    selectedFiles.forEach(function(f) { dt.items.add(f); });
+    document.getElementById('photoInput').files = dt.files;
 }
 
 function previewYoutube() {
@@ -766,10 +812,10 @@ function previewYoutube() {
     });
     zone.addEventListener('drop', function(e) {
         var input = document.getElementById('photoInput');
-        if (e.dataTransfer.files.length > 0) {
-            input.files = e.dataTransfer.files;
-            previewMainPhoto(input);
+        for (var i = 0; i < e.dataTransfer.files.length && selectedFiles.length < 20; i++) {
+            selectedFiles.push(e.dataTransfer.files[i]);
         }
+        renderPreviews();
     });
 })();
 

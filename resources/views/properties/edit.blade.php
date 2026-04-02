@@ -91,26 +91,38 @@
 .photos-panel { position: sticky; top: 72px; }
 .photo-drop {
     border: 2px dashed var(--border); border-radius: var(--radius);
-    padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem;
+    padding: 0.75rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem;
 }
 .photo-drop:hover, .photo-drop.dragover { border-color: var(--primary); background: rgba(102,126,234,0.03); }
-.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
-.photo-thumb {
-    position: relative; border-radius: 6px; overflow: hidden;
-    aspect-ratio: 1; border: 2px solid transparent; transition: border-color 0.15s;
+.photo-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
 }
-.photo-thumb.is-primary { border-color: var(--primary); }
-.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-thumb {
+    position: relative; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 1; border: 2px solid transparent; transition: all 0.15s;
+    cursor: pointer;
+}
+.photo-thumb.is-primary { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
+.photo-thumb:hover img { transform: scale(1.05); }
 .photo-thumb-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.55);
-    display: none; align-items: center; justify-content: center; gap: 0.2rem;
+    position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.55) 100%);
+    display: none; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; padding: 6px;
 }
 .photo-thumb:hover .photo-thumb-overlay { display: flex; }
-.photo-thumb-overlay .btn { padding: 0.15rem 0.3rem; font-size: 0.6rem; }
+.photo-thumb-overlay .btn {
+    padding: 0.15rem 0.4rem; font-size: 0.6rem; border-radius: 4px;
+    width: 100%; text-align: center;
+}
 .photo-primary-badge {
-    position: absolute; top: 3px; left: 3px; font-size: 0.55rem;
-    background: var(--primary); color: #fff; padding: 0.08rem 0.3rem;
-    border-radius: 3px; font-weight: 600;
+    position: absolute; top: 4px; left: 4px; font-size: 0.55rem;
+    background: var(--primary); color: #fff; padding: 0.1rem 0.35rem;
+    border-radius: 4px; font-weight: 600; letter-spacing: 0.02em;
+}
+.photo-count-badge {
+    position: absolute; top: 4px; right: 4px; font-size: 0.55rem;
+    background: rgba(0,0,0,0.5); color: #fff; padding: 0.1rem 0.35rem;
+    border-radius: 4px; font-weight: 500;
 }
 
 /* Side card */
@@ -501,9 +513,9 @@
         {{-- Photos --}}
         <div class="side-card">
             <div class="side-card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                Fotografias
+                <span>&#128247; Fotografias</span>
                 @php $photoCount = $property->photos->count(); @endphp
-                <span style="font-size:0.68rem; color:var(--text-muted); background:var(--bg); padding:0.1rem 0.45rem; border-radius:10px;">{{ $photoCount }}/20</span>
+                <span style="font-size:0.68rem; color:var(--text-muted); background:var(--bg); padding:0.15rem 0.5rem; border-radius:10px; font-weight:600;">{{ $photoCount }}/20</span>
             </div>
             <div class="side-card-body">
                 @if($photoCount < 20)
@@ -511,33 +523,39 @@
                     @csrf
                     <div class="photo-drop" id="photoDrop" onclick="document.getElementById('photoFiles').click()">
                         <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="document.getElementById('photoForm').submit()">
-                        <div style="font-size:1.5rem; opacity:0.4; margin-bottom:0.15rem;">&#128247;</div>
-                        <p style="margin:0; font-size:0.78rem; color:var(--text-muted);">Arrastra o clic para subir</p>
+                        <div style="font-size:1.2rem; opacity:0.4;">&#10010;</div>
+                        <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Subir fotos</p>
+                        <p style="margin:0.15rem 0 0; font-size:0.65rem; color:var(--text-muted); opacity:0.7;">JPG, PNG, WebP — max 5MB</p>
                     </div>
                 </form>
                 @endif
 
                 @if($photoCount > 0)
                 <div class="photo-grid">
-                    @foreach($property->photos as $photo)
+                    @foreach($property->photos->sortBy('sort_order') as $photo)
                     <div class="photo-thumb {{ $photo->is_primary ? 'is-primary' : '' }}">
-                        <img src="{{ asset('storage/' . $photo->path) }}" alt="">
-                        @if($photo->is_primary)<span class="photo-primary-badge">Principal</span>@endif
+                        <img src="{{ asset('storage/' . $photo->path) }}" alt="" loading="lazy">
+                        @if($photo->is_primary)<span class="photo-primary-badge">&#9733; Principal</span>@endif
+                        <span class="photo-count-badge">{{ $loop->iteration }}</span>
                         <div class="photo-thumb-overlay">
                             @if(!$photo->is_primary)
-                            <form method="POST" action="{{ route('properties.photos.primary', [$property, $photo]) }}">@csrf @method('PATCH')
-                                <button type="submit" class="btn btn-sm" style="background:#fff; color:var(--text);" title="Principal">&#9733;</button>
+                            <form method="POST" action="{{ route('properties.photos.primary', [$property, $photo]) }}" style="width:100%;">@csrf @method('PATCH')
+                                <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.9); color:var(--text); width:100%;">&#9733; Principal</button>
                             </form>
                             @endif
-                            <form method="POST" action="{{ route('properties.photos.destroy', [$property, $photo]) }}" onsubmit="return confirm('Eliminar foto?')">@csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">&#10005;</button>
+                            <form method="POST" action="{{ route('properties.photos.destroy', [$property, $photo]) }}" onsubmit="return confirm('Eliminar foto?')" style="width:100%;">@csrf @method('DELETE')
+                                <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,0.9); color:#fff; width:100%;">&#10005; Eliminar</button>
                             </form>
                         </div>
                     </div>
                     @endforeach
                 </div>
                 @else
-                <div style="text-align:center; padding:1rem 0.5rem; color:var(--text-muted); font-size:0.82rem;">Sin fotos aun</div>
+                <div style="text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">
+                    <div style="font-size:2rem; opacity:0.3; margin-bottom:0.3rem;">&#127976;</div>
+                    <p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>
+                    <p style="font-size:0.72rem; margin:0.2rem 0 0; opacity:0.7;">Sube fotos para mostrar la propiedad</p>
+                </div>
                 @endif
             </div>
         </div>
