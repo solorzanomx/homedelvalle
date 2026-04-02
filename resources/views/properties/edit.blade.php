@@ -124,6 +124,20 @@
     background: rgba(0,0,0,0.5); color: #fff; padding: 0.1rem 0.35rem;
     border-radius: 4px; font-weight: 500;
 }
+/* Spinner */
+.photo-spinner {
+    width: 28px; height: 28px; border: 3px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: photoSpin 0.6s linear infinite; margin: 0 auto;
+}
+@keyframes photoSpin { to { transform: rotate(360deg); } }
+/* Upload progress thumb */
+.photo-thumb-uploading {
+    position: relative; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 1; border: 2px dashed var(--primary); background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+}
+.photo-thumb-uploading .photo-spinner { width: 20px; height: 20px; border-width: 2px; }
 
 /* Side card */
 .side-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
@@ -515,43 +529,40 @@
             <div class="side-card-header" style="display:flex; justify-content:space-between; align-items:center;">
                 <span>&#128247; Fotografias</span>
                 @php $photoCount = $property->photos->count(); @endphp
-                <span style="font-size:0.68rem; color:var(--text-muted); background:var(--bg); padding:0.15rem 0.5rem; border-radius:10px; font-weight:600;">{{ $photoCount }}/20</span>
+                <span id="photoCountBadge" style="font-size:0.68rem; color:var(--text-muted); background:var(--bg); padding:0.15rem 0.5rem; border-radius:10px; font-weight:600;">{{ $photoCount }}/20</span>
             </div>
-            <div class="side-card-body">
-                @if($photoCount < 20)
-                <form method="POST" action="{{ route('properties.photos.store', $property) }}" enctype="multipart/form-data" id="photoForm">
-                    @csrf
-                    <div class="photo-drop" id="photoDrop" onclick="document.getElementById('photoFiles').click()">
-                        <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="document.getElementById('photoForm').submit()">
+            <div class="side-card-body" id="photoPanel">
+                <div id="photoDrop" class="photo-drop" onclick="document.getElementById('photoFiles').click()">
+                    <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="uploadPhotos(this.files)">
+                    <div id="photoDropContent">
                         <div style="font-size:1.2rem; opacity:0.4;">&#10010;</div>
                         <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Subir fotos</p>
                         <p style="margin:0.15rem 0 0; font-size:0.65rem; color:var(--text-muted); opacity:0.7;">JPG, PNG, WebP — max 5MB</p>
                     </div>
-                </form>
-                @endif
+                    <div id="photoDropLoading" style="display:none;">
+                        <div class="photo-spinner"></div>
+                        <p style="margin:0.4rem 0 0; font-size:0.75rem; color:var(--primary); font-weight:500;">Subiendo...</p>
+                    </div>
+                </div>
 
-                @if($photoCount > 0)
-                <div class="photo-grid">
+                <div class="photo-grid" id="photoGrid">
                     @foreach($property->photos->sortBy('sort_order') as $photo)
-                    <div class="photo-thumb {{ $photo->is_primary ? 'is-primary' : '' }}">
+                    <div class="photo-thumb {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
                         <img src="{{ asset('storage/' . $photo->path) }}" alt="" loading="lazy">
                         @if($photo->is_primary)<span class="photo-primary-badge">&#9733; Principal</span>@endif
                         <span class="photo-count-badge">{{ $loop->iteration }}</span>
                         <div class="photo-thumb-overlay">
                             @if(!$photo->is_primary)
-                            <form method="POST" action="{{ route('properties.photos.primary', [$property, $photo]) }}" style="width:100%;">@csrf @method('PATCH')
-                                <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.9); color:var(--text); width:100%;">&#9733; Principal</button>
-                            </form>
+                            <button type="button" class="btn btn-sm" style="background:rgba(255,255,255,0.9); color:var(--text); width:100%;" onclick="setPrimary({{ $photo->id }})">&#9733; Principal</button>
                             @endif
-                            <form method="POST" action="{{ route('properties.photos.destroy', [$property, $photo]) }}" onsubmit="return confirm('Eliminar foto?')" style="width:100%;">@csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,0.9); color:#fff; width:100%;">&#10005; Eliminar</button>
-                            </form>
+                            <button type="button" class="btn btn-sm" style="background:rgba(239,68,68,0.9); color:#fff; width:100%;" onclick="deletePhoto({{ $photo->id }})">&#10005; Eliminar</button>
                         </div>
                     </div>
                     @endforeach
                 </div>
-                @else
-                <div style="text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">
+
+                @if($photoCount === 0)
+                <div id="photoEmpty" style="text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">
                     <div style="font-size:2rem; opacity:0.3; margin-bottom:0.3rem;">&#127976;</div>
                     <p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>
                     <p style="font-size:0.72rem; margin:0.2rem 0 0; opacity:0.7;">Sube fotos para mostrar la propiedad</p>
@@ -617,6 +628,168 @@ function previewYoutube() {
     var match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/);
     container.innerHTML = match ? '<div class="yt-preview" style="margin-top:0.75rem;"><iframe src="https://www.youtube.com/embed/' + match[1] + '" allowfullscreen></iframe></div>' : '';
 }
+// ─── Photo AJAX ────────────────────────────────────
+var csrfToken = '{{ csrf_token() }}';
+var propertyId = {{ $property->id }};
+var photoStoreUrl = '{{ route("properties.photos.store", $property) }}';
+
+function uploadPhotos(files) {
+    if (!files || files.length === 0) return;
+    var drop = document.getElementById('photoDrop');
+    var content = document.getElementById('photoDropContent');
+    var loading = document.getElementById('photoDropLoading');
+    content.style.display = 'none';
+    loading.style.display = '';
+    drop.style.pointerEvents = 'none';
+
+    // Show placeholder thumbs
+    var grid = document.getElementById('photoGrid');
+    var empty = document.getElementById('photoEmpty');
+    if (empty) empty.style.display = 'none';
+    var placeholders = [];
+    for (var i = 0; i < files.length; i++) {
+        var ph = document.createElement('div');
+        ph.className = 'photo-thumb-uploading';
+        ph.innerHTML = '<div class="photo-spinner"></div>';
+        grid.appendChild(ph);
+        placeholders.push(ph);
+    }
+
+    var fd = new FormData();
+    fd.append('_token', csrfToken);
+    for (var j = 0; j < files.length; j++) fd.append('photos[]', files[j]);
+
+    fetch(photoStoreUrl, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        // Remove placeholders
+        placeholders.forEach(function(p) { p.remove(); });
+        if (data.photos) {
+            data.photos.forEach(function(photo, idx) {
+                addPhotoThumb(photo);
+            });
+            updatePhotoCount(data.total);
+            renumberPhotos();
+        }
+    })
+    .catch(function(err) {
+        placeholders.forEach(function(p) { p.remove(); });
+        alert('Error al subir fotos');
+    })
+    .finally(function() {
+        content.style.display = '';
+        loading.style.display = 'none';
+        drop.style.pointerEvents = '';
+        document.getElementById('photoFiles').value = '';
+    });
+}
+
+function addPhotoThumb(photo) {
+    var grid = document.getElementById('photoGrid');
+    var div = document.createElement('div');
+    div.className = 'photo-thumb' + (photo.is_primary ? ' is-primary' : '');
+    div.id = 'photo-' + photo.id;
+    div.dataset.id = photo.id;
+    div.innerHTML =
+        '<img src="' + photo.url + '" alt="" loading="lazy">' +
+        (photo.is_primary ? '<span class="photo-primary-badge">&#9733; Principal</span>' : '') +
+        '<span class="photo-count-badge"></span>' +
+        '<div class="photo-thumb-overlay">' +
+            (!photo.is_primary ? '<button type="button" class="btn btn-sm" style="background:rgba(255,255,255,0.9);color:var(--text);width:100%;" onclick="setPrimary(' + photo.id + ')">&#9733; Principal</button>' : '') +
+            '<button type="button" class="btn btn-sm" style="background:rgba(239,68,68,0.9);color:#fff;width:100%;" onclick="deletePhoto(' + photo.id + ')">&#10005; Eliminar</button>' +
+        '</div>';
+    grid.appendChild(div);
+}
+
+function setPrimary(photoId) {
+    var url = '/properties/{{ $property->id }}/photos/' + photoId + '/primary';
+    fetch(url, {
+        method: 'PATCH',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            // Remove all primary states
+            document.querySelectorAll('.photo-thumb').forEach(function(t) {
+                t.classList.remove('is-primary');
+                var badge = t.querySelector('.photo-primary-badge');
+                if (badge) badge.remove();
+                // Re-add "set primary" button if missing
+                var overlay = t.querySelector('.photo-thumb-overlay');
+                if (overlay && !overlay.querySelector('[onclick^="setPrimary"]')) {
+                    var id = t.dataset.id;
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-sm';
+                    btn.style.cssText = 'background:rgba(255,255,255,0.9);color:var(--text);width:100%;';
+                    btn.innerHTML = '&#9733; Principal';
+                    btn.onclick = function() { setPrimary(id); };
+                    overlay.insertBefore(btn, overlay.firstChild);
+                }
+            });
+            // Set new primary
+            var el = document.getElementById('photo-' + photoId);
+            if (el) {
+                el.classList.add('is-primary');
+                var img = el.querySelector('img');
+                var badge = document.createElement('span');
+                badge.className = 'photo-primary-badge';
+                badge.innerHTML = '&#9733; Principal';
+                el.insertBefore(badge, img.nextSibling);
+                // Remove "set primary" button from this one
+                var setBtn = el.querySelector('[onclick^="setPrimary"]');
+                if (setBtn) setBtn.remove();
+            }
+        }
+    });
+}
+
+function deletePhoto(photoId) {
+    if (!confirm('Eliminar foto?')) return;
+    var el = document.getElementById('photo-' + photoId);
+    if (el) el.style.opacity = '0.4';
+
+    var url = '/properties/{{ $property->id }}/photos/' + photoId;
+    fetch(url, {
+        method: 'DELETE',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            if (el) el.remove();
+            updatePhotoCount(data.total);
+            renumberPhotos();
+            if (data.total === 0) {
+                var grid = document.getElementById('photoGrid');
+                grid.innerHTML = '';
+                var emptyDiv = document.createElement('div');
+                emptyDiv.id = 'photoEmpty';
+                emptyDiv.style.cssText = 'text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);';
+                emptyDiv.innerHTML = '<div style="font-size:2rem; opacity:0.3; margin-bottom:0.3rem;">&#127976;</div><p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>';
+                grid.parentNode.appendChild(emptyDiv);
+            }
+        }
+    })
+    .catch(function() { if (el) el.style.opacity = '1'; });
+}
+
+function updatePhotoCount(total) {
+    document.getElementById('photoCountBadge').textContent = total + '/20';
+}
+
+function renumberPhotos() {
+    document.querySelectorAll('#photoGrid .photo-thumb').forEach(function(t, i) {
+        var badge = t.querySelector('.photo-count-badge');
+        if (badge) badge.textContent = i + 1;
+    });
+}
+
 // Drag & drop
 (function() {
     var drop = document.getElementById('photoDrop');
@@ -624,8 +797,7 @@ function previewYoutube() {
     ['dragenter','dragover'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.add('dragover'); }); });
     ['dragleave','drop'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.remove('dragover'); }); });
     drop.addEventListener('drop', function(e) {
-        document.getElementById('photoFiles').files = e.dataTransfer.files;
-        document.getElementById('photoForm').submit();
+        uploadPhotos(e.dataTransfer.files);
     });
 })();
 updateCurrency();

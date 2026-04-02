@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Property;
 use App\Models\PropertyPhoto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PropertyPhotoController extends Controller
 {
@@ -19,44 +20,63 @@ class PropertyPhotoController extends Controller
         $maxNew = 20 - $currentCount;
 
         if ($maxNew <= 0) {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Maximo 20 fotos.'], 422);
+            }
             return back()->with('error', 'La propiedad ya tiene el maximo de 20 fotos.');
         }
 
         $files = array_slice($request->file('photos'), 0, $maxNew);
         $hasPrimary = $property->photos()->where('is_primary', true)->exists();
         $order = $property->photos()->max('sort_order') ?? 0;
+        $uploaded = [];
 
         foreach ($files as $i => $file) {
             $path = $file->store('properties/photos', 'public');
             $order++;
-            $property->photos()->create([
+            $isPrimary = !$hasPrimary && $i === 0;
+            $photo = $property->photos()->create([
                 'path' => $path,
-                'is_primary' => !$hasPrimary && $i === 0,
+                'is_primary' => $isPrimary,
                 'sort_order' => $order,
             ]);
-            if (!$hasPrimary && $i === 0) {
+            if ($isPrimary) {
                 $hasPrimary = true;
+                $property->update(['photo' => $path]);
             }
+            $uploaded[] = [
+                'id' => $photo->id,
+                'url' => asset('storage/' . $path),
+                'is_primary' => $photo->is_primary,
+                'sort_order' => $photo->sort_order,
+            ];
+        }
+
+        if ($request->ajax()) {
+            $total = $property->photos()->count();
+            return response()->json(['success' => true, 'photos' => $uploaded, 'total' => $total]);
         }
 
         return back()->with('success', count($files) . ' foto(s) subida(s).');
     }
 
-    public function setPrimary(Property $property, PropertyPhoto $photo)
+    public function setPrimary(Request $request, Property $property, PropertyPhoto $photo)
     {
         $property->photos()->update(['is_primary' => false]);
         $photo->update(['is_primary' => true]);
-
-        // Also update the legacy photo field on the property
         $property->update(['photo' => $photo->path]);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
 
         return back()->with('success', 'Imagen principal actualizada.');
     }
 
-    public function destroy(Property $property, PropertyPhoto $photo)
+    public function destroy(Request $request, Property $property, PropertyPhoto $photo)
     {
         $wasPrimary = $photo->is_primary;
-        \Illuminate\Support\Facades\Storage::disk('public')->delete($photo->path);
+        Storage::disk('public')->delete($photo->path);
         $photo->delete();
 
         if ($wasPrimary) {
@@ -67,6 +87,11 @@ class PropertyPhotoController extends Controller
             } else {
                 $property->update(['photo' => null]);
             }
+        }
+
+        if ($request->ajax()) {
+            $total = $property->photos()->count();
+            return response()->json(['success' => true, 'total' => $total]);
         }
 
         return back()->with('success', 'Foto eliminada.');
