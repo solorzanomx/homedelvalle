@@ -328,8 +328,7 @@ function clearFilters() {
 
 function shareProperty(id, title, url) {
     shareUrl = url;
-    var fullUrl = window.location.origin + url;
-    var msg = encodeURIComponent(title + '\n' + fullUrl);
+    var msg = encodeURIComponent(title + '\n' + url);
     document.getElementById('shareWhatsApp').href = 'https://wa.me/?text=' + msg;
     document.getElementById('shareEmail').href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + msg;
     document.getElementById('shareOverlay').classList.add('show');
@@ -338,8 +337,7 @@ function shareProperty(id, title, url) {
 function closeShare() { document.getElementById('shareOverlay').classList.remove('show'); }
 
 function copyLink() {
-    var fullUrl = window.location.origin + shareUrl;
-    navigator.clipboard.writeText(fullUrl).then(function() {
+    navigator.clipboard.writeText(shareUrl).then(function() {
         document.getElementById('copyText').textContent = 'Copiado!';
         setTimeout(function() { document.getElementById('copyText').textContent = 'Copiar enlace'; }, 2000);
     });

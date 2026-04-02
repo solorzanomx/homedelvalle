@@ -6,6 +6,7 @@
 /* ===== STEPPER NAV ===== */
 .step-nav {
     display: flex;
+    flex-direction: row;
     gap: 0;
     background: var(--card);
     border: 1px solid var(--border);
@@ -359,7 +360,7 @@
 @endif
 
 {{-- Step Navigation --}}
-<div class="step-nav" id="stepNav">
+<div class="step-nav" id="stepNav" style="display:flex; flex-direction:row; flex-wrap:nowrap;">
     <div class="step-nav-item active" onclick="goStep(1)">
         <span class="step-num">1</span>
         <div class="step-info">
