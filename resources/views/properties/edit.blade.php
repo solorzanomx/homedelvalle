@@ -168,7 +168,7 @@
 .eb-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
 
 /* YT preview */
-.yt-preview { border-radius: var(--radius); overflow: hidden; position: relative; padding-bottom: 56.25%; height: 0; background: #000; }
+.yt-preview { border-radius: var(--radius); overflow: hidden; position: relative; padding-bottom: 40%; height: 0; background: #000; max-width: 480px; }
 .yt-preview iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
 /* Save bar */
@@ -469,6 +469,62 @@
 
             {{-- TAB: Media & Integrations --}}
             <div class="tab-panel" data-tab="media">
+                <div class="card" style="margin-bottom:1rem;">
+                    <div class="card-body">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                            <div class="section-label" style="margin:0;">Fotografias</div>
+                            @php $photoCount = $property->photos->count(); @endphp
+                            <span id="photoCountBadge" style="font-size:0.68rem; color:var(--text-muted); background:var(--bg); padding:0.15rem 0.5rem; border-radius:10px; font-weight:600;">{{ $photoCount }}/20</span>
+                        </div>
+                        <div id="photoPanel">
+                            <div id="photoDrop" class="photo-drop" onclick="document.getElementById('photoFiles').click()">
+                                <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="uploadPhotos(this.files)">
+                                <div id="photoDropContent">
+                                    <div style="font-size:1.2rem; opacity:0.4;">&#10010;</div>
+                                    <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Subir fotos</p>
+                                    <p style="margin:0.15rem 0 0; font-size:0.65rem; color:var(--text-muted); opacity:0.7;">Arrastra aqui o clic — JPG, PNG, WebP</p>
+                                </div>
+                                <div id="photoDropLoading" style="display:none;">
+                                    <div class="photo-spinner"></div>
+                                    <p style="margin:0.4rem 0 0; font-size:0.75rem; color:var(--primary); font-weight:500;">Subiendo...</p>
+                                </div>
+                            </div>
+
+                            <div class="photo-list" id="photoList">
+                                @foreach($property->photos->sortBy('sort_order') as $photo)
+                                <div class="photo-item {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
+                                    <span class="photo-drag-handle" title="Arrastra para reordenar">&#9776;</span>
+                                    <div class="photo-item-thumb">
+                                        <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description }}" loading="lazy">
+                                    </div>
+                                    <div class="photo-item-info">
+                                        <div class="photo-item-top">
+                                            <span class="photo-item-order">{{ $loop->iteration }}</span>
+                                            @if($photo->is_primary)
+                                            <span class="photo-badge-primary">&#9733; Principal</span>
+                                            @endif
+                                            <div class="photo-item-actions">
+                                                <button type="button" onclick="setPrimary({{ $photo->id }})" title="Marcar como principal">&#9733;</button>
+                                                <button type="button" class="btn-del" onclick="deletePhoto({{ $photo->id }})" title="Eliminar">&#10005;</button>
+                                            </div>
+                                        </div>
+                                        <input type="text" class="photo-desc-input" placeholder="Descripcion SEO (alt text)..." value="{{ $photo->description ?? '' }}" onchange="saveDescription({{ $photo->id }}, this.value)" data-photo-id="{{ $photo->id }}">
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+
+                            @if($photoCount === 0)
+                            <div id="photoEmpty" style="text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">
+                                <div style="font-size:2rem; opacity:0.3; margin-bottom:0.3rem;">&#127976;</div>
+                                <p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>
+                                <p style="font-size:0.72rem; margin:0.2rem 0 0; opacity:0.7;">Sube fotos para mostrar la propiedad</p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div class="card-body">
                         <div class="section-label">Video de YouTube</div>
@@ -533,63 +589,8 @@
         </form>
     </div>
 
-    {{-- RIGHT: Photo panel + info --}}
+    {{-- RIGHT: Info panel --}}
     <div class="photos-panel">
-        {{-- Photos --}}
-        <div class="side-card">
-            <div class="side-card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>&#128247; Fotografias</span>
-                @php $photoCount = $property->photos->count(); @endphp
-                <span id="photoCountBadge" style="font-size:0.68rem; color:var(--text-muted); background:var(--bg); padding:0.15rem 0.5rem; border-radius:10px; font-weight:600;">{{ $photoCount }}/20</span>
-            </div>
-            <div class="side-card-body" id="photoPanel">
-                <div id="photoDrop" class="photo-drop" onclick="document.getElementById('photoFiles').click()">
-                    <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="uploadPhotos(this.files)">
-                    <div id="photoDropContent">
-                        <div style="font-size:1.2rem; opacity:0.4;">&#10010;</div>
-                        <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Subir fotos</p>
-                        <p style="margin:0.15rem 0 0; font-size:0.65rem; color:var(--text-muted); opacity:0.7;">Arrastra aqui o clic — JPG, PNG, WebP</p>
-                    </div>
-                    <div id="photoDropLoading" style="display:none;">
-                        <div class="photo-spinner"></div>
-                        <p style="margin:0.4rem 0 0; font-size:0.75rem; color:var(--primary); font-weight:500;">Subiendo...</p>
-                    </div>
-                </div>
-
-                <div class="photo-list" id="photoList">
-                    @foreach($property->photos->sortBy('sort_order') as $photo)
-                    <div class="photo-item {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
-                        <span class="photo-drag-handle" title="Arrastra para reordenar">&#9776;</span>
-                        <div class="photo-item-thumb">
-                            <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description }}" loading="lazy">
-                        </div>
-                        <div class="photo-item-info">
-                            <div class="photo-item-top">
-                                <span class="photo-item-order">{{ $loop->iteration }}</span>
-                                @if($photo->is_primary)
-                                <span class="photo-badge-primary">&#9733; Principal</span>
-                                @endif
-                                <div class="photo-item-actions">
-                                    <button type="button" onclick="setPrimary({{ $photo->id }})" title="Marcar como principal">&#9733;</button>
-                                    <button type="button" class="btn-del" onclick="deletePhoto({{ $photo->id }})" title="Eliminar">&#10005;</button>
-                                </div>
-                            </div>
-                            <input type="text" class="photo-desc-input" placeholder="Descripcion SEO (alt text)..." value="{{ $photo->description ?? '' }}" onchange="saveDescription({{ $photo->id }}, this.value)" data-photo-id="{{ $photo->id }}">
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-
-                @if($photoCount === 0)
-                <div id="photoEmpty" style="text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);">
-                    <div style="font-size:2rem; opacity:0.3; margin-bottom:0.3rem;">&#127976;</div>
-                    <p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>
-                    <p style="font-size:0.72rem; margin:0.2rem 0 0; opacity:0.7;">Sube fotos para mostrar la propiedad</p>
-                </div>
-                @endif
-            </div>
-        </div>
-
         {{-- Quick Info --}}
         <div class="side-card">
             <div class="side-card-body">
