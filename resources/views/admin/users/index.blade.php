@@ -4,7 +4,8 @@
 @section('styles')
 <style>
 /* ===== Stats ===== */
-.u-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+.u-stats { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.u-stat { flex: 1; min-width: 0; }
 .u-stat {
     background: var(--card); border: 1px solid var(--border); border-radius: 12px;
     padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
@@ -98,10 +99,11 @@
     align-items: center; justify-content: center; cursor: pointer; text-decoration: none;
 }
 
-@media (max-width: 1024px) { .u-grid { grid-template-columns: repeat(2, 1fr); } .u-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1024px) { .u-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
     .u-grid { grid-template-columns: 1fr; }
-    .u-stats { grid-template-columns: repeat(2, 1fr); }
+    .u-stats { flex-wrap: wrap; }
+    .u-stat { flex: 1 1 calc(50% - 0.75rem); }
     .u-fab { display: flex; }
     .u-toolbar { flex-direction: column; align-items: stretch; }
 }
