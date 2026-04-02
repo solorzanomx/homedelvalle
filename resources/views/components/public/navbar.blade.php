@@ -73,6 +73,25 @@
                 @endif
             </div>
 
+            {{-- Auth button (always visible) --}}
+            <div class="hidden md:flex items-center gap-3 ml-4">
+                @auth
+                    <a href="{{ route('admin.dashboard') }}"
+                       class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        Panel
+                    </a>
+                @else
+                    <a href="{{ route('login') }}"
+                       class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        Iniciar sesion
+                    </a>
+                @endauth
+            </div>
+
             {{-- Mobile Hamburger --}}
             <button @click="open = !open" class="md:hidden relative p-2.5 rounded-xl text-gray-500 hover:text-brand-600 hover:bg-brand-50/80 transition-all duration-200" aria-label="Menu">
                 <svg x-show="!open" x-transition class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -123,6 +142,23 @@
                     @endif
                 @endforeach
             @endif
+
+            {{-- Auth link (mobile, always visible) --}}
+            <div class="border-t border-gray-100/60 pt-3 mt-2">
+                @auth
+                    <a href="{{ route('admin.dashboard') }}"
+                       class="block rounded-xl px-4 py-3.5 text-base font-semibold text-white text-center shadow-lg mt-1 transition-all duration-200"
+                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+                        Ir al Panel
+                    </a>
+                @else
+                    <a href="{{ route('login') }}"
+                       class="block rounded-xl px-4 py-3.5 text-base font-semibold text-white text-center shadow-lg mt-1 transition-all duration-200"
+                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+                        Iniciar sesion
+                    </a>
+                @endauth
+            </div>
         </div>
     </nav>
 </header>
