@@ -12,7 +12,7 @@ class BrokerManagementController extends Controller
     {
         $approvedBrokers = User::where('role', 'broker')->get();
         $pendingUsers = User::where('role', 'user')->get();
-        
+
         return view('admin.brokers', compact('approvedBrokers', 'pendingUsers'));
     }
 

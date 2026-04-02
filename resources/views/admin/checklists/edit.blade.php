@@ -1,0 +1,133 @@
+@extends('layouts.app-sidebar')
+@section('title', 'Editar Item de Checklist')
+
+@section('styles')
+<style>
+.section-title {
+    font-size: 0.9rem; font-weight: 600; color: var(--text);
+    margin: 1.5rem 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+}
+.section-title:first-child { margin-top: 0; }
+.checkbox-group {
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0;
+}
+.checkbox-group input[type="checkbox"] {
+    width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;
+}
+.checkbox-group label { font-size: 0.88rem; cursor: pointer; }
+.meta-info {
+    font-size: 0.78rem; color: var(--text-muted);
+    padding: 0.75rem 0; border-top: 1px solid var(--border); margin-top: 1.25rem;
+}
+.delete-section {
+    margin-top: 1.5rem; padding: 1.25rem; background: rgba(239,68,68,0.04);
+    border: 1px solid rgba(239,68,68,0.15); border-radius: var(--radius);
+}
+.delete-section p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+</style>
+@endsection
+
+@section('content')
+<div class="page-header">
+    <div>
+        <h2>Editar Item de Checklist</h2>
+        <p class="text-muted">{{ $checklist->title }}</p>
+    </div>
+    <a href="{{ route('admin.checklists.index') }}" class="btn btn-outline">Volver</a>
+</div>
+
+<div class="card" style="max-width:650px;">
+    <div class="card-body">
+        @if($errors->any())
+            <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:var(--radius); padding:0.75rem 1rem; margin-bottom:1.25rem;">
+                @foreach($errors->all() as $error)
+                    <p style="color:var(--danger); font-size:0.82rem; margin:0.15rem 0;">{{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('admin.checklists.update', $checklist) }}">
+            @csrf @method('PUT')
+
+            <div class="section-title" style="margin-top:0;">Configuracion</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Etapa <span class="required">*</span></label>
+                    <select name="stage" class="form-select" required>
+                        <option value="">-- Seleccionar etapa --</option>
+                        @foreach(\App\Models\Operation::STAGES as $key => $label)
+                            <option value="{{ $key }}" {{ old('stage', $checklist->stage) === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    @error('stage') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo de Operacion <span class="required">*</span></label>
+                    <select name="operation_type" class="form-select" required>
+                        <option value="both" {{ old('operation_type', $checklist->operation_type) === 'both' ? 'selected' : '' }}>Ambos (Venta/Renta)</option>
+                        <option value="venta" {{ old('operation_type', $checklist->operation_type) === 'venta' ? 'selected' : '' }}>Venta</option>
+                        <option value="renta" {{ old('operation_type', $checklist->operation_type) === 'renta' ? 'selected' : '' }}>Renta</option>
+                        <option value="captacion" {{ old('operation_type', $checklist->operation_type) === 'captacion' ? 'selected' : '' }}>Captacion</option>
+                    </select>
+                    @error('operation_type') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div class="section-title">Detalle</div>
+            <div class="form-group">
+                <label class="form-label">Titulo <span class="required">*</span></label>
+                <input type="text" name="title" class="form-input" value="{{ old('title', $checklist->title) }}" required>
+                @error('title') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+            </div>
+            <div class="form-group">
+                <label class="form-label">Descripcion</label>
+                <textarea name="description" class="form-textarea" rows="3">{{ old('description', $checklist->description) }}</textarea>
+                @error('description') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Orden</label>
+                    <input type="number" name="sort_order" class="form-input" value="{{ old('sort_order', $checklist->sort_order) }}" min="0" step="1">
+                    <p class="form-hint">Menor numero = aparece primero</p>
+                    @error('sort_order') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+            </div>
+
+            <div class="section-title">Opciones</div>
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="hidden" name="is_required" value="0">
+                    <input type="checkbox" name="is_required" id="isRequired" value="1" {{ old('is_required', $checklist->is_required) ? 'checked' : '' }}>
+                    <label for="isRequired">Requerido para avanzar de etapa</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" name="is_active" id="isActive" value="1" {{ old('is_active', $checklist->is_active) ? 'checked' : '' }}>
+                    <label for="isActive">Activo</label>
+                </div>
+            </div>
+
+            <div class="meta-info">
+                Creado: {{ $checklist->created_at->format('d/m/Y H:i') }} &middot;
+                Actualizado: {{ $checklist->updated_at->format('d/m/Y H:i') }}
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ route('admin.checklists.index') }}" class="btn btn-outline">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+
+        {{-- Delete --}}
+        <div class="delete-section">
+            <p><strong>Zona de peligro:</strong> Eliminar este item lo removera de todas las operaciones que lo utilicen.</p>
+            <form method="POST" action="{{ route('admin.checklists.destroy', $checklist) }}" onsubmit="return confirm('Seguro que deseas eliminar este item del checklist?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-danger">Eliminar Item</button>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection

@@ -1,0 +1,36 @@
+CRM-VBNet/
+├── App_Start/
+│   └── RouteConfig.vb          ← Rutas MVC
+├── Content/css/
+│   └── site.css                ← 750+ líneas de CSS moderno
+├── Controllers/
+│   ├── AccountController.vb    ← Login/Logout
+│   ├── HomeController.vb       ← Dashboard
+│   ├── ProfileController.vb    ← Perfil + Foto
+│   ├── SettingsController.vb   ← Config del sitio
+│   └── UserController.vb       ← CRUD Usuarios
+├── Database/
+│   └── schema.sql              ← 4 tablas + datos iniciales
+├── Helpers/
+│   ├── PermissionHelper.vb     ← Validación de permisos
+│   └── SessionHelper.vb        ← Gestión de sesión
+├── Models/
+│   ├── DatabaseContext.vb       ← DAL completo (ADO.NET)
+│   ├── Role.vb                 ← Modelo de roles
+│   ├── SiteSetting.vb          ← Modelo de configuración
+│   └── User.vb                 ← Modelo + ViewModels
+├── Scripts/
+│   └── site.js                 ← Toggle sidebar, helpers
+├── Views/
+│   ├── Account/Login.vbhtml    ← Página de login
+│   ├── Home/Index.vbhtml       ← Dashboard con stats
+│   ├── Profile/Index.vbhtml    ← Perfil con foto circular
+│   ├── Settings/Index.vbhtml   ← Config: nombre + logo
+│   ├── Shared/_Layout.vbhtml   ← Layout con sidebar CRM
+│   └── User/
+│       ├── Create.vbhtml       ← Formulario crear
+│       ├── Details.vbhtml      ← Ver detalle
+│       ├── Edit.vbhtml         ← Formulario editar
+│       └── Index.vbhtml        ← Tabla de usuarios
+├── Global.asax.vb              ← Inicio de aplicación
+└── Web.config                  ← Conexión BD + config

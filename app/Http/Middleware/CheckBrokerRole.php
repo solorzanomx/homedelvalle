@@ -15,6 +15,10 @@ class CheckBrokerRole
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
+        if ($request->user() && in_array($request->user()->role, ['admin', 'broker'])) {
+            return $next($request);
+        }
+
+        abort(403, 'No autorizado - Se requiere rol de broker');
     }
 }

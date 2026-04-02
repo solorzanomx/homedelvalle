@@ -130,11 +130,11 @@
 
             <div class="form-group">
                 <label for="name">Nombre</label>
-                <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
-                    value="{{ old('name') }}" 
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ old('name') }}"
                     required
                     class="@error('name') error @enderror"
                 >
@@ -145,11 +145,11 @@
 
             <div class="form-group">
                 <label for="email">Email</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    value="{{ old('email') }}" 
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ old('email') }}"
                     required
                     class="@error('email') error @enderror"
                 >
@@ -160,10 +160,10 @@
 
             <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
                     required
                     class="@error('password') error @enderror"
                 >
@@ -174,10 +174,10 @@
 
             <div class="form-group">
                 <label for="password_confirmation">Confirmar Contraseña</label>
-                <input 
-                    type="password" 
-                    id="password_confirmation" 
-                    name="password_confirmation" 
+                <input
+                    type="password"
+                    id="password_confirmation"
+                    name="password_confirmation"
                     required
                     class="@error('password_confirmation') error @enderror"
                 >

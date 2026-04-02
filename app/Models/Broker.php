@@ -16,6 +16,7 @@ class Broker extends Model
         'company_name',
         'bio',
         'status',
+        'photo',
     ];
 
     protected $casts = [
@@ -25,5 +26,10 @@ class Broker extends Model
     public function clients(): HasMany
     {
         return $this->hasMany(Client::class);
+    }
+
+    public function properties(): HasMany
+    {
+        return $this->hasMany(Property::class);
     }
 }

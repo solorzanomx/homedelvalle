@@ -58,7 +58,7 @@
 
     <div class="container">
         <h2>📊 Panel de Control</h2>
-        
+
         <div class="stats">
             <div class="stat-box">
                 <div class="stat-number">{{ $properties->count() }}</div>
@@ -75,7 +75,7 @@
         </div>
 
         <h2>🏘️ Propiedades Disponibles</h2>
-        
+
         @if ($properties->count() > 0)
             <div class="grid">
                 @foreach ($properties as $property)

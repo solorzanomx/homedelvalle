@@ -14,6 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdminRole::class,
             'broker' => \App\Http\Middleware\CheckBrokerRole::class,
+            'editor' => \App\Http\Middleware\CheckEditorRole::class,
+            'viewer' => \App\Http\Middleware\CheckViewerRole::class,
+            'client' => \App\Http\Middleware\CheckClientRole::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

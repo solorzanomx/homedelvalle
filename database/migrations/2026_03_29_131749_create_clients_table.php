@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
+            $table->string('city')->nullable();
+            $table->decimal('budget_min', 12, 2)->nullable();
+            $table->decimal('budget_max', 12, 2)->nullable();
+            $table->string('property_type')->nullable();
+            $table->unsignedBigInteger('broker_id')->nullable();
             $table->timestamps();
         });
     }

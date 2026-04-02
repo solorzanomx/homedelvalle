@@ -15,6 +15,10 @@ class CheckAdminRole
      */
     public function handle(Request $request, Closure $next): Response
     {
-        return $next($request);
+        if ($request->user() && $request->user()->role === 'admin') {
+            return $next($request);
+        }
+
+        abort(403, 'Unauthorized - Admin access required');
     }
 }

@@ -122,6 +122,12 @@
         <h1>Bienvenido</h1>
         <p>Inicia sesión en tu cuenta</p>
 
+        @if (session('success'))
+            <div class="alert alert-success">
+                {{ session('success') }}
+            </div>
+        @endif
+
         @if ($errors->any())
             <div class="alert alert-error">
                 {{ $errors->first() }}
@@ -139,11 +145,11 @@
 
             <div class="form-group">
                 <label for="email">Email</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    value="{{ old('email') }}" 
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value="{{ old('email') }}"
                     required
                     class="@error('email') error @enderror"
                 >
@@ -154,16 +160,20 @@
 
             <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
                     required
                     class="@error('password') error @enderror"
                 >
                 @error('password')
                     <div class="error-message">{{ $message }}</div>
                 @enderror
+            </div>
+
+            <div style="text-align: right; margin-top: -12px; margin-bottom: 8px;">
+                <a href="{{ route('password.forgot') }}" style="color: #667eea; text-decoration: none; font-size: 13px; font-weight: 500;">¿Olvidaste tu contrasena?</a>
             </div>
 
             <button type="submit" class="submit-btn">Inicia Sesión</button>

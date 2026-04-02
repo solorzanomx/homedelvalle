@@ -27,8 +27,19 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($validated)) {
+            // Check if user is active
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                return back()->with('error', 'Tu cuenta esta desactivada. Contacta a tu asesor.');
+            }
+
             $request->session()->regenerate();
-            return redirect('/')->with('success', 'Bienvenido de vuelta!');
+
+            if (Auth::user()->role === 'client') {
+                return redirect()->route('portal.dashboard')->with('success', 'Bienvenido a tu portal!');
+            }
+
+            return redirect()->route('admin.dashboard')->with('success', 'Bienvenido de vuelta!');
         }
 
         return back()->with('error', 'Email o contraseña incorrectos');
