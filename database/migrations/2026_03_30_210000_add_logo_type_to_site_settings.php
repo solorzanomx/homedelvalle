@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('site_settings', 'logo_type')) {
         Schema::table('site_settings', function (Blueprint $table) {
             $table->string('logo_type')->default('text')->after('logo_path'); // 'text' or 'image'
         });
+        }
     }
 
     public function down(): void

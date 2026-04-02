@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('clients', 'marketing_channel_id')) {
         Schema::table('clients', function (Blueprint $table) {
             $table->foreignId('marketing_channel_id')->nullable()->after('broker_id')->constrained()->nullOnDelete();
             $table->foreignId('marketing_campaign_id')->nullable()->after('marketing_channel_id')->constrained()->nullOnDelete();
@@ -16,6 +17,7 @@ return new class extends Migration
             $table->string('utm_medium')->nullable()->after('utm_source');
             $table->string('utm_campaign')->nullable()->after('utm_medium');
         });
+        }
     }
 
     public function down(): void

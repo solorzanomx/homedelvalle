@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasColumn('users', 'last_name')) {
         Schema::table('users', function (Blueprint $table) {
             $table->string('last_name')->nullable()->after('name');
             $table->string('phone')->nullable()->after('email');
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->text('address')->nullable()->after('whatsapp');
             $table->string('avatar_path')->nullable()->after('address');
         });
+        }
     }
 
     /**

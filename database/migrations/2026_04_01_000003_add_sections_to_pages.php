@@ -8,10 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('pages', 'sections')) {
         Schema::table('pages', function (Blueprint $table) {
             $table->json('sections')->nullable()->after('meta_description');
             $table->boolean('use_sections')->default(false)->after('sections');
         });
+        }
     }
 
     public function down(): void

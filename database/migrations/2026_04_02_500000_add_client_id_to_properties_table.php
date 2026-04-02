@@ -8,10 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('properties', 'client_id')) {
         Schema::table('properties', function (Blueprint $table) {
             $table->foreignId('client_id')->nullable()->after('broker_id')
                   ->constrained('clients')->nullOnDelete();
         });
+        }
     }
 
     public function down(): void

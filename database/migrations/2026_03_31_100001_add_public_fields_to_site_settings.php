@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('site_settings', 'whatsapp_number')) {
         Schema::table('site_settings', function (Blueprint $table) {
             $table->string('whatsapp_number')->nullable()->after('home_welcome_text');
             $table->string('contact_email')->nullable()->after('whatsapp_number');
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->string('hero_heading')->nullable()->after('hero_image_path');
             $table->string('hero_subheading')->nullable()->after('hero_heading');
         });
+        }
     }
 
     public function down(): void

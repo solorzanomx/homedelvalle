@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('pages', 'show_in_nav')) {
         Schema::table('pages', function (Blueprint $table) {
             $table->boolean('show_in_nav')->default(false)->after('is_published');
             $table->unsignedInteger('nav_order')->default(0)->after('show_in_nav');
@@ -16,6 +17,7 @@ return new class extends Migration
             $table->string('nav_route')->nullable()->after('nav_url');
             $table->string('nav_style', 20)->default('link')->after('nav_route'); // link | button
         });
+        }
     }
 
     public function down(): void

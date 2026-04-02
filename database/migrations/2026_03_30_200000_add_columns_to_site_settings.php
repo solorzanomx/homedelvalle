@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('site_settings', 'site_name')) {
         Schema::table('site_settings', function (Blueprint $table) {
             $table->string('site_name')->default('CRM Platform')->after('id');
             $table->string('site_tagline')->nullable()->after('site_name');
@@ -15,6 +16,7 @@ return new class extends Migration
             $table->string('secondary_color')->default('#7c3aed')->after('primary_color');
             $table->text('home_welcome_text')->nullable()->after('secondary_color');
         });
+        }
     }
 
     public function down(): void

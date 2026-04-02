@@ -8,11 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('users', 'can_read')) {
         Schema::table('users', function (Blueprint $table) {
             $table->boolean('can_read')->default(true)->after('role');
             $table->boolean('can_edit')->default(false)->after('can_read');
             $table->boolean('can_delete')->default(false)->after('can_edit');
         });
+        }
     }
 
     public function down(): void

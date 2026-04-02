@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('users', 'bio')) {
         Schema::table('users', function (Blueprint $table) {
             $table->string('bio', 200)->nullable()->after('avatar_path');
             $table->string('title', 100)->nullable()->after('bio');
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->boolean('show_phone_on_properties')->default(true)->after('email_signature');
             $table->string('shared_card_type', 20)->nullable()->default('ficha_simple')->after('show_phone_on_properties');
         });
+        }
     }
 
     public function down(): void

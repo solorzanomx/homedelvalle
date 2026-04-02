@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasColumn('site_settings', 'logo_path')) {
         Schema::table('site_settings', function (Blueprint $table) {
             $table->string('logo_path')->nullable()->after('home_welcome_text');
         });
+        }
     }
 
     /**

@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('clients', 'interest_types')) {
         Schema::table('clients', function (Blueprint $table) {
             $table->json('interest_types')->nullable()->after('property_type');
             $table->string('lead_temperature', 10)->nullable()->after('interest_types');
@@ -16,6 +17,7 @@ return new class extends Migration
             $table->text('initial_notes')->nullable()->after('priority');
             $table->foreignId('assigned_user_id')->nullable()->after('broker_id')->constrained('users')->nullOnDelete();
         });
+        }
     }
 
     public function down(): void

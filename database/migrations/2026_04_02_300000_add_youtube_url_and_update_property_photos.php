@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('properties', 'youtube_url')) {
         Schema::table('properties', function (Blueprint $table) {
             $table->string('youtube_url')->nullable()->after('description');
         });
+        }
 
         // Rebuild property_photos with proper columns
         Schema::dropIfExists('property_photos');

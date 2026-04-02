@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasColumn('properties', 'address')) {
         Schema::table('properties', function (Blueprint $table) {
             $table->string('address')->nullable()->after('city');
             $table->string('zipcode')->nullable()->after('colony');
@@ -18,6 +19,7 @@ return new class extends Migration
             $table->integer('parking')->nullable()->after('area');
             $table->string('status')->default('available')->after('parking');
         });
+        }
     }
 
     /**

@@ -8,9 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('tasks', 'rental_process_id')) {
         Schema::table('tasks', function (Blueprint $table) {
             $table->foreignId('rental_process_id')->nullable()->after('deal_id')->constrained()->nullOnDelete();
         });
+        }
     }
 
     public function down(): void

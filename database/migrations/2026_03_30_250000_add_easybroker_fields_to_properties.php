@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('properties', 'property_type')) {
         Schema::table('properties', function (Blueprint $table) {
             $table->string('property_type')->default('House')->after('photo');
             $table->string('operation_type')->default('sale')->after('property_type');
@@ -19,6 +20,7 @@ return new class extends Migration
 
             $table->index('easybroker_id');
         });
+        }
     }
 
     public function down(): void

@@ -8,6 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('site_settings', 'benefits_section')) {
         Schema::table('site_settings', function (Blueprint $table) {
             // JSON columns for repeating sections
             $table->json('benefits_section')->nullable();
@@ -30,6 +31,7 @@ return new class extends Migration
             $table->string('contact_heading')->nullable();
             $table->string('contact_subheading')->nullable();
         });
+        }
     }
 
     public function down(): void

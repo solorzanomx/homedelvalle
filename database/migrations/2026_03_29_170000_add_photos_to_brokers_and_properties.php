@@ -8,13 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('brokers', 'photo')) {
         Schema::table('brokers', function (Blueprint $table) {
             $table->string('photo')->nullable()->after('bio');
         });
+        }
 
+        if (!Schema::hasColumn('properties', 'photo')) {
         Schema::table('properties', function (Blueprint $table) {
             $table->string('photo')->nullable()->after('description');
         });
+        }
     }
 
     public function down(): void

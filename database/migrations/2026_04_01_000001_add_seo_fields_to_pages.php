@@ -8,10 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('pages', 'meta_title')) {
         Schema::table('pages', function (Blueprint $table) {
             $table->string('meta_title')->nullable()->after('body');
             $table->string('meta_description')->nullable()->after('meta_title');
         });
+        }
     }
 
     public function down(): void

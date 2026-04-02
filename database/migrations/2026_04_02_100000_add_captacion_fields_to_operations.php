@@ -8,10 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (!Schema::hasColumn('operations', 'target_type')) {
         Schema::table('operations', function (Blueprint $table) {
             $table->string('target_type', 10)->nullable()->after('type');
             $table->foreignId('source_operation_id')->nullable()->after('user_id')->constrained('operations')->nullOnDelete();
         });
+        }
     }
 
     public function down(): void
