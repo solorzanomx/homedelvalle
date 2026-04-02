@@ -5,10 +5,9 @@
 <style>
 /* ===== Stats ===== */
 .u-stats { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
-.u-stat { flex: 1; min-width: 0; }
 .u-stat {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
+    flex: 1; min-width: 0; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
 }
 .u-stat-icon {
     width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center;
