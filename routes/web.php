@@ -59,6 +59,15 @@ use App\Http\Controllers\Portal\PortalDocumentController;
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Servir archivos de storage (para cPanel sin symlinks)
+Route::get('/storage/{path}', function (string $path) {
+    $fullPath = storage_path('app/public/' . $path);
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    return response()->file($fullPath);
+})->where('path', '.*')->name('storage.serve');
+
 // Propiedades públicas
 Route::get('/propiedades', [PublicController::class, 'propiedades'])->name('propiedades.index');
 Route::get('/propiedades/{id}/{slug?}', [PublicController::class, 'propiedadShow'])->name('propiedades.show');
