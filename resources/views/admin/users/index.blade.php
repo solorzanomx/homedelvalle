@@ -3,69 +3,94 @@
 
 @section('styles')
 <style>
-/* Role pills */
-.role-pills { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: 2px; }
-.role-pill {
-    display: flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.9rem; border-radius: 20px;
-    font-size: 0.78rem; font-weight: 500; border: 1px solid var(--border); background: var(--card);
-    color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: all 0.15s;
+/* ===== Stats ===== */
+.u-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+.u-stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;
 }
-.role-pill:hover { border-color: var(--primary); color: var(--text); }
-.role-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-.pill-count { font-size: 0.7rem; background: rgba(0,0,0,0.08); padding: 1px 6px; border-radius: 10px; }
-.role-pill.active .pill-count { background: rgba(255,255,255,0.25); }
+.u-stat-icon {
+    width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center;
+    justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.u-stat-val { font-size: 1.4rem; font-weight: 700; line-height: 1; }
+.u-stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; }
 
-/* User cards */
-.usr-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-.usr-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; transition: all 0.15s; position: relative;
+/* ===== Toolbar ===== */
+.u-toolbar {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;
 }
-.usr-card:hover { border-color: var(--primary); box-shadow: 0 2px 10px rgba(0,0,0,0.04); }
-.usr-card-top { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 0.75rem; }
-.usr-card-avatar {
+.u-search {
+    flex: 1; min-width: 200px; position: relative;
+}
+.u-search input {
+    width: 100%; padding: 0.55rem 0.75rem 0.55rem 2.2rem; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 0.82rem; background: var(--card); color: var(--text);
+    outline: none; transition: border-color 0.15s;
+}
+.u-search input:focus { border-color: var(--primary); }
+.u-search-icon {
+    position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%);
+    color: var(--text-muted); font-size: 0.9rem; pointer-events: none;
+}
+
+/* ===== Role Tabs ===== */
+.u-tabs {
+    display: flex; gap: 2px; background: var(--bg); border-radius: 8px; padding: 3px;
+    border: 1px solid var(--border); overflow-x: auto;
+}
+.u-tab {
+    padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.78rem; font-weight: 500;
+    border: none; background: transparent; color: var(--text-muted); cursor: pointer;
+    white-space: nowrap; transition: all 0.15s;
+}
+.u-tab:hover { color: var(--text); }
+.u-tab.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.u-tab .u-tab-count {
+    font-size: 0.65rem; background: var(--bg); padding: 0 5px; border-radius: 8px;
+    margin-left: 3px; font-weight: 600; color: var(--text-muted);
+}
+.u-tab.active .u-tab-count { background: rgba(102,126,234,0.12); color: var(--primary); }
+
+/* ===== User Grid ===== */
+.u-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.u-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem; transition: all 0.2s; position: relative; cursor: pointer;
+}
+.u-card:hover { border-color: var(--primary); box-shadow: 0 4px 20px rgba(0,0,0,0.05); transform: translateY(-1px); }
+.u-card-top { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.85rem; }
+.u-avatar {
     width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 1rem; color: #fff; background: var(--primary);
-    overflow: hidden;
+    font-weight: 600; font-size: 0.95rem; color: #fff; overflow: hidden;
+    position: relative;
 }
-.usr-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.usr-card-info { flex: 1; min-width: 0; }
-.usr-card-name { font-weight: 600; font-size: 0.92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.usr-card-name a { color: var(--text); text-decoration: none; }
-.usr-card-email { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.usr-card-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem; }
-.usr-card-actions { display: flex; gap: 0.4rem; }
-.usr-card-actions .btn { flex: 1; text-align: center; font-size: 0.75rem; padding: 0.35rem 0.5rem; }
-.user-status-dot {
-    position: absolute; top: 1rem; right: 1rem; width: 8px; height: 8px; border-radius: 50%;
+.u-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.u-status-dot {
+    position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid var(--card);
 }
-.status-active { background: var(--success); }
-.status-inactive { background: #94a3b8; }
-
-/* View toggle */
-.view-toggle { display: flex; gap: 0.25rem; }
-.view-toggle button {
-    background: var(--card); border: 1px solid var(--border); padding: 0.35rem 0.55rem;
-    border-radius: var(--radius); cursor: pointer; color: var(--text-muted); font-size: 0.82rem;
-    transition: all 0.15s;
+.u-name { font-weight: 600; font-size: 0.9rem; line-height: 1.3; }
+.u-name a { color: var(--text); text-decoration: none; }
+.u-email { font-size: 0.75rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.u-card-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 0.75rem; }
+.u-role-badge {
+    font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 4px;
+    letter-spacing: 0.02em;
 }
-.view-toggle button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.u-card-footer { display: flex; gap: 0.4rem; }
+.u-card-footer .btn { flex: 1; text-align: center; font-size: 0.72rem; padding: 0.35rem 0.5rem; }
 
-/* Table */
-.user-table-avatar {
-    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 0.75rem; color: #fff; background: var(--primary);
-    overflow: hidden;
+/* ===== Empty ===== */
+.u-empty {
+    text-align: center; padding: 4rem 2rem; color: var(--text-muted);
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
 }
-.user-table-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.u-empty-icon { font-size: 3rem; opacity: 0.2; margin-bottom: 0.75rem; }
 
-/* Empty state */
-.users-empty { text-align: center; padding: 3rem; color: var(--text-muted); }
-
-/* FAB */
-.user-fab {
+/* ===== FAB ===== */
+.u-fab {
     display: none; position: fixed; bottom: 80px; right: 16px; z-index: 91;
     width: 52px; height: 52px; border-radius: 50%; border: none;
     background: var(--primary); color: #fff; font-size: 26px; font-weight: 300;
@@ -73,224 +98,113 @@
     align-items: center; justify-content: center; cursor: pointer; text-decoration: none;
 }
 
-@media (max-width: 1024px) { .usr-cards { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 1024px) { .u-grid { grid-template-columns: repeat(2, 1fr); } .u-stats { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 768px) {
-    .usr-cards { grid-template-columns: 1fr; }
-    .user-fab { display: flex; }
+    .u-grid { grid-template-columns: 1fr; }
+    .u-stats { grid-template-columns: repeat(2, 1fr); }
+    .u-fab { display: flex; }
+    .u-toolbar { flex-direction: column; align-items: stretch; }
 }
 </style>
 @endsection
 
 @section('content')
 @php
-    $roleBadges = [
-        'admin' => 'badge-red',
-        'editor' => 'badge-blue',
-        'viewer' => 'badge-green',
-        'user' => 'badge-yellow',
-        'broker' => 'badge-orange',
-        'client' => 'badge-purple',
-    ];
-    $roleLabels = [
-        'admin' => 'Admin',
-        'editor' => 'Editor',
-        'viewer' => 'Viewer',
-        'user' => 'Usuario',
-        'broker' => 'Broker',
-        'client' => 'Cliente',
-    ];
+    $roleBgColors = ['admin'=>'#ef4444','editor'=>'#3b82f6','viewer'=>'#10b981','user'=>'#f59e0b','broker'=>'#f97316','client'=>'#8b5cf6'];
+    $roleLabels = ['admin'=>'Admin','editor'=>'Editor','viewer'=>'Viewer','user'=>'Usuario','broker'=>'Broker','client'=>'Cliente'];
+    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1'];
 @endphp
 
 {{-- Stats --}}
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon bg-blue">&#9776;</div>
-        <div><div class="stat-value">{{ $users->total() }}</div><div class="stat-label">Total</div></div>
+<div class="u-stats">
+    <div class="u-stat">
+        <div class="u-stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#9823;</div>
+        <div><div class="u-stat-val">{{ $stats['total'] }}</div><div class="u-stat-label">Total</div></div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon bg-green">&#10003;</div>
-        <div><div class="stat-value">{{ $users->where('is_active', true)->count() }}</div><div class="stat-label">Activos</div></div>
+    <div class="u-stat">
+        <div class="u-stat-icon" style="background:rgba(16,185,129,0.1); color:#10b981;">&#10003;</div>
+        <div><div class="u-stat-val">{{ $stats['active'] }}</div><div class="u-stat-label">Activos</div></div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon" style="background:#ef4444;">&#9733;</div>
-        <div><div class="stat-value">{{ $users->where('role', 'admin')->count() }}</div><div class="stat-label">Admins</div></div>
+    <div class="u-stat">
+        <div class="u-stat-icon" style="background:rgba(239,68,68,0.1); color:#ef4444;">&#9733;</div>
+        <div><div class="u-stat-val">{{ $stats['admins'] }}</div><div class="u-stat-label">Admins</div></div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon bg-orange">&#128188;</div>
-        <div><div class="stat-value">{{ $users->where('role', 'broker')->count() }}</div><div class="stat-label">Brokers</div></div>
-    </div>
-</div>
-
-{{-- Header --}}
-<div class="page-header">
-    <div>
-        <h2>Usuarios</h2>
-        <p class="text-muted">{{ $users->total() }} usuario{{ $users->total() !== 1 ? 's' : '' }} registrados</p>
-    </div>
-    <div style="display:flex; gap:0.5rem; align-items:center;">
-        <div class="view-toggle">
-            <button onclick="setView('cards')" id="btn-cards" title="Tarjetas">&#9871;</button>
-            <button onclick="setView('table')" id="btn-table" title="Tabla">&#9776;</button>
-        </div>
-        @permission('users.create')
-            <a href="{{ route('admin.users.create') }}" class="btn btn-primary" style="white-space:nowrap;">+ Nuevo</a>
-        @endpermission
+    <div class="u-stat">
+        <div class="u-stat-icon" style="background:rgba(249,115,22,0.1); color:#f97316;">&#128188;</div>
+        <div><div class="u-stat-val">{{ $stats['brokers'] }}</div><div class="u-stat-label">Brokers</div></div>
     </div>
 </div>
 
-{{-- Role pills --}}
-<div class="role-pills">
-    <a href="{{ route('admin.users.index') }}" class="role-pill {{ !request('role') ? 'active' : '' }}">Todos <span class="pill-count">{{ $users->total() }}</span></a>
-    <a href="{{ route('admin.users.index', ['role' => 'admin']) }}" class="role-pill {{ request('role') === 'admin' ? 'active' : '' }}">Admin</a>
-    <a href="{{ route('admin.users.index', ['role' => 'editor']) }}" class="role-pill {{ request('role') === 'editor' ? 'active' : '' }}">Editor</a>
-    <a href="{{ route('admin.users.index', ['role' => 'broker']) }}" class="role-pill {{ request('role') === 'broker' ? 'active' : '' }}">Broker</a>
-    <a href="{{ route('admin.users.index', ['role' => 'viewer']) }}" class="role-pill {{ request('role') === 'viewer' ? 'active' : '' }}">Viewer</a>
-    <a href="{{ route('admin.users.index', ['role' => 'user']) }}" class="role-pill {{ request('role') === 'user' ? 'active' : '' }}">Usuario</a>
+{{-- Toolbar --}}
+<div class="u-toolbar">
+    <div class="u-search">
+        <span class="u-search-icon">&#128269;</span>
+        <input type="text" id="userSearch" placeholder="Buscar por nombre o email..." value="{{ request('search') }}" autocomplete="off">
+    </div>
+    <div class="u-tabs" id="roleTabs">
+        <button class="u-tab {{ !request('role') ? 'active' : '' }}" data-role="">Todos <span class="u-tab-count">{{ $stats['total'] }}</span></button>
+        <button class="u-tab {{ request('role') === 'admin' ? 'active' : '' }}" data-role="admin">Admin</button>
+        <button class="u-tab {{ request('role') === 'broker' ? 'active' : '' }}" data-role="broker">Broker</button>
+        <button class="u-tab {{ request('role') === 'editor' ? 'active' : '' }}" data-role="editor">Director</button>
+        <button class="u-tab {{ request('role') === 'viewer' ? 'active' : '' }}" data-role="viewer">Asesor</button>
+        <button class="u-tab {{ request('role') === 'user' ? 'active' : '' }}" data-role="user">Usuario</button>
+    </div>
+    @permission('users.create')
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary" style="white-space:nowrap; padding:0.5rem 1rem;">+ Nuevo</a>
+    @endpermission
 </div>
 
-{{-- Card View --}}
-<div id="view-cards">
-    @if($users->count())
-    <div class="usr-cards">
-        @foreach($users as $user)
-        <div class="usr-card">
-            <span class="user-status-dot {{ ($user->is_active ?? true) ? 'status-active' : 'status-inactive' }}"></span>
-            <div class="usr-card-top">
-                <div class="usr-card-avatar">
-                    @if($user->avatar_path)
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="">
-                    @else
-                        {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}
-                    @endif
-                </div>
-                <div class="usr-card-info">
-                    <div class="usr-card-name"><a href="{{ route('admin.users.show', $user) }}">{{ $user->name }} {{ $user->last_name }}</a></div>
-                    <div class="usr-card-email">{{ $user->email }}</div>
-                    @if($user->phone)
-                        <div class="usr-card-email">{{ $user->phone }}</div>
-                    @endif
-                </div>
-            </div>
-            <div class="usr-card-meta">
-                <span class="badge {{ $roleBadges[$user->role] ?? 'badge-blue' }}">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
-                @if($user->can_read) <span class="badge badge-green" style="font-size:0.68rem;">Leer</span> @endif
-                @if($user->can_edit) <span class="badge badge-blue" style="font-size:0.68rem;">Editar</span> @endif
-                @if($user->can_delete) <span class="badge badge-red" style="font-size:0.68rem;">Eliminar</span> @endif
-            </div>
-            <div class="usr-card-actions">
-                <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-outline">Ver</a>
-                @permission('users.edit')
-                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline">Editar</a>
-                @endpermission
-                @permission('users.delete')
-                    @if($user->id !== auth()->id())
-                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" style="display:inline" onsubmit="return confirm('Eliminar a {{ $user->name }}?')">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                    </form>
-                    @endif
-                @endpermission
-            </div>
-        </div>
-        @endforeach
-    </div>
-    @else
-    <div class="users-empty">
-        No hay usuarios {{ request('role') ? 'con ese rol' : '' }}.<br>
-        @permission('users.create')
-            <a href="{{ route('admin.users.create') }}" style="color:var(--primary); font-weight:500;">+ Crear primer usuario</a>
-        @endpermission
-    </div>
-    @endif
+{{-- User Grid --}}
+<div id="userGrid">
+    @include('admin.users._grid', ['users' => $users])
 </div>
-
-{{-- Table View --}}
-<div id="view-table" style="display:none;">
-    <div class="card" style="overflow:hidden;">
-        <div class="table-wrap">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Usuario</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Permisos</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($users as $user)
-                    <tr onclick="window.location='{{ route('admin.users.show', $user) }}'" style="cursor:pointer;">
-                        <td>
-                            <div style="display:flex; align-items:center; gap:0.6rem;">
-                                <div class="user-table-avatar">
-                                    @if($user->avatar_path)
-                                        <img src="{{ Storage::url($user->avatar_path) }}" alt="">
-                                    @else
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                                    @endif
-                                </div>
-                                <div>
-                                    <div style="font-weight:500;">{{ $user->name }} {{ $user->last_name }}</div>
-                                    @if($user->phone)<div class="text-muted" style="font-size:0.75rem;">{{ $user->phone }}</div>@endif
-                                </div>
-                            </div>
-                        </td>
-                        <td>{{ $user->email }}</td>
-                        <td><span class="badge {{ $roleBadges[$user->role] ?? 'badge-blue' }}">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span></td>
-                        <td>
-                            <div style="display:flex; gap:0.25rem; flex-wrap:wrap;">
-                                @if($user->can_read) <span class="badge badge-green" style="font-size:0.68rem;">Leer</span> @endif
-                                @if($user->can_edit) <span class="badge badge-blue" style="font-size:0.68rem;">Editar</span> @endif
-                                @if($user->can_delete) <span class="badge badge-red" style="font-size:0.68rem;">Eliminar</span> @endif
-                            </div>
-                        </td>
-                        <td onclick="event.stopPropagation();">
-                            <div class="action-btns">
-                                @permission('users.edit')
-                                    <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline">Editar</a>
-                                @endpermission
-                                @permission('users.delete')
-                                    @if($user->id !== auth()->id())
-                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" style="display:inline" onsubmit="return confirm('Eliminar a {{ $user->name }}?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                                    </form>
-                                    @endif
-                                @endpermission
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">No hay usuarios registrados.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-@if($users->hasPages())
-<div style="margin-top:1rem; text-align:center;">{{ $users->links() }}</div>
-@endif
 
 @permission('users.create')
-<a href="{{ route('admin.users.create') }}" class="user-fab">+</a>
+<a href="{{ route('admin.users.create') }}" class="u-fab">+</a>
 @endpermission
 @endsection
 
 @section('scripts')
 <script>
-function setView(view) {
-    document.getElementById('view-cards').style.display = view === 'cards' ? '' : 'none';
-    document.getElementById('view-table').style.display = view === 'table' ? '' : 'none';
-    document.getElementById('btn-cards').classList.toggle('active', view === 'cards');
-    document.getElementById('btn-table').classList.toggle('active', view === 'table');
-    localStorage.setItem('users_view', view);
+var searchTimer;
+var currentRole = '{{ request('role', '') }}';
+
+// Tab click
+document.querySelectorAll('.u-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.u-tab').forEach(function(t) { t.classList.remove('active'); });
+        this.classList.add('active');
+        currentRole = this.dataset.role;
+        loadUsers();
+    });
+});
+
+// Search
+document.getElementById('userSearch').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    var val = this.value;
+    searchTimer = setTimeout(function() { loadUsers(); }, 350);
+});
+
+function loadUsers() {
+    var search = document.getElementById('userSearch').value;
+    var params = new URLSearchParams();
+    if (currentRole) params.set('role', currentRole);
+    if (search) params.set('search', search);
+
+    var url = '{{ route("admin.users.index") }}?' + params.toString();
+
+    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(function(r) { return r.text(); })
+    .then(function(html) {
+        // Extract grid content from full page
+        var temp = document.createElement('div');
+        temp.innerHTML = html;
+        var grid = temp.querySelector('#userGrid');
+        if (grid) {
+            document.getElementById('userGrid').innerHTML = grid.innerHTML;
+        }
+    });
 }
-(function() {
-    var v = localStorage.getItem('users_view') || 'cards';
-    setView(v);
-})();
 </script>
 @endsection

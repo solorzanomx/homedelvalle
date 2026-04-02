@@ -1,242 +1,283 @@
 @extends('layouts.app-sidebar')
-@section('title', $user->name . ' - Usuario')
+@section('title', $user->name . ' - Perfil')
 
 @section('styles')
 <style>
-.user-hero {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 2rem; text-align: center; margin-bottom: 1.25rem; position: relative;
+/* ===== Profile Header ===== */
+.profile-header {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 0; margin-bottom: 1.25rem; overflow: hidden;
 }
-.user-hero-avatar {
-    width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 0.75rem;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 1.5rem; color: #fff; background: var(--primary);
-    overflow: hidden; cursor: pointer; position: relative;
+.profile-cover {
+    height: 120px; background: linear-gradient(135deg, var(--primary), #764ba2);
+    position: relative;
 }
-.user-hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.user-hero-avatar .avatar-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: flex;
+.profile-head {
+    display: flex; align-items: flex-end; gap: 1.25rem; padding: 0 2rem 1.5rem;
+    margin-top: -48px; position: relative; z-index: 1;
+}
+.profile-avatar {
+    width: 96px; height: 96px; border-radius: 50%; background: var(--card);
+    border: 4px solid var(--card); display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 2rem; color: #fff; overflow: hidden;
+    cursor: pointer; position: relative; flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex;
     align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;
-    font-size: 1.2rem; color: #fff;
+    font-size: 1.3rem; color: #fff; border-radius: 50%;
 }
-.user-hero-avatar:hover .avatar-overlay { opacity: 1; }
-.user-hero-name { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.15rem; }
-.user-hero-title { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-.user-hero-badges { display: flex; justify-content: center; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.user-hero-actions { display: flex; justify-content: center; gap: 0.5rem; flex-wrap: wrap; }
+.profile-avatar:hover .profile-avatar-overlay { opacity: 1; }
+.profile-meta { flex: 1; padding-bottom: 0.2rem; }
+.profile-name { font-size: 1.25rem; font-weight: 700; line-height: 1.3; }
+.profile-subtitle { font-size: 0.82rem; color: var(--text-muted); }
+.profile-badges { display: flex; gap: 0.35rem; margin-top: 0.35rem; flex-wrap: wrap; }
+.profile-actions { display: flex; gap: 0.5rem; align-items: flex-end; padding-bottom: 0.3rem; }
 
-/* Two column layout */
-.user-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
-.user-main { min-width: 0; }
-.user-sidebar { position: sticky; top: 1rem; }
+/* ===== Tabs ===== */
+.p-tabs {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border); margin: 0 2rem;
+}
+.p-tab {
+    padding: 0.7rem 1.25rem; font-size: 0.82rem; font-weight: 500;
+    border: none; background: none; color: var(--text-muted); cursor: pointer;
+    position: relative; transition: color 0.15s;
+}
+.p-tab:hover { color: var(--text); }
+.p-tab.active { color: var(--primary); font-weight: 600; }
+.p-tab.active::after {
+    content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+    height: 2px; background: var(--primary); border-radius: 2px 2px 0 0;
+}
 
-/* Info sections */
-.info-section {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    margin-bottom: 1rem; overflow: hidden;
-}
-.info-section-header {
-    padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border);
-    font-weight: 600; font-size: 0.85rem;
-}
-.info-section-body { padding: 1rem 1.25rem; }
-.info-row {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    padding: 0.5rem 0; border-bottom: 1px solid var(--border);
-    font-size: 0.85rem;
-}
-.info-row:last-child { border-bottom: none; }
-.info-row-label { color: var(--text-muted); font-size: 0.78rem; flex-shrink: 0; }
-.info-row-value { text-align: right; font-weight: 500; }
+/* ===== Panels ===== */
+.p-panel { display: none; padding: 1.5rem 2rem; animation: panelIn 0.2s ease; }
+.p-panel.active { display: block; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
 
-/* Delete zone */
-.danger-zone {
-    background: var(--card); border: 1px solid #fecaca; border-radius: 10px; padding: 1rem 1.25rem;
+.p-section-title {
+    font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted); margin: 1.5rem 0 0.75rem; padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
 }
-.danger-zone h4 { font-size: 0.82rem; color: #991b1b; margin-bottom: 0.35rem; }
-.danger-zone p { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+.p-section-title:first-child { margin-top: 0; }
 
-@media (max-width: 1024px) {
-    .user-layout { grid-template-columns: 1fr; }
-    .user-sidebar { position: static; }
+/* ===== Info Rows ===== */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
+.info-item { padding: 0.65rem 0; border-bottom: 1px solid var(--border); }
+.info-item:last-child, .info-item:nth-last-child(2):nth-child(odd) + .info-item { border-bottom: none; }
+.info-label { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.15rem; }
+.info-value { font-size: 0.85rem; font-weight: 500; }
+.info-value a { color: var(--primary); text-decoration: none; }
+.info-value a:hover { text-decoration: underline; }
+.info-full { grid-column: 1 / -1; }
+
+/* ===== Quick Actions ===== */
+.quick-actions {
+    display: flex; gap: 0.5rem; padding: 1rem 2rem; border-top: 1px solid var(--border);
+    background: var(--bg); border-radius: 0 0 16px 16px;
+}
+.quick-actions .btn { flex: unset; }
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .profile-head { flex-direction: column; align-items: center; text-align: center; padding: 0 1rem 1.25rem; }
+    .profile-actions { justify-content: center; }
+    .p-tabs { margin: 0 1rem; overflow-x: auto; }
+    .p-panel { padding: 1.25rem 1rem; }
+    .info-grid { grid-template-columns: 1fr; }
+    .quick-actions { padding: 0.75rem 1rem; flex-wrap: wrap; }
 }
 </style>
 @endsection
 
 @section('content')
 @php
-    $roleBadges = ['admin'=>'badge-red','editor'=>'badge-blue','viewer'=>'badge-green','user'=>'badge-yellow','broker'=>'badge-orange','client'=>'badge-purple'];
-    $roleLabels = ['admin'=>'Admin','editor'=>'Editor','viewer'=>'Viewer','user'=>'Usuario','broker'=>'Broker','client'=>'Cliente'];
+    $roleBgColors = ['admin'=>'#ef4444','editor'=>'#3b82f6','viewer'=>'#10b981','user'=>'#f59e0b','broker'=>'#f97316','client'=>'#8b5cf6'];
+    $roleLabels = ['admin'=>'Admin','editor'=>'Director','viewer'=>'Asesor','user'=>'Usuario','broker'=>'Broker','client'=>'Cliente'];
+    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a'];
+    $mailSetting = $user->mailSetting ?? null;
+    $rbacRole = $user->roles->first();
 @endphp
 
-<div style="margin-bottom:1rem;">
+<div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
     <a href="{{ route('admin.users.index') }}" style="font-size:0.82rem; color:var(--text-muted);">&#8592; Usuarios</a>
+    <span style="color:var(--text-muted); font-size:0.72rem;">/</span>
+    <span style="font-size:0.82rem; color:var(--text);">{{ $user->name }}</span>
 </div>
 
-{{-- Hero Card --}}
-<div class="user-hero">
-    <div class="user-hero-avatar"
-         @if(in_array(auth()->user()->role, ['admin', 'editor']))
-         onclick="document.getElementById('avatarInput').click()" title="Cambiar foto"
-         @endif>
-        @if($user->avatar_path)
-            <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="avatarPreview" data-avatar-img>
-        @else
-            <span id="avatarPlaceholder" data-avatar-placeholder>{{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}</span>
-        @endif
-        @if(in_array(auth()->user()->role, ['admin', 'editor']))
-        <div class="avatar-overlay">&#128247;</div>
-        @endif
-    </div>
-    <div class="user-hero-name">{{ $user->name }} {{ $user->last_name }}</div>
-    @if($user->title)
-        <div class="user-hero-title">{{ $user->title }}</div>
-    @endif
-    <div class="user-hero-badges">
-        <span class="badge {{ $roleBadges[$user->role] ?? 'badge-blue' }}">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
-        @if($user->is_active ?? true)
-            <span class="badge badge-green">Activo</span>
-        @else
-            <span class="badge badge-red">Inactivo</span>
-        @endif
-        @if($user->can_read) <span class="badge badge-green" style="font-size:0.7rem;">Lectura</span> @endif
-        @if($user->can_edit) <span class="badge badge-blue" style="font-size:0.7rem;">Escritura</span> @endif
-        @if($user->can_delete) <span class="badge badge-red" style="font-size:0.7rem;">Eliminacion</span> @endif
-    </div>
-    <div class="user-hero-actions">
-        @if($user->phone)
-            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $user->whatsapp ?? $user->phone) }}" target="_blank" class="btn btn-sm" style="background:#25d366; color:#fff; border:none;">WhatsApp</a>
-            <a href="tel:{{ $user->phone }}" class="btn btn-sm btn-outline">Llamar</a>
-        @endif
-        @if(in_array(auth()->user()->role, ['admin', 'editor']))
-            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-primary">Editar</a>
-        @endif
-    </div>
-
-    @if(in_array(auth()->user()->role, ['admin', 'editor']))
-    <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" onchange="openCropper(this.files[0])" style="display:none;">
-    @endif
-</div>
-
-<div class="user-layout">
-    <div class="user-main">
-        {{-- Contact Info --}}
-        <div class="info-section">
-            <div class="info-section-header">Informacion de Contacto</div>
-            <div class="info-section-body">
-                <div class="info-row">
-                    <span class="info-row-label">Email</span>
-                    <span class="info-row-value"><a href="mailto:{{ $user->email }}" style="color:var(--primary);">{{ $user->email }}</a></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Telefono</span>
-                    <span class="info-row-value">{{ $user->phone ?: '—' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">WhatsApp</span>
-                    <span class="info-row-value">{{ $user->whatsapp ?: '—' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Direccion</span>
-                    <span class="info-row-value">{{ $user->address ?: '—' }}</span>
-                </div>
-            </div>
+<div class="profile-header">
+    {{-- Cover + Avatar --}}
+    <div class="profile-cover"></div>
+    <div class="profile-head">
+        <div class="profile-avatar" style="background:{{ $avatarColors[$user->id % count($avatarColors)] }};" onclick="document.getElementById('avatarInput').click()" title="Cambiar foto">
+            @if($user->avatar_path)
+                <img src="{{ Storage::url($user->avatar_path) }}" alt="" id="avatarPreview" data-avatar-img>
+            @else
+                <span id="avatarPlaceholder" data-avatar-placeholder>{{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}</span>
+            @endif
+            <div class="profile-avatar-overlay">&#128247;</div>
         </div>
-
-        {{-- Professional Profile --}}
-        <div class="info-section">
-            <div class="info-section-header">Perfil Profesional</div>
-            <div class="info-section-body">
-                @if($user->bio)
-                <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.75rem; padding-bottom:0.75rem; border-bottom:1px solid var(--border);">
-                    {{ $user->bio }}
-                </div>
+        <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" onchange="openCropper(this.files[0])" style="display:none;">
+        <div class="profile-meta">
+            <div class="profile-name">{{ $user->name }} {{ $user->last_name }}</div>
+            <div class="profile-subtitle">{{ $user->email }}</div>
+            <div class="profile-badges">
+                <span class="badge" style="background:{{ $roleBgColors[$user->role] ?? '#667eea' }}15; color:{{ $roleBgColors[$user->role] ?? '#667eea' }}; font-size:0.72rem;">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
+                @if($rbacRole && $rbacRole->slug !== 'super_admin')
+                    <span class="badge" style="background:rgba(102,126,234,0.1); color:var(--primary); font-size:0.68rem;">{{ $rbacRole->name }}</span>
                 @endif
-                <div class="info-row">
-                    <span class="info-row-label">Titulo</span>
-                    <span class="info-row-value">{{ $user->title ?: '—' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Sucursal</span>
-                    <span class="info-row-value">{{ $user->branch ?: '—' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Idioma</span>
-                    <span class="info-row-value">{{ ['es'=>'Espanol','en'=>'English','fr'=>'Francais','pt'=>'Portugues'][$user->language ?? 'es'] ?? $user->language }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Zona Horaria</span>
-                    <span class="info-row-value">{{ $user->timezone ?? 'America/Mexico_City' }}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="user-sidebar">
-        {{-- Quick Meta --}}
-        <div class="info-section">
-            <div class="info-section-header">Detalles</div>
-            <div class="info-section-body">
-                <div class="info-row">
-                    <span class="info-row-label">Creado</span>
-                    <span class="info-row-value">{{ $user->created_at->format('d/m/Y') }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Ultima Actualizacion</span>
-                    <span class="info-row-value">{{ $user->updated_at->diffForHumans() }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Ficha Compartida</span>
-                    <span class="info-row-value">{{ ['ficha_simple'=>'Simple','micrositio'=>'Micrositio','sitio_web'=>'Sitio Web'][$user->shared_card_type ?? 'ficha_simple'] ?? '—' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-row-label">Tel. en Propiedades</span>
-                    <span class="info-row-value">{{ ($user->show_phone_on_properties ?? true) ? 'Si' : 'No' }}</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- Mail Settings --}}
-        @php $mailSetting = $user->mailSetting ?? null; @endphp
-        <div class="info-section">
-            <div class="info-section-header">Correo Empresa</div>
-            <div class="info-section-body">
-                @if($mailSetting && $mailSetting->from_email)
-                    <div class="info-row">
-                        <span class="info-row-label">Correo</span>
-                        <span class="info-row-value" style="font-size:0.78rem;">{{ $mailSetting->from_email }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-row-label">Estado</span>
-                        <span class="info-row-value">
-                            @if($mailSetting->is_active)
-                                <span class="badge badge-green">Activo</span>
-                            @else
-                                <span class="badge badge-red">Inactivo</span>
-                            @endif
-                        </span>
-                    </div>
+                @if(($user->is_active ?? true))
+                    <span class="badge badge-green" style="font-size:0.68rem;">Activo</span>
                 @else
-                    <p class="text-muted" style="font-size:0.82rem; text-align:center; padding:0.5rem 0;">Sin configurar</p>
+                    <span class="badge badge-red" style="font-size:0.68rem;">Inactivo</span>
                 @endif
             </div>
         </div>
-
-        {{-- Danger Zone --}}
-        @if(auth()->user()->role === 'admin' && $user->id !== auth()->id())
-        <div class="danger-zone">
-            <h4>Zona de Peligro</h4>
-            <p>Eliminar este usuario de forma permanente.</p>
-            <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Seguro que desea eliminar este usuario? Esta accion no se puede deshacer.')">
-                @csrf @method('DELETE')
-                <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">Eliminar Usuario</button>
-            </form>
+        <div class="profile-actions">
+            @if($user->phone)
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $user->phone) }}" target="_blank" class="btn btn-sm" style="background:#25d366; color:#fff; border:none;">WhatsApp</a>
+            @endif
+            @permission('users.edit')
+                <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-primary">Editar</a>
+            @endpermission
         </div>
+    </div>
+
+    {{-- Tabs --}}
+    <div class="p-tabs">
+        <button type="button" class="p-tab active" onclick="showTab('info', this)">Informacion</button>
+        <button type="button" class="p-tab" onclick="showTab('config', this)">Configuracion</button>
+    </div>
+
+    {{-- Tab: Info --}}
+    <div class="p-panel active" id="panel-info">
+        <div class="p-section-title">Informacion personal</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Nombre completo</div>
+                <div class="info-value">{{ $user->name }} {{ $user->last_name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Email</div>
+                <div class="info-value"><a href="mailto:{{ $user->email }}">{{ $user->email }}</a></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Telefono / WhatsApp</div>
+                <div class="info-value">{{ $user->phone ?: '—' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Miembro desde</div>
+                <div class="info-value">{{ $user->created_at->format('d M Y') }}</div>
+            </div>
+        </div>
+
+        <div class="p-section-title">Perfil profesional</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Cargo en la empresa</div>
+                <div class="info-value">{{ $user->title ?: '—' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Rol del sistema</div>
+                <div class="info-value">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}{{ $rbacRole ? ' — ' . $rbacRole->name : '' }}</div>
+            </div>
+            @if($user->bio)
+            <div class="info-item info-full">
+                <div class="info-label">Acerca de</div>
+                <div class="info-value" style="font-weight:400;">{{ $user->bio }}</div>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Tab: Config --}}
+    <div class="p-panel" id="panel-config">
+        <div class="p-section-title">Correo corporativo</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Correo de envio</div>
+                <div class="info-value">{{ $mailSetting && $mailSetting->from_email ? $mailSetting->from_email : $user->email }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Estado</div>
+                <div class="info-value">
+                    @if($mailSetting && $mailSetting->is_active)
+                        <span class="badge badge-green" style="font-size:0.72rem;">Activo</span>
+                    @else
+                        <span class="badge" style="background:rgba(148,163,184,0.15); color:#94a3b8; font-size:0.72rem;">Inactivo</span>
+                    @endif
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Contrasena</div>
+                <div class="info-value">{{ $mailSetting && $mailSetting->password ? '••••••••' : 'Sin configurar' }}</div>
+            </div>
+        </div>
+
+        <div class="p-section-title">Preferencias</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Zona horaria</div>
+                <div class="info-value">{{ $user->timezone ?? 'America/Mexico_City' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mostrar telefono en propiedades</div>
+                <div class="info-value">{{ ($user->show_phone_on_properties ?? true) ? 'Si' : 'No' }}</div>
+            </div>
+        </div>
+
+        <div class="p-section-title">Detalles de cuenta</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Creado</div>
+                <div class="info-value">{{ $user->created_at->format('d/m/Y H:i') }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Ultima actualizacion</div>
+                <div class="info-value">{{ $user->updated_at->diffForHumans() }}</div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Footer Actions --}}
+    <div class="quick-actions">
+        @permission('users.edit')
+            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary btn-sm">Editar perfil</a>
+        @endpermission
+        @if($user->phone)
+            <a href="tel:{{ $user->phone }}" class="btn btn-outline btn-sm">Llamar</a>
         @endif
+        <a href="mailto:{{ $user->email }}" class="btn btn-outline btn-sm">Enviar email</a>
     </div>
 </div>
+
+{{-- Danger Zone --}}
+@permission('users.delete')
+@if($user->id !== auth()->id())
+<div style="max-width: 480px; margin-top: 1.5rem;">
+    <div style="background:var(--card); border:1px solid #fecaca; border-radius:12px; padding:1.25rem;">
+        <div style="font-size:0.82rem; font-weight:600; color:#991b1b; margin-bottom:0.25rem;">Zona de peligro</div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">Eliminar este usuario de forma permanente.</p>
+        <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Seguro que deseas eliminar a {{ $user->name }}? Esta accion no se puede deshacer.')">
+            @csrf @method('DELETE')
+            <button type="submit" class="btn btn-danger btn-sm">Eliminar usuario</button>
+        </form>
+    </div>
+</div>
+@endif
+@endpermission
 @endsection
 
 @section('scripts')
 <x-avatar-cropper :upload-url="route('admin.users.avatar', $user)" />
+<script>
+function showTab(name, btn) {
+    document.querySelectorAll('.p-panel').forEach(function(p) { p.classList.toggle('active', p.id === 'panel-' + name); });
+    document.querySelectorAll('.p-tab').forEach(function(t) { t.classList.remove('active'); });
+    btn.classList.add('active');
+}
+</script>
 @endsection

@@ -13,11 +13,34 @@ use Illuminate\Validation\Rule;
 
 class UserAdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::paginate(15);
+        $query = User::with('roles');
+
+        if ($role = $request->input('role')) {
+            $query->where('role', $role);
+        }
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->latest()->paginate(18);
         $currentUser = auth()->user();
-        return view('admin.users.index', compact('users', 'currentUser'));
+
+        // Stats from all users (unfiltered)
+        $stats = [
+            'total' => User::count(),
+            'active' => User::where('is_active', true)->count(),
+            'admins' => User::where('role', 'admin')->count(),
+            'brokers' => User::where('role', 'broker')->count(),
+        ];
+
+        return view('admin.users.index', compact('users', 'currentUser', 'stats'));
     }
 
     public function create()
@@ -109,15 +132,10 @@ class UserAdminController extends Controller
             'last_name' => 'nullable|string|max:255',
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'phone' => 'nullable|string|max:20',
-            'whatsapp' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:500',
             'bio' => 'nullable|string|max:200',
             'title' => 'nullable|string|max:100',
-            'branch' => 'nullable|string|max:150',
-            'language' => 'nullable|string|in:es,en,fr,pt',
             'timezone' => 'nullable|string|max:50',
             'show_phone_on_properties' => 'boolean',
-            'shared_card_type' => 'nullable|string|in:micrositio,ficha_simple,sitio_web',
         ]);
 
         $validated['show_phone_on_properties'] = $request->boolean('show_phone_on_properties');
@@ -125,21 +143,23 @@ class UserAdminController extends Controller
         $user->update($validated);
 
         // Update mail settings if provided
-        $mailEmail = $request->input('mail_from_email');
-        if ($mailEmail) {
-            $mailData = [
-                'from_email' => $mailEmail,
-                'from_name' => $request->input('mail_from_name', ''),
-                'username' => $mailEmail,
-                'is_active' => $request->boolean('mail_is_active'),
-            ];
-            if ($request->filled('mail_password')) {
-                $mailData['password'] = $request->input('mail_password');
-            }
-            $user->mailSetting()->updateOrCreate(
-                ['user_id' => $user->id],
-                $mailData
-            );
+        $mailEmail = $request->input('mail_from_email', $user->email);
+        $mailData = [
+            'from_email' => $mailEmail,
+            'from_name' => $request->input('mail_from_name', $user->name . ' ' . ($user->last_name ?? '')),
+            'username' => $mailEmail,
+            'is_active' => $request->boolean('mail_is_active'),
+        ];
+        if ($request->filled('mail_password')) {
+            $mailData['password'] = $request->input('mail_password');
+        }
+        $user->mailSetting()->updateOrCreate(
+            ['user_id' => $user->id],
+            $mailData
+        );
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Usuario actualizado']);
         }
 
         return redirect()->route('admin.users.show', $user)->with('success', 'Usuario actualizado correctamente');
