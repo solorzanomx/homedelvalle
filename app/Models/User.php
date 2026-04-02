@@ -4,8 +4,6 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -13,10 +11,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 
-#[Fillable(['name', 'last_name', 'email', 'password', 'phone', 'whatsapp', 'address', 'avatar_path', 'role', 'is_active', 'can_read', 'can_edit', 'can_delete', 'bio', 'title', 'branch', 'language', 'timezone', 'email_signature', 'show_phone_on_properties', 'shared_card_type'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
+    protected $fillable = ['name', 'last_name', 'email', 'password', 'phone', 'whatsapp', 'address', 'avatar_path', 'role', 'is_active', 'can_read', 'can_edit', 'can_delete', 'bio', 'title', 'branch', 'language', 'timezone', 'email_signature', 'show_phone_on_properties', 'shared_card_type'];
+    protected $hidden = ['password', 'remember_token'];
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 

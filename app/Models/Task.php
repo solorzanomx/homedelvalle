@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'deal_id', 'rental_process_id', 'operation_id', 'client_id', 'property_id', 'title', 'description', 'priority', 'status', 'due_date', 'completed_at'])]
 class Task extends Model
 {
+    protected $fillable = ['user_id', 'deal_id', 'rental_process_id', 'operation_id', 'client_id', 'property_id', 'title', 'description', 'priority', 'status', 'due_date', 'completed_at'];
     protected function casts(): array
     {
         return [

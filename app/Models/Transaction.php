@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['type', 'category', 'description', 'amount', 'currency', 'date', 'deal_id', 'property_id', 'broker_id', 'user_id', 'payment_method', 'reference', 'notes'])]
 class Transaction extends Model
 {
+    protected $fillable = ['type', 'category', 'description', 'amount', 'currency', 'date', 'deal_id', 'property_id', 'broker_id', 'user_id', 'payment_method', 'reference', 'notes'];
     protected function casts(): array
     {
         return [

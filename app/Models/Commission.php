@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['deal_id', 'operation_id', 'broker_id', 'amount', 'percentage', 'status', 'paid_at', 'transaction_id', 'notes'])]
 class Commission extends Model
 {
+    protected $fillable = ['deal_id', 'operation_id', 'broker_id', 'amount', 'percentage', 'status', 'paid_at', 'transaction_id', 'notes'];
     protected function casts(): array
     {
         return [

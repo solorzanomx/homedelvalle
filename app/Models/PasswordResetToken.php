@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['email', 'token', 'expiration_date', 'used'])]
 class PasswordResetToken extends Model
 {
+    protected $fillable = ['email', 'token', 'expiration_date', 'used'];
     protected $table = 'custom_password_resets';
 
     protected function casts(): array

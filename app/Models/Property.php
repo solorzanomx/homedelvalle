@@ -2,22 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
 
-#[Fillable([
-    'title', 'description', 'price', 'city', 'colony', 'address', 'zipcode',
-    'area', 'parking', 'status', 'bedrooms', 'bathrooms', 'photo',
-    'property_type', 'operation_type', 'currency', 'broker_id', 'client_id',
-    'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url',
-    'youtube_url',
-])]
 class Property extends Model
 {
+    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'address', 'zipcode', 'area', 'parking', 'status', 'bedrooms', 'bathrooms', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url',];
     public function broker(): BelongsTo
     {
         return $this->belongsTo(Broker::class);

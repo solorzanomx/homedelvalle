@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'type', 'body', 'variables', 'is_active'])]
 class ContractTemplate extends Model
 {
+    protected $fillable = ['name', 'type', 'body', 'variables', 'is_active'];
     const TYPES = [
         'rental' => 'Contrato de Arrendamiento',
         'commission' => 'Contrato de Comision',

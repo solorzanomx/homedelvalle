@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['marketing_channel_id', 'name', 'budget', 'spent', 'currency', 'start_date', 'end_date', 'status', 'notes'])]
 class MarketingCampaign extends Model
 {
+    protected $fillable = ['marketing_channel_id', 'name', 'budget', 'spent', 'currency', 'start_date', 'end_date', 'status', 'notes'];
     protected function casts(): array
     {
         return [

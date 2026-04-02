@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'from_user_id', 'type', 'title', 'body', 'data', 'read_at'])]
 class Notification extends Model
 {
+    protected $fillable = ['user_id', 'from_user_id', 'type', 'title', 'body', 'data', 'read_at'];
     protected function casts(): array
     {
         return [

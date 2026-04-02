@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'trigger', 'conditions', 'action', 'action_config', 'is_active', 'last_triggered_at', 'trigger_count'])]
 class AutomationRule extends Model
 {
+    protected $fillable = ['name', 'trigger', 'conditions', 'action', 'action_config', 'is_active', 'last_triggered_at', 'trigger_count'];
     protected function casts(): array
     {
         return [

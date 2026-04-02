@@ -2,18 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable([
-    'property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id',
-    'stage', 'monthly_rent', 'currency', 'deposit_amount',
-    'commission_amount', 'commission_percentage', 'guarantee_type',
-    'lease_start_date', 'lease_end_date', 'lease_duration_months',
-    'notes', 'status', 'completed_at', 'cancelled_at',
-])]
 class RentalProcess extends Model
 {
+    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'notes', 'status', 'completed_at', 'cancelled_at',];
     const STAGES = [
         'captacion' => 'Captacion',
         'verificacion' => 'Verificacion de Documentos',

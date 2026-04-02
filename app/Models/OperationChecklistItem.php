@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['operation_id', 'stage_checklist_template_id', 'stage', 'is_completed', 'completed_by', 'completed_at', 'notes'])]
 class OperationChecklistItem extends Model
 {
+    protected $fillable = ['operation_id', 'stage_checklist_template_id', 'stage', 'is_completed', 'completed_by', 'completed_at', 'notes'];
     protected function casts(): array
     {
         return [

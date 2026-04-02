@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['title', 'slug', 'body', 'meta_title', 'meta_description', 'sections', 'use_sections', 'is_landing', 'landing_settings', 'is_published', 'sort_order', 'show_in_nav', 'nav_order', 'nav_label', 'nav_url', 'nav_route', 'nav_style'])]
 class Page extends Model
 {
+    protected $fillable = ['title', 'slug', 'body', 'meta_title', 'meta_description', 'sections', 'use_sections', 'is_landing', 'landing_settings', 'is_published', 'sort_order', 'show_in_nav', 'nav_order', 'nav_label', 'nav_url', 'nav_route', 'nav_style'];
     protected function casts(): array
     {
         return [

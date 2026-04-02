@@ -2,16 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable([
-    'rental_process_id', 'operation_id', 'tenant_client_id', 'insurance_company', 'policy_number',
-    'status', 'submitted_at', 'review_started_at', 'resolved_at', 'rejection_reason',
-    'cost', 'currency', 'coverage_start', 'coverage_end', 'notes',
-])]
 class PolizaJuridica extends Model
 {
+    protected $fillable = ['rental_process_id', 'operation_id', 'tenant_client_id', 'insurance_company', 'policy_number', 'status', 'submitted_at', 'review_started_at', 'resolved_at', 'rejection_reason', 'cost', 'currency', 'coverage_start', 'coverage_end', 'notes',];
     const STATUSES = [
         'pending' => 'Pendiente',
         'documents_submitted' => 'Documentos Enviados',

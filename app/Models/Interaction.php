@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['client_id', 'property_id', 'user_id', 'type', 'description', 'scheduled_at', 'completed_at'])]
 class Interaction extends Model
 {
+    protected $fillable = ['client_id', 'property_id', 'user_id', 'type', 'description', 'scheduled_at', 'completed_at'];
     protected function casts(): array
     {
         return [

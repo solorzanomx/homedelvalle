@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'subject', 'body', 'body_text'])]
 class EmailTemplate extends Model
 {
+    protected $fillable = ['name', 'subject', 'body', 'body_text'];
     /**
      * Replace dynamic variables in subject, body and body_text.
      * Supported: {{Nombre}}, {{Apellido}}, {{Email}}, {{Password}}, {{Fecha}}, {{Rol}}, {{Sitio}}

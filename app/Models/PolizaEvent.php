@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['poliza_juridica_id', 'user_id', 'event_type', 'description', 'data'])]
 class PolizaEvent extends Model
 {
+    protected $fillable = ['poliza_juridica_id', 'user_id', 'event_type', 'description', 'data'];
     protected function casts(): array
     {
         return [

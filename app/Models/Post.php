@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['user_id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'category_id', 'status', 'published_at', 'meta_title', 'meta_description', 'views_count'])]
 class Post extends Model
 {
+    protected $fillable = ['user_id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'category_id', 'status', 'published_at', 'meta_title', 'meta_description', 'views_count'];
     protected function casts(): array
     {
         return [

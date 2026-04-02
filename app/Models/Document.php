@@ -2,16 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable([
-    'rental_process_id', 'operation_id', 'client_id', 'property_id', 'uploaded_by',
-    'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size',
-    'status', 'rejection_reason', 'verified_at', 'verified_by',
-])]
 class Document extends Model
 {
+    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'rejection_reason', 'verified_at', 'verified_by',];
     const CATEGORIES = [
         'commission_contract' => 'Contrato de Comision',
         'escritura' => 'Escritura',

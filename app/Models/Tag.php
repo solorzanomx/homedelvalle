@@ -2,11 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['name', 'slug'])]
 class Tag extends Model
 {
+    protected $fillable = ['name', 'slug'];
     public function posts() { return $this->belongsToMany(Post::class); }
 }

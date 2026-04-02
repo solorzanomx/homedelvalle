@@ -2,12 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['operation_type', 'stage', 'title', 'description', 'sort_order', 'is_required', 'is_active'])]
 class StageChecklistTemplate extends Model
 {
+    protected $fillable = ['operation_type', 'stage', 'title', 'description', 'sort_order', 'is_required', 'is_active'];
     protected function casts(): array
     {
         return [

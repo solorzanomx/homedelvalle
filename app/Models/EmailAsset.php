@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'filename', 'path', 'mime_type', 'size'])]
 class EmailAsset extends Model
 {
+    protected $fillable = ['name', 'filename', 'path', 'mime_type', 'size'];
     public function getUrlAttribute(): string
     {
         return Storage::url($this->path);

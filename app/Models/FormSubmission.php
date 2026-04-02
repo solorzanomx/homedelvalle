@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['form_id', 'data', 'ip_address', 'user_agent', 'utm_source', 'utm_medium', 'utm_campaign', 'is_read'])]
 class FormSubmission extends Model
 {
+    protected $fillable = ['form_id', 'data', 'ip_address', 'user_agent', 'utm_source', 'utm_medium', 'utm_campaign', 'is_read'];
     protected function casts(): array
     {
         return [

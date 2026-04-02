@@ -2,16 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable([
-    'rental_process_id', 'operation_id', 'contract_template_id', 'type', 'title',
-    'generated_html', 'pdf_path', 'source',
-    'signature_status', 'signature_data', 'signed_at', 'signed_by', 'notes',
-])]
 class Contract extends Model
 {
+    protected $fillable = ['rental_process_id', 'operation_id', 'contract_template_id', 'type', 'title', 'generated_html', 'pdf_path', 'source', 'signature_status', 'signature_data', 'signed_at', 'signed_by', 'notes',];
     const SIGNATURE_STATUSES = [
         'unsigned' => 'Sin Firmar',
         'pending_signature' => 'Pendiente de Firma',

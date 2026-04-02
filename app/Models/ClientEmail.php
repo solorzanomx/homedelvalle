@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-#[Fillable(['client_id', 'user_id', 'subject', 'body_html', 'property_ids', 'tracking_id', 'opened_at', 'open_count', 'status'])]
 class ClientEmail extends Model
 {
+    protected $fillable = ['client_id', 'user_id', 'subject', 'body_html', 'property_ids', 'tracking_id', 'opened_at', 'open_count', 'status'];
     protected function casts(): array
     {
         return [
