@@ -516,6 +516,9 @@
                         <a href="{{ route('admin.easybroker.settings') }}" class="nav-item {{ request()->routeIs('admin.easybroker.*') ? 'active' : '' }}">
                             <span class="nav-icon">&#9729;</span> EasyBroker
                         </a>
+                        <a href="{{ route('admin.integrations.index') }}" class="nav-item {{ request()->routeIs('admin.integrations.*') ? 'active' : '' }}">
+                            <span class="nav-icon">&#128279;</span> Integraciones
+                        </a>
                     </div>
                 </div>
                 @endpermission

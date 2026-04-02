@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\BrokerManagementController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Admin\EasyBrokerSettingsController;
+use App\Http\Controllers\Admin\IntegrationSettingsController;
 use App\Http\Controllers\Admin\AutomationController;
 use App\Http\Controllers\Admin\MarketingController;
 use App\Http\Controllers\Admin\SegmentController;
@@ -228,6 +229,10 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/easybroker/settings', [EasyBrokerSettingsController::class, 'index'])->name('easybroker.settings');
         Route::post('/easybroker/settings', [EasyBrokerSettingsController::class, 'update'])->name('easybroker.settings.update');
         Route::post('/easybroker/settings/test', [EasyBrokerSettingsController::class, 'test'])->name('easybroker.settings.test');
+
+        // Integraciones (tracking codes, APIs)
+        Route::get('/integrations', [IntegrationSettingsController::class, 'index'])->name('integrations.index');
+        Route::post('/integrations', [IntegrationSettingsController::class, 'update'])->name('integrations.update');
 
         // Automatizaciones
         Route::get('/automations', [AutomationController::class, 'index'])->name('automations.index');
