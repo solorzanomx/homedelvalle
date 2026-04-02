@@ -9,8 +9,7 @@
     padding: 0; margin-bottom: 1.25rem; overflow: hidden;
 }
 .profile-cover {
-    height: 120px; background: linear-gradient(135deg, var(--primary), #764ba2);
-    position: relative;
+    height: 48px; position: relative;
 }
 .profile-head {
     display: flex; align-items: flex-end; gap: 1.25rem; padding: 0 2rem 1.5rem;
