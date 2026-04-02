@@ -7,17 +7,18 @@
 .edit-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
 @media (max-width: 1024px) { .edit-layout { grid-template-columns: 1fr; } }
 
-/* Tab nav — pill style matching index */
+/* Tab nav — segmented control matching users module */
 .tab-pills {
-    display: flex; gap: 4px; margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: 2px;
+    display: flex; gap: 2px; background: var(--bg); border-radius: 8px; padding: 3px;
+    border: 1px solid var(--border); overflow-x: auto; margin-bottom: 1.25rem;
 }
 .tab-pill {
-    padding: 0.45rem 0.9rem; border-radius: 20px; font-size: 0.78rem; font-weight: 500;
-    border: 1px solid var(--border); background: var(--card); color: var(--text-muted);
+    padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.78rem; font-weight: 500;
+    border: none; background: transparent; color: var(--text-muted);
     cursor: pointer; white-space: nowrap; transition: all 0.15s;
 }
-.tab-pill:hover { border-color: var(--primary); color: var(--text); }
-.tab-pill.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.tab-pill:hover { color: var(--text); }
+.tab-pill.active { background: var(--card); color: var(--primary); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
 
 /* Tab panels */
 .tab-panel { display: none; animation: panelFade 0.2s ease; }
@@ -175,8 +176,18 @@
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 0.75rem 1.25rem; margin-top: 1rem;
     display: flex; justify-content: space-between; align-items: center;
+    position: sticky; bottom: 0; z-index: 10;
 }
 .save-bar-meta { font-size: 0.72rem; color: var(--text-muted); }
+.save-toast {
+    position: fixed; top: 16px; right: 16px; z-index: 1001;
+    background: var(--success); color: #fff; padding: 0.6rem 1.25rem;
+    border-radius: 8px; font-size: 0.82rem; font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none;
+    animation: toastIn 0.3s ease;
+}
+.save-toast.show { display: block; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* Owner search */
 .owner-search-wrap { position: relative; }
@@ -624,6 +635,9 @@
 {{-- EasyBroker forms (outside main form to avoid nesting) --}}
 <form method="POST" action="{{ route('properties.publish-easybroker', $property) }}" id="ebPublishForm" style="display:none;">@csrf</form>
 <form method="POST" action="{{ route('properties.unpublish-easybroker', $property) }}" id="ebUnpublishForm" style="display:none;">@csrf</form>
+
+{{-- Save toast --}}
+<div class="save-toast" id="saveToast">&#10003; Propiedad guardada</div>
 @endsection
 
 @section('scripts')
@@ -646,6 +660,47 @@ function selectOp(card, val) {
 function updateCurrency() {
     document.getElementById('currTag').textContent = document.getElementById('currSelect').value === 'USD' ? 'US$' : '$';
 }
+
+// AJAX form save
+document.getElementById('editForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var btn = form.querySelector('button[type="submit"]');
+    var origText = btn.textContent;
+    btn.textContent = 'Guardando...';
+    btn.disabled = true;
+
+    var fd = new FormData(form);
+    fetch(form.action, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: fd
+    })
+    .then(function(r) { return r.json().catch(function() { return { success: true }; }); })
+    .then(function(data) {
+        var toast = document.getElementById('saveToast');
+        if (data.errors) {
+            toast.textContent = 'Error: ' + Object.values(data.errors).flat().join(', ');
+            toast.style.background = 'var(--danger)';
+        } else {
+            toast.textContent = '\u2713 Propiedad guardada';
+            toast.style.background = 'var(--success)';
+        }
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 3000);
+    })
+    .catch(function() {
+        var toast = document.getElementById('saveToast');
+        toast.textContent = 'Error al guardar';
+        toast.style.background = 'var(--danger)';
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 3000);
+    })
+    .finally(function() {
+        btn.textContent = origText;
+        btn.disabled = false;
+    });
+});
 function previewYoutube() {
     var url = document.getElementById('youtubeInput').value;
     var container = document.getElementById('ytPreviewContainer');

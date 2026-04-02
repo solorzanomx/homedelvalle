@@ -343,12 +343,11 @@
 @endsection
 
 @section('content')
-<div class="page-header">
+<div style="margin-bottom:1rem; display:flex; align-items:center; justify-content:space-between;">
     <div>
-        <h2>Nueva Propiedad</h2>
-        <p class="text-muted">Completa la informacion para registrar la propiedad</p>
+        <a href="{{ route('properties.index') }}" style="font-size:0.82rem; color:var(--text-muted);">&#8592; Propiedades</a>
+        <h2 style="margin:0.25rem 0 0; font-size:1.15rem; font-weight:600;">Nueva Propiedad</h2>
     </div>
-    <a href="{{ route('properties.index') }}" class="btn btn-outline">Volver</a>
 </div>
 
 @if($errors->any())

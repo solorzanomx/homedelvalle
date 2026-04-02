@@ -225,6 +225,11 @@ class PropertyController extends Controller
         }
 
         $property->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->route('properties.edit', $property)->with('success', 'Propiedad actualizada exitosamente');
     }
 
