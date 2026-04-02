@@ -168,18 +168,7 @@
 @section('scripts')
 <script>
 function menuBuilder() {
-    var existingItems = @json($items->map(fn($i) => [
-        'label' => $i->label,
-        'type' => $i->type,
-        'page_id' => $i->page_id,
-        'url' => $i->url,
-        'route_name' => $i->route_name,
-        'target' => $i->target,
-        'style' => $i->style,
-        'is_active' => $i->is_active,
-        'parent_id' => $i->parent_id,
-        'children' => [],
-    ]));
+    var existingItems = @json($itemsJson);
 
     // Build tree from flat list
     var rootItems = existingItems.filter(function(i) { return !i.parent_id; });

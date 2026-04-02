@@ -22,7 +22,22 @@ class MenuController extends Controller
         $items = $menu->allItems()->with('page')->get();
         $pages = Page::published()->orderBy('title')->get(['id', 'title', 'slug']);
 
-        return view('admin.menus.edit', compact('menu', 'items', 'pages'));
+        $itemsJson = $items->map(function ($i) {
+            return [
+                'label' => $i->label,
+                'type' => $i->type,
+                'page_id' => $i->page_id,
+                'url' => $i->url,
+                'route_name' => $i->route_name,
+                'target' => $i->target,
+                'style' => $i->style,
+                'is_active' => $i->is_active,
+                'parent_id' => $i->parent_id,
+                'children' => [],
+            ];
+        });
+
+        return view('admin.menus.edit', compact('menu', 'items', 'pages', 'itemsJson'));
     }
 
     public function updateItems(Request $request, Menu $menu)
