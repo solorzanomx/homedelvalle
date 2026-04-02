@@ -815,21 +815,20 @@ document.addEventListener('keydown', function(e) {
 var propUrl = '{{ route("propiedades.show", [$property->id, $property->slug]) }}';
 var propTitle = @json($property->title);
 var propPrice = '${{ number_format($property->price, 0) }} {{ $property->currency ?? "MXN" }}';
-var propFullUrl = window.location.origin + propUrl;
 
 function shareWhatsApp() {
-    var msg = propTitle + '\n' + propPrice + '\n' + propFullUrl;
+    var msg = propTitle + '\n' + propPrice + '\n' + propUrl;
     window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
 function shareEmail() {
     var subject = encodeURIComponent(propTitle + ' - ' + propPrice);
-    var body = encodeURIComponent(propTitle + '\nPrecio: ' + propPrice + '\n\nVer propiedad: ' + propFullUrl);
+    var body = encodeURIComponent(propTitle + '\nPrecio: ' + propPrice + '\n\nVer propiedad: ' + propUrl);
     window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
 }
 
 function copyPropertyLink(btn) {
-    navigator.clipboard.writeText(propFullUrl).then(function() {
+    navigator.clipboard.writeText(propUrl).then(function() {
         var orig = btn.innerHTML;
         btn.innerHTML = '&#10003;';
         setTimeout(function() { btn.innerHTML = orig; }, 2000);

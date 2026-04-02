@@ -241,12 +241,10 @@
 @endif
 
 {{-- Tab pills --}}
-<div class="tab-pills" id="tabPills">
+<div class="tab-pills" id="tabPills" style="display:flex; flex-direction:row; flex-wrap:nowrap;">
     <button class="tab-pill active" onclick="switchTab('general', this)">General</button>
-    <button class="tab-pill" onclick="switchTab('location', this)">Ubicacion</button>
     <button class="tab-pill" onclick="switchTab('features', this)">Caracteristicas</button>
-    <button class="tab-pill" onclick="switchTab('media', this)">Media</button>
-    <button class="tab-pill" onclick="switchTab('integrations', this)">Integraciones</button>
+    <button class="tab-pill" onclick="switchTab('media', this)">Media e Integraciones</button>
 </div>
 
 <div class="edit-layout">
@@ -337,15 +335,13 @@
                             </div>
                             <p class="form-hint">Cliente dueno de la propiedad (opcional)</p>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- TAB: Location --}}
-            <div class="tab-panel" data-tab="location">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="section-label">Direccion de la propiedad</div>
+                        <div class="section-label" style="margin-top:1.25rem;">Descripcion del anuncio</div>
+                        <div class="form-group">
+                            <textarea name="description" class="form-textarea" rows="5" placeholder="Describe la propiedad con detalle...">{{ old('description', $property->description) }}</textarea>
+                        </div>
+
+                        <div class="section-label" style="margin-top:1.25rem;">Ubicacion</div>
                         <div class="form-group">
                             <label class="form-label">Direccion</label>
                             <input type="text" name="address" class="form-input" value="{{ old('address', $property->address) }}" placeholder="Calle, numero, interior...">
@@ -471,16 +467,11 @@
                 </div>
             </div>
 
-            {{-- TAB: Media --}}
+            {{-- TAB: Media & Integrations --}}
             <div class="tab-panel" data-tab="media">
                 <div class="card">
                     <div class="card-body">
-                        <div class="section-label">Descripcion del anuncio</div>
-                        <div class="form-group">
-                            <textarea name="description" class="form-textarea" rows="6" placeholder="Describe la propiedad con detalle...">{{ old('description', $property->description) }}</textarea>
-                        </div>
-
-                        <div class="section-label" style="margin-top:1.25rem;">Video de YouTube</div>
+                        <div class="section-label">Video de YouTube</div>
                         <div class="form-group">
                             <input type="url" name="youtube_url" id="youtubeInput" class="form-input" value="{{ old('youtube_url', $property->youtube_url) }}" placeholder="https://www.youtube.com/watch?v=..." oninput="previewYoutube()">
                         </div>
@@ -495,15 +486,8 @@
                                 @endif
                             @endif
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            {{-- TAB: Integrations --}}
-            <div class="tab-panel" data-tab="integrations">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="section-label">EasyBroker</div>
+                        <div class="section-label" style="margin-top:1.5rem;">EasyBroker</div>
                         <div class="eb-section">
                             <div class="eb-status">
                                 @if($property->isPublishedToEasyBroker())
