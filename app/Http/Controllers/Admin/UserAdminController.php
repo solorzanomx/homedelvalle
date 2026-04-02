@@ -164,10 +164,13 @@ class UserAdminController extends Controller
 
     public function uploadAvatar(Request $request, User $user)
     {
-        abort_unless(auth()->user()->hasPermission('users.edit'), 403);
+        // Allow users to upload their own avatar, require users.edit for others
+        if ($user->id !== auth()->id()) {
+            abort_unless(auth()->user()->hasPermission('users.edit'), 403);
+        }
 
         $validated = $request->validate([
-            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120'
         ]);
 
         if ($user->avatar_path) {
