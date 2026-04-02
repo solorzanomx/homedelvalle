@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PropertyPhoto extends Model
 {
-    protected $fillable = ['property_id', 'path', 'is_primary', 'sort_order'];
+    protected $fillable = ['property_id', 'path', 'description', 'is_primary', 'sort_order'];
     protected function casts(): array
     {
         return [

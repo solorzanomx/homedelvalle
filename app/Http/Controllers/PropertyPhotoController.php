@@ -73,6 +73,47 @@ class PropertyPhotoController extends Controller
         return back()->with('success', 'Imagen principal actualizada.');
     }
 
+    public function update(Request $request, Property $property, PropertyPhoto $photo)
+    {
+        $validated = $request->validate([
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $photo->update($validated);
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Descripcion actualizada.');
+    }
+
+    public function reorder(Request $request, Property $property)
+    {
+        $request->validate([
+            'order' => 'required|array',
+            'order.*' => 'integer|exists:property_photos,id',
+        ]);
+
+        foreach ($request->input('order') as $position => $photoId) {
+            PropertyPhoto::where('id', $photoId)->where('property_id', $property->id)
+                ->update(['sort_order' => $position + 1]);
+        }
+
+        // Update legacy photo field to match the primary or first photo
+        $primary = $property->photos()->where('is_primary', true)->first()
+            ?? $property->photos()->orderBy('sort_order')->first();
+        if ($primary) {
+            $property->update(['photo' => $primary->path]);
+        }
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true]);
+        }
+
+        return back()->with('success', 'Orden actualizado.');
+    }
+
     public function destroy(Request $request, Property $property, PropertyPhoto $photo)
     {
         $wasPrimary = $photo->is_primary;

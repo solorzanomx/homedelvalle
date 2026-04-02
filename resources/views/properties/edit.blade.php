@@ -94,48 +94,54 @@
     padding: 0.75rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem;
 }
 .photo-drop:hover, .photo-drop.dragover { border-color: var(--primary); background: rgba(102,126,234,0.03); }
-.photo-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+/* Photo list items */
+.photo-list { display: flex; flex-direction: column; gap: 6px; }
+.photo-item {
+    display: flex; gap: 8px; align-items: flex-start; padding: 6px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--card);
+    transition: all 0.15s; cursor: grab; position: relative;
 }
-.photo-thumb {
-    position: relative; border-radius: 8px; overflow: hidden;
-    aspect-ratio: 1; border: 2px solid transparent; transition: all 0.15s;
-    cursor: pointer;
+.photo-item:active { cursor: grabbing; }
+.photo-item.is-primary { border-color: var(--primary); background: rgba(102,126,234,0.03); }
+.photo-item.sortable-ghost { opacity: 0.4; border-style: dashed; }
+.photo-item.sortable-chosen { box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 10; }
+.photo-item-thumb {
+    width: 72px; height: 72px; border-radius: 6px; overflow: hidden; flex-shrink: 0; position: relative;
 }
-.photo-thumb.is-primary { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(102,126,234,0.2); }
-.photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
-.photo-thumb:hover img { transform: scale(1.05); }
-.photo-primary-badge {
-    position: absolute; top: 4px; left: 4px; font-size: 0.55rem;
-    background: var(--primary); color: #fff; padding: 0.1rem 0.35rem;
-    border-radius: 4px; font-weight: 600; letter-spacing: 0.02em;
+.photo-item-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.photo-item-top { display: flex; align-items: center; gap: 4px; }
+.photo-item-order {
+    width: 20px; height: 20px; border-radius: 50%; background: var(--bg);
+    border: 1px solid var(--border); display: flex; align-items: center;
+    justify-content: center; font-size: 0.6rem; font-weight: 700; color: var(--text-muted);
+    flex-shrink: 0;
 }
-.photo-star-btn {
-    position: absolute; bottom: 4px; left: 4px; width: 22px; height: 22px;
-    border-radius: 50%; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; transition: all 0.15s; z-index: 2;
-    background: rgba(0,0,0,0.45); color: rgba(255,255,255,0.7);
+.photo-item.is-primary .photo-item-order { background: var(--primary); color: #fff; border-color: var(--primary); }
+.photo-item-badges { display: flex; gap: 3px; align-items: center; }
+.photo-badge-primary {
+    font-size: 0.6rem; background: var(--primary); color: #fff;
+    padding: 0.05rem 0.3rem; border-radius: 3px; font-weight: 600;
 }
-.photo-star-btn:hover { background: var(--primary); color: #fff; transform: scale(1.15); }
-.photo-thumb.is-primary .photo-star-btn {
-    background: var(--primary); color: #fff;
+.photo-item-actions { margin-left: auto; display: flex; gap: 3px; }
+.photo-item-actions button {
+    width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--bg); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 0.6rem; transition: all 0.15s; color: var(--text-muted);
 }
-.photo-delete-btn {
-    position: absolute; bottom: 4px; right: 4px; width: 22px; height: 22px;
-    border-radius: 50%; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.6rem; z-index: 2; transition: all 0.15s;
-    background: rgba(0,0,0,0.45); color: rgba(255,255,255,0.7);
-    opacity: 0;
+.photo-item-actions button:hover { border-color: var(--primary); color: var(--primary); }
+.photo-item-actions button.btn-del:hover { border-color: var(--danger); color: var(--danger); }
+.photo-desc-input {
+    width: 100%; border: 1px solid var(--border); border-radius: 4px; padding: 0.25rem 0.4rem;
+    font-size: 0.7rem; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s;
 }
-.photo-thumb:hover .photo-delete-btn { opacity: 1; }
-.photo-delete-btn:hover { background: var(--danger); color: #fff; transform: scale(1.15); }
-.photo-count-badge {
-    position: absolute; top: 4px; right: 4px; font-size: 0.55rem;
-    background: rgba(0,0,0,0.5); color: #fff; padding: 0.1rem 0.35rem;
-    border-radius: 4px; font-weight: 500;
+.photo-desc-input:focus { border-color: var(--primary); }
+.photo-desc-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+.photo-drag-handle {
+    display: flex; align-items: center; color: var(--text-muted); opacity: 0.4;
+    font-size: 0.8rem; cursor: grab; padding: 0 2px;
 }
+.photo-drag-handle:hover { opacity: 0.8; }
 /* Spinner */
 .photo-spinner {
     width: 28px; height: 28px; border: 3px solid var(--border);
@@ -143,13 +149,11 @@
     animation: photoSpin 0.6s linear infinite; margin: 0 auto;
 }
 @keyframes photoSpin { to { transform: rotate(360deg); } }
-/* Upload progress thumb */
-.photo-thumb-uploading {
-    position: relative; border-radius: 8px; overflow: hidden;
-    aspect-ratio: 1; border: 2px dashed var(--primary); background: var(--bg);
-    display: flex; align-items: center; justify-content: center;
+.photo-item-uploading {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px; border: 1px dashed var(--primary); border-radius: 8px; background: rgba(102,126,234,0.03);
 }
-.photo-thumb-uploading .photo-spinner { width: 20px; height: 20px; border-width: 2px; }
+.photo-item-uploading .photo-spinner { width: 20px; height: 20px; border-width: 2px; margin: 0; }
 
 /* Side card */
 .side-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
@@ -549,7 +553,7 @@
                     <div id="photoDropContent">
                         <div style="font-size:1.2rem; opacity:0.4;">&#10010;</div>
                         <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Subir fotos</p>
-                        <p style="margin:0.15rem 0 0; font-size:0.65rem; color:var(--text-muted); opacity:0.7;">JPG, PNG, WebP — max 5MB</p>
+                        <p style="margin:0.15rem 0 0; font-size:0.65rem; color:var(--text-muted); opacity:0.7;">Arrastra aqui o clic — JPG, PNG, WebP</p>
                     </div>
                     <div id="photoDropLoading" style="display:none;">
                         <div class="photo-spinner"></div>
@@ -557,13 +561,26 @@
                     </div>
                 </div>
 
-                <div class="photo-grid" id="photoGrid">
+                <div class="photo-list" id="photoList">
                     @foreach($property->photos->sortBy('sort_order') as $photo)
-                    <div class="photo-thumb {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
-                        <img src="{{ asset('storage/' . $photo->path) }}" alt="" loading="lazy">
-                        @if($photo->is_primary)<span class="photo-primary-badge">&#9733; Principal</span>@endif
-                        <button type="button" class="photo-star-btn" onclick="setPrimary({{ $photo->id }})" title="Marcar como principal">&#9733;</button>
-                        <button type="button" class="photo-delete-btn" onclick="deletePhoto({{ $photo->id }})" title="Eliminar">&#10005;</button>
+                    <div class="photo-item {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
+                        <span class="photo-drag-handle" title="Arrastra para reordenar">&#9776;</span>
+                        <div class="photo-item-thumb">
+                            <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description }}" loading="lazy">
+                        </div>
+                        <div class="photo-item-info">
+                            <div class="photo-item-top">
+                                <span class="photo-item-order">{{ $loop->iteration }}</span>
+                                @if($photo->is_primary)
+                                <span class="photo-badge-primary">&#9733; Principal</span>
+                                @endif
+                                <div class="photo-item-actions">
+                                    <button type="button" onclick="setPrimary({{ $photo->id }})" title="Marcar como principal">&#9733;</button>
+                                    <button type="button" class="btn-del" onclick="deletePhoto({{ $photo->id }})" title="Eliminar">&#10005;</button>
+                                </div>
+                            </div>
+                            <input type="text" class="photo-desc-input" placeholder="Descripcion SEO (alt text)..." value="{{ $photo->description ?? '' }}" onchange="saveDescription({{ $photo->id }}, this.value)" data-photo-id="{{ $photo->id }}">
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -639,54 +656,42 @@ function previewYoutube() {
 var csrfToken = '{{ csrf_token() }}';
 var propertyId = {{ $property->id }};
 var photoStoreUrl = '{{ route("properties.photos.store", $property) }}';
+var photoReorderUrl = '{{ route("properties.photos.reorder", $property) }}';
 
 function uploadPhotos(files) {
     if (!files || files.length === 0) return;
-    var drop = document.getElementById('photoDrop');
     var content = document.getElementById('photoDropContent');
     var loading = document.getElementById('photoDropLoading');
+    var drop = document.getElementById('photoDrop');
     content.style.display = 'none';
     loading.style.display = '';
     drop.style.pointerEvents = 'none';
 
-    // Show placeholder thumbs
-    var grid = document.getElementById('photoGrid');
+    var list = document.getElementById('photoList');
     var empty = document.getElementById('photoEmpty');
     if (empty) empty.style.display = 'none';
-    var placeholders = [];
-    for (var i = 0; i < files.length; i++) {
-        var ph = document.createElement('div');
-        ph.className = 'photo-thumb-uploading';
-        ph.innerHTML = '<div class="photo-spinner"></div>';
-        grid.appendChild(ph);
-        placeholders.push(ph);
-    }
+
+    // Placeholder
+    var ph = document.createElement('div');
+    ph.className = 'photo-item-uploading';
+    ph.innerHTML = '<div class="photo-spinner"></div><span style="font-size:0.75rem; color:var(--primary);">Subiendo ' + files.length + ' foto(s)...</span>';
+    list.appendChild(ph);
 
     var fd = new FormData();
     fd.append('_token', csrfToken);
     for (var j = 0; j < files.length; j++) fd.append('photos[]', files[j]);
 
-    fetch(photoStoreUrl, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: fd
-    })
+    fetch(photoStoreUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        // Remove placeholders
-        placeholders.forEach(function(p) { p.remove(); });
+        ph.remove();
         if (data.photos) {
-            data.photos.forEach(function(photo, idx) {
-                addPhotoThumb(photo);
-            });
+            data.photos.forEach(function(photo) { addPhotoItem(photo); });
             updatePhotoCount(data.total);
             renumberPhotos();
         }
     })
-    .catch(function(err) {
-        placeholders.forEach(function(p) { p.remove(); });
-        alert('Error al subir fotos');
-    })
+    .catch(function() { ph.remove(); alert('Error al subir fotos'); })
     .finally(function() {
         content.style.display = '';
         loading.style.display = 'none';
@@ -695,44 +700,50 @@ function uploadPhotos(files) {
     });
 }
 
-function addPhotoThumb(photo) {
-    var grid = document.getElementById('photoGrid');
+function addPhotoItem(photo) {
+    var list = document.getElementById('photoList');
     var div = document.createElement('div');
-    div.className = 'photo-thumb' + (photo.is_primary ? ' is-primary' : '');
+    div.className = 'photo-item' + (photo.is_primary ? ' is-primary' : '');
     div.id = 'photo-' + photo.id;
     div.dataset.id = photo.id;
     div.innerHTML =
-        '<img src="' + photo.url + '" alt="" loading="lazy">' +
-        (photo.is_primary ? '<span class="photo-primary-badge">&#9733; Principal</span>' : '') +
-        '<button type="button" class="photo-star-btn" onclick="setPrimary(' + photo.id + ')" title="Marcar como principal">&#9733;</button>' +
-        '<button type="button" class="photo-delete-btn" onclick="deletePhoto(' + photo.id + ')" title="Eliminar">&#10005;</button>';
-    grid.appendChild(div);
+        '<span class="photo-drag-handle" title="Arrastra para reordenar">&#9776;</span>' +
+        '<div class="photo-item-thumb"><img src="' + photo.url + '" alt="" loading="lazy"></div>' +
+        '<div class="photo-item-info">' +
+            '<div class="photo-item-top">' +
+                '<span class="photo-item-order"></span>' +
+                (photo.is_primary ? '<span class="photo-badge-primary">&#9733; Principal</span>' : '') +
+                '<div class="photo-item-actions">' +
+                    '<button type="button" onclick="setPrimary(' + photo.id + ')" title="Principal">&#9733;</button>' +
+                    '<button type="button" class="btn-del" onclick="deletePhoto(' + photo.id + ')" title="Eliminar">&#10005;</button>' +
+                '</div>' +
+            '</div>' +
+            '<input type="text" class="photo-desc-input" placeholder="Descripcion SEO (alt text)..." value="" onchange="saveDescription(' + photo.id + ', this.value)">' +
+        '</div>';
+    list.appendChild(div);
 }
 
 function setPrimary(photoId) {
-    var url = '/properties/{{ $property->id }}/photos/' + photoId + '/primary';
-    fetch(url, {
-        method: 'PATCH',
-        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
-    })
+    var url = '/properties/' + propertyId + '/photos/' + photoId + '/primary';
+    fetch(url, { method: 'PATCH', headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' } })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        if (data.success) {
-            // Remove all primary states
-            document.querySelectorAll('#photoGrid .photo-thumb').forEach(function(t) {
-                t.classList.remove('is-primary');
-                var badge = t.querySelector('.photo-primary-badge');
-                if (badge) badge.remove();
-            });
-            // Set new primary
-            var el = document.getElementById('photo-' + photoId);
-            if (el) {
-                el.classList.add('is-primary');
-                var badge = document.createElement('span');
-                badge.className = 'photo-primary-badge';
-                badge.innerHTML = '&#9733; Principal';
-                el.appendChild(badge);
-            }
+        if (!data.success) return;
+        document.querySelectorAll('#photoList .photo-item').forEach(function(t) {
+            t.classList.remove('is-primary');
+            var badge = t.querySelector('.photo-badge-primary');
+            if (badge) badge.remove();
+        });
+        var el = document.getElementById('photo-' + photoId);
+        if (el) {
+            el.classList.add('is-primary');
+            var top = el.querySelector('.photo-item-top');
+            var order = top.querySelector('.photo-item-order');
+            var badge = document.createElement('span');
+            badge.className = 'photo-badge-primary';
+            badge.innerHTML = '&#9733; Principal';
+            order.after(badge);
+            renumberPhotos();
         }
     });
 }
@@ -741,30 +752,35 @@ function deletePhoto(photoId) {
     if (!confirm('Eliminar foto?')) return;
     var el = document.getElementById('photo-' + photoId);
     if (el) el.style.opacity = '0.4';
-
-    var url = '/properties/{{ $property->id }}/photos/' + photoId;
-    fetch(url, {
-        method: 'DELETE',
-        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
-    })
+    var url = '/properties/' + propertyId + '/photos/' + photoId;
+    fetch(url, { method: 'DELETE', headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' } })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        if (data.success) {
-            if (el) el.remove();
-            updatePhotoCount(data.total);
-            renumberPhotos();
-            if (data.total === 0) {
-                var grid = document.getElementById('photoGrid');
-                grid.innerHTML = '';
-                var emptyDiv = document.createElement('div');
-                emptyDiv.id = 'photoEmpty';
-                emptyDiv.style.cssText = 'text-align:center; padding:1.5rem 0.5rem; color:var(--text-muted);';
-                emptyDiv.innerHTML = '<div style="font-size:2rem; opacity:0.3; margin-bottom:0.3rem;">&#127976;</div><p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>';
-                grid.parentNode.appendChild(emptyDiv);
-            }
+        if (!data.success) return;
+        if (el) el.remove();
+        updatePhotoCount(data.total);
+        renumberPhotos();
+        if (data.total === 0) {
+            var emptyDiv = document.createElement('div');
+            emptyDiv.id = 'photoEmpty';
+            emptyDiv.style.cssText = 'text-align:center;padding:1.5rem 0.5rem;color:var(--text-muted);';
+            emptyDiv.innerHTML = '<div style="font-size:2rem;opacity:0.3;margin-bottom:0.3rem;">&#127976;</div><p style="font-size:0.82rem;margin:0;">Sin fotos</p>';
+            document.getElementById('photoList').after(emptyDiv);
         }
     })
     .catch(function() { if (el) el.style.opacity = '1'; });
+}
+
+var descTimers = {};
+function saveDescription(photoId, value) {
+    clearTimeout(descTimers[photoId]);
+    descTimers[photoId] = setTimeout(function() {
+        fetch('/properties/' + propertyId + '/photos/' + photoId, {
+            method: 'PATCH',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: value })
+        });
+    }, 600);
 }
 
 function updatePhotoCount(total) {
@@ -772,21 +788,30 @@ function updatePhotoCount(total) {
 }
 
 function renumberPhotos() {
-    document.querySelectorAll('#photoGrid .photo-thumb').forEach(function(t, i) {
-        var badge = t.querySelector('.photo-count-badge');
-        if (badge) badge.textContent = i + 1;
+    document.querySelectorAll('#photoList .photo-item').forEach(function(t, i) {
+        var num = t.querySelector('.photo-item-order');
+        if (num) num.textContent = i + 1;
     });
 }
 
-// Drag & drop
+function saveOrder() {
+    var items = document.querySelectorAll('#photoList .photo-item');
+    var order = [];
+    items.forEach(function(el) { order.push(parseInt(el.dataset.id)); });
+    fetch(photoReorderUrl, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: order })
+    });
+}
+
+// Drag & drop upload
 (function() {
     var drop = document.getElementById('photoDrop');
     if (!drop) return;
     ['dragenter','dragover'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.add('dragover'); }); });
     ['dragleave','drop'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.remove('dragover'); }); });
-    drop.addEventListener('drop', function(e) {
-        uploadPhotos(e.dataTransfer.files);
-    });
+    drop.addEventListener('drop', function(e) { uploadPhotos(e.dataTransfer.files); });
 })();
 updateCurrency();
 
@@ -834,5 +859,22 @@ document.addEventListener('click', function(e) {
         document.getElementById('ownerResults').classList.remove('visible');
     }
 });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script>
+// Init SortableJS on photo list
+var photoList = document.getElementById('photoList');
+if (photoList) {
+    new Sortable(photoList, {
+        handle: '.photo-drag-handle',
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onEnd: function() {
+            renumberPhotos();
+            saveOrder();
+        }
+    });
+}
 </script>
 @endsection

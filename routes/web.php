@@ -108,6 +108,8 @@ Route::middleware('auth')->group(function () {
     Route::post('properties/{property}/unpublish-easybroker', [PropertyController::class, 'unpublishFromEasyBroker'])->name('properties.unpublish-easybroker');
     Route::post('properties/{property}/photos', [PropertyPhotoController::class, 'store'])->name('properties.photos.store');
     Route::patch('properties/{property}/photos/{photo}/primary', [PropertyPhotoController::class, 'setPrimary'])->name('properties.photos.primary');
+    Route::patch('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'update'])->name('properties.photos.update');
+    Route::post('properties/{property}/photos/reorder', [PropertyPhotoController::class, 'reorder'])->name('properties.photos.reorder');
     Route::delete('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'destroy'])->name('properties.photos.destroy');
     Route::resource('clients', ClientController::class);
     Route::get('clients/{client}/email', [ClientEmailController::class, 'compose'])->name('clients.email.compose');
