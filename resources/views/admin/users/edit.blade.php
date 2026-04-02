@@ -234,14 +234,14 @@
             <div class="edit-card-body">
                 <div class="edit-avatar" onclick="document.getElementById('avatarInput').click()" title="Cambiar foto">
                     @if($user->avatar_path)
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="avatarPreview">
+                        <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="avatarPreview" data-avatar-img>
                     @else
-                        <span id="avatarPlaceholder">{{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}</span>
+                        <span id="avatarPlaceholder" data-avatar-placeholder>{{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}</span>
                     @endif
                     <div class="edit-avatar-overlay">&#128247;</div>
                 </div>
                 <p class="form-hint">Clic para cambiar foto</p>
-                <input type="file" id="avatarInput" name="avatar" accept="image/jpeg,image/png,image/jpg,image/gif" onchange="uploadAvatar(this)" style="display:none;">
+                <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" onchange="openCropper(this.files[0])" style="display:none;">
             </div>
         </div>
 
@@ -257,6 +257,7 @@
 @endsection
 
 @section('scripts')
+<x-avatar-cropper :upload-url="route('admin.users.avatar', $user)" />
 <script>
 function showTab(tab) {
     ['general','profesional','correo'].forEach(function(t) {
@@ -267,33 +268,6 @@ function showTab(tab) {
         pill.classList.remove('active');
     });
     event.target.classList.add('active');
-}
-
-function uploadAvatar(input) {
-    if (!input.files || !input.files[0]) return;
-    var file = input.files[0];
-    if (file.size > 2 * 1024 * 1024) { alert('La imagen no puede pesar mas de 2MB'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var container = document.querySelector('.edit-avatar');
-        var placeholder = document.getElementById('avatarPlaceholder');
-        if (placeholder) placeholder.style.display = 'none';
-        var img = document.getElementById('avatarPreview');
-        if (img) { img.src = e.target.result; }
-        else {
-            img = document.createElement('img');
-            img.src = e.target.result; img.id = 'avatarPreview'; img.alt = 'Avatar';
-            container.insertBefore(img, container.firstChild);
-        }
-    };
-    reader.readAsDataURL(file);
-    var formData = new FormData();
-    formData.append('avatar', file);
-    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
-    fetch('{{ route("admin.users.avatar", $user) }}', { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-    .then(function(r) { return r.json(); })
-    .then(function(data) { if (data.success) document.getElementById('avatarPreview').src = data.avatar_url; })
-    .catch(function() { alert('Error al subir la imagen'); });
 }
 </script>
 @endsection

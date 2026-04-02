@@ -46,18 +46,24 @@ class ProfileController extends Controller
     public function uploadPhoto(Request $request)
     {
         $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
         ]);
 
         $user = Auth::user();
 
-        // Delete old photo
         if ($user->avatar_path) {
             Storage::disk('public')->delete($user->avatar_path);
         }
 
-        $path = $request->file('photo')->store('avatars', 'public');
+        $path = $request->file('avatar')->store('avatars', 'public');
         $user->update(['avatar_path' => $path]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'avatar_url' => Storage::disk('public')->url($path),
+            ]);
+        }
 
         return back()->with('success', 'Foto de perfil actualizada.');
     }

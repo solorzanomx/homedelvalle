@@ -67,9 +67,9 @@
             <div class="card-body" style="text-align:center; padding: 1.5rem;">
                 <div class="profile-avatar" onclick="document.getElementById('photoInput').click()">
                     @if($user->avatar_path)
-                        <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="avatarPreview">
+                        <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="avatarPreview" data-avatar-img>
                     @else
-                        <div class="avatar-placeholder" id="avatarPlaceholder">
+                        <div class="avatar-placeholder" id="avatarPlaceholder" data-avatar-placeholder>
                             {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}
                         </div>
                     @endif
@@ -81,10 +81,7 @@
                 <p style="margin-top:0.5rem; font-weight:600;">{{ $user->full_name }}</p>
                 <p class="form-hint" style="margin-top:0.15rem;">{{ $user->email }}</p>
                 <span class="badge badge-blue" style="margin-top:0.5rem; display:inline-block;">{{ ucfirst($user->role) }}</span>
-                <form id="photoForm" method="POST" action="{{ route('profile.photo') }}" enctype="multipart/form-data" style="display:none;">
-                    @csrf
-                    <input type="file" id="photoInput" name="photo" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" onchange="previewPhoto(this)">
-                </form>
+                <input type="file" id="photoInput" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" onchange="openCropper(this.files[0])" style="display:none;">
             </div>
         </div>
 
@@ -392,9 +389,9 @@
                     <div class="preview-agent">
                         <div class="preview-avatar-wrap">
                             @if($user->avatar_path)
-                                <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="previewAvatar">
+                                <img src="{{ Storage::url($user->avatar_path) }}" alt="Avatar" id="previewAvatar" data-avatar-img>
                             @else
-                                <div class="preview-avatar-placeholder" id="previewAvatarPlaceholder">
+                                <div class="preview-avatar-placeholder" id="previewAvatarPlaceholder" data-avatar-placeholder>
                                     {{ strtoupper(substr($user->name, 0, 1)) }}{{ strtoupper(substr($user->last_name ?? '', 0, 1)) }}
                                 </div>
                             @endif
@@ -429,33 +426,9 @@
 @endsection
 
 @section('scripts')
+<x-avatar-cropper :upload-url="route('profile.photo')" />
 <script src="/vendor/tinymce/tinymce.min.js"></script>
 <script>
-// === Photo Upload ===
-function previewPhoto(input) {
-    if (!input.files || !input.files[0]) return;
-    var file = input.files[0];
-    var allowed = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
-    if (allowed.indexOf(file.type) === -1) { alert('Solo se permiten imagenes JPEG, PNG, GIF o WebP.'); return; }
-    if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede pesar mas de 5MB.'); return; }
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var container = document.querySelector('.profile-avatar');
-        var placeholder = document.getElementById('avatarPlaceholder');
-        if (placeholder) placeholder.style.display = 'none';
-        var img = document.getElementById('avatarPreview');
-        if (img) { img.src = e.target.result; }
-        else {
-            img = document.createElement('img');
-            img.src = e.target.result;
-            img.id = 'avatarPreview';
-            img.alt = 'Avatar';
-            container.insertBefore(img, container.firstChild);
-        }
-    };
-    reader.readAsDataURL(file);
-    document.getElementById('photoForm').submit();
-}
 
 // === Bio Counter ===
 function updateBioCounter() {

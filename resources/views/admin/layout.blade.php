@@ -472,9 +472,9 @@
 
             <div class="sidebar-user">
                 @if(auth()->user()->avatar_path)
-                    <img src="{{ Storage::url(auth()->user()->avatar_path) }}" alt="Avatar" class="user-avatar" id="sidebarAvatar" onclick="document.getElementById('avatarInput').click()">
+                    <img src="{{ Storage::url(auth()->user()->avatar_path) }}" alt="Avatar" class="user-avatar" id="sidebarAvatar" data-avatar-img onclick="document.getElementById('avatarInput').click()">
                 @else
-                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 3px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 40px;" id="sidebarAvatar" onclick="document.getElementById('avatarInput').click()">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 3px solid white; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 40px;" id="sidebarAvatar" data-avatar-placeholder onclick="document.getElementById('avatarInput').click()">
                         👤
                     </div>
                 @endif
@@ -484,7 +484,7 @@
                 </div>
             </div>
 
-            <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="openCropper(this.files[0])">
 
             <nav class="sidebar-nav">
                 <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">📊 Dashboard</a>
@@ -524,49 +524,6 @@
         </div>
     </div>
 
-    <script>
-        document.getElementById('avatarInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            fetch('{{ route("admin.users.avatar", auth()->user()) }}', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '{{ csrf_token() }}'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const avatar = document.getElementById('sidebarAvatar');
-                    if (data.avatar_url) {
-                        if (avatar.tagName === 'IMG') {
-                            avatar.src = data.avatar_url + '?t=' + Date.now();
-                        } else {
-                            const img = document.createElement('img');
-                            img.src = data.avatar_url;
-                            img.alt = 'Avatar';
-                            img.className = 'user-avatar';
-                            img.id = 'sidebarAvatar';
-                            img.onclick = () => document.getElementById('avatarInput').click();
-                            avatar.replaceWith(img);
-                        }
-                    }
-                    alert('Avatar actualizado correctamente');
-                    document.getElementById('avatarInput').value = '';
-                } else {
-                    alert('Error al subir el avatar');
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Error al subir el avatar');
-            });
-        });
-    </script>
+    <x-avatar-cropper :upload-url="route('admin.users.avatar', auth()->user())" />
 </body>
 </html>
