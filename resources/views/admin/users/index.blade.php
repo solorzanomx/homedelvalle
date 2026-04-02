@@ -4,7 +4,7 @@
 @section('styles')
 <style>
 /* ===== Stats ===== */
-.u-stats { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+.u-stats { display: flex !important; flex-direction: row !important; flex-wrap: nowrap; gap: 0.75rem; margin-bottom: 1.5rem; }
 .u-stat {
     flex: 1; min-width: 0; background: var(--card); border: 1px solid var(--border);
     border-radius: 12px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 0.75rem;

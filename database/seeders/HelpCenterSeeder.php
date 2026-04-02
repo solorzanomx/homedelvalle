@@ -1293,36 +1293,195 @@ MD],
             ['category' => 'configuracion', 'title' => 'Gestion de usuarios', 'slug' => 'gestion-usuarios', 'sort_order' => 3, 'content' => <<<'MD'
 # Gestion de usuarios
 
-## Crear un usuario:
+El modulo de usuarios te permite administrar a todo el equipo de trabajo: crear cuentas, asignar roles, configurar correos y gestionar permisos.
 
-1. Ve a **Configuracion > Usuarios**
-2. Haz clic en "Nuevo Usuario"
-3. Completa:
-   - Nombre y apellido
-   - Email (sera su login)
-   - Contrasena temporal
-   - **Rol** — determina sus permisos
-4. El usuario podra cambiar su contrasena al iniciar sesion
+---
 
-## Roles disponibles:
-- **Super Admin** — acceso total
-- **Broker Direccion** — gestion de equipo y reportes
-- **Broker Senior** — operaciones y clientes
-- **Asesor** — acceso limitado a sus asignaciones
-- **Usuario** — solo lectura
-- **Cliente** — portal del cliente
+## Panel principal de usuarios
 
-## Activar/desactivar usuarios:
-Puedes desactivar un usuario sin borrarlo. El usuario desactivado no puede iniciar sesion pero sus datos se conservan.
+Al entrar a **Configuracion > Usuarios** veras:
 
-## Perfil del usuario:
-Cada usuario puede editar desde su perfil:
-- Datos personales (nombre, telefono, WhatsApp)
-- Foto de perfil
-- Bio y titulo
-- Firma de email
-- Configuracion de correo SMTP personal
-- Idioma y zona horaria
+### Tarjetas de estadisticas
+Cuatro indicadores en la parte superior:
+- **Total** — numero total de usuarios registrados
+- **Activos** — usuarios con cuenta activa
+- **Admins** — usuarios con rol de administrador
+- **Brokers** — usuarios con rol de broker
+
+### Barra de busqueda
+Escribe nombre o email para filtrar usuarios en tiempo real (sin recargar la pagina). La busqueda se ejecuta automaticamente despues de dejar de escribir.
+
+### Filtros por rol
+Pestanas segmentadas para filtrar rapidamente por tipo de usuario:
+- **Todos** — muestra todos los usuarios con contador
+- **Admin** — solo administradores
+- **Broker** — brokers senior
+- **Director** — directores de area (broker direccion)
+- **Asesor** — asesores inmobiliarios
+- **Usuario** — usuarios basicos
+
+### Tarjetas de usuario
+Cada usuario se muestra como una tarjeta con:
+- **Avatar** — foto de perfil o iniciales con color de fondo unico
+- **Indicador de estado** — punto verde (activo) o gris (inactivo)
+- **Nombre completo** y email
+- **Cargo** — puesto en la empresa (si lo tiene configurado)
+- **Badge de rol** — etiqueta con color segun el rol del sistema
+- **Rol RBAC** — nombre del rol granular asignado
+- **Acciones** — botones de Ver y Editar
+
+---
+
+## Ver perfil de usuario
+
+Al hacer clic en "Ver" se abre el perfil del usuario con dos pestanas:
+
+### Pestana: Informacion
+Muestra los datos del usuario en formato de lectura:
+
+**Informacion personal:**
+- Nombre completo
+- Email (con enlace para enviar correo)
+- Telefono / WhatsApp
+- Fecha de registro (miembro desde)
+
+**Perfil profesional:**
+- Cargo en la empresa
+- Rol del sistema (rol legacy + rol RBAC)
+- Acerca de (biografia breve)
+
+### Pestana: Configuracion
+Muestra la configuracion del usuario:
+
+**Correo corporativo:**
+- Correo de envio configurado
+- Estado del correo (activo/inactivo)
+- Contrasena configurada (si/no)
+
+**Preferencias:**
+- Zona horaria seleccionada
+- Mostrar telefono en propiedades (si/no)
+
+**Detalles de cuenta:**
+- Fecha de creacion
+- Ultima actualizacion
+
+### Acciones rapidas
+En la parte inferior del perfil:
+- **Editar perfil** — abre el formulario de edicion
+- **Llamar** — enlace directo al telefono
+- **Enviar email** — enlace mailto
+- **WhatsApp** — abre WhatsApp con el numero del usuario
+
+### Foto de perfil
+Haz clic en la foto de perfil (o las iniciales) para cambiarla. Se abre un recortador de imagen que te permite ajustar y centrar la foto antes de guardarla.
+
+---
+
+## Crear nuevo usuario
+
+Al hacer clic en **"+ Nuevo"** se abre el formulario de creacion con:
+
+### Foto de perfil
+En la parte superior, un circulo con borde punteado permite subir la foto de perfil del nuevo usuario. Formatos aceptados: JPG, PNG, WebP. Maximo 5 MB. La foto se previsualiza antes de guardar.
+
+### Datos del usuario
+- **Nombre** (obligatorio)
+- **Apellido**
+- **Email** (obligatorio) — sera su usuario de acceso
+- **Contrasena** (obligatorio) — minimo 6 caracteres
+- **Telefono**
+
+### Seleccion de rol
+Tarjetas visuales para elegir el rol del nuevo usuario. Cada tarjeta muestra:
+- Icono del rol
+- Nombre del rol
+- Descripcion de lo que puede hacer
+- Numero de permisos que incluye
+
+**Roles disponibles:**
+
+| Rol | Descripcion | Permisos |
+|-----|-------------|----------|
+| **Super Admin** | Acceso total al sistema, configuracion y usuarios | Todos los permisos |
+| **Broker Senior** | Propiedades, clientes, operaciones, tratos y pipeline | Leads, pipeline, dashboard, propiedades |
+| **Broker Direccion** | Gestion de equipo, reportes y finanzas | Todo excepto configuracion del sistema |
+| **Asesor** | Sus propios clientes, propiedades asignadas y tareas | Leads propios, pipeline basico, tareas |
+| **Usuario** | Acceso basico de solo lectura | Dashboard basico |
+
+Al crear el usuario se envia automaticamente un **email de bienvenida** con sus credenciales de acceso.
+
+---
+
+## Editar usuario
+
+El formulario de edicion tiene dos pestanas:
+
+### Pestana: General
+
+**Informacion personal:**
+- **Nombre** (obligatorio)
+- **Apellido**
+- **Email** (obligatorio) — no puede repetirse con otro usuario
+- **Telefono / WhatsApp** — formato +52 33 1234 5678
+
+**Perfil profesional:**
+- **Cargo en la empresa** — ejemplo: Director Comercial, Asesor Senior
+- **Acerca de** — breve descripcion profesional (maximo 200 caracteres)
+
+### Pestana: Configuracion
+
+**Correo corporativo:**
+Configura el correo para que el usuario pueda enviar emails a clientes desde el CRM.
+- **Contrasena del correo** — si ya hay una guardada, se muestra "Guardada — dejar vacio para no cambiar"
+- **Correo activo** — toggle para activar/desactivar el envio de correos
+
+**Preferencias:**
+- **Zona horaria** — opciones para Mexico y Estados Unidos
+- **Mostrar telefono en propiedades** — toggle que controla si el telefono del asesor aparece en las fichas de propiedades del sitio web
+
+### Foto de perfil
+Haz clic en la foto del usuario en la cabecera para cambiarla. Se abre un recortador de imagen.
+
+### Guardar cambios
+Al guardar, los datos se actualizan y se redirige al perfil del usuario con un mensaje de confirmacion.
+
+---
+
+## Zona de peligro
+
+Solo visible para usuarios con permiso de eliminar usuarios. Aparece debajo del perfil y permite:
+- **Eliminar usuario** — eliminacion permanente con confirmacion. No se puede deshacer.
+- No puedes eliminarte a ti mismo.
+
+---
+
+## Permisos del sistema RBAC
+
+El CRM usa un sistema de permisos granulares (RBAC) con 22 permisos agrupados en modulos:
+
+| Modulo | Permisos |
+|--------|----------|
+| **Leads** | Ver todos, ver propios, crear, editar, eliminar, asignar |
+| **Pipeline** | Ver, mover etapas, editar configuracion |
+| **Dashboard** | Vista basica, vista avanzada |
+| **Usuarios** | Ver, crear, editar, eliminar |
+| **Sistema** | Configuracion general, automatizaciones |
+| **Finanzas** | Ver reportes, gestionar transacciones |
+| **CMS** | Gestionar sitio web |
+| **Marketing** | Ver campanas, gestionar campanas |
+
+Los permisos se asignan a traves de los roles. Si necesitas permisos personalizados, el administrador puede crear roles custom desde la seccion de permisos.
+
+---
+
+## Tips y mejores practicas
+
+- **Asigna el rol minimo necesario** — un asesor no necesita acceso a finanzas ni configuracion
+- **Configura el correo corporativo** — sin correo configurado, el usuario no puede enviar fichas tecnicas a clientes
+- **Sube foto de perfil** — los perfiles con foto generan mas confianza en comunicaciones con clientes
+- **Usa cargos descriptivos** — aparecen en el perfil y ayudan a identificar funciones del equipo
+- **Desactiva en lugar de eliminar** — al desactivar un usuario, sus datos se conservan para reportes historicos
 MD],
 
             ['category' => 'configuracion', 'title' => 'Plantillas de contrato', 'slug' => 'plantillas-contrato', 'sort_order' => 4, 'content' => <<<'MD'
@@ -1514,6 +1673,11 @@ MD],
             // Config
             ['context' => 'settings.email', 'title' => 'Prueba primero', 'content' => 'Siempre usa "Probar Conexion" antes de guardar. Un SMTP mal configurado hara que ningun correo llegue.', 'type' => 'warning'],
             ['context' => 'settings.users', 'title' => 'Roles correctos', 'content' => 'Asigna el rol minimo necesario. Un asesor no necesita acceso a finanzas ni configuracion del sistema.', 'type' => 'pro_tip'],
+            ['context' => 'settings.users', 'title' => 'Correo corporativo', 'content' => 'Configura la contrasena del correo de cada usuario en la pestana Configuracion para que puedan enviar fichas tecnicas a clientes.', 'type' => 'tip'],
+            ['context' => 'settings.users.create', 'title' => 'Foto de perfil', 'content' => 'Sube la foto de perfil al crear el usuario. Los perfiles con foto generan mas confianza con los clientes.', 'type' => 'tip'],
+            ['context' => 'settings.users.create', 'title' => 'Email de bienvenida', 'content' => 'Al crear el usuario se envia automaticamente un correo con sus credenciales. Avisale que revise su bandeja de entrada.', 'type' => 'tip'],
+            ['context' => 'settings.users.edit', 'title' => 'Cargo descriptivo', 'content' => 'Usa cargos como "Director Comercial" o "Asesor Senior" en lugar de solo el nombre del rol. Aparecen en el perfil y comunicaciones.', 'type' => 'pro_tip'],
+            ['context' => 'settings.users.show', 'title' => 'Cambiar foto', 'content' => 'Haz clic en la foto de perfil para cambiarla. Se abre un recortador que te permite ajustar y centrar la imagen.', 'type' => 'tip'],
         ];
 
         foreach ($tips as $t) {
