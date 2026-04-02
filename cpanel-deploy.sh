@@ -89,14 +89,10 @@ else
     echo "[WARN] No existe public/build/ en el repo"
 fi
 
-# 5. Storage link
-rm -rf "$PUBLIC_HTML/storage"
-ln -sf "$REPO/storage/app/public" "$PUBLIC_HTML/storage" 2>/dev/null
-if [ ! -L "$PUBLIC_HTML/storage" ]; then
-    mkdir -p "$PUBLIC_HTML/storage"
-    cp -r "$REPO/storage/app/public/"* "$PUBLIC_HTML/storage/" 2>/dev/null
-fi
-echo "[OK] storage/"
+# 5. Storage: NO crear symlink/carpeta (Laravel sirve archivos via ruta /storage/{path})
+#    Apache bloquea symlinks en cPanel, asi que usamos la ruta storage.local de Laravel
+rm -rf "$PUBLIC_HTML/storage" 2>/dev/null
+echo "[OK] storage servido via Laravel (sin symlink)"
 
 # 6. Vendor assets publicos
 if [ -d "$REPO/public/vendor" ]; then
