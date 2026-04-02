@@ -250,7 +250,7 @@
     {{-- LEFT: Details + CRM --}}
     <div>
         {{-- Features --}}
-        @if($property->bedrooms !== null || $property->bathrooms !== null || $property->area || $property->parking !== null)
+        @if($property->bedrooms !== null || $property->bathrooms !== null || $property->area || $property->parking !== null || $property->floors || $property->half_bathrooms)
         <div class="card" style="margin-bottom:1.25rem;">
             <div class="card-body">
                 <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.75rem;">Caracteristicas</div>
@@ -261,13 +261,52 @@
                     @if($property->bathrooms !== null)
                     <div class="feature-card"><div class="feature-card-val">{{ $property->bathrooms }}</div><div class="feature-card-lbl">Banos</div></div>
                     @endif
-                    @if($property->area)
-                    <div class="feature-card"><div class="feature-card-val">{{ number_format($property->area, 0) }}</div><div class="feature-card-lbl">m² Area</div></div>
+                    @if($property->half_bathrooms)
+                    <div class="feature-card"><div class="feature-card-val">{{ $property->half_bathrooms }}</div><div class="feature-card-lbl">Medios banos</div></div>
                     @endif
                     @if($property->parking !== null)
                     <div class="feature-card"><div class="feature-card-val">{{ $property->parking }}</div><div class="feature-card-lbl">Estacionamiento</div></div>
                     @endif
+                    @if($property->floors)
+                    <div class="feature-card"><div class="feature-card-val">{{ $property->floors }}</div><div class="feature-card-lbl">Pisos</div></div>
+                    @endif
                 </div>
+                @if($property->lot_area || $property->construction_area || $property->area)
+                <div class="feature-cards" style="margin-top:0.5rem;">
+                    @if($property->lot_area)
+                    <div class="feature-card"><div class="feature-card-val">{{ number_format($property->lot_area, 0) }}</div><div class="feature-card-lbl">m&sup2; Terreno</div></div>
+                    @endif
+                    @if($property->construction_area)
+                    <div class="feature-card"><div class="feature-card-val">{{ number_format($property->construction_area, 0) }}</div><div class="feature-card-lbl">m&sup2; Construccion</div></div>
+                    @endif
+                    @if($property->area)
+                    <div class="feature-card"><div class="feature-card-val">{{ number_format($property->area, 0) }}</div><div class="feature-card-lbl">m&sup2; Total</div></div>
+                    @endif
+                </div>
+                @endif
+                @if($property->year_built || $property->maintenance_fee || $property->furnished)
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap; margin-top:0.75rem; font-size:0.85rem; color:var(--text-muted);">
+                    @if($property->year_built)
+                    <span>Ano: <strong style="color:var(--text);">{{ $property->year_built }}</strong></span>
+                    @endif
+                    @if($property->maintenance_fee)
+                    <span>Mantenimiento: <strong style="color:var(--text);">${{ number_format($property->maintenance_fee, 0) }}/mes</strong></span>
+                    @endif
+                    @if($property->furnished)
+                    <span>{{ match($property->furnished) { 'amueblado' => 'Amueblado', 'semi_amueblado' => 'Semi amueblado', default => 'Sin amueblar' } }}</span>
+                    @endif
+                </div>
+                @endif
+                @if($property->amenities && count($property->amenities))
+                <div style="margin-top:0.75rem;">
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.35rem;">Amenidades</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">
+                        @foreach($property->amenities as $amenity)
+                        <span class="badge badge-blue" style="font-size:0.72rem;">{{ str_replace('_', ' ', ucfirst($amenity)) }}</span>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
         @endif

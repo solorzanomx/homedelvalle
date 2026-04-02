@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 class Property extends Model
 {
-    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'address', 'zipcode', 'area', 'parking', 'status', 'bedrooms', 'bathrooms', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url',];
+    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url'];
     public function broker(): BelongsTo
     {
         return $this->belongsTo(Broker::class);
@@ -59,9 +59,16 @@ class Property extends Model
         return [
             'price' => 'decimal:2',
             'area' => 'decimal:2',
+            'construction_area' => 'decimal:2',
+            'lot_area' => 'decimal:2',
+            'maintenance_fee' => 'decimal:2',
             'bedrooms' => 'integer',
             'bathrooms' => 'integer',
+            'half_bathrooms' => 'integer',
             'parking' => 'integer',
+            'floors' => 'integer',
+            'year_built' => 'integer',
+            'amenities' => 'array',
             'easybroker_published_at' => 'datetime',
         ];
     }

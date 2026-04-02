@@ -319,7 +319,7 @@
             <div class="tab-panel" data-tab="features">
                 <div class="card">
                     <div class="card-body">
-                        <div class="section-label">Caracteristicas de la propiedad</div>
+                        <div class="section-label">Espacios</div>
                         <div class="features-grid">
                             <div class="feature-card">
                                 <div class="feature-icon">&#128716;</div>
@@ -328,19 +328,91 @@
                             </div>
                             <div class="feature-card">
                                 <div class="feature-icon">&#128705;</div>
-                                <label>Banos</label>
-                                <input type="number" name="bathrooms" value="{{ old('bathrooms', $property->bathrooms) }}" min="0" step="0.5" placeholder="0">
+                                <label>Banos completos</label>
+                                <input type="number" name="bathrooms" value="{{ old('bathrooms', $property->bathrooms) }}" min="0" placeholder="0">
                             </div>
                             <div class="feature-card">
-                                <div class="feature-icon">&#128207;</div>
-                                <label>Area m&sup2;</label>
-                                <input type="number" name="area" value="{{ old('area', $property->area) }}" min="0" step="0.01" placeholder="0">
+                                <div class="feature-icon">&#128704;</div>
+                                <label>Medios banos</label>
+                                <input type="number" name="half_bathrooms" value="{{ old('half_bathrooms', $property->half_bathrooms) }}" min="0" placeholder="0">
                             </div>
                             <div class="feature-card">
                                 <div class="feature-icon">&#128663;</div>
                                 <label>Estacionamiento</label>
                                 <input type="number" name="parking" value="{{ old('parking', $property->parking) }}" min="0" placeholder="0">
                             </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#127970;</div>
+                                <label>Pisos / Niveles</label>
+                                <input type="number" name="floors" value="{{ old('floors', $property->floors) }}" min="0" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="section-label" style="margin-top:1.25rem;">Superficies</div>
+                        <div class="features-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128207;</div>
+                                <label>Terreno m&sup2;</label>
+                                <input type="number" name="lot_area" value="{{ old('lot_area', $property->lot_area) }}" min="0" step="0.01" placeholder="0">
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128208;</div>
+                                <label>Construccion m&sup2;</label>
+                                <input type="number" name="construction_area" value="{{ old('construction_area', $property->construction_area) }}" min="0" step="0.01" placeholder="0">
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">&#128209;</div>
+                                <label>Area total m&sup2;</label>
+                                <input type="number" name="area" value="{{ old('area', $property->area) }}" min="0" step="0.01" placeholder="0">
+                            </div>
+                        </div>
+
+                        <div class="section-label" style="margin-top:1.25rem;">Detalles adicionales</div>
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.75rem;">
+                            <div class="form-group">
+                                <label class="form-label">Ano de construccion</label>
+                                <input type="number" name="year_built" class="form-input" value="{{ old('year_built', $property->year_built) }}" min="1900" max="{{ date('Y') }}" placeholder="{{ date('Y') }}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mantenimiento mensual</label>
+                                <input type="number" name="maintenance_fee" class="form-input" value="{{ old('maintenance_fee', $property->maintenance_fee) }}" min="0" step="0.01" placeholder="$0.00">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Amueblado</label>
+                                <select name="furnished" class="form-input">
+                                    <option value="">-- Seleccionar --</option>
+                                    <option value="sin_amueblar" {{ old('furnished', $property->furnished) === 'sin_amueblar' ? 'selected' : '' }}>Sin amueblar</option>
+                                    <option value="semi_amueblado" {{ old('furnished', $property->furnished) === 'semi_amueblado' ? 'selected' : '' }}>Semi amueblado</option>
+                                    <option value="amueblado" {{ old('furnished', $property->furnished) === 'amueblado' ? 'selected' : '' }}>Amueblado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        @php $currentAmenities = old('amenities', $property->amenities ?? []); @endphp
+                        <div class="section-label" style="margin-top:1.25rem;">Amenidades</div>
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:0.4rem 1rem;">
+                            @foreach([
+                                'alberca' => 'Alberca',
+                                'jardin' => 'Jardin',
+                                'gym' => 'Gimnasio',
+                                'roof_garden' => 'Roof Garden',
+                                'elevador' => 'Elevador',
+                                'seguridad' => 'Seguridad 24/7',
+                                'area_juegos' => 'Area de juegos',
+                                'salon_eventos' => 'Salon de eventos',
+                                'bodega' => 'Bodega',
+                                'cuarto_servicio' => 'Cuarto de servicio',
+                                'cocina_integral' => 'Cocina integral',
+                                'aire_acondicionado' => 'Aire acondicionado',
+                                'calefaccion' => 'Calefaccion',
+                                'terraza' => 'Terraza',
+                                'balcon' => 'Balcon',
+                            ] as $key => $label)
+                            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem; cursor:pointer; padding:0.3rem 0;">
+                                <input type="checkbox" name="amenities[]" value="{{ $key }}" {{ in_array($key, $currentAmenities) ? 'checked' : '' }}>
+                                {{ $label }}
+                            </label>
+                            @endforeach
                         </div>
                     </div>
                 </div>
