@@ -9,8 +9,7 @@
     padding: 0; margin-bottom: 1.25rem; overflow: hidden;
 }
 .profile-cover {
-    height: 120px; background: linear-gradient(135deg, var(--primary), #764ba2);
-    position: relative;
+    height: 48px; position: relative;
 }
 .profile-head {
     display: flex; align-items: flex-end; gap: 1.25rem; padding: 0 2rem 1.5rem;
@@ -123,7 +122,7 @@
         <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp" onchange="openCropper(this.files[0])" style="display:none;">
         <div class="profile-meta">
             <div class="profile-name">{{ $user->name }} {{ $user->last_name }}</div>
-            <div class="profile-subtitle">{{ $user->email }}</div>
+            <div class="profile-subtitle">{{ $user->title ?: $user->email }}</div>
             <div class="profile-badges">
                 <span class="badge" style="background:{{ $roleBgColors[$user->role] ?? '#667eea' }}15; color:{{ $roleBgColors[$user->role] ?? '#667eea' }}; font-size:0.72rem;">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
                 @if($rbacRole && $rbacRole->slug !== 'super_admin')
