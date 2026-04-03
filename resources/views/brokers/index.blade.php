@@ -3,6 +3,18 @@
 
 @section('styles')
 <style>
+.stat-cards { display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: nowrap; }
+.stat-card {
+    flex: 1; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem;
+}
+.stat-icon {
+    width: 40px; height: 40px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+}
+.stat-value { font-size: 1.35rem; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 0.72rem; color: var(--text-muted); margin-top: 0.15rem; }
 .view-toggle {
     display: flex; gap: 0.25rem; background: var(--bg); border-radius: var(--radius); padding: 3px;
 }
@@ -70,12 +82,41 @@
     </div>
 </div>
 
+{{-- Stats --}}
+<div class="stat-cards" style="display:flex; flex-direction:row; flex-wrap:nowrap;">
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#9734;</div>
+        <div><div class="stat-value">{{ $stats['total'] }}</div><div class="stat-label">Total Brokers</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(34,197,94,0.1); color:var(--success);">&#10003;</div>
+        <div><div class="stat-value">{{ $stats['active'] }}</div><div class="stat-label">Activos</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(168,85,247,0.1); color:#a855f7;">&#128188;</div>
+        <div><div class="stat-value">{{ $stats['operations'] }}</div><div class="stat-label">Operaciones</div></div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(234,179,8,0.1); color:#ca8a04;">&#128176;</div>
+        <div><div class="stat-value">${{ number_format($stats['commission'], 0) }}</div><div class="stat-label">Comision Pagada</div></div>
+    </div>
+</div>
+
 {{-- Filtros --}}
 <form method="GET" action="{{ route('brokers.index') }}" class="filter-bar">
     <div class="filter-grid">
         <div class="form-group" style="margin:0;">
             <label class="form-label">Buscar</label>
             <input type="text" name="search" class="form-input" value="{{ request('search') }}" placeholder="Nombre, email, empresa...">
+        </div>
+        <div class="form-group" style="margin:0;">
+            <label class="form-label">Empresa</label>
+            <select name="company" class="form-select">
+                <option value="">Todas</option>
+                @foreach($companies as $company)
+                    <option value="{{ $company->id }}" {{ request('company') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                @endforeach
+            </select>
         </div>
         <div class="form-group" style="margin:0;">
             <label class="form-label">Estado</label>
@@ -101,12 +142,11 @@
                     <tr>
                         <th></th>
                         <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Telefono</th>
                         <th>Empresa</th>
+                        <th>Telefono</th>
                         <th>Comision</th>
+                        <th>Operaciones</th>
                         <th>Clientes</th>
-                        <th>Propiedades</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -121,15 +161,25 @@
                                 <div class="av-sm">{{ strtoupper(substr($broker->name, 0, 1)) }}</div>
                             @endif
                         </td>
-                        <td style="font-weight:500;">{{ $broker->name }}</td>
-                        <td class="text-muted" style="font-size:0.85rem;">{{ $broker->email }}</td>
+                        <td>
+                            <a href="{{ route('brokers.show', $broker) }}" style="font-weight:500; color:var(--text);">{{ $broker->name }}</a>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">{{ $broker->email }}</div>
+                        </td>
+                        <td style="font-size:0.85rem;">
+                            @if($broker->company)
+                                <a href="{{ route('broker-companies.edit', $broker->company) }}" style="color:var(--primary);">{{ $broker->company->name }}</a>
+                            @elseif($broker->company_name)
+                                <span class="text-muted">{{ $broker->company_name }}</span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td class="text-muted" style="font-size:0.85rem;">{{ $broker->phone ?: '—' }}</td>
-                        <td class="text-muted" style="font-size:0.85rem;">{{ $broker->company_name ?: '—' }}</td>
                         <td style="font-size:0.85rem;">
                             {{ $broker->commission_rate ? $broker->commission_rate . '%' : '—' }}
                         </td>
+                        <td style="font-size:0.85rem; text-align:center;">{{ $broker->operations_count ?? 0 }}</td>
                         <td style="font-size:0.85rem; text-align:center;">{{ $broker->clients_count ?? 0 }}</td>
-                        <td style="font-size:0.85rem; text-align:center;">{{ $broker->properties_count ?? 0 }}</td>
                         <td>
                             @if($broker->status === 'active')
                                 <span class="badge badge-green">Activo</span>
@@ -139,16 +189,13 @@
                         </td>
                         <td>
                             <div class="action-btns">
+                                <a href="{{ route('brokers.show', $broker) }}" class="btn btn-sm btn-outline">Ver</a>
                                 <a href="{{ route('brokers.edit', $broker) }}" class="btn btn-sm btn-outline">Editar</a>
-                                <form method="POST" action="{{ route('brokers.destroy', $broker) }}" style="display:inline" onsubmit="return confirm('Eliminar este broker?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
-                                </form>
                             </div>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="10" class="text-center text-muted" style="padding:2rem;">No hay brokers registrados.</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted" style="padding:2rem;">No hay brokers registrados.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -172,21 +219,18 @@
                 @endif
                 <div>
                     <div class="broker-card-name">{{ $broker->name }}</div>
-                    <div class="broker-card-sub">{{ $broker->company_name ?: $broker->email }}</div>
+                    <div class="broker-card-sub">{{ $broker->company?->name ?: $broker->company_name ?: $broker->email }}</div>
                 </div>
             </div>
             <div class="broker-card-body">
                 @if($broker->phone)
                     <div class="meta-row"><span>Telefono</span><span>{{ $broker->phone }}</span></div>
                 @endif
-                @if($broker->license_number)
-                    <div class="meta-row"><span>Licencia</span><span>{{ $broker->license_number }}</span></div>
-                @endif
                 @if($broker->commission_rate)
                     <div class="meta-row"><span>Comision</span><span>{{ $broker->commission_rate }}%</span></div>
                 @endif
+                <div class="meta-row"><span>Operaciones</span><span>{{ $broker->operations_count ?? 0 }}</span></div>
                 <div class="meta-row"><span>Clientes</span><span>{{ $broker->clients_count ?? 0 }}</span></div>
-                <div class="meta-row"><span>Propiedades</span><span>{{ $broker->properties_count ?? 0 }}</span></div>
                 <div style="margin-top:0.5rem;">
                     @if($broker->status === 'active')
                         <span class="badge badge-green">Activo</span>
@@ -196,11 +240,8 @@
                 </div>
             </div>
             <div class="broker-card-footer">
+                <a href="{{ route('brokers.show', $broker) }}" class="btn btn-sm btn-outline" style="flex:1; justify-content:center;">Ver</a>
                 <a href="{{ route('brokers.edit', $broker) }}" class="btn btn-sm btn-outline" style="flex:1; justify-content:center;">Editar</a>
-                <form method="POST" action="{{ route('brokers.destroy', $broker) }}" style="flex:1;" onsubmit="return confirm('Eliminar este broker?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger" style="width:100%; justify-content:center;">Eliminar</button>
-                </form>
             </div>
         </div>
         @empty

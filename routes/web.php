@@ -5,6 +5,8 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyPhotoController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\BrokerController;
+use App\Http\Controllers\BrokerCompanyController;
+use App\Http\Controllers\ReferrerController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -122,6 +124,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('clients/{client}/delete-portal', [ClientController::class, 'deletePortalAccess'])->name('clients.delete-portal');
     Route::post('clients/{client}/reset-portal-password', [ClientController::class, 'resetPortalPassword'])->name('clients.reset-portal-password');
     Route::resource('brokers', BrokerController::class);
+    Route::resource('broker-companies', BrokerCompanyController::class);
+    Route::resource('referrers', ReferrerController::class);
+    Route::post('referrers/{referrer}/referrals', [ReferrerController::class, 'storeReferral'])->name('referrers.referrals.store');
+    Route::patch('referrals/{referral}/status', [ReferrerController::class, 'updateReferralStatus'])->name('referrals.update-status');
 
     // Deals
     Route::resource('deals', DealController::class);

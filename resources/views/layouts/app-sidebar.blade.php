@@ -349,6 +349,12 @@
                         <a href="{{ route('brokers.index') }}" class="nav-item {{ request()->routeIs('brokers.*') ? 'active' : '' }}">
                             <span class="nav-icon">&#9734;</span> Brokers
                         </a>
+                        <a href="{{ route('broker-companies.index') }}" class="nav-item {{ request()->routeIs('broker-companies.*') ? 'active' : '' }}">
+                            <span class="nav-icon">&#127970;</span> Empresas
+                        </a>
+                        <a href="{{ route('referrers.index') }}" class="nav-item {{ request()->routeIs('referrers.*') ? 'active' : '' }}">
+                            <span class="nav-icon">&#128279;</span> Comisionistas
+                        </a>
                         <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') && !request()->routeIs('admin.users.permissions') ? 'active' : '' }}">
                             <span class="nav-icon">&#9775;</span> Usuarios
                         </a>

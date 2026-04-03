@@ -36,17 +36,15 @@
         <form method="POST" action="{{ route('brokers.store') }}" enctype="multipart/form-data">
             @csrf
 
-            <div class="section-title">Informacion Personal</div>
+            <div class="section-title" style="margin-top:0;">Informacion Personal</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Nombre <span class="required">*</span></label>
                     <input type="text" name="name" class="form-input" value="{{ old('name') }}" required>
-                    @error('name') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email <span class="required">*</span></label>
                     <input type="email" name="email" class="form-input" value="{{ old('email') }}" required>
-                    @error('email') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Telefono</label>
@@ -54,7 +52,13 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Empresa</label>
-                    <input type="text" name="company_name" class="form-input" value="{{ old('company_name') }}">
+                    <select name="broker_company_id" class="form-select">
+                        <option value="">Sin empresa</option>
+                        @foreach($companies as $company)
+                            <option value="{{ $company->id }}" {{ old('broker_company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                        @endforeach
+                    </select>
+                    <p class="form-hint"><a href="{{ route('broker-companies.create') }}" target="_blank" style="color:var(--primary);">+ Crear nueva empresa</a></p>
                 </div>
             </div>
 
@@ -67,6 +71,14 @@
                 <div class="form-group">
                     <label class="form-label">Comision (%)</label>
                     <input type="number" name="commission_rate" class="form-input" value="{{ old('commission_rate') }}" step="0.01" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Especialidad</label>
+                    <input type="text" name="specialty" class="form-input" value="{{ old('specialty') }}" placeholder="Residencial, comercial, terrenos...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Como lo conocimos</label>
+                    <input type="text" name="referral_source" class="form-input" value="{{ old('referral_source') }}" placeholder="Referido, evento, portal...">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Estado</label>
