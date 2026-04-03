@@ -152,7 +152,7 @@
         <div class="filter-grid">
             <div class="form-group" style="margin:0;"><label class="form-label">Buscar</label><input type="text" name="search" class="form-input" value="{{ request('search') }}" placeholder="Nombre, email, tel..."></div>
             <div class="form-group" style="margin:0;"><label class="form-label">Interes</label>
-                <select name="property_type" class="form-select"><option value="">Todos</option>@foreach(['House'=>'Casa','Apartment'=>'Depto','Land'=>'Terreno','Office'=>'Oficina','Commercial'=>'Comercial'] as $v => $l)<option value="{{ $v }}" {{ request('property_type') === $v ? 'selected' : '' }}>{{ $l }}</option>@endforeach</select>
+                <select name="property_type" class="form-select"><option value="">Todos</option>@foreach(['house'=>'Casa','apartment'=>'Depto','condo'=>'Condominio','land'=>'Terreno'] as $v => $l)<option value="{{ $v }}" {{ request('property_type') === $v ? 'selected' : '' }}>{{ $l }}</option>@endforeach</select>
             </div>
             <div class="form-group" style="margin:0;"><label class="form-label">Prioridad</label>
                 <select name="priority" class="form-select"><option value="">Todas</option>@foreach($prioLabels as $v => $l)<option value="{{ $v }}" {{ request('priority') === $v ? 'selected' : '' }}>{{ $l }}</option>@endforeach</select>

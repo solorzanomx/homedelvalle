@@ -108,11 +108,16 @@
             </div>
         </div>
 
-        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-            @if($submission->phone)
-            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $submission->phone) }}" target="_blank" class="btn btn-primary" style="flex: 1; text-align: center;">WhatsApp</a>
-            @endif
-            <a href="mailto:{{ $submission->email }}" class="btn btn-outline" style="flex: 1; text-align: center;">Email</a>
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="{{ route('clients.create', ['from_submission' => $submission->id, 'name' => $submission->name, 'email' => $submission->email, 'phone' => $submission->phone, 'utm_source' => $submission->utm_source, 'utm_medium' => $submission->utm_medium, 'utm_campaign' => $submission->utm_campaign]) }}" class="btn btn-primary" style="text-align: center; width: 100%;">
+                &#128100; Convertir a Cliente
+            </a>
+            <div style="display: flex; gap: 0.5rem;">
+                @if($submission->phone)
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $submission->phone) }}" target="_blank" class="btn btn-outline" style="flex: 1; text-align: center;">WhatsApp</a>
+                @endif
+                <a href="mailto:{{ $submission->email }}" class="btn btn-outline" style="flex: 1; text-align: center;">Email</a>
+            </div>
         </div>
     </div>
 </div>

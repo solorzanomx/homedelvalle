@@ -36,21 +36,28 @@
         <form method="POST" action="{{ route('clients.store') }}" enctype="multipart/form-data">
             @csrf
 
+            @if(request('from_submission'))
+            <div style="background:rgba(102,126,234,0.06); border:1px solid rgba(102,126,234,0.15); border-radius:var(--radius); padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.82rem;">
+                &#128279; Creando cliente desde lead entrante. Los datos fueron pre-llenados.
+            </div>
+            <input type="hidden" name="initial_notes" value="Convertido desde lead entrante (formulario de contacto). {{ request('utm_source') ? 'Fuente: '.request('utm_source').'.' : '' }} {{ request('utm_medium') ? 'Medio: '.request('utm_medium').'.' : '' }} {{ request('utm_campaign') ? 'Campana: '.request('utm_campaign').'.' : '' }}">
+            @endif
+
             <div class="section-title">Informacion Personal</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Nombre <span class="required">*</span></label>
-                    <input type="text" name="name" class="form-input" value="{{ old('name') }}" required>
+                    <input type="text" name="name" class="form-input" value="{{ old('name', request('name')) }}" required>
                     @error('name') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email <span class="required">*</span></label>
-                    <input type="email" name="email" class="form-input" value="{{ old('email') }}" required>
+                    <input type="email" name="email" class="form-input" value="{{ old('email', request('email')) }}" required>
                     @error('email') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                 </div>
                 <div class="form-group">
                     <label class="form-label">Telefono</label>
-                    <input type="tel" name="phone" class="form-input" value="{{ old('phone') }}">
+                    <input type="tel" name="phone" class="form-input" value="{{ old('phone', request('phone')) }}">
                 </div>
                 <div class="form-group">
                     <label class="form-label">WhatsApp</label>

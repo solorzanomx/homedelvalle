@@ -75,6 +75,8 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', Client::class);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:clients',
@@ -91,7 +93,7 @@ class ClientController extends Controller
             'budget_max' => 'nullable|numeric',
             'property_type' => 'nullable|string',
             'broker_id' => 'nullable|exists:brokers,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'marketing_channel_id' => 'nullable|exists:marketing_channels,id',
             'marketing_campaign_id' => 'nullable|exists:marketing_campaigns,id',
             'acquisition_cost' => 'nullable|numeric|min:0',
@@ -218,7 +220,7 @@ class ClientController extends Controller
             'budget_max' => 'nullable|numeric',
             'property_type' => 'nullable|string',
             'broker_id' => 'nullable|exists:brokers,id',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'marketing_channel_id' => 'nullable|exists:marketing_channels,id',
             'marketing_campaign_id' => 'nullable|exists:marketing_campaigns,id',
             'acquisition_cost' => 'nullable|numeric|min:0',
@@ -226,6 +228,11 @@ class ClientController extends Controller
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('clients', 'public');
+        }
+
+        // Ensure interest_types is cleared when no checkboxes are selected
+        if (!$request->has('interest_types')) {
+            $validated['interest_types'] = [];
         }
 
         $client->update($validated);

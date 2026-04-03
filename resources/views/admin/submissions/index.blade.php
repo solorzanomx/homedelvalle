@@ -79,6 +79,7 @@
                     <td>
                         <div style="display: flex; gap: 0.5rem;">
                             <a href="{{ route('admin.submissions.show', $sub) }}" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;">Ver</a>
+                            <a href="{{ route('clients.create', ['from_submission' => $sub->id, 'name' => $sub->name, 'email' => $sub->email, 'phone' => $sub->phone]) }}" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" title="Convertir a cliente">&#128100;</a>
                             <form method="POST" action="{{ route('admin.submissions.destroy', $sub) }}" onsubmit="return confirm('Eliminar este lead?')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: var(--danger);">&#10005;</button>
