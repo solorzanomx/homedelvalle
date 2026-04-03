@@ -91,6 +91,7 @@ class Operation extends Model
     public function contracts() { return $this->hasMany(Contract::class); }
     public function poliza() { return $this->hasOne(PolizaJuridica::class); }
     public function commissions() { return $this->hasMany(Commission::class); }
+    public function referrals() { return $this->hasMany(Referral::class); }
     public function comments() { return $this->hasMany(OperationComment::class)->orderByDesc('created_at'); }
     public function sourceOperation() { return $this->belongsTo(Operation::class, 'source_operation_id'); }
     public function spawnedOperations() { return $this->hasMany(Operation::class, 'source_operation_id'); }

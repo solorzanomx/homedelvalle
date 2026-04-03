@@ -128,6 +128,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('referrers', ReferrerController::class);
     Route::post('referrers/{referrer}/referrals', [ReferrerController::class, 'storeReferral'])->name('referrers.referrals.store');
     Route::patch('referrals/{referral}/status', [ReferrerController::class, 'updateReferralStatus'])->name('referrals.update-status');
+    Route::patch('referrals/{referral}/link', [ReferrerController::class, 'linkReferral'])->name('referrals.link');
 
     // Deals
     Route::resource('deals', DealController::class);

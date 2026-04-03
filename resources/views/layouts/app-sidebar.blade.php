@@ -347,7 +347,7 @@
                     <span class="nav-label" onclick="toggleSection(this)">Equipo <span class="nav-chevron">&#9660;</span></span>
                     <div class="nav-items">
                         <a href="{{ route('brokers.index') }}" class="nav-item {{ request()->routeIs('brokers.*') ? 'active' : '' }}">
-                            <span class="nav-icon">&#9734;</span> Brokers
+                            <span class="nav-icon">&#9734;</span> Brokers Externos
                         </a>
                         <a href="{{ route('broker-companies.index') }}" class="nav-item {{ request()->routeIs('broker-companies.*') ? 'active' : '' }}">
                             <span class="nav-icon">&#127970;</span> Empresas

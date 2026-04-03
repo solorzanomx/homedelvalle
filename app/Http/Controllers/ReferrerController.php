@@ -37,7 +37,7 @@ class ReferrerController extends Controller
             'total' => Referrer::count(),
             'active' => Referrer::where('status', 'active')->count(),
             'referrals' => Referral::count(),
-            'paid' => Referral::where('status', 'paid')->sum('commission_amount'),
+            'paid' => Referral::where('status', 'pagado')->sum('commission_amount'),
         ];
 
         return view('referrers.index', compact('referrers', 'stats'));
@@ -54,7 +54,7 @@ class ReferrerController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
-            'type' => 'required|in:portero,vecino,broker_hipotecario,comisionista,otro',
+            'type' => 'required|in:portero,vecino,broker_hipotecario,cliente_pasado,comisionista,otro',
             'address' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'status' => 'in:active,inactive',
@@ -72,8 +72,8 @@ class ReferrerController extends Controller
             ->latest()
             ->paginate(10);
 
-        $properties = Property::where('status', 'available')->orderBy('title')->get(['id', 'title']);
-        $operations = Operation::whereIn('status', ['active', 'in_progress'])->latest()->get(['id', 'type', 'stage']);
+        $properties = Property::orderBy('title')->get(['id', 'title']);
+        $operations = Operation::whereIn('status', ['active', 'in_progress'])->latest()->get(['id', 'type', 'stage', 'property_id']);
         $clients = Client::orderBy('name')->get(['id', 'name']);
 
         return view('referrers.show', compact('referrer', 'referrals', 'properties', 'operations', 'clients'));
@@ -93,7 +93,7 @@ class ReferrerController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
-            'type' => 'required|in:portero,vecino,broker_hipotecario,comisionista,otro',
+            'type' => 'required|in:portero,vecino,broker_hipotecario,cliente_pasado,comisionista,otro',
             'address' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'status' => 'in:active,inactive',
@@ -115,18 +115,20 @@ class ReferrerController extends Controller
         $referrer = Referrer::findOrFail($referrerId);
 
         $validated = $request->validate([
+            'referral_type' => 'required|in:trajo_propietario,trajo_cliente',
+            'referred_name' => 'required|string|max:255',
+            'referred_phone' => 'nullable|string|max:20',
+            'referred_context' => 'nullable|string',
             'property_id' => 'nullable|exists:properties,id',
-            'operation_id' => 'nullable|exists:operations,id',
-            'client_id' => 'nullable|exists:clients,id',
             'commission_percentage' => 'required|numeric|between:0,100',
-            'commission_amount' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string',
         ]);
 
         $validated['referrer_id'] = $referrer->id;
+        $validated['status'] = 'registrado';
+        $validated['commission_amount'] = 0;
 
         Referral::create($validated);
-
         $referrer->increment('total_referrals');
 
         return redirect()->route('referrers.show', $referrer)->with('success', 'Referido registrado exitosamente');
@@ -134,19 +136,51 @@ class ReferrerController extends Controller
 
     public function updateReferralStatus(Request $request, string $referralId)
     {
-        $referral = Referral::findOrFail($referralId);
+        $referral = Referral::with(['operation', 'referrer'])->findOrFail($referralId);
 
         $validated = $request->validate([
-            'status' => 'required|in:pending,approved,paid',
+            'status' => 'required|in:registrado,en_proceso,por_pagar,pagado',
         ]);
 
-        $referral->update($validated);
+        $newStatus = $validated['status'];
 
-        if ($validated['status'] === 'paid' && !$referral->paid_at) {
-            $referral->update(['paid_at' => now()]);
+        // When moving to por_pagar, calculate commission from linked operation
+        if ($newStatus === 'por_pagar' && $referral->operation && $referral->operation->commission_amount) {
+            $amount = round($referral->operation->commission_amount * $referral->commission_percentage / 100, 2);
+            $referral->update([
+                'status' => 'por_pagar',
+                'commission_amount' => $amount,
+            ]);
+        } elseif ($newStatus === 'pagado' && !$referral->paid_at) {
+            // When paying, record date and add to referrer's total
+            $referral->update([
+                'status' => 'pagado',
+                'paid_at' => now(),
+            ]);
             $referral->referrer->increment('total_earned', $referral->commission_amount);
+        } else {
+            $referral->update(['status' => $newStatus]);
         }
 
         return redirect()->back()->with('success', 'Estado actualizado');
+    }
+
+    public function linkReferral(Request $request, string $referralId)
+    {
+        $referral = Referral::findOrFail($referralId);
+
+        $validated = $request->validate([
+            'property_id' => 'nullable|exists:properties,id',
+            'operation_id' => 'nullable|exists:operations,id',
+            'client_id' => 'nullable|exists:clients,id',
+        ]);
+
+        // Only update non-null values
+        $updates = array_filter($validated, fn($v) => $v !== null && $v !== '');
+        if (!empty($updates)) {
+            $referral->update($updates);
+        }
+
+        return redirect()->back()->with('success', 'Referido vinculado exitosamente');
     }
 }

@@ -97,7 +97,7 @@ class BrokerController extends Controller
 
     public function edit(string $id)
     {
-        $broker = Broker::findOrFail($id);
+        $broker = Broker::with('company')->findOrFail($id);
         $companies = BrokerCompany::where('status', 'active')->orderBy('name')->get();
         return view('brokers.edit', compact('broker', 'companies'));
     }

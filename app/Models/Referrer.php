@@ -21,6 +21,7 @@ class Referrer extends Model
         'portero' => 'Portero',
         'vecino' => 'Vecino',
         'broker_hipotecario' => 'Broker Hipotecario',
+        'cliente_pasado' => 'Cliente Pasado',
         'comisionista' => 'Comisionista',
         'otro' => 'Otro',
     ];

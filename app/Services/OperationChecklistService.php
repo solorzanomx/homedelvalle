@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Operation;
 use App\Models\OperationChecklistItem;
 use App\Models\OperationStageLog;
+use App\Models\Referral;
 use App\Models\StageChecklistTemplate;
 use App\Models\User;
 
@@ -172,6 +173,21 @@ class OperationChecklistService
         ]);
 
         $this->initializeChecklistForStage($operation, $newStage);
+
+        // Auto-calculate referral commissions when operation reaches cierre
+        if ($newStage === 'cierre' && $operation->commission_amount) {
+            $referrals = Referral::where('operation_id', $operation->id)
+                ->whereIn('status', ['registrado', 'en_proceso'])
+                ->get();
+
+            foreach ($referrals as $referral) {
+                $amount = round($operation->commission_amount * $referral->commission_percentage / 100, 2);
+                $referral->update([
+                    'status' => 'por_pagar',
+                    'commission_amount' => $amount,
+                ]);
+            }
+        }
     }
 
     /**
