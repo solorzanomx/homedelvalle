@@ -2,23 +2,18 @@
     $siteName = $siteSettings?->site_name ?? 'Home del Valle';
     $logoPath = $siteSettings?->logo_path;
     $logoType = $siteSettings?->logo_type ?? 'text';
-    $useHeaderMenu = isset($headerMenu) && $headerMenu && method_exists($headerMenu, 'items') ? $headerMenu->items->count() : false;
-    $useNavItems = isset($navItems) && $navItems && $navItems->count();
-    $hasMenu = $useHeaderMenu || $useNavItems;
 
-    // Fallback menu when DB is empty
+    // Orden persuasivo: interes → validacion → confianza → conversion
     $defaultLinks = [
-        ['label' => 'Inicio', 'url' => '/'],
         ['label' => 'Propiedades', 'url' => '/propiedades'],
         ['label' => 'Servicios', 'url' => '/servicios'],
-        ['label' => 'Vende tu Propiedad', 'url' => '/vende-tu-propiedad'],
         ['label' => 'Nosotros', 'url' => '/nosotros'],
-        ['label' => 'Blog', 'url' => '/blog'],
+        ['label' => 'Guia Inmobiliaria', 'url' => '/blog'],
         ['label' => 'Contacto', 'url' => '/contacto'],
     ];
 
     $navbarCtaEnabled = $siteSettings?->navbar_cta_enabled ?? true;
-    $navbarCtaText = $siteSettings?->navbar_cta_text ?? 'Valua tu propiedad';
+    $navbarCtaText = $siteSettings?->navbar_cta_text ?? 'Vende tu propiedad';
     $navbarCtaUrl = $siteSettings?->navbar_cta_url ?? '/vende-tu-propiedad';
 @endphp
 
@@ -43,55 +38,19 @@
                 @endif
             </a>
 
-            {{-- Desktop Nav --}}
+            {{-- Desktop Nav — always use $defaultLinks (ignore DB menus to avoid duplicates) --}}
             <div class="hidden md:flex items-center gap-0.5">
-                @if($useHeaderMenu)
-                    @foreach($headerMenu->items as $menuItem)
-                        @if($menuItem->style === 'button')
-                            <a href="{{ $menuItem->resolveUrl() }}" target="{{ $menuItem->target }}"
-                               class="ml-4 inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
-                               style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
-                                {{ $menuItem->label }}
-                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                            </a>
-                        @else
-                            <a href="{{ $menuItem->resolveUrl() }}" target="{{ $menuItem->target }}"
-                               class="relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group/link text-gray-600 hover:text-gray-900">
-                                {{ $menuItem->label }}
-                                <span class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full scale-x-0 group-hover/link:scale-x-100 transition-all duration-300 origin-left" style="background: var(--color-primary);"></span>
-                            </a>
-                        @endif
-                    @endforeach
-                @elseif($useNavItems)
-                    @foreach($navItems as $item)
-                        @if($item->nav_style === 'button')
-                            <a href="{{ $item->navHref() }}"
-                               class="ml-4 inline-flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
-                               style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
-                                {{ $item->nav_label ?: $item->title }}
-                            </a>
-                        @else
-                            <a href="{{ $item->navHref() }}"
-                               class="relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group/link {{ $item->isActive() ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                                {{ $item->nav_label ?: $item->title }}
-                                <span class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full transition-all duration-300 origin-left {{ $item->isActive() ? 'scale-x-100' : 'scale-x-0 group-hover/link:scale-x-100' }}" style="background: var(--color-primary);"></span>
-                            </a>
-                        @endif
-                    @endforeach
-                @else
-                    {{-- Fallback: default links --}}
-                    @foreach($defaultLinks as $link)
-                        <a href="{{ $link['url'] }}"
-                           class="relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group/link {{ request()->is(ltrim($link['url'], '/') ?: '/') ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
-                            {{ $link['label'] }}
-                            <span class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full scale-x-0 group-hover/link:scale-x-100 transition-all duration-300 origin-left" style="background: var(--color-primary);"></span>
-                        </a>
-                    @endforeach
-                @endif
+                @foreach($defaultLinks as $link)
+                    <a href="{{ $link['url'] }}"
+                       class="relative px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg group/link {{ request()->is(ltrim($link['url'], '/') ?: '/') ? 'text-gray-900' : 'text-gray-600 hover:text-gray-900' }}">
+                        {{ $link['label'] }}
+                        <span class="absolute bottom-0 left-4 right-4 h-0.5 rounded-full scale-x-0 group-hover/link:scale-x-100 transition-all duration-300 origin-left" style="background: var(--color-primary);"></span>
+                    </a>
+                @endforeach
             </div>
 
-            {{-- CTA + Auth button (desktop) --}}
-            <div class="hidden md:flex items-center gap-3 ml-4">
+            {{-- CTA button (desktop) --}}
+            <div class="hidden md:flex items-center gap-2 ml-4">
                 @if($navbarCtaEnabled)
                 <a href="{{ $navbarCtaUrl }}"
                    class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
@@ -101,19 +60,9 @@
                 </a>
                 @endif
                 @auth
-                    <a href="{{ route('admin.dashboard') }}"
-                       class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
-                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                        Office
-                    </a>
-                @else
-                    <a href="{{ route('login') }}"
-                       class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
-                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                        Office
-                    </a>
+                <a href="{{ route('admin.dashboard') }}" class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200" title="Office">
+                    <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </a>
                 @endauth
             </div>
 
@@ -133,31 +82,14 @@
              x-transition:leave-start="opacity-100 translate-y-0"
              x-transition:leave-end="opacity-0 -translate-y-4"
              class="md:hidden border-t border-gray-100/60 py-5 space-y-1.5">
-            @if($useHeaderMenu)
-                @foreach($headerMenu->items as $menuItem)
-                    <a href="{{ $menuItem->resolveUrl() }}" target="{{ $menuItem->target }}"
-                       class="block rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200">
-                        {{ $menuItem->label }}
-                    </a>
-                @endforeach
-            @elseif($useNavItems)
-                @foreach($navItems as $item)
-                    <a href="{{ $item->navHref() }}"
-                       class="block rounded-xl px-4 py-3 text-base font-medium transition-all duration-200 {{ $item->isActive() ? 'text-gray-900 bg-gray-50' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
-                        {{ $item->nav_label ?: $item->title }}
-                    </a>
-                @endforeach
-            @else
-                {{-- Fallback: default links --}}
-                @foreach($defaultLinks as $link)
-                    <a href="{{ $link['url'] }}"
-                       class="block rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200">
-                        {{ $link['label'] }}
-                    </a>
-                @endforeach
-            @endif
+            @foreach($defaultLinks as $link)
+                <a href="{{ $link['url'] }}"
+                   class="block rounded-xl px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200">
+                    {{ $link['label'] }}
+                </a>
+            @endforeach
 
-            {{-- CTA + Auth link (mobile) --}}
+            {{-- CTA (mobile) --}}
             <div class="border-t border-gray-100/60 pt-3 mt-2 space-y-2">
                 @if($navbarCtaEnabled)
                 <a href="{{ $navbarCtaUrl }}"
@@ -167,17 +99,11 @@
                 </a>
                 @endif
                 @auth
-                    <a href="{{ route('admin.dashboard') }}"
-                       class="block rounded-xl px-4 py-3.5 text-base font-semibold text-white text-center shadow-lg mt-1 transition-all duration-200"
-                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
-                        Office
-                    </a>
-                @else
-                    <a href="{{ route('login') }}"
-                       class="block rounded-xl px-4 py-3.5 text-base font-semibold text-white text-center shadow-lg mt-1 transition-all duration-200"
-                       style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
-                        Office
-                    </a>
+                <a href="{{ route('admin.dashboard') }}"
+                   class="block rounded-xl px-4 py-3 text-base font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all duration-200 text-center">
+                    <svg class="w-4 h-4 inline-block mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    Office
+                </a>
                 @endauth
             </div>
         </div>

@@ -3,7 +3,7 @@
 @section('meta')
     <x-public.seo-meta
         title="Firma Inmobiliaria Boutique en Benito Juarez — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
-        description="Pocos inmuebles. Mas control. Mejores resultados. Consultora especializada en captacion estrategica y comercializacion de propiedades de alto valor en la Benito Juarez, CDMX."
+        description="¿Quieres vender tu propiedad en la Benito Juarez? Valuacion gratuita, venta en 45 dias promedio y seguridad juridica completa. Firma inmobiliaria boutique en CDMX."
         :canonical="url('/')"
     />
     <x-public.json-ld type="RealEstateAgent" :data="[
@@ -51,61 +51,47 @@
 
             <div class="max-w-3xl">
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white tracking-tight leading-[1.08]">
-                    {{ $siteSettings?->hero_heading ?? 'Pocos inmuebles. Mas control. Mejores resultados.' }}
+                    {{ $siteSettings?->hero_heading ?? '¿Quieres vender tu propiedad en la Benito Juarez?' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    {{ $siteSettings?->hero_subheading ?? 'Consultora inmobiliaria especializada en captacion estrategica, analisis y comercializacion de propiedades de alto valor en la Benito Juarez, CDMX.' }}
+                    {{ $siteSettings?->hero_subheading ?? 'Somos la firma inmobiliaria boutique que vende tu inmueble mas rapido, al mejor precio y con total seguridad juridica. Sin catalogo masivo. Solo propiedades seleccionadas.' }}
                 </p>
                 <div class="mt-10 flex flex-wrap gap-4">
-                    <a href="{{ $siteSettings?->hero_cta_url ?? route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl bg-white px-7 py-4 text-sm font-semibold text-brand-900 hover:bg-brand-50 transition-all duration-300 shadow-premium-xl hover:-translate-y-0.5 active:translate-y-0">
-                        {{ $siteSettings?->hero_cta_text ?? 'Valua tu propiedad' }}
+                    <a href="{{ $siteSettings?->hero_cta_url ?? route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl bg-white px-8 py-4.5 text-base font-bold text-brand-900 hover:bg-brand-50 transition-all duration-300 shadow-premium-xl hover:-translate-y-0.5 active:translate-y-0">
+                        {{ $siteSettings?->hero_cta_text ?? 'Solicita tu valuacion gratuita' }}
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
+                    @if($siteSettings?->whatsapp_number)
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaria una valuacion.') }}" target="_blank" rel="noopener noreferrer"
+                       class="inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300">
+                        <svg class="w-5 h-5 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Escribenos por WhatsApp
+                    </a>
+                    @else
                     <a href="{{ $siteSettings?->hero_secondary_cta_url ?? route('propiedades.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300">
                         {{ $siteSettings?->hero_secondary_cta_text ?? 'Ver propiedades' }}
                     </a>
+                    @endif
                 </div>
             </div>
-
-            {{-- Search bar --}}
-            <form action="{{ route('propiedades.index') }}" method="GET" class="mt-14 max-w-4xl" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                <div class="glass rounded-2xl p-2.5 shadow-premium-xl border border-white/10">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-                        <select name="operation_type" class="rounded-xl border-0 bg-white/80 px-4 py-3.5 text-sm text-gray-900 focus:ring-2 focus:ring-brand-500/30 transition-shadow">
-                            <option value="">Operacion</option>
-                            <option value="sale">Comprar</option>
-                            <option value="rental">Rentar</option>
-                        </select>
-                        <select name="property_type" class="rounded-xl border-0 bg-white/80 px-4 py-3.5 text-sm text-gray-900 focus:ring-2 focus:ring-brand-500/30 transition-shadow">
-                            <option value="">Tipo de propiedad</option>
-                            <option value="House">Casa</option>
-                            <option value="Apartment">Departamento</option>
-                            <option value="Land">Terreno</option>
-                            <option value="Office">Oficina</option>
-                            <option value="Commercial">Comercial</option>
-                        </select>
-                        <input type="text" name="search" placeholder="Colonia o zona..." class="rounded-xl border-0 bg-white/80 px-4 py-3.5 text-sm text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-brand-500/30 transition-shadow">
-                        <button type="submit" class="rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white hover:opacity-90 transition-all duration-200 shadow-brand flex items-center justify-center gap-2.5">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            Buscar
-                        </button>
-                    </div>
-                </div>
-            </form>
 
             {{-- Trust metrics --}}
             <div class="mt-12 flex flex-wrap gap-x-10 gap-y-4 text-sm" x-data x-intersect.once="$el.classList.add('animate-fade-in')">
                 <div class="flex items-center gap-2 text-brand-300/70">
                     <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    Valuacion profesional gratuita
+                </div>
+                <div class="flex items-center gap-2 text-brand-300/70">
+                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    Vendemos en 45 dias promedio
+                </div>
+                <div class="flex items-center gap-2 text-brand-300/70">
+                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    Seguridad juridica completa
+                </div>
+                <div class="flex items-center gap-2 text-brand-300/70">
+                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     Especialistas en Benito Juarez
-                </div>
-                <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Asesoria sin costo
-                </div>
-                <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Seguridad juridica en cada operacion
                 </div>
             </div>
         </div>
@@ -399,15 +385,15 @@
     <section class="py-24 sm:py-32 gradient-brand-soft relative overflow-hidden">
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,196,0.06)_0%,_transparent_70%)]"></div>
         <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->cta_heading ?? '¿Tienes una propiedad en la Benito Juarez?' }}</h2>
-            <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->cta_subheading ?? 'Conoce cuanto vale tu inmueble con una valuacion profesional gratuita y sin compromiso. Pocos inmuebles, mejores resultados.' }}</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->cta_heading ?? '¿Listo para vender tu propiedad?' }}</h2>
+            <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->cta_subheading ?? 'Recibe una valuacion profesional gratuita en menos de 24 horas. Sin compromiso, sin letra chica. Solo necesitamos los datos basicos de tu inmueble.' }}</p>
             <div class="mt-10 flex flex-wrap justify-center gap-4">
                 <a href="{{ route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl gradient-brand px-8 py-4 text-sm font-semibold text-white shadow-brand-lg hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
-                    Valua tu propiedad
+                    Solicita tu valuacion gratuita
                     <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                 </a>
                 @if($siteSettings?->whatsapp_number)
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, me interesa una valuacion de mi propiedad.') }}" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-2.5 rounded-xl bg-white border border-gray-200 px-8 py-4 text-sm font-semibold text-gray-700 hover:border-brand-200 hover:text-brand-600 hover:shadow-premium transition-all duration-300">
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaria una valuacion.') }}" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-2.5 rounded-xl bg-white border border-gray-200 px-8 py-4 text-sm font-semibold text-gray-700 hover:border-brand-200 hover:text-brand-600 hover:shadow-premium transition-all duration-300">
                     <svg class="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     WhatsApp
                 </a>
@@ -477,9 +463,9 @@
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
                 <div x-data x-intersect.once="$el.classList.add('animate-slide-in-left')">
-                    <p class="text-sm font-semibold text-brand-400 uppercase tracking-widest mb-4">Hablemos</p>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{{ $siteSettings?->contact_heading ?? '¿Listo para dar el siguiente paso?' }}</h2>
-                    <p class="mt-5 text-lg text-brand-200/70 leading-relaxed">{{ $siteSettings?->contact_subheading ?? 'Ya sea que busques comprar, vender o invertir, nuestro equipo de expertos esta aqui para ayudarte.' }}</p>
+                    <p class="text-sm font-semibold text-brand-400 uppercase tracking-widest mb-4">Hablemos de tu propiedad</p>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{{ $siteSettings?->contact_heading ?? '¿Quieres vender? Platiquemos.' }}</h2>
+                    <p class="mt-5 text-lg text-brand-200/70 leading-relaxed">{{ $siteSettings?->contact_subheading ?? 'Cuentanos sobre tu inmueble y te daremos una estrategia personalizada sin costo ni compromiso.' }}</p>
 
                     <div class="mt-12 space-y-6">
                         @if($siteSettings?->contact_phone)
