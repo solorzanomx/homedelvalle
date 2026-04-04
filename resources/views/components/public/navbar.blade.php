@@ -3,12 +3,12 @@
     $logoPath = $siteSettings?->logo_path;
     $logoType = $siteSettings?->logo_type ?? 'text';
 
-    // Orden persuasivo: interes → validacion → confianza → conversion
+    // Orden persuasivo: interés → validación → confianza → conversión
     $defaultLinks = [
         ['label' => 'Propiedades', 'url' => '/propiedades'],
         ['label' => 'Servicios', 'url' => '/servicios'],
         ['label' => 'Nosotros', 'url' => '/nosotros'],
-        ['label' => 'Guia Inmobiliaria', 'url' => '/blog'],
+        ['label' => 'Guía Inmobiliaria', 'url' => '/blog'],
         ['label' => 'Contacto', 'url' => '/contacto'],
     ];
 

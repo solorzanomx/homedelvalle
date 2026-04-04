@@ -23,10 +23,10 @@
             <div x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-sm text-brand-200 backdrop-blur-sm mb-6">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    {{ $campaign['badge'] ?? 'Asesoria gratuita' }}
+                    {{ $campaign['badge'] ?? 'Asesoría gratuita' }}
                 </div>
                 <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                    {!! $campaign['heading'] ?? 'Vende tu propiedad rapido y al mejor precio' !!}
+                    {!! $campaign['heading'] ?? 'Vende tu propiedad rápido y al mejor precio' !!}
                 </h1>
                 <p class="mt-5 text-lg text-brand-200/80 leading-relaxed">
                     {{ $campaign['subheading'] ?? 'Conectamos tu propiedad con compradores calificados. Sin comisiones ocultas.' }}
@@ -45,7 +45,7 @@
 
             {{-- Right: form --}}
             <div class="rounded-2xl bg-white p-8 lg:p-10 shadow-premium-xl" x-data x-intersect.once="$el.classList.add('animate-slide-in-right')">
-                <h2 class="text-xl font-bold text-gray-900">Solicita tu valuacion gratuita</h2>
+                <h2 class="text-xl font-bold text-gray-900">Solicita tu valuación gratuita</h2>
                 <p class="text-sm text-gray-500 mt-1.5 mb-6">Responderemos en menos de 24 horas.</p>
 
                 <form method="POST" action="{{ route('landing.submit') }}" x-data="{ submitting: false }" @submit="submitting = true">
@@ -63,11 +63,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <input type="email" name="email" required placeholder="Email" value="{{ old('email') }}"
                                 class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
-                            <input type="tel" name="phone" required placeholder="Telefono" value="{{ old('phone') }}"
+                            <input type="tel" name="phone" required placeholder="Teléfono" value="{{ old('phone') }}"
                                 class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
                         </div>
                         <div>
-                            <textarea name="message" rows="3" placeholder="Cuentanos sobre tu propiedad (ubicacion, tipo, metros...)"
+                            <textarea name="message" rows="3" placeholder="Cuéntanos sobre tu propiedad (ubicación, tipo, metros...)"
                                 class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all resize-none">{{ old('message') }}</textarea>
                         </div>
 
@@ -85,7 +85,7 @@
 
                         <button type="submit" :disabled="submitting"
                             class="w-full rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2">
-                            <template x-if="!submitting"><span>Quiero mi valuacion gratuita</span></template>
+                            <template x-if="!submitting"><span>Quiero mi valuación gratuita</span></template>
                             <template x-if="submitting">
                                 <span class="flex items-center gap-2">
                                     <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -104,8 +104,8 @@
 <section class="py-20 sm:py-24 bg-white">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-16" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">¿Por que vender con nosotros?</h2>
-            <p class="mt-4 text-lg text-gray-500">Pocos inmuebles. Mas control. Mejores resultados.</p>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">¿Por qué vender con nosotros?</h2>
+            <p class="mt-4 text-lg text-gray-500">Pocos inmuebles. Más control. Mejores resultados.</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach($benefits as $bi => $b)
@@ -126,7 +126,7 @@
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-16" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
             <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Proceso</p>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Asi de facil es vender con nosotros</h2>
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Así de fácil es vender con nosotros</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             @foreach($processSteps as $si => $step)
@@ -172,10 +172,10 @@
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,196,0.1)_0%,_transparent_70%)]"></div>
     <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
         <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">{{ $campaign['cta_heading'] ?? '¿Listo para vender tu propiedad?' }}</h2>
-        <p class="mt-5 text-lg text-brand-200/70">{{ $campaign['cta_subheading'] ?? 'Solicita tu asesoria gratuita hoy.' }}</p>
+        <p class="mt-5 text-lg text-brand-200/70">{{ $campaign['cta_subheading'] ?? 'Solicita tu asesoría gratuita hoy.' }}</p>
         <div class="mt-10 flex flex-wrap justify-center gap-4">
             <a href="#inicio" class="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-bold text-brand-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                Solicitar valuacion gratuita
+                Solicitar valuación gratuita
             </a>
             @if($siteSettings?->whatsapp_number)
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode($campaign['wa_message'] ?? 'Hola, me interesa vender mi propiedad') }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 rounded-xl border-2 border-white/30 px-8 py-4 text-sm font-semibold text-white hover:bg-white/10 transition-all duration-300">

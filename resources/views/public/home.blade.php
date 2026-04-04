@@ -2,26 +2,26 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Firma Inmobiliaria Boutique en Benito Juarez — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
-        description="¿Quieres vender tu propiedad en la Benito Juarez? Valuacion gratuita, venta en 45 dias promedio y seguridad juridica completa. Firma inmobiliaria boutique en CDMX."
+        title="Firma Inmobiliaria Boutique en Benito Juárez — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
+        description="¿Quieres vender tu propiedad en la Benito Juárez? Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa. Firma inmobiliaria boutique en CDMX."
         :canonical="url('/')"
     />
     <x-public.json-ld type="RealEstateAgent" :data="[
         'name' => $siteSettings?->site_name ?? 'Home del Valle',
-        'description' => $siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precision',
+        'description' => $siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precisión',
         'url' => url('/'),
         'telephone' => $siteSettings?->contact_phone,
         'email' => $siteSettings?->contact_email,
         'address' => [
             '@type' => 'PostalAddress',
-            'addressLocality' => 'Ciudad de Mexico',
-            'addressRegion' => 'Benito Juarez',
+            'addressLocality' => 'Ciudad de México',
+            'addressRegion' => 'Benito Juárez',
             'addressCountry' => 'MX',
             'streetAddress' => $siteSettings?->address ?? '',
         ],
         'areaServed' => [
             '@type' => 'City',
-            'name' => 'Ciudad de Mexico',
+            'name' => 'Ciudad de México',
         ],
     ]" />
 @endsection
@@ -33,7 +33,7 @@
     {{-- ============================================ --}}
     <section class="relative overflow-hidden bg-brand-950" id="inicio">
         @if($siteSettings?->hero_image_path)
-        <img src="{{ asset('storage/' . $siteSettings->hero_image_path) }}" alt="Propiedades en Benito Juarez" class="absolute inset-0 w-full h-full object-cover opacity-20">
+        <img src="{{ asset('storage/' . $siteSettings->hero_image_path) }}" alt="Propiedades en Benito Juárez" class="absolute inset-0 w-full h-full object-cover opacity-20">
         @endif
 
         <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900/90 to-brand-800/80"></div>
@@ -46,26 +46,26 @@
 
             <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-sm text-brand-200 backdrop-blur-sm mb-8">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                {{ $siteSettings?->hero_badge ?? 'Inmobiliaria boutique en Benito Juarez' }}
+                {{ $siteSettings?->hero_badge ?? 'Inmobiliaria boutique en Benito Juárez' }}
             </div>
 
             <div class="max-w-3xl">
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white tracking-tight leading-[1.08]">
-                    {{ $siteSettings?->hero_heading ?? '¿Quieres vender tu propiedad en la Benito Juarez?' }}
+                    {{ $siteSettings?->hero_heading ?? '¿Quieres vender tu propiedad en la Benito Juárez?' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    {{ $siteSettings?->hero_subheading ?? 'Somos la firma inmobiliaria boutique que vende tu inmueble mas rapido, al mejor precio y con total seguridad juridica. Sin catalogo masivo. Solo propiedades seleccionadas.' }}
+                    {{ $siteSettings?->hero_subheading ?? 'Somos la firma inmobiliaria boutique que vende tu inmueble más rápido, al mejor precio y con total seguridad jurídica. Sin catálogo masivo. Solo propiedades seleccionadas.' }}
                 </p>
                 <div class="mt-10 flex flex-wrap gap-4">
                     <a href="{{ $siteSettings?->hero_cta_url ?? route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl bg-white px-8 py-4.5 text-base font-bold text-brand-900 hover:bg-brand-50 transition-all duration-300 shadow-premium-xl hover:-translate-y-0.5 active:translate-y-0">
-                        {{ $siteSettings?->hero_cta_text ?? 'Solicita tu valuacion gratuita' }}
+                        {{ $siteSettings?->hero_cta_text ?? 'Solicita tu valuación gratuita' }}
                         <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
                     @if($siteSettings?->whatsapp_number)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaria una valuacion.') }}" target="_blank" rel="noopener noreferrer"
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaría una valuación.') }}" target="_blank" rel="noopener noreferrer"
                        class="inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300">
                         <svg class="w-5 h-5 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        Escribenos por WhatsApp
+                        Escríbenos por WhatsApp
                     </a>
                     @else
                     <a href="{{ $siteSettings?->hero_secondary_cta_url ?? route('propiedades.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300">
@@ -79,19 +79,19 @@
             <div class="mt-12 flex flex-wrap gap-x-10 gap-y-4 text-sm" x-data x-intersect.once="$el.classList.add('animate-fade-in')">
                 <div class="flex items-center gap-2 text-brand-300/70">
                     <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Valuacion profesional gratuita
+                    Valuación profesional gratuita
                 </div>
                 <div class="flex items-center gap-2 text-brand-300/70">
                     <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Vendemos en 45 dias promedio
+                    Vendemos en 45 días promedio
                 </div>
                 <div class="flex items-center gap-2 text-brand-300/70">
                     <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Seguridad juridica completa
+                    Seguridad jurídica completa
                 </div>
                 <div class="flex items-center gap-2 text-brand-300/70">
                     <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Especialistas en Benito Juarez
+                    Especialistas en Benito Juárez
                 </div>
             </div>
         </div>
@@ -102,10 +102,10 @@
     {{-- ============================================ --}}
     @php
         $defaultBenefits = [
-            ['icon' => 'location', 'title' => 'Dominio Territorial', 'description' => 'Especializacion profunda en la Alcaldia Benito Juarez. Conocemos cada calle, cada oportunidad y cada tendencia del mercado local.'],
-            ['icon' => 'shield', 'title' => 'Estructura Boutique', 'description' => 'Pocos inmuebles, mas control. Atencion personalizada con enfoque en ejecucion y calidad, no en catalogo masivo.'],
-            ['icon' => 'chart', 'title' => 'Inteligencia de Datos', 'description' => 'Herramientas tecnologicas para analisis de mercado, valuacion precisa y automatizacion de flujos de trabajo.'],
-            ['icon' => 'star', 'title' => 'Respaldo Senior', 'description' => 'Direccion con mas de 30 años de experiencia tecnica y legal en el sector inmobiliario de la Ciudad de Mexico.'],
+            ['icon' => 'location', 'title' => 'Dominio Territorial', 'description' => 'Especialización profunda en la Alcaldía Benito Juárez. Conocemos cada calle, cada oportunidad y cada tendencia del mercado local.'],
+            ['icon' => 'shield', 'title' => 'Estructura Boutique', 'description' => 'Pocos inmuebles, más control. Atención personalizada con enfoque en ejecución y calidad, no en catálogo masivo.'],
+            ['icon' => 'chart', 'title' => 'Inteligencia de Datos', 'description' => 'Herramientas tecnológicas para análisis de mercado, valuación precisa y automatización de flujos de trabajo.'],
+            ['icon' => 'star', 'title' => 'Respaldo Senior', 'description' => 'Dirección con más de 30 años de experiencia técnica y legal en el sector inmobiliario de la Ciudad de México.'],
         ];
         $benefits = $siteSettings?->benefits_section ?? $defaultBenefits;
         $iconSvgs = [
@@ -121,8 +121,8 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Ventajas competitivas</p>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->benefits_heading ?? '¿Por que Home del Valle?' }}</h2>
-                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->benefits_subheading ?? 'No somos una inmobiliaria de volumen. Somos una firma boutique que prioriza la calidad del inventario y la seguridad juridica.' }}</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->benefits_heading ?? '¿Por qué Home del Valle?' }}</h2>
+                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->benefits_subheading ?? 'No somos una inmobiliaria de volumen. Somos una firma boutique que prioriza la calidad del inventario y la seguridad jurídica.' }}</p>
             </div>
 
             <div class="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
@@ -146,8 +146,8 @@
     @php
         $defaultSteps = [
             ['num' => '01', 'title' => 'Identificamos la demanda', 'description' => 'Analizamos las necesidades de desarrolladores, inversionistas y compradores calificados.'],
-            ['num' => '02', 'title' => 'Captamos activos estrategicos', 'description' => 'Buscamos propiedades que se alineen con los requerimientos tecnicos y comerciales identificados.'],
-            ['num' => '03', 'title' => 'Ejecutamos la operacion', 'description' => 'Estrategia de salida rapida con red de contactos consolidada y blindaje juridico completo.'],
+            ['num' => '02', 'title' => 'Captamos activos estratégicos', 'description' => 'Buscamos propiedades que se alineen con los requerimientos técnicos y comerciales identificados.'],
+            ['num' => '03', 'title' => 'Ejecutamos la operación', 'description' => 'Estrategia de salida rápida con red de contactos consolidada y blindaje jurídico completo.'],
         ];
         $bmSteps = $siteSettings?->business_model_steps ?? $defaultSteps;
     @endphp
@@ -159,7 +159,7 @@
                     <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Nuestro enfoque</p>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->business_model_heading ?? 'Operamos desde la demanda, no desde la oferta' }}</h2>
                     <p class="mt-5 text-lg text-gray-600 leading-relaxed">
-                        {{ $siteSettings?->business_model_subheading ?? 'A diferencia del modelo tradicional de volumen, nuestra operacion no comienza con la oferta. Identificamos las necesidades de compradores e inversionistas calificados y captamos activos alineados a sus requerimientos.' }}
+                        {{ $siteSettings?->business_model_subheading ?? 'A diferencia del modelo tradicional de volumen, nuestra operación no comienza con la oferta. Identificamos las necesidades de compradores e inversionistas calificados y captamos activos alineados a sus requerimientos.' }}
                     </p>
                     @if($siteSettings?->business_model_content)
                     <div class="mt-6 text-gray-600 leading-relaxed">{!! nl2br(e($siteSettings->business_model_content)) !!}</div>
@@ -218,11 +218,11 @@
     {{-- ============================================ --}}
     @php
         $defaultServices = [
-            ['title' => 'Desarrollo Inmobiliario', 'description' => 'Captacion y colocacion de predios con potencial habitacional o comercial.', 'features' => ['Captacion de terrenos', 'Analisis de potencial', 'Vinculacion con desarrolladores'], 'link_text' => 'Conocer mas', 'link_url' => '/servicios#desarrollo-inmobiliario', 'highlighted' => false],
-            ['title' => 'Corretaje Premium', 'description' => 'Venta y renta de propiedades residenciales y comerciales seleccionadas con estrategia personalizada.', 'features' => ['Propiedades seleccionadas', 'Red de compradores calificados', 'Negociacion profesional'], 'link_text' => 'Conocer mas', 'link_url' => '/servicios#corretaje-premium', 'highlighted' => true],
-            ['title' => 'Administracion', 'description' => 'Gestion profesional de activos inmobiliarios para maximizar tu inversion.', 'features' => ['Gestion de inquilinos', 'Reportes financieros', 'Mantenimiento integral'], 'link_text' => 'Conocer mas', 'link_url' => '/servicios#administracion', 'highlighted' => false],
-            ['title' => 'Legal y Gestoria', 'description' => 'Regularizacion documental, sucesiones y blindaje juridico en escrituracion.', 'features' => ['Regularizacion de escrituras', 'Tramites de sucesion', 'Blindaje juridico'], 'link_text' => 'Conocer mas', 'link_url' => '/servicios#legal-gestoria', 'highlighted' => false],
-            ['title' => 'Property Transformation', 'description' => 'Home staging y acondicionamiento estrategico para acelerar la venta.', 'features' => ['Home staging profesional', 'Mejoras esteticas', 'Fotografia profesional'], 'link_text' => 'Conocer mas', 'link_url' => '/servicios#property-transformation', 'highlighted' => false],
+            ['title' => 'Desarrollo Inmobiliario', 'description' => 'Captación y colocación de predios con potencial habitacional o comercial.', 'features' => ['Captación de terrenos', 'Análisis de potencial', 'Vinculación con desarrolladores'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#desarrollo-inmobiliario', 'highlighted' => false],
+            ['title' => 'Corretaje Premium', 'description' => 'Venta y renta de propiedades residenciales y comerciales seleccionadas con estrategia personalizada.', 'features' => ['Propiedades seleccionadas', 'Red de compradores calificados', 'Negociación profesional'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#corretaje-premium', 'highlighted' => true],
+            ['title' => 'Administración', 'description' => 'Gestión profesional de activos inmobiliarios para maximizar tu inversión.', 'features' => ['Gestión de inquilinos', 'Reportes financieros', 'Mantenimiento integral'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#administracion', 'highlighted' => false],
+            ['title' => 'Legal y Gestoría', 'description' => 'Regularización documental, sucesiones y blindaje jurídico en escrituración.', 'features' => ['Regularización de escrituras', 'Trámites de sucesión', 'Blindaje jurídico'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#legal-gestoria', 'highlighted' => false],
+            ['title' => 'Property Transformation', 'description' => 'Home staging y acondicionamiento estratégico para acelerar la venta.', 'features' => ['Home staging profesional', 'Mejoras estéticas', 'Fotografía profesional'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#property-transformation', 'highlighted' => false],
         ];
         $services = $siteSettings?->services_section ?? $defaultServices;
         $serviceIcons = [
@@ -237,7 +237,7 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Servicio integral</p>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->services_heading ?? 'Lineas de negocio' }}</h2>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->services_heading ?? 'Líneas de negocio' }}</h2>
                 <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->services_subheading ?? 'Soluciones completas para cada etapa del ciclo inmobiliario.' }}</p>
             </div>
 
@@ -248,7 +248,7 @@
                 <div class="relative rounded-2xl p-8 lg:p-10 gradient-brand text-white shadow-brand-lg overflow-hidden h-full">
                     <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
                     <div class="absolute -top-3 right-6">
-                        <span class="inline-flex items-center rounded-full bg-white px-3.5 py-1 text-xs font-bold text-brand-700 shadow-premium">Mas solicitado</span>
+                        <span class="inline-flex items-center rounded-full bg-white px-3.5 py-1 text-xs font-bold text-brand-700 shadow-premium">Más solicitado</span>
                     </div>
                     <div class="relative">
                         <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm">
@@ -265,7 +265,7 @@
                             @endforeach
                         </ul>
                         <a href="{{ $service['link_url'] ?? '/servicios' }}" class="group/link mt-8 inline-flex items-center gap-2 text-sm font-semibold text-white hover:underline underline-offset-4">
-                            {{ $service['link_text'] ?? 'Conocer mas' }}
+                            {{ $service['link_text'] ?? 'Conocer más' }}
                             <svg class="w-4 h-4 transition-transform duration-300 group-hover/link:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </a>
                     </div>
@@ -321,7 +321,7 @@
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">{{ $siteSettings?->stats_heading ?? 'Resultados que hablan' }}</h2>
-                <p class="mt-4 text-lg text-brand-200/60">{{ $siteSettings?->stats_subheading ?? 'Numeros que respaldan nuestra trayectoria.' }}</p>
+                <p class="mt-4 text-lg text-brand-200/60">{{ $siteSettings?->stats_subheading ?? 'Números que respaldan nuestra trayectoria.' }}</p>
             </div>
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
                 @foreach($stats as $sti => $stat)
@@ -339,9 +339,9 @@
     {{-- ============================================ --}}
     @php
         $defaultTestimonials = [
-            ['name' => 'Maria Gonzalez', 'role' => 'Vendedora en Del Valle', 'text' => 'Vendieron mi departamento en tiempo record. La estrategia fue impecable y el acompañamiento legal me dio total tranquilidad durante todo el proceso.', 'initials' => 'MG'],
-            ['name' => 'Carlos Ramirez', 'role' => 'Desarrollador inmobiliario', 'text' => 'Su conocimiento del mercado en Benito Juarez es excepcional. Encontraron el predio perfecto para nuestro proyecto en menos de tres semanas.', 'initials' => 'CR'],
-            ['name' => 'Ana Martinez', 'role' => 'Inversionista', 'text' => 'El enfoque boutique hace toda la diferencia. No son un catalogo masivo, realmente entienden lo que necesitas y entregan resultados consistentes.', 'initials' => 'AM'],
+            ['name' => 'María González', 'role' => 'Vendedora en Del Valle', 'text' => 'Vendieron mi departamento en tiempo récord. La estrategia fue impecable y el acompañamiento legal me dio total tranquilidad durante todo el proceso.', 'initials' => 'MG'],
+            ['name' => 'Carlos Ramírez', 'role' => 'Desarrollador inmobiliario', 'text' => 'Su conocimiento del mercado en Benito Juárez es excepcional. Encontraron el predio perfecto para nuestro proyecto en menos de tres semanas.', 'initials' => 'CR'],
+            ['name' => 'Ana Martínez', 'role' => 'Inversionista', 'text' => 'El enfoque boutique hace toda la diferencia. No son un catálogo masivo, realmente entienden lo que necesitas y entregan resultados consistentes.', 'initials' => 'AM'],
         ];
         $testimonials = $siteSettings?->testimonials_section ?? $defaultTestimonials;
     @endphp
@@ -350,7 +350,7 @@
             <div class="text-center max-w-2xl mx-auto" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Testimonios</p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->testimonials_heading ?? 'Lo que dicen nuestros clientes' }}</h2>
-                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->testimonials_subheading ?? 'La satisfaccion de nuestros clientes es nuestra mejor carta de presentacion.' }}</p>
+                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->testimonials_subheading ?? 'La satisfacción de nuestros clientes es nuestra mejor carta de presentación.' }}</p>
             </div>
 
             <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -386,14 +386,14 @@
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,196,0.06)_0%,_transparent_70%)]"></div>
         <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->cta_heading ?? '¿Listo para vender tu propiedad?' }}</h2>
-            <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->cta_subheading ?? 'Recibe una valuacion profesional gratuita en menos de 24 horas. Sin compromiso, sin letra chica. Solo necesitamos los datos basicos de tu inmueble.' }}</p>
+            <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->cta_subheading ?? 'Recibe una valuación profesional gratuita en menos de 24 horas. Sin compromiso, sin letra chica. Solo necesitamos los datos básicos de tu inmueble.' }}</p>
             <div class="mt-10 flex flex-wrap justify-center gap-4">
                 <a href="{{ route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl gradient-brand px-8 py-4 text-sm font-semibold text-white shadow-brand-lg hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
-                    Solicita tu valuacion gratuita
+                    Solicita tu valuación gratuita
                     <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                 </a>
                 @if($siteSettings?->whatsapp_number)
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaria una valuacion.') }}" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-2.5 rounded-xl bg-white border border-gray-200 px-8 py-4 text-sm font-semibold text-gray-700 hover:border-brand-200 hover:text-brand-600 hover:shadow-premium transition-all duration-300">
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaría una valuación.') }}" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-2.5 rounded-xl bg-white border border-gray-200 px-8 py-4 text-sm font-semibold text-gray-700 hover:border-brand-200 hover:text-brand-600 hover:shadow-premium transition-all duration-300">
                     <svg class="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                     WhatsApp
                 </a>
@@ -411,8 +411,8 @@
             <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <div>
                     <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Recursos</p>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->blog_heading ?? 'Ultimos articulos' }}</h2>
-                    <p class="mt-3 text-lg text-gray-500">{{ $siteSettings?->blog_subheading ?? 'Consejos, tendencias y guias del mercado inmobiliario en Benito Juarez.' }}</p>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->blog_heading ?? 'Últimos artículos' }}</h2>
+                    <p class="mt-3 text-lg text-gray-500">{{ $siteSettings?->blog_subheading ?? 'Consejos, tendencias y guías del mercado inmobiliario en Benito Juárez.' }}</p>
                 </div>
                 <a href="{{ route('blog.index') }}" class="group inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors shrink-0">
                     Ver todos
@@ -465,7 +465,7 @@
                 <div x-data x-intersect.once="$el.classList.add('animate-slide-in-left')">
                     <p class="text-sm font-semibold text-brand-400 uppercase tracking-widest mb-4">Hablemos de tu propiedad</p>
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{{ $siteSettings?->contact_heading ?? '¿Quieres vender? Platiquemos.' }}</h2>
-                    <p class="mt-5 text-lg text-brand-200/70 leading-relaxed">{{ $siteSettings?->contact_subheading ?? 'Cuentanos sobre tu inmueble y te daremos una estrategia personalizada sin costo ni compromiso.' }}</p>
+                    <p class="mt-5 text-lg text-brand-200/70 leading-relaxed">{{ $siteSettings?->contact_subheading ?? 'Cuéntanos sobre tu inmueble y te daremos una estrategia personalizada sin costo ni compromiso.' }}</p>
 
                     <div class="mt-12 space-y-6">
                         @if($siteSettings?->contact_phone)
@@ -474,7 +474,7 @@
                                 <svg class="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                             </div>
                             <div>
-                                <p class="text-xs text-brand-400/60 uppercase tracking-wider font-medium">Telefono</p>
+                                <p class="text-xs text-brand-400/60 uppercase tracking-wider font-medium">Teléfono</p>
                                 <p class="text-white font-semibold mt-0.5 group-hover:text-brand-200 transition-colors">{{ $siteSettings->contact_phone }}</p>
                             </div>
                         </a>
@@ -496,7 +496,7 @@
                                 <svg class="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                             </div>
                             <div>
-                                <p class="text-xs text-brand-400/60 uppercase tracking-wider font-medium">Direccion</p>
+                                <p class="text-xs text-brand-400/60 uppercase tracking-wider font-medium">Dirección</p>
                                 <p class="text-white font-semibold mt-0.5">{{ $siteSettings->address }}</p>
                             </div>
                         </div>

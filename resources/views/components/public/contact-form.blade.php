@@ -70,7 +70,7 @@
     <div class="flex items-start gap-2 mt-1">
         <input type="checkbox" name="accept_privacy" id="accept_privacy" required class="mt-1 rounded border-gray-300">
         <label for="accept_privacy" class="text-xs text-gray-500 leading-snug">
-            He leido y acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-brand-500 underline hover:text-brand-600">Aviso de Privacidad</a>
+            He leído y acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-brand-500 underline hover:text-brand-600">Aviso de Privacidad</a>
         </label>
     </div>
     @endif

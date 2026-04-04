@@ -12,44 +12,44 @@
             'title' => 'Desarrollo Inmobiliario',
             'slug' => 'desarrollo-inmobiliario',
             'icon' => 'building',
-            'description' => 'Captacion y colocacion estrategica de predios con potencial habitacional o comercial. Identificamos las necesidades de desarrolladores e inversionistas para encontrar activos que se alineen con sus requerimientos tecnicos y financieros.',
-            'features' => ['Captacion de terrenos y predios', 'Analisis de potencial de desarrollo', 'Vinculacion con desarrolladores calificados', 'Due diligence inmobiliario'],
+            'description' => 'Captación y colocación estratégica de predios con potencial habitacional o comercial. Identificamos las necesidades de desarrolladores e inversionistas para encontrar activos que se alineen con sus requerimientos técnicos y financieros.',
+            'features' => ['Captación de terrenos y predios', 'Análisis de potencial de desarrollo', 'Vinculación con desarrolladores calificados', 'Due diligence inmobiliario'],
         ],
         [
             'title' => 'Corretaje Premium',
             'slug' => 'corretaje-premium',
             'icon' => 'key',
-            'description' => 'Venta y renta de propiedades residenciales y comerciales seleccionadas. No somos un catalogo masivo: cada inmueble es evaluado, analizado y comercializado con estrategia para maximizar su valor.',
-            'features' => ['Propiedades seleccionadas de alto valor', 'Estrategia de comercializacion personalizada', 'Red de compradores calificados', 'Negociacion profesional de cierre'],
+            'description' => 'Venta y renta de propiedades residenciales y comerciales seleccionadas. No somos un catálogo masivo: cada inmueble es evaluado, analizado y comercializado con estrategia para maximizar su valor.',
+            'features' => ['Propiedades seleccionadas de alto valor', 'Estrategia de comercialización personalizada', 'Red de compradores calificados', 'Negociación profesional de cierre'],
         ],
         [
-            'title' => 'Administracion de Inmuebles',
+            'title' => 'Administración de Inmuebles',
             'slug' => 'administracion',
             'icon' => 'chart',
-            'description' => 'Gestion profesional de activos inmobiliarios. Nos encargamos de la operacion completa para que tu inversion trabaje sin que tengas que ocuparte de los detalles.',
-            'features' => ['Gestion de inquilinos y cobranza', 'Mantenimiento preventivo y correctivo', 'Reportes financieros mensuales', 'Optimizacion de rentabilidad'],
+            'description' => 'Gestión profesional de activos inmobiliarios. Nos encargamos de la operación completa para que tu inversión trabaje sin que tengas que ocuparte de los detalles.',
+            'features' => ['Gestión de inquilinos y cobranza', 'Mantenimiento preventivo y correctivo', 'Reportes financieros mensuales', 'Optimización de rentabilidad'],
         ],
         [
-            'title' => 'Legal y Gestoria',
+            'title' => 'Legal y Gestoría',
             'slug' => 'legal-gestoria',
             'icon' => 'shield',
-            'description' => 'Regularizacion documental, sucesiones y blindaje juridico en escrituracion. Cada operacion que ejecutamos cuenta con respaldo legal completo para proteger los intereses de todas las partes.',
-            'features' => ['Regularizacion de escrituras', 'Tramites de sucesion', 'Blindaje juridico en compraventa', 'Asesoria fiscal inmobiliaria'],
+            'description' => 'Regularización documental, sucesiones y blindaje jurídico en escrituración. Cada operación que ejecutamos cuenta con respaldo legal completo para proteger los intereses de todas las partes.',
+            'features' => ['Regularización de escrituras', 'Trámites de sucesión', 'Blindaje jurídico en compraventa', 'Asesoría fiscal inmobiliaria'],
         ],
         [
             'title' => 'Property Transformation',
             'slug' => 'property-transformation',
             'icon' => 'sparkle',
-            'description' => 'Aceleracion de venta mediante home staging y acondicionamiento estrategico. Transformamos la percepcion de valor de tu propiedad para vender mas rapido y a mejor precio.',
-            'features' => ['Home staging profesional', 'Mejoras funcionales y esteticas', 'Fotografia y video profesional', 'Optimizacion visual de espacios'],
+            'description' => 'Aceleración de venta mediante home staging y acondicionamiento estratégico. Transformamos la percepción de valor de tu propiedad para vender más rápido y a mejor precio.',
+            'features' => ['Home staging profesional', 'Mejoras funcionales y estéticas', 'Fotografía y video profesional', 'Optimización visual de espacios'],
         ],
     ];
 
     $services = $content['services'] ?? $defaultServices;
     $heading = $content['heading'] ?? 'Nuestros Servicios';
-    $subheading = $content['subheading'] ?? 'Una firma inmobiliaria con servicio integral. Cada linea de negocio esta diseñada para maximizar el valor de tu patrimonio con precision y seguridad juridica.';
+    $subheading = $content['subheading'] ?? 'Una firma inmobiliaria con servicio integral. Cada línea de negocio está diseñada para maximizar el valor de tu patrimonio con precisión y seguridad jurídica.';
     $ctaHeading = $content['cta_heading'] ?? '¿Tienes una propiedad?';
-    $ctaSubheading = $content['cta_subheading'] ?? 'Conoce cuanto vale tu inmueble con una valuacion profesional sin compromiso.';
+    $ctaSubheading = $content['cta_subheading'] ?? 'Conoce cuánto vale tu inmueble con una valuación profesional sin compromiso.';
 
     $icons = [
         'building' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
@@ -108,7 +108,7 @@
 
                 <div class="mt-8">
                     <a href="{{ $service['cta_url'] ?? route('contacto') }}" class="inline-flex items-center gap-2 rounded-xl gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300">
-                        {{ $service['cta_text'] ?? 'Solicitar informacion' }}
+                        {{ $service['cta_text'] ?? 'Solicitar información' }}
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
                 </div>
@@ -148,10 +148,10 @@
         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="{{ route('landing.vende') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-bold text-brand-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                Valua tu propiedad
+                Valúa tu propiedad
             </a>
             <a href="{{ route('contacto') }}" class="inline-flex items-center gap-2 rounded-xl border-2 border-white/30 px-8 py-4 text-sm font-semibold text-white hover:bg-white/10 transition-all duration-300">
-                Contactanos
+                Contáctanos
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
             </a>
         </div>
