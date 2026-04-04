@@ -110,15 +110,13 @@
 
     {{-- Bottom bar --}}
     <div class="border-t border-white/5">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-            <span>{{ $footerBottomText ?: '&copy; ' . date('Y') . ' ' . $siteName . '. Todos los derechos reservados.' }}</span>
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs text-gray-600">
+            <span>&copy; {{ date('Y') }} {{ $siteName }} Bienes Raíces. Todos los derechos reservados.</span>
             <div class="flex items-center gap-4">
-                @foreach($footerBottomLinks as $link)
-                    @if(!empty($link['url']) && !empty($link['label']))
-                    <a href="{{ $link['url'] }}" class="hover:text-gray-400 transition-colors duration-200">{{ $link['label'] }}</a>
-                    @endif
-                @endforeach
-                <a href="{{ route('login') }}" class="hover:text-gray-400 transition-colors duration-200">Acceso</a>
+                <a href="{{ url('/legal/aviso-de-privacidad') }}" class="hover:text-gray-400 transition-colors duration-200">Aviso de privacidad</a>
+                <a href="{{ url('/legal/terminos-y-condiciones') }}" class="hover:text-gray-400 transition-colors duration-200">Términos y condiciones</a>
+                <a href="{{ url('/legal/politica-de-cookies') }}" class="hover:text-gray-400 transition-colors duration-200">Política de cookies</a>
+                <a href="{{ route('login') }}" class="hover:text-gray-400 transition-colors duration-200">Acceso (Office)</a>
             </div>
         </div>
     </div>

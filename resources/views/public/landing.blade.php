@@ -162,7 +162,7 @@
                     </div>
 
                     @php
-                        $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
+                        try { $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first(); } catch (\Exception $e) { $privacyDoc = null; }
                     @endphp
                     @if($privacyDoc)
                     <div class="flex items-start gap-2">
@@ -379,13 +379,13 @@
      FOOTER MINIMAL
      ====================================================== --}}
 <footer class="bg-gray-950 py-8">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-        <span>&copy; {{ date('Y') }} {{ $siteSettings?->site_name ?? 'Home del Valle' }}. Todos los derechos reservados.</span>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4 text-sm text-gray-500">
+        <span>&copy; {{ date('Y') }} {{ $siteSettings?->site_name ?? 'Home del Valle' }} Bienes Raíces. Todos los derechos reservados.</span>
         <div class="flex items-center gap-4">
-            <a href="{{ url('/') }}" class="hover:text-gray-400 transition-colors">Ir al sitio</a>
-            @if($siteSettings?->contact_phone)
-            <a href="tel:{{ $siteSettings->contact_phone }}" class="hover:text-gray-400 transition-colors">{{ $siteSettings->contact_phone }}</a>
-            @endif
+            <a href="{{ url('/legal/aviso-de-privacidad') }}" class="hover:text-gray-400 transition-colors">Aviso de privacidad</a>
+            <a href="{{ url('/legal/terminos-y-condiciones') }}" class="hover:text-gray-400 transition-colors">Términos y condiciones</a>
+            <a href="{{ url('/legal/politica-de-cookies') }}" class="hover:text-gray-400 transition-colors">Política de cookies</a>
+            <a href="{{ route('login') }}" class="hover:text-gray-400 transition-colors">Acceso (Office)</a>
         </div>
     </div>
 </footer>

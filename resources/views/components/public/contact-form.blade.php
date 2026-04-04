@@ -64,7 +64,7 @@
 
     {{-- Privacy acceptance --}}
     @php
-        $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
+        try { $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first(); } catch (\Exception $e) { $privacyDoc = null; }
     @endphp
     @if($privacyDoc)
     <div class="flex items-start gap-2 mt-1">
