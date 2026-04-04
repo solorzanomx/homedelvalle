@@ -10,10 +10,16 @@
     $defaultLinks = [
         ['label' => 'Inicio', 'url' => '/'],
         ['label' => 'Propiedades', 'url' => '/propiedades'],
+        ['label' => 'Servicios', 'url' => '/servicios'],
+        ['label' => 'Vende tu Propiedad', 'url' => '/vende-tu-propiedad'],
         ['label' => 'Nosotros', 'url' => '/nosotros'],
         ['label' => 'Blog', 'url' => '/blog'],
         ['label' => 'Contacto', 'url' => '/contacto'],
     ];
+
+    $navbarCtaEnabled = $siteSettings?->navbar_cta_enabled ?? true;
+    $navbarCtaText = $siteSettings?->navbar_cta_text ?? 'Valua tu propiedad';
+    $navbarCtaUrl = $siteSettings?->navbar_cta_url ?? '/vende-tu-propiedad';
 @endphp
 
 <header x-data="{ open: false, scrolled: false }"
@@ -84,8 +90,16 @@
                 @endif
             </div>
 
-            {{-- Auth button (desktop) --}}
+            {{-- CTA + Auth button (desktop) --}}
             <div class="hidden md:flex items-center gap-3 ml-4">
+                @if($navbarCtaEnabled)
+                <a href="{{ $navbarCtaUrl }}"
+                   class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
+                   style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+                    {{ $navbarCtaText }}
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+                @endif
                 @auth
                     <a href="{{ route('admin.dashboard') }}"
                        class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
@@ -143,8 +157,15 @@
                 @endforeach
             @endif
 
-            {{-- Auth link (mobile) --}}
-            <div class="border-t border-gray-100/60 pt-3 mt-2">
+            {{-- CTA + Auth link (mobile) --}}
+            <div class="border-t border-gray-100/60 pt-3 mt-2 space-y-2">
+                @if($navbarCtaEnabled)
+                <a href="{{ $navbarCtaUrl }}"
+                   class="block rounded-xl px-4 py-3.5 text-base font-semibold text-white text-center shadow-lg transition-all duration-200"
+                   style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
+                    {{ $navbarCtaText }}
+                </a>
+                @endif
                 @auth
                     <a href="{{ route('admin.dashboard') }}"
                        class="block rounded-xl px-4 py-3.5 text-base font-semibold text-white text-center shadow-lg mt-1 transition-all duration-200"

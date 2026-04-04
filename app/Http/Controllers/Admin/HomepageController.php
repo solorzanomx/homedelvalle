@@ -22,6 +22,11 @@ class HomepageController extends Controller
             'hero_heading' => 'nullable|string|max:255',
             'hero_subheading' => 'nullable|string|max:500',
             'hero_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:4096',
+            'hero_badge' => 'nullable|string|max:255',
+            'hero_cta_text' => 'nullable|string|max:255',
+            'hero_cta_url' => 'nullable|string|max:255',
+            'hero_secondary_cta_text' => 'nullable|string|max:255',
+            'hero_secondary_cta_url' => 'nullable|string|max:255',
 
             // Benefits
             'benefits_heading' => 'nullable|string|max:255',
@@ -31,6 +36,15 @@ class HomepageController extends Controller
             'benefits_section.*.title' => 'nullable|string|max:100',
             'benefits_section.*.description' => 'nullable|string|max:300',
 
+            // Business model
+            'business_model_heading' => 'nullable|string|max:255',
+            'business_model_subheading' => 'nullable|string|max:500',
+            'business_model_content' => 'nullable|string|max:2000',
+            'business_model_steps' => 'nullable|array|max:5',
+            'business_model_steps.*.num' => 'nullable|string|max:5',
+            'business_model_steps.*.title' => 'nullable|string|max:100',
+            'business_model_steps.*.description' => 'nullable|string|max:300',
+
             // Featured properties
             'featured_heading' => 'nullable|string|max:255',
             'featured_subheading' => 'nullable|string|max:500',
@@ -38,14 +52,21 @@ class HomepageController extends Controller
             // Services
             'services_heading' => 'nullable|string|max:255',
             'services_subheading' => 'nullable|string|max:500',
-            'services_section' => 'nullable|array|max:3',
+            'services_section' => 'nullable|array|max:6',
             'services_section.*.title' => 'nullable|string|max:100',
             'services_section.*.description' => 'nullable|string|max:500',
-            'services_section.*.features' => 'nullable|array|max:3',
+            'services_section.*.features' => 'nullable|array|max:4',
             'services_section.*.features.*' => 'nullable|string|max:100',
             'services_section.*.link_text' => 'nullable|string|max:100',
             'services_section.*.link_url' => 'nullable|string|max:255',
             'services_section.*.highlighted' => 'nullable',
+
+            // Stats
+            'stats_heading' => 'nullable|string|max:255',
+            'stats_subheading' => 'nullable|string|max:500',
+            'stats_section' => 'nullable|array|max:6',
+            'stats_section.*.value' => 'nullable|string|max:20',
+            'stats_section.*.label' => 'nullable|string|max:100',
 
             // Testimonials
             'testimonials_heading' => 'nullable|string|max:255',
@@ -74,6 +95,11 @@ class HomepageController extends Controller
             // CTA Final
             'cta_heading' => 'nullable|string|max:255',
             'cta_subheading' => 'nullable|string|max:500',
+
+            // Navbar CTA
+            'navbar_cta_text' => 'nullable|string|max:100',
+            'navbar_cta_url' => 'nullable|string|max:255',
+            'navbar_cta_enabled' => 'nullable',
 
             // Templates
             'property_listing_template' => 'nullable|string|in:grid,list,magazine',
@@ -110,6 +136,19 @@ class HomepageController extends Controller
         if (isset($validated['testimonials_section'])) {
             $validated['testimonials_section'] = array_values(array_filter($validated['testimonials_section'], fn($t) => !empty($t['name'])));
         }
+
+        // Filter out empty steps
+        if (isset($validated['business_model_steps'])) {
+            $validated['business_model_steps'] = array_values(array_filter($validated['business_model_steps'], fn($s) => !empty($s['title'])));
+        }
+
+        // Filter out empty stats
+        if (isset($validated['stats_section'])) {
+            $validated['stats_section'] = array_values(array_filter($validated['stats_section'], fn($s) => !empty($s['value'])));
+        }
+
+        // Normalize navbar CTA checkbox
+        $validated['navbar_cta_enabled'] = isset($validated['navbar_cta_enabled']);
 
         if ($settings) {
             $settings->update($validated);

@@ -43,19 +43,62 @@ class LandingController extends Controller
         ];
     }
 
+    private function defaultBenefits(): array
+    {
+        return [
+            ['icon' => 'rocket', 'title' => 'Venta rapida', 'desc' => 'Nuestra red de compradores calificados acelera el proceso de venta.'],
+            ['icon' => 'shield', 'title' => 'Seguridad juridica', 'desc' => 'Blindaje legal completo en cada operacion.'],
+            ['icon' => 'chart', 'title' => 'Mejor precio', 'desc' => 'Analisis de mercado para maximizar el valor de tu propiedad.'],
+            ['icon' => 'eye', 'title' => 'Transparencia total', 'desc' => 'Reportes y actualizaciones constantes del proceso.'],
+        ];
+    }
+
+    private function defaultMetrics(): array
+    {
+        return [
+            ['value' => '30+', 'label' => 'Años de experiencia'],
+            ['value' => '200+', 'label' => 'Propiedades gestionadas'],
+            ['value' => '45', 'label' => 'Dias promedio de venta'],
+            ['value' => '98%', 'label' => 'Clientes satisfechos'],
+        ];
+    }
+
+    private function defaultProcessSteps(): array
+    {
+        return [
+            ['num' => '01', 'title' => 'Valuacion gratuita', 'desc' => 'Analizamos tu propiedad y te damos un precio competitivo basado en datos reales del mercado.'],
+            ['num' => '02', 'title' => 'Estrategia personalizada', 'desc' => 'Diseñamos un plan de comercializacion con fotografia profesional y marketing digital.'],
+            ['num' => '03', 'title' => 'Cierre seguro', 'desc' => 'Negociamos, gestionamos la documentacion y te acompañamos hasta la firma de escrituras.'],
+        ];
+    }
+
     /**
      * Show the landing page.
      */
     public function show(Request $request)
     {
-        return view('public.landing', [
-            'campaign' => $this->defaultCampaign(),
-            'faqs' => $this->defaultFaqs(),
-            'stats' => $this->defaultStats(),
+        $siteSettings = \App\Models\SiteSetting::current();
+        $content = $siteSettings?->vender_content ?? [];
+
+        $campaign = [
+            'badge' => $content['badge'] ?? $this->defaultCampaign()['badge'],
+            'heading' => $content['heading'] ?? $this->defaultCampaign()['heading'],
+            'subheading' => $content['subheading'] ?? $this->defaultCampaign()['subheading'],
+            'cta_heading' => $content['cta_heading'] ?? $this->defaultCampaign()['cta_heading'],
+            'cta_subheading' => $content['cta_subheading'] ?? $this->defaultCampaign()['cta_subheading'],
+            'wa_message' => $content['wa_message'] ?? $this->defaultCampaign()['wa_message'],
+            'slug' => 'vende-del-valle',
+        ];
+
+        return view('public.vende-tu-propiedad', [
+            'campaign' => $campaign,
+            'benefits' => $content['benefits'] ?? $this->defaultBenefits(),
+            'metrics' => $content['metrics'] ?? $this->defaultMetrics(),
+            'processSteps' => $content['process_steps'] ?? $this->defaultProcessSteps(),
+            'faqs' => $content['faqs'] ?? $this->defaultFaqs(),
             'meta' => [
-                'title' => 'Vende tu propiedad en Colonia del Valle | Home del Valle',
-                'description' => 'Vende tu departamento en la Colonia del Valle rápido y al mejor precio. Asesoría profesional gratuita, compradores calificados y cierre seguro.',
-                'keywords' => 'vender departamento colonia del valle, inmobiliaria cdmx, venta propiedades benito juárez, asesor inmobiliario del valle, vender casa del valle',
+                'title' => $content['meta_title'] ?? 'Vende tu propiedad en Benito Juarez | Home del Valle',
+                'description' => $content['meta_description'] ?? 'Vende tu propiedad rapido y al mejor precio. Asesoria profesional gratuita, compradores calificados y cierre seguro.',
             ],
         ]);
     }

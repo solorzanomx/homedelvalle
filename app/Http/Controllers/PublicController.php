@@ -64,6 +64,11 @@ class PublicController extends Controller
         return view('public.nosotros', compact('brokers'));
     }
 
+    public function servicios()
+    {
+        return view('public.servicios');
+    }
+
     public function contacto()
     {
         return view('public.contacto');

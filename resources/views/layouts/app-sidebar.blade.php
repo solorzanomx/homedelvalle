@@ -454,6 +454,21 @@
                         <a href="{{ route('admin.homepage') }}" class="nav-item {{ request()->routeIs('admin.homepage') ? 'active' : '' }}">
                             <span class="nav-icon">&#127968;</span> Homepage
                         </a>
+                        @if(Route::has('admin.servicios-page'))
+                        <a href="{{ route('admin.servicios-page') }}" class="nav-item {{ request()->routeIs('admin.servicios-page') ? 'active' : '' }}">
+                            <span class="nav-icon">&#128188;</span> Pag. Servicios
+                        </a>
+                        @endif
+                        @if(Route::has('admin.nosotros-page'))
+                        <a href="{{ route('admin.nosotros-page') }}" class="nav-item {{ request()->routeIs('admin.nosotros-page') ? 'active' : '' }}">
+                            <span class="nav-icon">&#128101;</span> Pag. Nosotros
+                        </a>
+                        @endif
+                        @if(Route::has('admin.vender-page'))
+                        <a href="{{ route('admin.vender-page') }}" class="nav-item {{ request()->routeIs('admin.vender-page') ? 'active' : '' }}">
+                            <span class="nav-icon">&#127969;</span> Pag. Vender
+                        </a>
+                        @endif
                         @if(Route::has('admin.pages.index'))
                         <a href="{{ route('admin.pages.index') }}" class="nav-item {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
                             <span class="nav-icon">&#9783;</span> Paginas

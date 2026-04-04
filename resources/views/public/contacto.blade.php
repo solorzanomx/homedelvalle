@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-    <x-public.hero heading="{{ $siteSettings?->contact_heading ?? 'Contacto' }}" subheading="{{ $siteSettings?->contact_subheading ?? 'Estamos aquí para ayudarte. Escríbenos y te responderemos en menos de 24 horas.' }}"
+    <x-public.hero heading="{{ $siteSettings?->contact_heading ?? 'Hablemos de tu propiedad' }}" subheading="{{ $siteSettings?->contact_subheading ?? 'Asesoria inmobiliaria personalizada en la Benito Juarez. Respondemos en menos de 24 horas.' }}"
         :breadcrumb-items="[['label' => 'Contacto']]" />
 
     <section class="py-20 sm:py-24 bg-white">
@@ -80,6 +80,22 @@
                         <p class="mt-2 text-gray-500 mb-8">Completa el formulario y te contactaremos lo antes posible.</p>
                         <x-public.contact-form />
                     </div>
+
+                    {{-- Trust signals --}}
+                    <div class="mt-6 grid grid-cols-3 gap-4">
+                        <div class="text-center p-3 rounded-xl bg-gray-50/60">
+                            <svg class="w-5 h-5 text-brand-500 mx-auto mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <p class="text-xs font-semibold text-gray-700">Respuesta en &lt;24 hrs</p>
+                        </div>
+                        <div class="text-center p-3 rounded-xl bg-gray-50/60">
+                            <svg class="w-5 h-5 text-brand-500 mx-auto mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                            <p class="text-xs font-semibold text-gray-700">Sin compromiso</p>
+                        </div>
+                        <div class="text-center p-3 rounded-xl bg-gray-50/60">
+                            <svg class="w-5 h-5 text-brand-500 mx-auto mb-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/></svg>
+                            <p class="text-xs font-semibold text-gray-700">Asesoria gratuita</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,4 +111,17 @@
         </div>
     </section>
     @endif
+
+    {{-- CTA --}}
+    <section class="py-24 sm:py-32 gradient-brand-soft" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">¿Tienes una propiedad en la Benito Juarez?</h2>
+            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Conoce cuanto vale tu inmueble con una valuacion profesional gratuita y sin compromiso.</p>
+            <div class="mt-8">
+                <a href="{{ route('landing.vende') }}" class="rounded-xl gradient-brand px-7 py-4 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
+                    Valua tu propiedad
+                </a>
+            </div>
+        </div>
+    </section>
 @endsection

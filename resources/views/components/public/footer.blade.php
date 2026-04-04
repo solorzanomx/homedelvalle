@@ -24,7 +24,7 @@
                     </div>
                     <span class="text-lg font-bold text-white">{{ $siteName }}</span>
                 </div>
-                <p class="text-sm leading-relaxed text-gray-500">{{ $footerAbout ?: ($siteSettings?->site_tagline ?? 'Tu plataforma completa de gestión inmobiliaria.') }}</p>
+                <p class="text-sm leading-relaxed text-gray-500">{{ $footerAbout ?: ($siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precision en la Benito Juarez, CDMX. Pocos inmuebles. Mas control. Mejores resultados.') }}</p>
 
                 {{-- Social --}}
                 <div class="flex gap-2.5 mt-6">
@@ -61,6 +61,8 @@
                         @endforeach
                     @else
                     <li><a href="{{ route('propiedades.index') }}" class="hover:text-brand-400 transition-colors duration-200">Propiedades</a></li>
+                    <li><a href="{{ url('/servicios') }}" class="hover:text-brand-400 transition-colors duration-200">Servicios</a></li>
+                    <li><a href="{{ url('/vende-tu-propiedad') }}" class="hover:text-brand-400 transition-colors duration-200">Vende tu Propiedad</a></li>
                     <li><a href="{{ route('nosotros') }}" class="hover:text-brand-400 transition-colors duration-200">Nosotros</a></li>
                     @if(Route::has('blog.index'))
                     <li><a href="{{ route('blog.index') }}" class="hover:text-brand-400 transition-colors duration-200">Blog</a></li>
@@ -74,10 +76,11 @@
             <div>
                 <h4 class="text-xs font-bold text-white uppercase tracking-widest mb-5">Servicios</h4>
                 <ul class="space-y-3 text-sm">
-                    <li><a href="{{ route('propiedades.index') }}?operation_type=sale" class="hover:text-brand-400 transition-colors duration-200">Compra</a></li>
-                    <li><a href="{{ route('propiedades.index') }}?operation_type=rental" class="hover:text-brand-400 transition-colors duration-200">Renta</a></li>
-                    <li><a href="#contacto" class="hover:text-brand-400 transition-colors duration-200">Valuación gratuita</a></li>
-                    <li><a href="#contacto" class="hover:text-brand-400 transition-colors duration-200">Asesoría legal</a></li>
+                    <li><a href="{{ url('/servicios#desarrollo-inmobiliario') }}" class="hover:text-brand-400 transition-colors duration-200">Desarrollo Inmobiliario</a></li>
+                    <li><a href="{{ url('/servicios#corretaje-premium') }}" class="hover:text-brand-400 transition-colors duration-200">Corretaje Premium</a></li>
+                    <li><a href="{{ url('/servicios#administracion') }}" class="hover:text-brand-400 transition-colors duration-200">Administracion</a></li>
+                    <li><a href="{{ url('/servicios#legal-gestoria') }}" class="hover:text-brand-400 transition-colors duration-200">Legal y Gestoria</a></li>
+                    <li><a href="{{ url('/servicios#property-transformation') }}" class="hover:text-brand-400 transition-colors duration-200">Property Transformation</a></li>
                 </ul>
             </div>
 

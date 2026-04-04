@@ -39,6 +39,28 @@
                 <label class="form-label">Subtitulo</label>
                 <textarea name="hero_subheading" class="form-control" rows="2" placeholder="Asesoria inmobiliaria personalizada...">{{ old('hero_subheading', $settings->hero_subheading ?? '') }}</textarea>
             </div>
+            <div class="form-group" style="margin-top:1rem;">
+                <label class="form-label">Badge (texto sobre el titulo)</label>
+                <input type="text" name="hero_badge" class="form-control" value="{{ old('hero_badge', $settings->hero_badge ?? '') }}" placeholder="Inmobiliaria boutique en Benito Juarez">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem;">
+                <div class="form-group">
+                    <label class="form-label">CTA primario — Texto</label>
+                    <input type="text" name="hero_cta_text" class="form-control" value="{{ old('hero_cta_text', $settings->hero_cta_text ?? '') }}" placeholder="Valua tu propiedad">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CTA primario — URL</label>
+                    <input type="text" name="hero_cta_url" class="form-control" value="{{ old('hero_cta_url', $settings->hero_cta_url ?? '') }}" placeholder="/vende-tu-propiedad">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CTA secundario — Texto</label>
+                    <input type="text" name="hero_secondary_cta_text" class="form-control" value="{{ old('hero_secondary_cta_text', $settings->hero_secondary_cta_text ?? '') }}" placeholder="Ver propiedades">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">CTA secundario — URL</label>
+                    <input type="text" name="hero_secondary_cta_url" class="form-control" value="{{ old('hero_secondary_cta_url', $settings->hero_secondary_cta_url ?? '') }}" placeholder="/propiedades">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -100,10 +122,63 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 3. PROPIEDADES DESTACADAS --}}
+    {{-- 3. MODELO DE NEGOCIO --}}
+    {{-- ========================================== --}}
+    @php
+        $defaultSteps = [
+            ['num' => '01', 'title' => 'Identificamos la demanda', 'description' => 'Analizamos las necesidades de desarrolladores e inversionistas activos.'],
+            ['num' => '02', 'title' => 'Captamos activos alineados', 'description' => 'Seleccionamos propiedades que cumplen criterios especificos de la demanda.'],
+            ['num' => '03', 'title' => 'Ejecutamos la operacion', 'description' => 'Negociacion, blindaje legal y cierre eficiente.'],
+        ];
+        $bmSteps = old('business_model_steps', $settings->business_model_steps ?? $defaultSteps);
+    @endphp
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><h3>3. Modelo de Negocio</h3></div>
+        <div class="card-body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label class="form-label">Titulo de seccion</label>
+                    <input type="text" name="business_model_heading" class="form-control" value="{{ old('business_model_heading', $settings->business_model_heading ?? '') }}" placeholder="Modelo demand-driven">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subtitulo</label>
+                    <input type="text" name="business_model_subheading" class="form-control" value="{{ old('business_model_subheading', $settings->business_model_subheading ?? '') }}" placeholder="No empezamos con la oferta. Empezamos con la demanda.">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Texto explicativo</label>
+                <textarea name="business_model_content" class="form-control" rows="3" placeholder="Descripcion del modelo de negocio...">{{ old('business_model_content', $settings->business_model_content ?? '') }}</textarea>
+            </div>
+            <p class="form-hint" style="margin:1rem 0 0.75rem;">Pasos del proceso (max 5)</p>
+            @for($i = 0; $i < 5; $i++)
+            @php $step = $bmSteps[$i] ?? null; @endphp
+            @if($step || $i < 3)
+            <div style="background:var(--bg); border-radius:var(--radius); padding:0.75rem 1rem; margin-bottom:0.5rem;">
+                <div style="display:grid; grid-template-columns:60px 1fr 2fr; gap:0.75rem;">
+                    <div class="form-group">
+                        <label class="form-label">Num</label>
+                        <input type="text" name="business_model_steps[{{ $i }}][num]" class="form-control" value="{{ $step['num'] ?? '' }}" placeholder="{{ str_pad($i + 1, 2, '0', STR_PAD_LEFT) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Titulo</label>
+                        <input type="text" name="business_model_steps[{{ $i }}][title]" class="form-control" value="{{ $step['title'] ?? '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripcion</label>
+                        <input type="text" name="business_model_steps[{{ $i }}][description]" class="form-control" value="{{ $step['description'] ?? '' }}">
+                    </div>
+                </div>
+            </div>
+            @endif
+            @endfor
+        </div>
+    </div>
+
+    {{-- ========================================== --}}
+    {{-- 4. PROPIEDADES DESTACADAS --}}
     {{-- ========================================== --}}
     <div class="card" style="margin-bottom:1.5rem;">
-        <div class="card-header"><h3>3. Propiedades Destacadas</h3></div>
+        <div class="card-header"><h3>4. Propiedades Destacadas</h3></div>
         <div class="card-body">
             <p class="form-hint" style="margin-bottom:1rem;">Las propiedades se muestran automaticamente desde la base de datos. Aqui solo editas el titulo y subtitulo.</p>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -120,7 +195,7 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 4. SERVICIOS --}}
+    {{-- 5. SERVICIOS --}}
     {{-- ========================================== --}}
     @php
         $defaultServices = [
@@ -131,7 +206,7 @@
         $services = old('services_section', $settings->services_section ?? $defaultServices);
     @endphp
     <div class="card" style="margin-bottom:1.5rem;">
-        <div class="card-header"><h3>4. Servicios</h3></div>
+        <div class="card-header"><h3>5. Servicios</h3></div>
         <div class="card-body">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
                 <div class="form-group">
@@ -187,7 +262,50 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 5. TESTIMONIOS --}}
+    {{-- 6. ESTADISTICAS --}}
+    {{-- ========================================== --}}
+    @php
+        $defaultStats = [
+            ['value' => '30+', 'label' => 'Anos de experiencia senior'],
+            ['value' => '200+', 'label' => 'Propiedades gestionadas'],
+            ['value' => '98%', 'label' => 'Clientes satisfechos'],
+            ['value' => '50+', 'label' => 'Operaciones al ano'],
+        ];
+        $statsSection = old('stats_section', $settings->stats_section ?? $defaultStats);
+    @endphp
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><h3>6. Estadisticas</h3></div>
+        <div class="card-body">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div class="form-group">
+                    <label class="form-label">Titulo de seccion</label>
+                    <input type="text" name="stats_heading" class="form-control" value="{{ old('stats_heading', $settings->stats_heading ?? '') }}" placeholder="Cifras que respaldan">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subtitulo</label>
+                    <input type="text" name="stats_subheading" class="form-control" value="{{ old('stats_subheading', $settings->stats_subheading ?? '') }}" placeholder="Resultados consistentes en cada operacion">
+                </div>
+            </div>
+            @for($i = 0; $i < 6; $i++)
+            @php $stat = $statsSection[$i] ?? null; @endphp
+            @if($stat || $i < 4)
+            <div style="display:grid; grid-template-columns:120px 1fr; gap:0.75rem; background:var(--bg); border-radius:var(--radius); padding:0.6rem 1rem; margin-bottom:0.4rem;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Valor</label>
+                    <input type="text" name="stats_section[{{ $i }}][value]" class="form-control" value="{{ $stat['value'] ?? '' }}" placeholder="30+">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label class="form-label">Etiqueta</label>
+                    <input type="text" name="stats_section[{{ $i }}][label]" class="form-control" value="{{ $stat['label'] ?? '' }}" placeholder="Anos de experiencia">
+                </div>
+            </div>
+            @endif
+            @endfor
+        </div>
+    </div>
+
+    {{-- ========================================== --}}
+    {{-- 7. TESTIMONIOS --}}
     {{-- ========================================== --}}
     @php
         $defaultTestimonials = [
@@ -198,7 +316,7 @@
         $testimonials = old('testimonials_section', $settings->testimonials_section ?? $defaultTestimonials);
     @endphp
     <div class="card" style="margin-bottom:1.5rem;">
-        <div class="card-header"><h3>5. Testimonios</h3></div>
+        <div class="card-header"><h3>7. Testimonios</h3></div>
         <div class="card-body">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
                 <div class="form-group">
@@ -238,10 +356,10 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 6. CONTACTO / REDES SOCIALES --}}
+    {{-- 8. CONTACTO / REDES SOCIALES --}}
     {{-- ========================================== --}}
     <div class="card" style="margin-bottom:1.5rem;">
-        <div class="card-header"><h3>6. Seccion de Contacto</h3></div>
+        <div class="card-header"><h3>8. Seccion de Contacto</h3></div>
         <div class="card-body">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.25rem;">
                 <div class="form-group">
@@ -291,10 +409,10 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 7. BLOG --}}
+    {{-- 9. BLOG --}}
     {{-- ========================================== --}}
     <div class="card" style="margin-bottom:1.5rem;">
-        <div class="card-header"><h3>7. Blog</h3></div>
+        <div class="card-header"><h3>9. Blog</h3></div>
         <div class="card-body">
             <p class="form-hint" style="margin-bottom:1rem;">Los articulos se muestran automaticamente desde el blog. Aqui solo editas el titulo y subtitulo de la seccion.</p>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -311,10 +429,10 @@
     </div>
 
     {{-- ========================================== --}}
-    {{-- 8. CTA FINAL --}}
+    {{-- 10. CTA FINAL --}}
     {{-- ========================================== --}}
     <div class="card" style="margin-bottom:1.5rem;">
-        <div class="card-header"><h3>8. CTA Final</h3></div>
+        <div class="card-header"><h3>10. CTA Final</h3></div>
         <div class="card-body">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                 <div class="form-group">
@@ -329,10 +447,34 @@
         </div>
     </div>
 
-    {{-- 9. PLANTILLAS DE DISEÑO --}}
+    {{-- 11. NAVBAR CTA --}}
+    <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header"><h3>11. Boton CTA en Navegacion</h3></div>
+        <div class="card-body">
+            <p class="form-hint" style="margin-bottom:1rem;">Configura el boton de accion que aparece en la barra de navegacion del sitio publico.</p>
+            <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.88rem; cursor:pointer;">
+                    <input type="checkbox" name="navbar_cta_enabled" value="1" {{ old('navbar_cta_enabled', $settings->navbar_cta_enabled ?? true) ? 'checked' : '' }}>
+                    Activar boton CTA en navbar
+                </label>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div class="form-group">
+                    <label class="form-label">Texto del boton</label>
+                    <input type="text" name="navbar_cta_text" class="form-control" value="{{ old('navbar_cta_text', $settings->navbar_cta_text ?? '') }}" placeholder="Valua tu propiedad">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL del boton</label>
+                    <input type="text" name="navbar_cta_url" class="form-control" value="{{ old('navbar_cta_url', $settings->navbar_cta_url ?? '') }}" placeholder="/vende-tu-propiedad">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- 12. PLANTILLAS DE DISEÑO --}}
     <div class="card" style="margin-bottom:2rem;">
         <div class="card-header">
-            <h3 class="card-title">&#127912; 9. Plantillas de Diseño</h3>
+            <h3 class="card-title">&#127912; 12. Plantillas de Diseño</h3>
         </div>
         <div class="card-body">
             <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Selecciona el diseño visual para cada sección del sitio público. Los cambios se reflejan inmediatamente.</p>

@@ -57,6 +57,9 @@ use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ClientEmailController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\LegalController;
+use App\Http\Controllers\Admin\ServiciosPageController;
+use App\Http\Controllers\Admin\NosotrosPageController;
+use App\Http\Controllers\Admin\VenderPageController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalDocumentController;
@@ -70,6 +73,7 @@ Route::get('/propiedades/{id}/{slug?}', [PublicController::class, 'propiedadShow
 
 // Páginas estáticas públicas
 Route::get('/nosotros', [PublicController::class, 'nosotros'])->name('nosotros');
+Route::get('/servicios', [PublicController::class, 'servicios'])->name('servicios');
 Route::get('/contacto', [PublicController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [PublicController::class, 'contactoStore'])->name('contacto.store');
 
@@ -220,6 +224,14 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // Homepage CMS
         Route::get('/homepage', [HomepageController::class, 'index'])->name('homepage');
         Route::post('/homepage', [HomepageController::class, 'update'])->name('homepage.update');
+
+        // Page editors
+        Route::get('/servicios-page', [ServiciosPageController::class, 'index'])->name('servicios-page');
+        Route::post('/servicios-page', [ServiciosPageController::class, 'update'])->name('servicios-page.update');
+        Route::get('/nosotros-page', [NosotrosPageController::class, 'index'])->name('nosotros-page');
+        Route::post('/nosotros-page', [NosotrosPageController::class, 'update'])->name('nosotros-page.update');
+        Route::get('/vender-page', [VenderPageController::class, 'index'])->name('vender-page');
+        Route::post('/vender-page', [VenderPageController::class, 'update'])->name('vender-page.update');
 
         // Email settings
         Route::get('/email/settings', [EmailSettingsController::class, 'index'])->name('email.settings');
