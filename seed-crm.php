@@ -58,8 +58,8 @@ if (!SiteSetting::first()) {
     SiteSetting::create([
         'site_name' => 'Homedelvalle',
         'site_tagline' => 'Tu plataforma inmobiliaria',
-        'primary_color' => '#3B82C4',
-        'secondary_color' => '#1E3A5F',
+        'primary_color' => '#667eea',
+        'secondary_color' => '#764ba2',
         'home_welcome_text' => 'Bienvenido a Homedelvalle',
     ]);
     echo "Settings creados\n";

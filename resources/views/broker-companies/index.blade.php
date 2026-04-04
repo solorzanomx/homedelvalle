@@ -28,7 +28,7 @@
 .avatar-cell img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
 .avatar-cell .av-sm {
     width: 36px; height: 36px; border-radius: 8px;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #1E3A5F));
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #764ba2));
     display: flex; align-items: center; justify-content: center;
     color: #fff; font-weight: 600; font-size: 0.8rem;
 }
@@ -47,7 +47,7 @@
 {{-- Stats --}}
 <div class="stat-cards" style="display:flex; flex-direction:row; flex-wrap:nowrap;">
     <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(59,130,196,0.1); color:var(--primary);">&#127970;</div>
+        <div class="stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#127970;</div>
         <div><div class="stat-value">{{ $stats['total'] }}</div><div class="stat-label">Total Empresas</div></div>
     </div>
     <div class="stat-card">

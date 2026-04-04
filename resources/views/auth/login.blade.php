@@ -10,7 +10,7 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -62,7 +62,7 @@
         }
         .form-group input:focus {
             outline: none;
-            border-color: #3B82C4;
+            border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
             background: #fff;
         }
@@ -90,7 +90,7 @@
             align-items: center;
             justify-content: center;
         }
-        .pwd-toggle:hover { color: #3B82C4; }
+        .pwd-toggle:hover { color: #667eea; }
         .pwd-toggle svg { width: 20px; height: 20px; }
 
         /* Alert */
@@ -127,11 +127,11 @@
         .remember-label input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #3B82C4;
+            accent-color: #667eea;
             cursor: pointer;
         }
         .forgot-link {
-            color: #3B82C4;
+            color: #667eea;
             text-decoration: none;
             font-weight: 500;
         }
@@ -141,7 +141,7 @@
         .submit-btn {
             width: 100%;
             padding: 0.75rem;
-            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -189,7 +189,7 @@
             color: #706f6c;
         }
         .register-link a {
-            color: #3B82C4;
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }

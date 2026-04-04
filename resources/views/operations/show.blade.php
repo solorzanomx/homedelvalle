@@ -62,7 +62,7 @@
 .step.current {
     background: var(--primary); color: #fff;
     padding: 0.3rem 0.7rem;
-    box-shadow: 0 2px 8px rgba(59,130,196,0.3);
+    box-shadow: 0 2px 8px rgba(102,126,234,0.3);
 }
 .step.future { opacity: 0.4; }
 .step-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
@@ -90,7 +90,7 @@
     background: var(--primary); border: none; cursor: pointer;
     transition: all 0.15s; white-space: nowrap;
 }
-.advance-btn:hover { opacity: 0.9; box-shadow: 0 2px 8px rgba(59,130,196,0.3); }
+.advance-btn:hover { opacity: 0.9; box-shadow: 0 2px 8px rgba(102,126,234,0.3); }
 
 /* ===== LAYOUT ===== */
 .op-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
@@ -127,7 +127,7 @@
     font-size: 0.68rem; font-weight: 700; background: var(--bg);
     padding: 0.05rem 0.35rem; border-radius: 8px; color: var(--text-muted);
 }
-.tab-btn.active .tab-count { background: rgba(59,130,196,0.1); color: var(--primary); }
+.tab-btn.active .tab-count { background: rgba(102,126,234,0.1); color: var(--primary); }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
@@ -282,7 +282,7 @@
             @elseif($operation->type === 'venta')
                 <span class="badge badge-blue">{{ $operation->type_label }}</span>
             @else
-                <span class="badge" style="background:#EBF5FF; color:#2563A0;">{{ $operation->type_label }}</span>
+                <span class="badge" style="background:#f3f0ff; color:#6d28d9;">{{ $operation->type_label }}</span>
             @endif
             @if($operation->amount)
                 <span class="badge badge-green" style="font-weight:700;">${{ number_format($operation->amount, 0) }}</span>
@@ -802,7 +802,7 @@
                 <div class="info-section" style="padding-top:0;">
                     <div class="info-label">Detalles</div>
                     @if($operation->type === 'captacion' && $operation->target_type)
-                    <div class="info-row"><span class="lbl">Destino</span><span class="val"><span class="badge badge-{{ $operation->target_type === 'venta' ? 'blue' : '' }}" style="{{ $operation->target_type === 'renta' ? 'background:#EBF5FF;color:#2563A0;' : '' }}">{{ ucfirst($operation->target_type) }}</span></span></div>
+                    <div class="info-row"><span class="lbl">Destino</span><span class="val"><span class="badge badge-{{ $operation->target_type === 'venta' ? 'blue' : '' }}" style="{{ $operation->target_type === 'renta' ? 'background:#f3f0ff;color:#6d28d9;' : '' }}">{{ ucfirst($operation->target_type) }}</span></span></div>
                     @endif
                     @if($operation->sourceOperation)
                     <div class="info-row"><span class="lbl">Origen</span><span class="val"><a href="{{ route('operations.show', $operation->source_operation_id) }}">Captacion #{{ $operation->source_operation_id }}</a></span></div>

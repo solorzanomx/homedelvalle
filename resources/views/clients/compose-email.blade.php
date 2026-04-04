@@ -6,8 +6,8 @@
 .compose-layout { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
 .prop-selector { max-height: 400px; overflow-y: auto; }
 .prop-check { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 0.5rem; cursor: pointer; transition: all 0.15s; }
-.prop-check:hover { border-color: var(--primary); background: rgba(59,130,196,0.04); }
-.prop-check.selected { border-color: var(--primary); background: rgba(59,130,196,0.08); }
+.prop-check:hover { border-color: var(--primary); background: rgba(102,126,234,0.04); }
+.prop-check.selected { border-color: var(--primary); background: rgba(102,126,234,0.08); }
 .prop-check input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--primary); flex-shrink: 0; }
 .prop-thumb { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--bg); }
 .prop-meta { flex: 1; min-width: 0; }

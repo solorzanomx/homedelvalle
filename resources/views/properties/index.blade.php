@@ -48,7 +48,7 @@
     font-size: 0.65rem; background: var(--bg); padding: 0 5px; border-radius: 8px;
     margin-left: 3px; font-weight: 600; color: var(--text-muted);
 }
-.p-tab.active .p-tab-count { background: rgba(59,130,196,0.12); color: var(--primary); }
+.p-tab.active .p-tab-count { background: rgba(102,126,234,0.12); color: var(--primary); }
 
 /* ===== Filters Toggle ===== */
 .p-filters-toggle {
@@ -57,7 +57,7 @@
     cursor: pointer; white-space: nowrap; transition: all 0.15s;
 }
 .p-filters-toggle:hover { border-color: var(--primary); color: var(--primary); }
-.p-filters-toggle.active { border-color: var(--primary); color: var(--primary); background: rgba(59,130,196,0.04); }
+.p-filters-toggle.active { border-color: var(--primary); color: var(--primary); background: rgba(102,126,234,0.04); }
 .p-filters-panel {
     display: none; background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 1rem 1.25rem; margin-bottom: 1.25rem;
@@ -74,7 +74,7 @@
 .p-card:hover { border-color: var(--primary); box-shadow: 0 4px 20px rgba(0,0,0,0.06); transform: translateY(-1px); }
 .p-card-img {
     display: block; position: relative; height: 180px; overflow: hidden;
-    background: linear-gradient(135deg, #3B82C4, #1E3A5F); text-decoration: none;
+    background: linear-gradient(135deg, #667eea, #764ba2); text-decoration: none;
 }
 .p-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
 .p-card:hover .p-card-img img { transform: scale(1.03); }
@@ -85,7 +85,7 @@
 .p-card-badges { position: absolute; top: 8px; left: 8px; display: flex; gap: 4px; flex-wrap: wrap; }
 .p-badge { padding: 2px 8px; font-size: 0.66rem; font-weight: 600; border-radius: 4px; backdrop-filter: blur(8px); }
 .p-badge-type { background: rgba(255,255,255,0.92); color: var(--text); }
-.p-badge-op { background: rgba(59,130,196,0.9); color: #fff; }
+.p-badge-op { background: rgba(102,126,234,0.9); color: #fff; }
 .p-card-status {
     position: absolute; top: 8px; right: 8px; padding: 2px 8px;
     font-size: 0.66rem; font-weight: 600; border-radius: 4px; backdrop-filter: blur(8px);
@@ -140,7 +140,7 @@
     cursor: pointer; font-size: 0.82rem; transition: all 0.15s; margin-bottom: 0.5rem;
     color: var(--text); text-decoration: none;
 }
-.p-share-btn:hover { border-color: var(--primary); background: rgba(59,130,196,0.04); }
+.p-share-btn:hover { border-color: var(--primary); background: rgba(102,126,234,0.04); }
 .p-share-icon { font-size: 1.1rem; width: 24px; text-align: center; }
 
 /* ===== FAB ===== */
@@ -148,7 +148,7 @@
     display: none; position: fixed; bottom: 80px; right: 16px; z-index: 91;
     width: 52px; height: 52px; border-radius: 50%; border: none;
     background: var(--primary); color: #fff; font-size: 26px; font-weight: 300;
-    box-shadow: 0 4px 14px rgba(59,130,196,0.4);
+    box-shadow: 0 4px 14px rgba(102,126,234,0.4);
     align-items: center; justify-content: center; cursor: pointer; text-decoration: none;
 }
 
@@ -176,7 +176,7 @@
 {{-- Stats --}}
 <div class="p-stats" style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:0.75rem; margin-bottom:1.5rem;">
     <div class="p-stat" style="flex:1;">
-        <div class="p-stat-icon" style="background:rgba(59,130,196,0.1); color:var(--primary);">&#8962;</div>
+        <div class="p-stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#8962;</div>
         <div><div class="p-stat-val">{{ $stats['total'] }}</div><div class="p-stat-label">Total</div></div>
     </div>
     <div class="p-stat" style="flex:1;">

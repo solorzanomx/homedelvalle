@@ -149,7 +149,7 @@ class ClientEmailController extends Controller
         $html .= '<style>
             body { font-family: Arial, Helvetica, sans-serif; color: #333; margin: 0; padding: 0; background: #f4f4f4; }
             .email-wrap { max-width: 640px; margin: 0 auto; background: #fff; }
-            .email-header { background: linear-gradient(135deg, #3B82C4, #1E3A5F); padding: 24px 32px; color: #fff; }
+            .email-header { background: linear-gradient(135deg, #667eea, #764ba2); padding: 24px 32px; color: #fff; }
             .email-header h1 { margin: 0; font-size: 20px; }
             .email-body { padding: 32px; }
             .email-body p { line-height: 1.6; margin: 0 0 16px; }
@@ -157,7 +157,7 @@ class ClientEmailController extends Controller
             .prop-img { width: 100%; height: 200px; object-fit: cover; display: block; }
             .prop-info { padding: 16px; }
             .prop-title { font-size: 16px; font-weight: 600; margin: 0 0 4px; color: #1e293b; }
-            .prop-price { font-size: 18px; font-weight: 700; color: #3B82C4; margin: 0 0 8px; }
+            .prop-price { font-size: 18px; font-weight: 700; color: #667eea; margin: 0 0 8px; }
             .prop-details { font-size: 13px; color: #64748b; margin: 0; }
             .email-footer { background: #f8fafc; padding: 24px 32px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #64748b; }
             .sig-name { font-weight: 600; color: #1e293b; font-size: 14px; }
@@ -201,7 +201,7 @@ class ClientEmailController extends Controller
             if ($senderPhone) {
                 $html .= '<p style="margin:2px 0 0; font-size:13px; color:#64748b;">' . e($senderPhone) . '</p>';
             }
-            $html .= '<p style="margin:2px 0 0; font-size:13px; color:#3B82C4;">' . e($senderEmail) . '</p>';
+            $html .= '<p style="margin:2px 0 0; font-size:13px; color:#667eea;">' . e($senderEmail) . '</p>';
         }
         $html .= '</div>';
 

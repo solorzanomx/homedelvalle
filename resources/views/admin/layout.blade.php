@@ -27,7 +27,7 @@
         /* Sidebar */
         .sidebar {
             width: 280px;
-            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             display: flex;
             flex-direction: column;
@@ -235,12 +235,12 @@
         }
 
         .btn-view {
-            background: #3B82C4;
+            background: #667eea;
             color: white;
         }
 
         .btn-view:hover {
-            background: #1E3A5F;
+            background: #764ba2;
         }
 
         .btn-edit {
@@ -293,7 +293,7 @@
         .form-input:focus,
         .form-textarea:focus {
             outline: none;
-            border-color: #3B82C4;
+            border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
@@ -309,7 +309,7 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 12px 30px;
             border: none;
@@ -375,7 +375,7 @@
         }
 
         .avatar-upload:hover {
-            border-color: #3B82C4;
+            border-color: #667eea;
             background: #f5f5f5;
         }
 
@@ -384,7 +384,7 @@
             height: 120px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #3B82C4;
+            border: 3px solid #667eea;
         }
 
         .avatar-upload-text {
@@ -421,18 +421,18 @@
             border: 1px solid #e0e0e0;
             border-radius: 4px;
             text-decoration: none;
-            color: #3B82C4;
+            color: #667eea;
             font-size: 14px;
             transition: all 0.3s;
         }
 
         .pagination a:hover {
-            background: #3B82C4;
+            background: #667eea;
             color: white;
         }
 
         .pagination .active {
-            background: #3B82C4;
+            background: #667eea;
             color: white;
         }
 

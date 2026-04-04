@@ -10,11 +10,11 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary: {{ $siteSettings->primary_color ?? '#3B82C4' }};
-            --primary-dark: {{ $siteSettings->secondary_color ?? '#1E3A5F' }};
-            --sidebar-bg: #0C1A2E;
-            --sidebar-hover: #14253E;
-            --sidebar-text: #94B8D8;
+            --primary: {{ $siteSettings->primary_color ?? '#667eea' }};
+            --primary-dark: {{ $siteSettings->secondary_color ?? '#764ba2' }};
+            --sidebar-bg: #1e1b4b;
+            --sidebar-hover: #312e81;
+            --sidebar-text: #c7d2fe;
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
@@ -132,7 +132,7 @@
             border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); color: var(--text);
             outline: none; transition: all 0.15s;
         }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,196,0.1); }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
         .form-textarea { resize: vertical; min-height: 80px; }
         .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 1.25rem; }
         .form-grid .full-width { grid-column: 1 / -1; }
@@ -265,12 +265,12 @@
                 position: fixed; bottom: 72px; right: 16px; z-index: 91;
                 width: 52px; height: 52px; border-radius: 50%; border: none;
                 background: var(--primary); color: #fff; font-size: 26px; font-weight: 300;
-                box-shadow: 0 4px 14px rgba(59,130,196,0.4);
+                box-shadow: 0 4px 14px rgba(102,126,234,0.4);
                 display: flex; align-items: center; justify-content: center;
                 cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
                 -webkit-tap-highlight-color: transparent;
             }
-            .mobile-fab:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(59,130,196,0.3); }
+            .mobile-fab:active { transform: scale(0.92); box-shadow: 0 2px 8px rgba(102,126,234,0.3); }
         }
         @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } .content-body { padding: 1rem; } }
 
@@ -779,12 +779,12 @@
             }
             var html = '';
             list.forEach(function(n) {
-                var bg = n.read ? '' : 'background:rgba(59,130,196,0.04);';
+                var bg = n.read ? '' : 'background:rgba(102,126,234,0.04);';
                 var dot = n.read ? '' : '<span style="width:8px;height:8px;border-radius:50%;background:var(--primary);flex-shrink:0;"></span>';
                 var avatar = n.from_avatar
                     ? '<img src="' + n.from_avatar + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">'
                     : '<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;">' + n.from_initial + '</div>';
-                html += '<a href="#" onclick="event.preventDefault(); clickNotification(' + n.id + ', \'' + (n.data && n.data.url ? n.data.url : '') + '\');" style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.7rem 1rem;border-bottom:1px solid var(--border);transition:background 0.15s;' + bg + '" onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'' + (n.read ? '' : 'rgba(59,130,196,0.04)') + '\'">'
+                html += '<a href="#" onclick="event.preventDefault(); clickNotification(' + n.id + ', \'' + (n.data && n.data.url ? n.data.url : '') + '\');" style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.7rem 1rem;border-bottom:1px solid var(--border);transition:background 0.15s;' + bg + '" onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'' + (n.read ? '' : 'rgba(102,126,234,0.04)') + '\'">'
                     + avatar
                     + '<div style="flex:1;overflow:hidden;">'
                     + '<div style="font-size:0.82rem;font-weight:' + (n.read ? '400' : '600') + ';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(n.title) + '</div>'

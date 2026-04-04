@@ -13,7 +13,7 @@
 .trigger-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem; }
 .trigger-card { padding: 0.6rem; border: 2px solid var(--border); border-radius: var(--radius); text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
 .trigger-card:hover { border-color: var(--primary); }
-.trigger-card.active { border-color: var(--primary); background: rgba(59,130,196,0.04); }
+.trigger-card.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
 .trigger-card input { position: absolute; opacity: 0; pointer-events: none; }
 .trigger-card-label { font-size: 0.78rem; font-weight: 600; }
 .trigger-card-desc { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.1rem; }

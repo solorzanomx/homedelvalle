@@ -67,7 +67,7 @@
     text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .type-card:hover { border-color: var(--primary); }
-.type-card.active { border-color: var(--primary); background: rgba(59,130,196,0.04); }
+.type-card.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
 .type-card input { position: absolute; opacity: 0; pointer-events: none; }
 .type-icon { font-size: 1.2rem; margin-bottom: 0.15rem; }
 .type-card-label { font-size: 0.78rem; font-weight: 600; }
@@ -94,7 +94,7 @@
 
 @section('content')
 @php
-    $avatarColors = ['#3B82C4','#1E3A5F','#f093fb','#4facfe','#43e97b','#fa709a'];
+    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a'];
     $typeIcons = [
         'portero' => '&#127970;', 'vecino' => '&#127968;', 'broker_hipotecario' => '&#127974;',
         'cliente_pasado' => '&#128100;', 'comisionista' => '&#128176;', 'otro' => '&#128101;',

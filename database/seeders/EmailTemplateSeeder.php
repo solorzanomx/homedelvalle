@@ -20,7 +20,7 @@ class EmailTemplateSeeder extends Seeder
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;">
 <div style="max-width:600px;margin:30px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#3B82C4,#1E3A5F);padding:32px 40px;text-align:center;">
+    <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px 40px;text-align:center;">
         <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">{{Sitio}}</h1>
         <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Plataforma de Gestion Inmobiliaria</p>
     </div>
@@ -56,7 +56,7 @@ class EmailTemplateSeeder extends Seeder
 
         <!-- CTA Button -->
         <div style="text-align:center;margin:24px 0;">
-            <a href="#" style="display:inline-block;background:linear-gradient(135deg,#3B82C4,#1E3A5F);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
+            <a href="#" style="display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
                 Iniciar Sesion
             </a>
         </div>
@@ -88,7 +88,7 @@ HTML
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;">
 <div style="max-width:600px;margin:30px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#3B82C4,#1E3A5F);padding:32px 40px;text-align:center;">
+    <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px 40px;text-align:center;">
         <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">{{Sitio}}</h1>
         <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Recuperacion de Contrasena</p>
     </div>
@@ -102,7 +102,7 @@ HTML
 
         <!-- CTA Button -->
         <div style="text-align:center;margin:28px 0;">
-            <a href="{{EnlaceReset}}" style="display:inline-block;background:linear-gradient(135deg,#3B82C4,#1E3A5F);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
+            <a href="{{EnlaceReset}}" style="display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:15px;font-weight:600;">
                 Restablecer Contrasena
             </a>
         </div>
@@ -121,7 +121,7 @@ HTML
         <!-- Fallback link -->
         <p style="color:#94a3b8;font-size:12px;margin-top:20px;word-break:break-all;">
             Si el boton no funciona, copia y pega este enlace en tu navegador:<br>
-            <a href="{{EnlaceReset}}" style="color:#3B82C4;">{{EnlaceReset}}</a>
+            <a href="{{EnlaceReset}}" style="color:#667eea;">{{EnlaceReset}}</a>
         </p>
     </div>
 
@@ -151,7 +151,7 @@ HTML
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;">
 <div style="max-width:600px;margin:30px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#3B82C4,#1E3A5F);padding:32px 40px;text-align:center;">
+    <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px 40px;text-align:center;">
         <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">{{Sitio}}</h1>
         <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Notificacion de Seguridad</p>
     </div>
@@ -204,7 +204,7 @@ HTML
 <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif;">
 <div style="max-width:600px;margin:30px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     <!-- Header -->
-    <div style="background:linear-gradient(135deg,#3B82C4,#1E3A5F);padding:32px 40px;text-align:center;">
+    <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px 40px;text-align:center;">
         <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">{{Sitio}}</h1>
         <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;">Portal de Cliente</p>
     </div>
@@ -236,7 +236,7 @@ HTML
 
         <!-- CTA Button -->
         <div style="text-align:center;margin:24px 0;">
-            <a href="{{PortalURL}}" style="display:inline-block;background:linear-gradient(135deg,#3B82C4,#1E3A5F);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
+            <a href="{{PortalURL}}" style="display:inline-block;background:linear-gradient(135deg,#667eea,#764ba2);color:#ffffff;text-decoration:none;padding:12px 32px;border-radius:8px;font-size:14px;font-weight:600;">
                 Acceder a Mi Portal
             </a>
         </div>

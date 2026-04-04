@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -57,7 +57,7 @@
         }
         .form-group input:focus {
             outline: none;
-            border-color: #3B82C4;
+            border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
         .form-group input.error {
@@ -82,7 +82,7 @@
         .submit-btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -103,7 +103,7 @@
             color: #706f6c;
         }
         .login-link a {
-            color: #3B82C4;
+            color: #667eea;
             text-decoration: none;
             font-weight: 600;
         }

@@ -28,14 +28,14 @@
     text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .type-card:hover { border-color: var(--primary); }
-.type-card.active { border-color: var(--primary); background: rgba(59,130,196,0.04); }
+.type-card.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
 .type-card input { position: absolute; opacity: 0; pointer-events: none; }
 .type-icon { font-size: 1.2rem; margin-bottom: 0.15rem; }
 .type-card-label { font-size: 0.78rem; font-weight: 600; }
 .type-card-desc { font-size: 0.62rem; color: var(--text-muted); margin-top: 0.1rem; }
 
 .commission-hint {
-    background: rgba(59,130,196,0.06); border: 1px solid rgba(59,130,196,0.15);
+    background: rgba(102,126,234,0.06); border: 1px solid rgba(102,126,234,0.15);
     border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem;
     font-size: 0.78rem; color: var(--text-muted);
 }

@@ -128,7 +128,7 @@
     flex-shrink: 0; margin-left: 0.35rem;
 }
 .k-card-type.venta { background: #dbeafe; color: #1e40af; }
-.k-card-type.renta { background: #EBF5FF; color: #2563A0; }
+.k-card-type.renta { background: #f3f0ff; color: #6d28d9; }
 .k-card-type.captacion { background: #ccfbf1; color: #0f766e; }
 
 .k-card-prop {
@@ -232,14 +232,14 @@
 .fab {
     position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
     width: 52px; height: 52px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #1E3A5F));
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #764ba2));
     color: #fff; border: none; font-size: 1.5rem; cursor: pointer;
-    box-shadow: 0 4px 15px rgba(59,130,196,0.4);
+    box-shadow: 0 4px 15px rgba(102,126,234,0.4);
     transition: transform 0.15s, box-shadow 0.15s;
     display: flex; align-items: center; justify-content: center;
     text-decoration: none;
 }
-.fab:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(59,130,196,0.5); }
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(102,126,234,0.5); }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
@@ -370,7 +370,7 @@
                 <style>.kanban-col[data-stage="{{ $stageKey }}"] .kanban-col-header::before { background: {{ $color }}; }</style>
             </div>
             <div class="kanban-col-body" data-stage="{{ $stageKey }}"
-                 ondragover="event.preventDefault(); this.style.background='rgba(59,130,196,0.06)'"
+                 ondragover="event.preventDefault(); this.style.background='rgba(102,126,234,0.06)'"
                  ondragleave="this.style.background=''"
                  ondrop="handleDrop(event, '{{ $stageKey }}')">
 

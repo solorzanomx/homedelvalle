@@ -46,7 +46,7 @@ class Operation extends Model
         'fotos_video' => '#ec4899', 'carpeta_lista' => '#22c55e',
         'publicacion' => '#34d399', 'busqueda' => '#fbbf24', 'investigacion' => '#f97316',
         'contrato' => '#f472b6', 'entrega' => '#22d3ee', 'cierre' => '#10b981',
-        'activo' => '#3B82C4', 'renovacion' => '#2563A0',
+        'activo' => '#667eea', 'renovacion' => '#8b5cf6',
     ];
 
     const GUARANTEE_TYPES = [

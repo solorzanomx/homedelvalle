@@ -10,9 +10,9 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif; background: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        nav { background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+        nav { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
         nav h1 { font-size: 24px; }
-        nav a, nav button { background: white; color: #3B82C4; padding: 8px 16px; border: none; border-radius: 4px; text-decoration: none; cursor: pointer; font-weight: 600; margin-left: 10px; }
+        nav a, nav button { background: white; color: #667eea; padding: 8px 16px; border: none; border-radius: 4px; text-decoration: none; cursor: pointer; font-weight: 600; margin-left: 10px; }
         nav a:hover, nav button:hover { background: #f0f0f0; }
         .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .alert-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
@@ -24,13 +24,13 @@
         th { background: #f5f5f5; padding: 12px; text-align: left; font-weight: 600; border-bottom: 1px solid #e3e3e0; }
         td { padding: 12px; border-bottom: 1px solid #e3e3e0; }
         tr:hover { background: #f9f9f9; }
-        .btn { padding: 8px 16px; background: #3B82C4; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 12px; margin-right: 5px; display: inline-block; }
-        .btn:hover { background: #1E3A5F; }
+        .btn { padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 12px; margin-right: 5px; display: inline-block; }
+        .btn:hover { background: #764ba2; }
         .btn-danger { background: #dc2626; }
         .btn-danger:hover { background: #b91c1c; }
         .btn-warning { background: #f59e0b; }
         .btn-warning:hover { background: #d97706; }
-        a { color: #3B82C4; text-decoration: none; }
+        a { color: #667eea; text-decoration: none; }
         a:hover { text-decoration: underline; }
         form { display: inline; }
     </style>

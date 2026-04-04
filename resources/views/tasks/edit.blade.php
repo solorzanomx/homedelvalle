@@ -28,7 +28,7 @@
     text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .prio-card:hover { border-color: var(--primary); }
-.prio-card.active { border-color: var(--primary); background: rgba(59,130,196,0.04); }
+.prio-card.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
 .prio-card input { position: absolute; opacity: 0; pointer-events: none; }
 .prio-dot-lg { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto 0.25rem; }
 .prio-card-label { font-size: 0.78rem; font-weight: 500; }

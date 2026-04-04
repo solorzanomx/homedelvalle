@@ -14,8 +14,8 @@
     padding: 1.25rem; text-align: center; cursor: pointer; transition: all 0.2s;
     background: var(--card);
 }
-.type-card:hover { border-color: var(--primary); background: rgba(59,130,196,0.03); }
-.type-card.selected { border-color: var(--primary); background: rgba(59,130,196,0.06); box-shadow: 0 0 0 3px rgba(59,130,196,0.12); }
+.type-card:hover { border-color: var(--primary); background: rgba(102,126,234,0.03); }
+.type-card.selected { border-color: var(--primary); background: rgba(102,126,234,0.06); box-shadow: 0 0 0 3px rgba(102,126,234,0.12); }
 .type-card input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
 .type-card .type-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
 .type-card .type-label { font-size: 0.9rem; font-weight: 600; }

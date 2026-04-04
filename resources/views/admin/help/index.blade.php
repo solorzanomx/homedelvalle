@@ -20,7 +20,7 @@
 
 /* Onboarding */
 .onboarding-card {
-    background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%); color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff;
     border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
 }
 .onboarding-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.25rem; }
@@ -34,7 +34,7 @@
 }
 .onboarding-step.done { background: rgba(255,255,255,0.25); }
 .onboarding-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; flex-shrink: 0; }
-.onboarding-step.done .onboarding-check { background: #fff; color: #3B82C4; border-color: #fff; }
+.onboarding-step.done .onboarding-check { background: #fff; color: #667eea; border-color: #fff; }
 
 /* Categories grid */
 .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
@@ -42,7 +42,7 @@
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 1.25rem; transition: border-color 0.15s, box-shadow 0.15s;
 }
-.cat-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(59,130,196,0.08); }
+.cat-card:hover { border-color: var(--primary); box-shadow: 0 2px 8px rgba(102,126,234,0.08); }
 .cat-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
 .cat-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.35rem; }
 .cat-count { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; }

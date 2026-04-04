@@ -249,7 +249,7 @@
 .stale-avatar {
     width: 34px; height: 34px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #1E3A5F));
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #764ba2));
     color: #fff;
     font-size: 0.72rem;
     font-weight: 700;

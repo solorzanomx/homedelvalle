@@ -84,7 +84,7 @@
     display: none; position: fixed; bottom: 80px; right: 16px; z-index: 91;
     width: 52px; height: 52px; border-radius: 50%; border: none;
     background: var(--primary); color: #fff; font-size: 26px; font-weight: 300;
-    box-shadow: 0 4px 14px rgba(59,130,196,0.4);
+    box-shadow: 0 4px 14px rgba(102,126,234,0.4);
     align-items: center; justify-content: center; cursor: pointer; text-decoration: none;
 }
 @media (max-width: 768px) { .task-fab { display: flex; } }

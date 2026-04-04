@@ -105,7 +105,7 @@
 @php
     $roleBgColors = ['admin'=>'#ef4444','editor'=>'#3b82f6','viewer'=>'#10b981','user'=>'#f59e0b','broker'=>'#f97316'];
     $roleLabels = ['admin'=>'Admin','editor'=>'Director','viewer'=>'Asesor','user'=>'Usuario','broker'=>'Broker'];
-    $avatarColors = ['#3B82C4','#1E3A5F','#f093fb','#4facfe','#43e97b','#fa709a'];
+    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a'];
 @endphp
 
 <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
@@ -140,7 +140,7 @@
             <div class="profile-name">{{ $user->name }} {{ $user->last_name }}</div>
             <div class="profile-subtitle">{{ $user->email }}</div>
             <div class="profile-badges">
-                <span class="badge" style="background:{{ $roleBgColors[$user->role] ?? '#3B82C4' }}15; color:{{ $roleBgColors[$user->role] ?? '#3B82C4' }}; font-size:0.72rem;">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
+                <span class="badge" style="background:{{ $roleBgColors[$user->role] ?? '#667eea' }}15; color:{{ $roleBgColors[$user->role] ?? '#667eea' }}; font-size:0.72rem;">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
                 @if(($user->is_active ?? true))
                     <span class="badge badge-green" style="font-size:0.68rem;">Activo</span>
                 @else

@@ -17,7 +17,7 @@
             <button onclick="cropperInstance?.rotate(-90)" style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:6px; padding:0.4rem 0.7rem; cursor:pointer; font-size:0.9rem;" title="Rotar">&#8635;</button>
             <div style="flex:1;"></div>
             <button onclick="closeCropper()" style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 1rem; cursor:pointer; font-size:0.85rem;">Cancelar</button>
-            <button onclick="applyCrop()" id="cropSaveBtn" style="background:var(--primary, #3B82C4); color:#fff; border:none; border-radius:8px; padding:0.5rem 1.2rem; cursor:pointer; font-size:0.85rem; font-weight:600;">Guardar</button>
+            <button onclick="applyCrop()" id="cropSaveBtn" style="background:var(--primary, #667eea); color:#fff; border:none; border-radius:8px; padding:0.5rem 1.2rem; cursor:pointer; font-size:0.85rem; font-weight:600;">Guardar</button>
         </div>
     </div>
 </div>

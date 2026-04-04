@@ -17,8 +17,8 @@
     <style>
         [x-cloak] { display: none !important; }
         :root {
-            --color-primary: {{ $siteSettings?->primary_color ?? '#3B82C4' }};
-            --color-secondary: {{ $siteSettings?->secondary_color ?? '#1E3A5F' }};
+            --color-primary: {{ $siteSettings?->primary_color ?? '#4f46e5' }};
+            --color-secondary: {{ $siteSettings?->secondary_color ?? '#7c3aed' }};
         }
     </style>
 </head>

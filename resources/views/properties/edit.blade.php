@@ -33,7 +33,7 @@
     text-align: center; cursor: pointer; transition: all 0.2s; position: relative;
 }
 .type-card:hover { border-color: var(--primary); }
-.type-card.selected { border-color: var(--primary); background: rgba(59,130,196,0.04); box-shadow: 0 0 0 3px rgba(59,130,196,0.1); }
+.type-card.selected { border-color: var(--primary); background: rgba(102,126,234,0.04); box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
 .type-card-icon { font-size: 1.25rem; display: block; margin-bottom: 0.15rem; }
 .type-card-label { font-size: 0.72rem; font-weight: 600; }
 .type-card .check-mark {
@@ -50,7 +50,7 @@
     text-align: center; cursor: pointer; transition: all 0.2s;
 }
 .op-card:hover { border-color: var(--primary); }
-.op-card.selected { border-color: var(--primary); background: rgba(59,130,196,0.04); box-shadow: 0 0 0 3px rgba(59,130,196,0.1); }
+.op-card.selected { border-color: var(--primary); background: rgba(102,126,234,0.04); box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
 .op-card-label { font-size: 0.82rem; font-weight: 600; }
 .op-card-sub { font-size: 0.68rem; color: var(--text-muted); margin-top: 0.1rem; }
 
@@ -94,7 +94,7 @@
     border: 2px dashed var(--border); border-radius: var(--radius);
     padding: 0.75rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 0.75rem;
 }
-.photo-drop:hover, .photo-drop.dragover { border-color: var(--primary); background: rgba(59,130,196,0.03); }
+.photo-drop:hover, .photo-drop.dragover { border-color: var(--primary); background: rgba(102,126,234,0.03); }
 /* Photo list items */
 .photo-list { display: flex; flex-direction: column; gap: 6px; }
 .photo-item {
@@ -103,7 +103,7 @@
     transition: all 0.15s; cursor: grab; position: relative;
 }
 .photo-item:active { cursor: grabbing; }
-.photo-item.is-primary { border-color: var(--primary); background: rgba(59,130,196,0.03); }
+.photo-item.is-primary { border-color: var(--primary); background: rgba(102,126,234,0.03); }
 .photo-item.sortable-ghost { opacity: 0.4; border-style: dashed; }
 .photo-item.sortable-chosen { box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 10; }
 .photo-item-thumb {
@@ -152,7 +152,7 @@
 @keyframes photoSpin { to { transform: rotate(360deg); } }
 .photo-item-uploading {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 10px; border: 1px dashed var(--primary); border-radius: 8px; background: rgba(59,130,196,0.03);
+    padding: 10px; border: 1px dashed var(--primary); border-radius: 8px; background: rgba(102,126,234,0.03);
 }
 .photo-item-uploading .photo-spinner { width: 20px; height: 20px; border-width: 2px; margin: 0; }
 
@@ -201,12 +201,12 @@
     padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.82rem; transition: background 0.1s;
     display: flex; justify-content: space-between; align-items: center;
 }
-.owner-result:hover { background: rgba(59,130,196,0.06); }
+.owner-result:hover { background: rgba(102,126,234,0.06); }
 .owner-result-name { font-weight: 500; }
 .owner-result-email { font-size: 0.72rem; color: var(--text-muted); }
 .owner-selected {
     display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
-    background: rgba(59,130,196,0.06); border: 1px solid var(--primary); border-radius: var(--radius);
+    background: rgba(102,126,234,0.06); border: 1px solid var(--primary); border-radius: var(--radius);
     font-size: 0.85rem;
 }
 .owner-selected .remove-owner {

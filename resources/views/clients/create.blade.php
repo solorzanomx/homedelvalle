@@ -37,7 +37,7 @@
             @csrf
 
             @if(request('from_submission'))
-            <div style="background:rgba(59,130,196,0.06); border:1px solid rgba(59,130,196,0.15); border-radius:var(--radius); padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.82rem;">
+            <div style="background:rgba(102,126,234,0.06); border:1px solid rgba(102,126,234,0.15); border-radius:var(--radius); padding:0.75rem 1rem; margin-bottom:1.25rem; font-size:0.82rem;">
                 &#128279; Creando cliente desde lead entrante. Los datos fueron pre-llenados.
             </div>
             <input type="hidden" name="initial_notes" value="Convertido desde lead entrante (formulario de contacto). {{ request('utm_source') ? 'Fuente: '.request('utm_source').'.' : '' }} {{ request('utm_medium') ? 'Medio: '.request('utm_medium').'.' : '' }} {{ request('utm_campaign') ? 'Campana: '.request('utm_campaign').'.' : '' }}">
