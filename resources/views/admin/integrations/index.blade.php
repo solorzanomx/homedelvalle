@@ -12,7 +12,7 @@
 .toggle-switch { position: relative; width: 44px; height: 24px; cursor: pointer; }
 .toggle-switch input { opacity: 0; width: 0; height: 0; }
 .toggle-track { position: absolute; inset: 0; background: #d1d5db; border-radius: 12px; transition: background 0.2s; }
-.toggle-switch input:checked + .toggle-track { background: var(--primary, #667eea); }
+.toggle-switch input:checked + .toggle-track { background: var(--primary, #3B82C4); }
 .toggle-track::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s; }
 .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
 .int-fields { padding: 0.75rem 0 0; }

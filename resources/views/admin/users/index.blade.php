@@ -50,7 +50,7 @@
     font-size: 0.65rem; background: var(--bg); padding: 0 5px; border-radius: 8px;
     margin-left: 3px; font-weight: 600; color: var(--text-muted);
 }
-.u-tab.active .u-tab-count { background: rgba(102,126,234,0.12); color: var(--primary); }
+.u-tab.active .u-tab-count { background: rgba(59,130,196,0.12); color: var(--primary); }
 
 /* ===== User Grid ===== */
 .u-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
@@ -94,7 +94,7 @@
     display: none; position: fixed; bottom: 80px; right: 16px; z-index: 91;
     width: 52px; height: 52px; border-radius: 50%; border: none;
     background: var(--primary); color: #fff; font-size: 26px; font-weight: 300;
-    box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+    box-shadow: 0 4px 14px rgba(59,130,196,0.4);
     align-items: center; justify-content: center; cursor: pointer; text-decoration: none;
 }
 
@@ -113,13 +113,13 @@
 @php
     $roleBgColors = ['admin'=>'#ef4444','editor'=>'#3b82f6','viewer'=>'#10b981','user'=>'#f59e0b','broker'=>'#f97316','client'=>'#8b5cf6'];
     $roleLabels = ['admin'=>'Admin','editor'=>'Editor','viewer'=>'Viewer','user'=>'Usuario','broker'=>'Broker','client'=>'Cliente'];
-    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1'];
+    $avatarColors = ['#3B82C4','#1E3A5F','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1'];
 @endphp
 
 {{-- Stats --}}
 <div class="u-stats" style="display:flex; flex-direction:row; flex-wrap:nowrap; gap:0.75rem; margin-bottom:1.5rem;">
     <div class="u-stat" style="flex:1;">
-        <div class="u-stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#9823;</div>
+        <div class="u-stat-icon" style="background:rgba(59,130,196,0.1); color:var(--primary);">&#9823;</div>
         <div><div class="u-stat-val">{{ $stats['total'] }}</div><div class="u-stat-label">Total</div></div>
     </div>
     <div class="u-stat" style="flex:1;">

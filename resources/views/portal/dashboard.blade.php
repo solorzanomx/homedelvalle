@@ -20,7 +20,7 @@
     {{-- Stats --}}
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon" style="background:rgba(102,126,234,0.1); color:var(--primary);">&#127968;</div>
+            <div class="stat-icon" style="background:rgba(59,130,196,0.1); color:var(--primary);">&#127968;</div>
             <div>
                 <div class="stat-value">{{ $rentals->count() }}</div>
                 <div class="stat-label">Procesos de Renta</div>

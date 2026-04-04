@@ -1,7 +1,7 @@
 @php
     $roleBgColors = ['admin'=>'#ef4444','editor'=>'#3b82f6','viewer'=>'#10b981','user'=>'#f59e0b','broker'=>'#f97316','client'=>'#8b5cf6'];
     $roleLabels = ['admin'=>'Admin','editor'=>'Director','viewer'=>'Asesor','user'=>'Usuario','broker'=>'Broker','client'=>'Cliente'];
-    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1'];
+    $avatarColors = ['#3B82C4','#1E3A5F','#f093fb','#4facfe','#43e97b','#fa709a','#fee140','#a18cd1'];
 @endphp
 
 @if($users->count())
@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="u-card-badges">
-            <span class="u-role-badge" style="background:{{ $roleBgColors[$user->role] ?? '#667eea' }}10; color:{{ $roleBgColors[$user->role] ?? '#667eea' }};">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
+            <span class="u-role-badge" style="background:{{ $roleBgColors[$user->role] ?? '#3B82C4' }}10; color:{{ $roleBgColors[$user->role] ?? '#3B82C4' }};">{{ $roleLabels[$user->role] ?? ucfirst($user->role) }}</span>
             @php $rbacRole = $user->roles->first(); @endphp
             @if($rbacRole && $rbacRole->slug !== 'super_admin')
                 <span style="font-size:0.65rem; color:var(--text-muted);">{{ $rbacRole->name }}</span>

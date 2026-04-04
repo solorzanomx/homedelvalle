@@ -9,7 +9,7 @@
 
         {{-- Tabs --}}
         <div style="display: flex; border-bottom: 1px solid var(--border, #e2e8f0);">
-            <button type="button" class="mb-tab active" data-tab="browse" onclick="switchMediaTab('browse')" style="flex:1; padding: 0.6rem; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; background: transparent; border-bottom: 2px solid var(--primary, #667eea); color: var(--primary, #667eea);">Explorar</button>
+            <button type="button" class="mb-tab active" data-tab="browse" onclick="switchMediaTab('browse')" style="flex:1; padding: 0.6rem; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; background: transparent; border-bottom: 2px solid var(--primary, #3B82C4); color: var(--primary, #3B82C4);">Explorar</button>
             <button type="button" class="mb-tab" data-tab="upload" onclick="switchMediaTab('upload')" style="flex:1; padding: 0.6rem; font-size: 0.82rem; font-weight: 500; cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--text-muted, #64748b);">Subir nueva</button>
         </div>
 
@@ -38,7 +38,7 @@
             <span id="mbSelected" style="font-size: 0.82rem; color: var(--text-muted, #64748b);">Selecciona una imagen</span>
             <div style="display: flex; gap: 0.5rem;">
                 <button type="button" onclick="closeMediaBrowser()" style="padding: 0.5rem 1rem; font-size: 0.82rem; border: 1px solid var(--border, #e2e8f0); border-radius: 6px; background: transparent; cursor: pointer;">Cancelar</button>
-                <button type="button" id="mbInsertBtn" onclick="insertSelectedMedia()" disabled style="padding: 0.5rem 1rem; font-size: 0.82rem; border: none; border-radius: 6px; background: var(--primary, #667eea); color: #fff; cursor: pointer; opacity: 0.5;">Insertar</button>
+                <button type="button" id="mbInsertBtn" onclick="insertSelectedMedia()" disabled style="padding: 0.5rem 1rem; font-size: 0.82rem; border: none; border-radius: 6px; background: var(--primary, #3B82C4); color: #fff; cursor: pointer; opacity: 0.5;">Insertar</button>
             </div>
         </div>
     </div>
@@ -65,8 +65,8 @@
     window.switchMediaTab = function(tab) {
         document.querySelectorAll('.mb-tab').forEach(function(btn) {
             var isActive = btn.dataset.tab === tab;
-            btn.style.borderBottomColor = isActive ? 'var(--primary, #667eea)' : 'transparent';
-            btn.style.color = isActive ? 'var(--primary, #667eea)' : 'var(--text-muted, #64748b)';
+            btn.style.borderBottomColor = isActive ? 'var(--primary, #3B82C4)' : 'transparent';
+            btn.style.color = isActive ? 'var(--primary, #3B82C4)' : 'var(--text-muted, #64748b)';
         });
         document.getElementById('mbBrowseTab').style.display = tab === 'browse' ? 'block' : 'none';
         document.getElementById('mbUploadTab').style.display = tab === 'upload' ? 'block' : 'none';
@@ -113,8 +113,8 @@
             d.style.borderColor = 'var(--border, #e2e8f0)';
             d.style.boxShadow = 'none';
         });
-        el.style.borderColor = 'var(--primary, #667eea)';
-        el.style.boxShadow = '0 0 0 2px var(--primary, #667eea)';
+        el.style.borderColor = 'var(--primary, #3B82C4)';
+        el.style.boxShadow = '0 0 0 2px var(--primary, #3B82C4)';
         mbData.selected = item;
         updateInsertBtn();
     }
@@ -144,7 +144,7 @@
     var mbDropZone = document.getElementById('mbDropZone');
     if (mbDropZone) {
         ['dragenter', 'dragover'].forEach(function(ev) {
-            mbDropZone.addEventListener(ev, function(e) { e.preventDefault(); mbDropZone.style.borderColor = 'var(--primary, #667eea)'; });
+            mbDropZone.addEventListener(ev, function(e) { e.preventDefault(); mbDropZone.style.borderColor = 'var(--primary, #3B82C4)'; });
         });
         ['dragleave', 'drop'].forEach(function(ev) {
             mbDropZone.addEventListener(ev, function(e) { e.preventDefault(); mbDropZone.style.borderColor = 'var(--border, #e2e8f0)'; });

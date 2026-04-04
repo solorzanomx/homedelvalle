@@ -82,7 +82,7 @@
     text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .ref-type-btn:hover { border-color: var(--primary); }
-.ref-type-btn.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
+.ref-type-btn.active { border-color: var(--primary); background: rgba(59,130,196,0.04); }
 .ref-type-btn input { position: absolute; opacity: 0; pointer-events: none; }
 .ref-type-pct { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
 .ref-type-label { font-size: 0.78rem; font-weight: 600; margin-top: 0.15rem; }
@@ -93,7 +93,7 @@
     background: var(--card); border: 1px solid var(--border); border-radius: 10px;
     padding: 1rem 1.25rem; margin-bottom: 0.75rem; transition: border-color 0.15s;
 }
-.ref-card:hover { border-color: rgba(102,126,234,0.3); }
+.ref-card:hover { border-color: rgba(59,130,196,0.3); }
 .ref-card-top { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
 .ref-card-name { font-size: 0.9rem; font-weight: 600; flex: 1; }
 .ref-card-meta { font-size: 0.72rem; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
@@ -102,7 +102,7 @@
     font-size: 0.65rem; padding: 0.1rem 0.45rem; border-radius: 4px;
     font-weight: 500; display: inline-flex; align-items: center; gap: 3px;
 }
-.ref-chip-linked { background: rgba(102,126,234,0.1); color: var(--primary); }
+.ref-chip-linked { background: rgba(59,130,196,0.1); color: var(--primary); }
 .ref-chip-unlinked { background: var(--bg); color: var(--text-muted); border: 1px dashed var(--border); }
 .ref-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
 .ref-card-amount { font-size: 0.9rem; font-weight: 700; }
@@ -141,7 +141,7 @@
 
 @section('content')
 @php
-    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a'];
+    $avatarColors = ['#3B82C4','#1E3A5F','#f093fb','#4facfe','#43e97b','#fa709a'];
     $pendingCount = $referrals->where('status', 'registrado')->count() + $referrals->where('status', 'en_proceso')->count();
     $porPagarCount = $referrals->where('status', 'por_pagar')->count();
 @endphp
@@ -263,7 +263,7 @@
                 @if($ref->referral_type === 'trajo_cliente')
                     <span class="badge" style="background:rgba(234,179,8,0.1); color:#ca8a04; font-size:0.68rem; padding:0.15rem 0.5rem;">10%</span>
                 @else
-                    <span class="badge" style="background:rgba(102,126,234,0.1); color:var(--primary); font-size:0.68rem; padding:0.15rem 0.5rem;">5%</span>
+                    <span class="badge" style="background:rgba(59,130,196,0.1); color:var(--primary); font-size:0.68rem; padding:0.15rem 0.5rem;">5%</span>
                 @endif
                 <div class="ref-card-name">
                     {{ $ref->referred_name ?: 'Sin nombre' }}

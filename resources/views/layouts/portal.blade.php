@@ -10,8 +10,8 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary: {{ $siteSettings->primary_color ?? '#667eea' }};
-            --primary-dark: {{ $siteSettings->secondary_color ?? '#764ba2' }};
+            --primary: {{ $siteSettings->primary_color ?? '#3B82C4' }};
+            --primary-dark: {{ $siteSettings->secondary_color ?? '#1E3A5F' }};
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
@@ -45,7 +45,7 @@
             color: var(--text-muted); transition: all 0.15s;
         }
         .portal-nav a:hover { background: var(--bg); color: var(--text); }
-        .portal-nav a.active { background: rgba(102,126,234,0.08); color: var(--primary); }
+        .portal-nav a.active { background: rgba(59,130,196,0.08); color: var(--primary); }
 
         .portal-user {
             margin-left: auto; display: flex; align-items: center; gap: 0.75rem;
@@ -89,7 +89,7 @@
         .badge-blue { background: #dbeafe; color: #1e40af; }
         .badge-yellow { background: #fef3c7; color: #92400e; }
         .badge-red { background: #fee2e2; color: #991b1b; }
-        .badge-purple { background: #ede9fe; color: #5b21b6; }
+        .badge-purple { background: #EBF5FF; color: #2563A0; }
 
         /* Buttons */
         .btn {
@@ -115,7 +115,7 @@
         .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
         .form-label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
         .form-input, .form-select, .form-textarea { padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.85rem; font-family: inherit; background: var(--card); transition: border-color 0.15s; width: 100%; }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102,126,234,0.08); }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(59,130,196,0.08); }
         .full-width { grid-column: 1 / -1; }
 
         /* Alerts */

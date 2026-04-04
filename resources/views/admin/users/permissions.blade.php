@@ -54,7 +54,7 @@
     text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .role-card:hover { border-color: var(--primary); }
-.role-card.selected { border-color: var(--primary); background: rgba(102,126,234,0.06); }
+.role-card.selected { border-color: var(--primary); background: rgba(59,130,196,0.06); }
 .role-card input { position: absolute; opacity: 0; pointer-events: none; }
 .role-card-name { font-size: 0.75rem; font-weight: 600; }
 .role-card-count { font-size: 0.65rem; color: var(--text-muted); }

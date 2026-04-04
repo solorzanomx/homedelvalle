@@ -12,8 +12,8 @@ return new class extends Migration
         Schema::table('site_settings', function (Blueprint $table) {
             $table->string('site_name')->default('CRM Platform')->after('id');
             $table->string('site_tagline')->nullable()->after('site_name');
-            $table->string('primary_color')->default('#4f46e5')->after('site_tagline');
-            $table->string('secondary_color')->default('#7c3aed')->after('primary_color');
+            $table->string('primary_color')->default('#3B82C4')->after('site_tagline');
+            $table->string('secondary_color')->default('#2563A0')->after('primary_color');
             $table->text('home_welcome_text')->nullable()->after('secondary_color');
         });
         }

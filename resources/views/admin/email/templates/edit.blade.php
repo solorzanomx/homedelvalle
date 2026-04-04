@@ -48,7 +48,7 @@
         border:2px solid var(--border); border-radius:var(--radius); overflow:hidden; cursor:pointer;
         transition:all 0.15s;
     }
-    .gallery-item:hover { border-color:var(--primary); box-shadow:0 2px 8px rgba(102,126,234,0.2); }
+    .gallery-item:hover { border-color:var(--primary); box-shadow:0 2px 8px rgba(59,130,196,0.2); }
     .gallery-item img { width:100%; height:90px; object-fit:cover; display:block; }
     .gallery-item-name { padding:0.35rem 0.5rem; font-size:0.72rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .gallery-empty { text-align:center; padding:2rem; color:var(--text-muted); }
@@ -66,7 +66,7 @@
         border:2px dashed var(--border); border-radius:var(--radius); padding:1.5rem; text-align:center;
         cursor:pointer; transition:all 0.15s;
     }
-    .upload-drop:hover { border-color:var(--primary); background:rgba(102,126,234,0.03); }
+    .upload-drop:hover { border-color:var(--primary); background:rgba(59,130,196,0.03); }
 </style>
 @endsection
 

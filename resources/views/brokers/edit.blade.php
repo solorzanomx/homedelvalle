@@ -85,7 +85,7 @@
 
 @section('content')
 @php
-    $avatarColors = ['#667eea','#764ba2','#f093fb','#4facfe','#43e97b','#fa709a'];
+    $avatarColors = ['#3B82C4','#1E3A5F','#f093fb','#4facfe','#43e97b','#fa709a'];
 @endphp
 
 <div style="margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
@@ -121,7 +121,7 @@
             <div class="profile-subtitle">{{ $broker->email }}</div>
             <div class="profile-badges">
                 @if($broker->company)
-                    <span class="badge" style="background:rgba(102,126,234,0.1); color:var(--primary); font-size:0.72rem;">{{ $broker->company->name }}</span>
+                    <span class="badge" style="background:rgba(59,130,196,0.1); color:var(--primary); font-size:0.72rem;">{{ $broker->company->name }}</span>
                 @endif
                 @if($broker->status === 'active')
                     <span class="badge badge-green" style="font-size:0.68rem;">Activo</span>

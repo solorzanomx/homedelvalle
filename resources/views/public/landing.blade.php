@@ -76,7 +76,7 @@
                 </div>
 
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.25rem] font-extrabold text-white leading-[1.1] tracking-tight">
-                    {!! $campaign['heading'] ?? 'Vende tu departamento en la <span class="text-indigo-400">Colonia del Valle</span> rápido y al mejor precio' !!}
+                    {!! $campaign['heading'] ?? 'Vende tu departamento en la <span class="text-brand-400">Colonia del Valle</span> rápido y al mejor precio' !!}
                 </h1>
 
                 <p class="mt-6 text-lg text-gray-400 leading-relaxed max-w-xl">
@@ -129,7 +129,7 @@
                     <div>
                         <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
                         <input type="text" name="name" id="name" required value="{{ old('name') }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-3"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-3"
                                placeholder="Tu nombre">
                         @error('name')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -137,7 +137,7 @@
                     <div>
                         <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
                         <input type="tel" name="phone" id="phone" required value="{{ old('phone') }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-3"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-3"
                                placeholder="55 1234 5678">
                         @error('phone')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -145,14 +145,14 @@
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
                         <input type="email" name="email" id="email" required value="{{ old('email') }}"
-                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-3"
+                               class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-3"
                                placeholder="tu@email.com">
                         @error('email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     <div>
                         <label for="message" class="block text-sm font-medium text-gray-700 mb-1">¿Qué tipo de propiedad deseas vender? <span class="text-gray-400 font-normal">(opcional)</span></label>
-                        <select name="message" id="message" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-3">
+                        <select name="message" id="message" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm py-3">
                             <option value="Quiero vender mi departamento">Departamento</option>
                             <option value="Quiero vender mi casa">Casa</option>
                             <option value="Quiero vender un terreno">Terreno</option>
@@ -168,13 +168,13 @@
                     <div class="flex items-start gap-2">
                         <input type="checkbox" name="accept_privacy" id="accept_privacy_landing" required class="mt-1 rounded border-gray-600 bg-gray-700">
                         <label for="accept_privacy_landing" class="text-xs text-gray-400 leading-snug">
-                            Acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Aviso de Privacidad</a>
+                            Acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-brand-400 underline hover:text-brand-300">Aviso de Privacidad</a>
                         </label>
                     </div>
                     @endif
 
                     <button type="submit"
-                            class="w-full rounded-lg bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
+                            class="w-full rounded-lg bg-brand-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 transition-colors">
                         Quiero mi asesoría gratuita
                     </button>
 
@@ -217,8 +217,8 @@
             @endphp
 
             @foreach($benefits as $b)
-            <div class="group rounded-2xl border border-gray-100 p-8 hover:border-indigo-100 hover:shadow-lg transition-all duration-300">
-                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 mb-5 group-hover:bg-indigo-100 transition-colors">
+            <div class="group rounded-2xl border border-gray-100 p-8 hover:border-brand-100 hover:shadow-lg transition-all duration-300">
+                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-50 text-brand-600 mb-5 group-hover:bg-brand-100 transition-colors">
                     <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">{!! $icons[$b['icon']] ?? $icons['shield'] !!}</svg>
                 </div>
                 <h3 class="text-lg font-semibold mb-2">{{ $b['title'] }}</h3>
@@ -247,7 +247,7 @@
             @endphp
             @foreach($metrics as $m)
             <div class="text-center p-6 rounded-2xl bg-white border border-gray-100">
-                <div class="text-3xl sm:text-4xl font-bold text-indigo-600">{{ $m['value'] }}</div>
+                <div class="text-3xl sm:text-4xl font-bold text-brand-600">{{ $m['value'] }}</div>
                 <div class="mt-1 text-sm text-gray-500">{{ $m['label'] }}</div>
             </div>
             @endforeach
@@ -307,7 +307,7 @@
 
             @foreach($steps as $s)
             <div class="relative text-center">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 text-white text-2xl font-bold mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-600 text-white text-2xl font-bold mb-6">
                     {{ $s['num'] }}
                 </div>
                 <h3 class="text-xl font-bold mb-3">{{ $s['title'] }}</h3>
@@ -322,17 +322,17 @@
 {{-- ======================================================
      5. CTA FUERTE — Repetir formulario
      ====================================================== --}}
-<section class="py-20 lg:py-24 bg-indigo-600">
+<section class="py-20 lg:py-24 bg-brand-700">
     <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
         <h2 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">
             {{ $campaign['cta_heading'] ?? '¿Listo para vender tu propiedad?' }}
         </h2>
-        <p class="mt-4 text-lg text-indigo-200 max-w-2xl mx-auto">
+        <p class="mt-4 text-lg text-brand-200 max-w-2xl mx-auto">
             {{ $campaign['cta_subheading'] ?? 'Solicita tu asesoría gratuita hoy y descubre cuánto vale realmente tu propiedad en el mercado actual.' }}
         </p>
         <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="#formulario"
-               class="inline-flex items-center rounded-lg bg-white px-8 py-4 text-sm font-semibold text-indigo-600 shadow-sm hover:bg-indigo-50 transition-colors">
+               class="inline-flex items-center rounded-lg bg-white px-8 py-4 text-sm font-semibold text-brand-700 shadow-sm hover:bg-brand-50 transition-colors">
                 Solicitar asesoría gratuita
             </a>
             @if($siteSettings?->whatsapp_number)

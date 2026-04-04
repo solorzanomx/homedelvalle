@@ -18,7 +18,7 @@
 .prop-gallery-item { overflow: hidden; cursor: pointer; position: relative; }
 .prop-gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
 .prop-gallery-item:hover img { transform: scale(1.03); }
-.gal-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea, #764ba2); color: rgba(255,255,255,0.4); font-size: 4rem; }
+.gal-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #3B82C4, #1E3A5F); color: rgba(255,255,255,0.4); font-size: 4rem; }
 .gal-more {
     position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center;
     justify-content: center; color: #fff; font-size: 1.2rem; font-weight: 600;
@@ -57,7 +57,7 @@
 
 /* Badges row */
 .prop-badges-row { display: flex; gap: 0.4rem; flex-wrap: wrap; padding: 0 1.25rem 0.75rem; }
-.badge-purple { background: #f3f0ff; color: #6d28d9; }
+.badge-purple { background: #EBF5FF; color: #2563A0; }
 
 /* Quick specs bar */
 .prop-specs-bar {
@@ -170,7 +170,7 @@
 }
 .op-type-venta { background: #dbeafe; color: #1d4ed8; }
 .op-type-renta { background: #fef3c7; color: #92400e; }
-.op-type-captacion { background: #f3e8ff; color: #7c3aed; }
+.op-type-captacion { background: #EBF5FF; color: #2563A0; }
 
 /* Timeline */
 .timeline-item {

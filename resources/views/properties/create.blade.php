@@ -29,14 +29,14 @@
 .step-nav-item:last-child { border-right: none; }
 .step-nav-item:hover { background: var(--bg); }
 .step-nav-item.active {
-    background: linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.04));
+    background: linear-gradient(135deg, rgba(59,130,196,0.06), rgba(30,58,95,0.04));
 }
 .step-nav-item.active::after {
     content: '';
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 2.5px;
-    background: linear-gradient(90deg, var(--primary), var(--primary-dark, #764ba2));
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark, #1E3A5F));
     border-radius: 2px 2px 0 0;
 }
 .step-num {
@@ -104,11 +104,11 @@
     transition: all 0.2s;
     position: relative;
 }
-.type-card:hover { border-color: var(--primary); background: rgba(102,126,234,0.02); }
+.type-card:hover { border-color: var(--primary); background: rgba(59,130,196,0.02); }
 .type-card.selected {
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.04));
-    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    background: linear-gradient(135deg, rgba(59,130,196,0.06), rgba(30,58,95,0.04));
+    box-shadow: 0 0 0 3px rgba(59,130,196,0.1);
 }
 .type-card-icon {
     font-size: 1.5rem;
@@ -153,8 +153,8 @@
 .op-card:hover { border-color: var(--primary); }
 .op-card.selected {
     border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(102,126,234,0.06), rgba(118,75,162,0.04));
-    box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+    background: linear-gradient(135deg, rgba(59,130,196,0.06), rgba(30,58,95,0.04));
+    box-shadow: 0 0 0 3px rgba(59,130,196,0.1);
 }
 .op-card-label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
 .op-card-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 0.15rem; }
@@ -207,8 +207,8 @@
     transition: all 0.2s;
     background: var(--bg);
 }
-.photo-upload-zone:hover { border-color: var(--primary); background: rgba(102,126,234,0.02); }
-.photo-upload-zone.dragover { border-color: var(--primary); background: rgba(102,126,234,0.05); }
+.photo-upload-zone:hover { border-color: var(--primary); background: rgba(59,130,196,0.02); }
+.photo-upload-zone.dragover { border-color: var(--primary); background: rgba(59,130,196,0.05); }
 .photo-upload-icon { font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; }
 .photo-upload-zone p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
 .photo-upload-zone .hint { font-size: 0.75rem; margin-top: 0.25rem; }
@@ -320,12 +320,12 @@
     padding: 0.5rem 0.75rem; cursor: pointer; font-size: 0.82rem; transition: background 0.1s;
     display: flex; justify-content: space-between; align-items: center;
 }
-.owner-result:hover { background: rgba(102,126,234,0.06); }
+.owner-result:hover { background: rgba(59,130,196,0.06); }
 .owner-result-name { font-weight: 500; }
 .owner-result-email { font-size: 0.72rem; color: var(--text-muted); }
 .owner-selected {
     display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem;
-    background: rgba(102,126,234,0.06); border: 1px solid var(--primary); border-radius: var(--radius);
+    background: rgba(59,130,196,0.06); border: 1px solid var(--primary); border-radius: var(--radius);
     font-size: 0.85rem;
 }
 .owner-selected .remove-owner {

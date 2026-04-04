@@ -9,7 +9,7 @@
     background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
     cursor: pointer; margin: 0.15rem; transition: all 0.15s;
 }
-.var-chip:hover { background: rgba(102,126,234,0.1); border-color: var(--primary); color: var(--primary); }
+.var-chip:hover { background: rgba(59,130,196,0.1); border-color: var(--primary); color: var(--primary); }
 @media (max-width: 1024px) { .editor-wrap { grid-template-columns: 1fr; } }
 </style>
 @endsection

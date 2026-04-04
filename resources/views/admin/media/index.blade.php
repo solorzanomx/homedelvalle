@@ -6,7 +6,7 @@
     .media-toolbar { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
     .media-toolbar .form-input, .media-toolbar .form-select { max-width: 220px; }
     .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 2.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--card); margin-bottom: 1.5rem; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: rgba(102,126,234,0.04); }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--primary); background: rgba(59,130,196,0.04); }
     .upload-zone.dragover { transform: scale(1.01); }
     .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
     .media-item { border-radius: var(--radius); border: 2px solid var(--border); overflow: hidden; cursor: pointer; transition: all 0.15s; background: var(--card); }

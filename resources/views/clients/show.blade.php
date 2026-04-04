@@ -126,7 +126,7 @@
     display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--bg); border-radius: var(--radius);
     margin-bottom: 0.5rem; align-items: center; transition: background 0.15s;
 }
-.prop-card-mini:hover { background: rgba(102,126,234,0.06); }
+.prop-card-mini:hover { background: rgba(59,130,196,0.06); }
 .prop-thumb {
     width: 56px; height: 56px; border-radius: 6px; overflow: hidden; flex-shrink: 0;
     background: var(--border); display: flex; align-items: center; justify-content: center;
@@ -186,7 +186,7 @@
                 @endif
                 @if($client->interest_types && count($client->interest_types))
                     @foreach($client->interest_types as $it)
-                        <span class="badge" style="background:#f3f0ff; color:#6d28d9;">{{ $interestLabels[$it] ?? $it }}</span>
+                        <span class="badge" style="background:#EBF5FF; color:#2563A0;">{{ $interestLabels[$it] ?? $it }}</span>
                     @endforeach
                 @endif
             </div>

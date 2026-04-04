@@ -62,7 +62,7 @@ class EmailSettingsController extends Controller
             $request->input('test_email'),
             'Correo de prueba - CRM Homedelvalle',
             '<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:20px;">'
-            . '<h2 style="color:#4f46e5;">Correo de Prueba</h2>'
+            . '<h2 style="color:#3B82C4;">Correo de Prueba</h2>'
             . '<p>Si recibes este mensaje, la configuracion SMTP funciona correctamente.</p>'
             . '<p style="color:#64748b;font-size:13px;">Enviado desde CRM Homedelvalle el ' . now()->format('d/m/Y H:i') . '</p>'
             . '</div>'

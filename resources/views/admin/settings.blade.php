@@ -32,8 +32,8 @@
                 {{-- Enviar config existente para no perderla --}}
                 <input type="hidden" name="site_name" value="{{ $settings->site_name ?? 'Homedelvalle' }}">
                 <input type="hidden" name="site_tagline" value="{{ $settings->site_tagline ?? '' }}">
-                <input type="hidden" name="primary_color" value="{{ $settings->primary_color ?? '#667eea' }}">
-                <input type="hidden" name="secondary_color" value="{{ $settings->secondary_color ?? '#764ba2' }}">
+                <input type="hidden" name="primary_color" value="{{ $settings->primary_color ?? '#3B82C4' }}">
+                <input type="hidden" name="secondary_color" value="{{ $settings->secondary_color ?? '#1E3A5F' }}">
                 <input type="hidden" name="home_welcome_text" value="{{ $settings->home_welcome_text ?? '' }}">
 
                 {{-- Modo Texto --}}
@@ -91,15 +91,15 @@
                 <div class="form-group">
                     <label class="form-label">Color Primario</label>
                     <div class="color-group">
-                        <input type="color" name="primary_color" class="color-picker" id="primaryColor" value="{{ old('primary_color', $settings->primary_color ?? '#667eea') }}">
-                        <input type="text" class="form-input" style="max-width:120px" id="primaryText" value="{{ old('primary_color', $settings->primary_color ?? '#667eea') }}" onchange="document.getElementById('primaryColor').value=this.value">
+                        <input type="color" name="primary_color" class="color-picker" id="primaryColor" value="{{ old('primary_color', $settings->primary_color ?? '#3B82C4') }}">
+                        <input type="text" class="form-input" style="max-width:120px" id="primaryText" value="{{ old('primary_color', $settings->primary_color ?? '#3B82C4') }}" onchange="document.getElementById('primaryColor').value=this.value">
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Color Secundario</label>
                     <div class="color-group">
-                        <input type="color" name="secondary_color" class="color-picker" id="secondaryColor" value="{{ old('secondary_color', $settings->secondary_color ?? '#764ba2') }}">
-                        <input type="text" class="form-input" style="max-width:120px" id="secondaryText" value="{{ old('secondary_color', $settings->secondary_color ?? '#764ba2') }}" onchange="document.getElementById('secondaryColor').value=this.value">
+                        <input type="color" name="secondary_color" class="color-picker" id="secondaryColor" value="{{ old('secondary_color', $settings->secondary_color ?? '#1E3A5F') }}">
+                        <input type="text" class="form-input" style="max-width:120px" id="secondaryText" value="{{ old('secondary_color', $settings->secondary_color ?? '#1E3A5F') }}" onchange="document.getElementById('secondaryColor').value=this.value">
                     </div>
                 </div>
                 <div class="form-group">

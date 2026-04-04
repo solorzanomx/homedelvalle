@@ -11,7 +11,7 @@
     .tag-check:has(input:checked) { background: var(--primary); color: #fff; border-color: var(--primary); }
     .tag-check input { display: none; }
     .image-upload-area { border: 2px dashed var(--border); border-radius: var(--radius); padding: 1.25rem; text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
-    .image-upload-area:hover { border-color: var(--primary); background: rgba(102,126,234,0.03); }
+    .image-upload-area:hover { border-color: var(--primary); background: rgba(59,130,196,0.03); }
     .image-upload-area img { max-width: 100%; max-height: 160px; object-fit: cover; border-radius: 4px; }
     .meta-info { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-muted); padding: 0.5rem 0; }
     .meta-info span { display: flex; align-items: center; gap: 0.3rem; }

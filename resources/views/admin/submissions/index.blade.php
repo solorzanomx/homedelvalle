@@ -8,7 +8,7 @@
     .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 0.4rem; }
     .status-dot.unread { background: var(--primary); }
     .status-dot.read { background: var(--border); }
-    .utm-badge { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 10px; background: rgba(102,126,234,0.08); color: var(--primary); }
+    .utm-badge { display: inline-block; font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 10px; background: rgba(59,130,196,0.08); color: var(--primary); }
 </style>
 @endsection
 

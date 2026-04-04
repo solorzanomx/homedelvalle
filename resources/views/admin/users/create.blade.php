@@ -28,7 +28,7 @@
     text-align: center; cursor: pointer; transition: all 0.15s; position: relative;
 }
 .role-card:hover { border-color: var(--primary); }
-.role-card.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
+.role-card.active { border-color: var(--primary); background: rgba(59,130,196,0.04); }
 .role-card input { position: absolute; opacity: 0; pointer-events: none; }
 .role-icon { font-size: 1.2rem; margin-bottom: 0.15rem; }
 .role-card-label { font-size: 0.78rem; font-weight: 600; }

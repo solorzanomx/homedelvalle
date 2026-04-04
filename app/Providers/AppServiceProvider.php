@@ -47,8 +47,8 @@ class AppServiceProvider extends ServiceProvider
             if (!$settings) {
                 $settings = new SiteSetting([
                     'site_name' => 'Home del Valle',
-                    'primary_color' => '#667eea',
-                    'secondary_color' => '#764ba2',
+                    'primary_color' => '#3B82C4',
+                    'secondary_color' => '#1E3A5F',
                 ]);
             }
 

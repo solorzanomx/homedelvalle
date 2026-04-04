@@ -21,7 +21,7 @@
         border:2px dashed var(--border); border-radius:var(--radius); padding:2rem; text-align:center;
         cursor:pointer; transition:all 0.15s; background:var(--card);
     }
-    .upload-zone:hover, .upload-zone.dragover { border-color:var(--primary); background:rgba(102,126,234,0.04); }
+    .upload-zone:hover, .upload-zone.dragover { border-color:var(--primary); background:rgba(59,130,196,0.04); }
 </style>
 @endsection
 

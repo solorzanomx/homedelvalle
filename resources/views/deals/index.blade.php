@@ -121,7 +121,7 @@
 .stage-bar-lost { border-top: 3px solid #ef4444; }
 
 /* Badge extras */
-.badge-purple { background: #f3f0ff; color: #6d28d9; }
+.badge-purple { background: #EBF5FF; color: #2563A0; }
 
 @media (max-width: 768px) {
     .kanban-col { min-width: 220px; }
