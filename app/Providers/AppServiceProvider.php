@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Client;
 use App\Models\Page;
@@ -29,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Force HTTPS in production
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         View::composer('*', function ($view) {
             try {
                 $settings = SiteSetting::current();
@@ -59,7 +66,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            return Limit::perMinute(5)->by($request->ip());
+            $key = Str::lower($request->input('email', '')) . '|' . $request->ip();
+            return Limit::perMinute(5)->by($key)->response(function () {
+                return back()->with('error', 'Demasiados intentos. Espera 1 minuto antes de intentar de nuevo.');
+            });
         });
 
         RateLimiter::for('forgot-password', function (Request $request) {

@@ -22,11 +22,11 @@ class LoginController extends Controller
             'password' => 'required|min:6',
         ], [
             'email.required' => 'El email es requerido',
-            'email.email' => 'Ingresa un email válido',
-            'password.required' => 'La contraseña es requerida',
+            'email.email' => 'Ingresa un email valido',
+            'password.required' => 'La contrasena es requerida',
         ]);
 
-        if (Auth::attempt($validated)) {
+        if (Auth::attempt($validated, $request->boolean('remember'))) {
             // Check if user is active
             if (!Auth::user()->is_active) {
                 Auth::logout();
@@ -42,7 +42,9 @@ class LoginController extends Controller
             return redirect()->route('admin.dashboard')->with('success', 'Bienvenido de vuelta!');
         }
 
-        return back()->with('error', 'Email o contraseña incorrectos');
+        return back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Credenciales incorrectas');
     }
 
     public function logout(Request $request)
