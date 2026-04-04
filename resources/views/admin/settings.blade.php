@@ -103,6 +103,11 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">WhatsApp</label>
+                    <input type="text" name="whatsapp_number" class="form-input" value="{{ old('whatsapp_number', $settings->whatsapp_number ?? '') }}" placeholder="+52 1 999 123 4567">
+                    <p class="form-hint">Numero con clave de pais. Activa el boton flotante de WhatsApp en el sitio publico.</p>
+                </div>
+                <div class="form-group">
                     <label class="form-label">Texto de Bienvenida</label>
                     <textarea name="home_welcome_text" class="form-textarea">{{ old('home_welcome_text', $settings->home_welcome_text ?? '') }}</textarea>
                 </div>

@@ -23,6 +23,7 @@ class SettingsController extends Controller
             'primary_color' => 'required|string',
             'secondary_color' => 'required|string',
             'home_welcome_text' => 'nullable|string',
+            'whatsapp_number' => 'nullable|string|max:20',
             'logo_type' => 'nullable|in:text,image',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);

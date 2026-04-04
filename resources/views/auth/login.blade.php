@@ -10,7 +10,7 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -62,8 +62,8 @@
         }
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+            border-color: #3B82C4;
+            box-shadow: 0 0 0 3px rgba(59, 130, 196, 0.12);
             background: #fff;
         }
         .form-group input.error { border-color: #dc2626; }
@@ -90,7 +90,7 @@
             align-items: center;
             justify-content: center;
         }
-        .pwd-toggle:hover { color: #667eea; }
+        .pwd-toggle:hover { color: #3B82C4; }
         .pwd-toggle svg { width: 20px; height: 20px; }
 
         /* Alert */
@@ -127,11 +127,11 @@
         .remember-label input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #667eea;
+            accent-color: #3B82C4;
             cursor: pointer;
         }
         .forgot-link {
-            color: #667eea;
+            color: #3B82C4;
             text-decoration: none;
             font-weight: 500;
         }
@@ -141,7 +141,7 @@
         .submit-btn {
             width: 100%;
             padding: 0.75rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3B82C4 0%, #1E3A5F 100%);
             color: white;
             border: none;
             border-radius: 10px;
@@ -158,7 +158,7 @@
         }
         .submit-btn:hover:not(:disabled) {
             transform: translateY(-1px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+            box-shadow: 0 8px 25px rgba(59, 130, 196, 0.35);
         }
         .submit-btn:active:not(:disabled) {
             transform: translateY(0);
@@ -181,20 +181,6 @@
         .btn-loading-text { display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Register link */
-        .register-link {
-            text-align: center;
-            margin-top: 1.25rem;
-            font-size: 0.82rem;
-            color: #706f6c;
-        }
-        .register-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .register-link a:hover { text-decoration: underline; }
-
         /* Secure badge */
         .secure-badge {
             display: flex;
@@ -206,6 +192,7 @@
             color: #9ca3af;
         }
         .secure-badge svg { width: 12px; height: 12px; }
+        .login-container { position: relative; z-index: 1; }
     </style>
 </head>
 <body>
@@ -216,8 +203,11 @@
         </div>
         @endif
 
-        <h1>Bienvenido</h1>
-        <p class="subtitle">Inicia sesion en el Office</p>
+        <h1 style="display:flex;align-items:center;gap:0.5rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3B82C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            Bienvenido
+        </h1>
+        <p class="subtitle">Accede a tu cuenta</p>
 
         @if (session('success'))
             <div class="alert alert-success">
@@ -284,10 +274,6 @@
                 <span class="btn-spinner"></span>
             </button>
         </form>
-
-        <div class="register-link">
-            No tienes cuenta? <a href="{{ route('register') }}">Registrate aqui</a>
-        </div>
 
         <div class="secure-badge">
             <x-icon name="lock" class="w-3 h-3" />
