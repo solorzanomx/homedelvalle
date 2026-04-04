@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Broker;
 use App\Models\ContactSubmission;
 use App\Models\Property;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PublicController extends Controller
@@ -59,9 +60,13 @@ class PublicController extends Controller
 
     public function nosotros()
     {
-        $brokers = Broker::take(6)->get();
+        $teamMembers = User::where('show_on_website', true)
+            ->where('is_active', true)
+            ->orderBy('website_order')
+            ->orderBy('name')
+            ->get();
 
-        return view('public.nosotros', compact('brokers'));
+        return view('public.nosotros', compact('teamMembers'));
     }
 
     public function servicios()

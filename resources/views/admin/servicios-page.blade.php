@@ -8,7 +8,7 @@
         <p class="text-muted">Administra el contenido de la pagina publica /servicios</p>
     </div>
     <a href="{{ url('/servicios') }}" target="_blank" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:.5rem;">
-        <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <x-icon name="external-link" class="w-4 h-4" />
         Ver pagina
     </a>
 </div>

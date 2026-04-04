@@ -38,7 +38,7 @@
                 <div class="rounded-2xl border border-gray-200/60 p-8 hover:shadow-premium-lg hover:border-brand-100 transition-all duration-500"
                      x-data x-intersect.once="$el.classList.add('animate-slide-in-left')">
                     <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 mb-5">
-                        <svg class="w-6 h-6 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        <x-icon name="zap" class="w-6 h-6 text-brand-500" />
                     </div>
                     <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Misión</h3>
                     <p class="mt-3 text-gray-500 leading-relaxed">{{ $content['mission'] ?? 'Conectar propiedades estratégicas con compradores calificados a través de procesos eficientes, seguros y transparentes.' }}</p>
@@ -46,7 +46,7 @@
                 <div class="rounded-2xl border border-gray-200/60 p-8 hover:shadow-premium-lg hover:border-brand-100 transition-all duration-500"
                      x-data x-intersect.once="$el.classList.add('animate-slide-in-right')">
                     <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 mb-5">
-                        <svg class="w-6 h-6 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <x-icon name="eye" class="w-6 h-6 text-brand-500" />
                     </div>
                     <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Visión</h3>
                     <p class="mt-3 text-gray-500 leading-relaxed">{{ $content['vision'] ?? 'Ser la firma referente en la Benito Juárez por nuestra precisión operativa y efectividad en el cierre de operaciones complejas.' }}</p>
@@ -92,7 +92,7 @@
                 <div class="group text-center p-8 rounded-2xl border border-gray-200/60 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500"
                      x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $vi * 100 }}ms">
                     <div class="mx-auto flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand">
-                        <svg class="w-6 h-6 text-brand-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <x-icon name="check" class="w-6 h-6 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
                     <h3 class="mt-5 text-base font-bold text-gray-900">{{ $value['title'] ?? '' }}</h3>
                     <p class="mt-2 text-sm text-gray-500 leading-relaxed">{{ $value['description'] ?? '' }}</p>
@@ -119,26 +119,34 @@
     </section>
 
     {{-- Team --}}
-    @if(isset($brokers) && $brokers->count())
+    @if(isset($teamMembers) && $teamMembers->count())
     <section class="py-20 sm:py-24 bg-white">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">{{ $content['team_heading'] ?? 'Nuestro equipo' }}</p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $content['team_subheading'] ?? 'Profesionales a tu servicio' }}</h2>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($brokers as $index => $broker)
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                @foreach($teamMembers as $index => $member)
                 <div class="group text-center rounded-2xl border border-gray-200/60 bg-white p-8 hover:shadow-premium-lg hover:border-brand-100 hover:-translate-y-1 transition-all duration-500"
                      x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $index * 150 }}ms">
-                    <div class="flex items-center justify-center w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-white text-2xl font-bold mb-4">
-                        {{ strtoupper(substr($broker->name, 0, 1)) }}{{ strtoupper(substr(explode(' ', $broker->name)[1] ?? '', 0, 1)) }}
+                    {{-- Avatar --}}
+                    <div class="w-24 h-24 mx-auto rounded-full overflow-hidden mb-5 ring-4 ring-brand-100 group-hover:ring-brand-200 transition-all duration-500">
+                        @if($member->avatar_path)
+                            <img src="{{ Storage::url($member->avatar_path) }}" alt="{{ $member->full_name }}" class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-2xl font-bold">
+                                {{ strtoupper(substr($member->name, 0, 1)) }}{{ strtoupper(substr($member->last_name ?? '', 0, 1)) }}
+                            </div>
+                        @endif
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900">{{ $broker->name }}</h3>
-                    @if($broker->specialty)
-                    <p class="mt-1 text-sm text-brand-500 font-medium">{{ $broker->specialty }}</p>
+                    {{-- Info --}}
+                    <h3 class="text-lg font-bold text-gray-900">{{ $member->full_name }}</h3>
+                    @if($member->title)
+                    <p class="mt-1 text-sm text-brand-500 font-medium">{{ $member->title }}</p>
                     @endif
-                    @if($broker->phone)
-                    <p class="mt-2 text-sm text-gray-400">{{ $broker->phone }}</p>
+                    @if($member->bio)
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">{{ $member->bio }}</p>
                     @endif
                 </div>
                 @endforeach

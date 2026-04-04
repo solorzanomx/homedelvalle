@@ -230,6 +230,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/servicios-page', [ServiciosPageController::class, 'update'])->name('servicios-page.update');
         Route::get('/nosotros-page', [NosotrosPageController::class, 'index'])->name('nosotros-page');
         Route::post('/nosotros-page', [NosotrosPageController::class, 'update'])->name('nosotros-page.update');
+        Route::post('/nosotros-page/toggle-team/{user}', [NosotrosPageController::class, 'toggleTeamMember'])->name('nosotros-page.toggle-team');
+        Route::post('/nosotros-page/team-order', [NosotrosPageController::class, 'updateTeamOrder'])->name('nosotros-page.team-order');
         Route::get('/vender-page', [VenderPageController::class, 'index'])->name('vender-page');
         Route::post('/vender-page', [VenderPageController::class, 'update'])->name('vender-page.update');
 

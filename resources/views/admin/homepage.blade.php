@@ -8,7 +8,7 @@
         <p class="text-muted">Edita las secciones del sitio publico</p>
     </div>
     <a href="{{ url('/') }}" target="_blank" class="btn btn-outline" style="gap:0.5rem;">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <x-icon name="external-link" class="w-4 h-4" />
         Ver sitio
     </a>
 </div>
@@ -513,7 +513,7 @@
     {{-- SUBMIT --}}
     <div class="form-actions" style="position:sticky; bottom:0; z-index:10; background:var(--body-bg); border-top:1px solid var(--border); padding:1rem 0;">
         <button type="submit" class="btn btn-primary" style="gap:0.5rem;">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            <x-icon name="check" class="w-4 h-4" />
             Guardar Homepage
         </button>
     </div>

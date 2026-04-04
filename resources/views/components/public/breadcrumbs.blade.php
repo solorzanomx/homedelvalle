@@ -5,7 +5,7 @@
         <li><a href="{{ route('home') }}" class="hover:text-gray-900 transition-colors">Inicio</a></li>
         @foreach($items as $item)
             <li class="flex items-center gap-1.5">
-                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5 text-gray-400" />
                 @if(!empty($item['url']))
                     <a href="{{ $item['url'] }}" class="hover:text-gray-900 transition-colors">{{ $item['label'] }}</a>
                 @else

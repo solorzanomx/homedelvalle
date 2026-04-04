@@ -8,7 +8,7 @@
         <p class="text-muted">Administra el contenido de la pagina publica /nosotros</p>
     </div>
     <a href="{{ url('/nosotros') }}" target="_blank" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:.5rem;">
-        <svg style="width:16px;height:16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        <x-icon name="external-link" class="w-4 h-4" />
         Ver pagina
     </a>
 </div>
@@ -147,4 +147,93 @@
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
     </div>
 </form>
+
+{{-- 7. Miembros del equipo (fuera del form principal) --}}
+<div class="card" style="margin-top:1.5rem;">
+    <div class="card-header">
+        <h3>Miembros visibles en el sitio</h3>
+        <span style="font-size:0.78rem;color:var(--text-muted);">Activa o desactiva quienes aparecen en la seccion "Nuestro equipo"</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Puesto</th>
+                        <th>Biografia</th>
+                        <th style="text-align:center;">Visible</th>
+                        <th style="text-align:center;">Orden</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($users as $user)
+                    <tr style="{{ $user->show_on_website ? '' : 'opacity:0.6;' }}">
+                        <td>
+                            <div class="user-cell">
+                                <div class="avatar">
+                                    @if($user->avatar_path)
+                                        <img src="{{ Storage::url($user->avatar_path) }}" alt="">
+                                    @else
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    @endif
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;">{{ $user->full_name }}</div>
+                                    <div style="font-size:0.75rem;color:var(--text-muted);">{{ $user->email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @if($user->title)
+                                <span class="badge badge-blue">{{ $user->title }}</span>
+                            @else
+                                <span style="color:var(--text-muted);font-size:0.82rem;">Sin puesto</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($user->bio)
+                                <span style="font-size:0.82rem;color:var(--text-muted);" title="{{ $user->bio }}">{{ Str::limit($user->bio, 60) }}</span>
+                            @else
+                                <span style="color:var(--danger);font-size:0.82rem;">Sin biografia</span>
+                            @endif
+                        </td>
+                        <td style="text-align:center;">
+                            <form method="POST" action="{{ route('admin.nosotros-page.toggle-team', $user) }}" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-sm {{ $user->show_on_website ? 'btn-primary' : 'btn-outline' }}" title="{{ $user->show_on_website ? 'Ocultar del sitio' : 'Mostrar en el sitio' }}">
+                                    {{ $user->show_on_website ? 'Visible' : 'Oculto' }}
+                                </button>
+                            </form>
+                        </td>
+                        <td style="text-align:center;">
+                            <input type="number" value="{{ $user->website_order }}" min="0" max="99" style="width:50px;text-align:center;padding:0.25rem;border:1px solid var(--border);border-radius:4px;font-size:0.82rem;"
+                                   onchange="updateOrder({{ $user->id }}, this.value)">
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div style="padding:1rem;font-size:0.78rem;color:var(--text-muted);border-top:1px solid var(--border);">
+            <strong>Tip:</strong> El puesto y la biografia se editan desde el perfil de cada usuario. Los miembros se ordenan por el numero de orden (menor primero).
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+function updateOrder(userId, order) {
+    fetch('{{ route("admin.nosotros-page.team-order") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ user_id: userId, order: parseInt(order) })
+    });
+}
+</script>
 @endsection

@@ -37,7 +37,7 @@
         <nav class="mt-6 flex items-center justify-center gap-2 text-sm text-brand-300/60" aria-label="Breadcrumb">
             <a href="{{ url('/') }}" class="hover:text-white transition-colors duration-200">Inicio</a>
             @foreach($breadcrumbItems as $item)
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 @if(isset($item['url']))
                     <a href="{{ $item['url'] }}" class="hover:text-white transition-colors duration-200">{{ $item['label'] }}</a>
                 @else
@@ -68,7 +68,7 @@
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Ciudad o colonia..."
                            class="flex-1 rounded-xl border-0 bg-white/95 px-4 py-3.5 text-gray-900 text-sm placeholder-gray-400 font-medium focus:ring-2 focus:ring-brand-400 transition-all duration-200">
                     <button type="submit" class="rounded-xl gradient-brand px-8 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 shrink-0 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <x-icon name="search" class="w-4 h-4" />
                         Buscar
                     </button>
                 </div>

@@ -47,7 +47,7 @@
             <img src="{{ $property->photo_url }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
         @else
             <div class="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
-                <svg class="w-20 h-20 text-brand-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <x-icon name="home" class="w-20 h-20 text-brand-300" />
             </div>
         @endif
         <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
@@ -58,9 +58,9 @@
             {{-- Breadcrumbs --}}
             <nav class="flex items-center gap-2 text-sm text-gray-400 mb-8" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <a href="{{ url('/') }}" class="hover:text-brand-600 transition-colors">Inicio</a>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 <a href="{{ route('propiedades.index') }}" class="hover:text-brand-600 transition-colors">Propiedades</a>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 <span class="text-gray-600 truncate">{{ $property->title }}</span>
             </nav>
 
@@ -78,7 +78,7 @@
                 <h1 class="mt-2 text-xl font-bold text-gray-700">{{ $property->title }}</h1>
                 @if($property->colony || $property->city)
                 <p class="mt-1.5 text-sm text-gray-400 flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <x-icon name="map-pin" class="w-4 h-4 text-brand-400" />
                     {{ collect([$property->colony, $property->city])->filter()->join(', ') }}
                 </p>
                 @endif
@@ -119,7 +119,7 @@
                         <img src="{{ $property->photo_url }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
-                            <svg class="w-16 h-16 text-brand-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                            <x-icon name="home" class="w-16 h-16 text-brand-300" />
                         </div>
                     @endif
                 </div>
@@ -154,9 +154,9 @@
             {{-- Breadcrumbs --}}
             <nav class="flex items-center gap-2 text-sm text-gray-400 mb-8" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <a href="{{ url('/') }}" class="hover:text-brand-600 transition-colors">Inicio</a>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 <a href="{{ route('propiedades.index') }}" class="hover:text-brand-600 transition-colors">Propiedades</a>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 <span class="text-gray-600 truncate">{{ $property->title }}</span>
             </nav>
 
@@ -167,7 +167,7 @@
                         <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ $property->title }}</h1>
                         @if($property->colony || $property->city)
                         <p class="mt-1.5 text-sm text-gray-400 flex items-center gap-1.5">
-                            <svg class="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <x-icon name="map-pin" class="w-4 h-4 text-brand-400" />
                             {{ collect([$property->colony, $property->city])->filter()->join(', ') }}
                         </p>
                         @endif
@@ -211,9 +211,9 @@
             {{-- Breadcrumbs --}}
             <nav class="flex items-center gap-2 text-sm text-gray-400 mb-8" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <a href="{{ url('/') }}" class="hover:text-brand-600 transition-colors">Inicio</a>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 <a href="{{ route('propiedades.index') }}" class="hover:text-brand-600 transition-colors">Propiedades</a>
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <x-icon name="chevron-right" class="w-3.5 h-3.5" />
                 <span class="text-gray-600 truncate">{{ $property->title }}</span>
             </nav>
 
@@ -226,7 +226,7 @@
                             <img src="{{ $property->photo_url }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
                         @else
                             <div class="w-full h-full bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center">
-                                <svg class="w-16 h-16 text-brand-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                                <x-icon name="home" class="w-16 h-16 text-brand-300" />
                             </div>
                         @endif
                     </div>

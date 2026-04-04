@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NosotrosPageController extends Controller
@@ -11,8 +12,14 @@ class NosotrosPageController extends Controller
     public function index()
     {
         $settings = SiteSetting::first();
+        $users = User::where('is_active', true)
+            ->whereNotIn('role', ['client'])
+            ->orderByDesc('show_on_website')
+            ->orderBy('website_order')
+            ->orderBy('name')
+            ->get();
 
-        return view('admin.nosotros-page', compact('settings'));
+        return view('admin.nosotros-page', compact('settings', 'users'));
     }
 
     public function update(Request $request)
@@ -62,5 +69,28 @@ class NosotrosPageController extends Controller
         cache()->forget('site_settings');
 
         return back()->with('success', 'Pagina Nosotros actualizada correctamente.');
+    }
+
+    public function toggleTeamMember(Request $request, User $user)
+    {
+        $user->update([
+            'show_on_website' => !$user->show_on_website,
+        ]);
+
+        $status = $user->show_on_website ? 'visible' : 'oculto';
+
+        return back()->with('success', "{$user->full_name} ahora esta {$status} en el sitio web.");
+    }
+
+    public function updateTeamOrder(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'order' => 'required|integer|min:0|max:99',
+        ]);
+
+        User::where('id', $request->user_id)->update(['website_order' => $request->order]);
+
+        return response()->json(['success' => true]);
     }
 }

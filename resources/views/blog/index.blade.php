@@ -72,7 +72,7 @@
                                     @endif
                                     <span class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600">
                                         Leer más
-                                        <svg class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                        <x-icon name="arrow-right" class="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                                     </span>
                                 </div>
                             </a>
@@ -107,7 +107,7 @@
                                 @endif
                                 <span class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-600">
                                     Leer artículo
-                                    <svg class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                    <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                                 </span>
                             </div>
                         </a>

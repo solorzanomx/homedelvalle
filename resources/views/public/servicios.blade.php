@@ -98,7 +98,7 @@
                     @foreach($service['features'] as $feature)
                     @if(!empty($feature))
                     <li class="flex items-start gap-3">
-                        <svg class="w-5 h-5 text-brand-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <x-icon name="check" class="w-5 h-5 text-brand-500 shrink-0 mt-0.5" />
                         <span class="text-gray-700">{{ $feature }}</span>
                     </li>
                     @endif
@@ -109,7 +109,7 @@
                 <div class="mt-8">
                     <a href="{{ $service['cta_url'] ?? route('contacto') }}" class="inline-flex items-center gap-2 rounded-xl gradient-brand px-6 py-3 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300">
                         {{ $service['cta_text'] ?? 'Solicitar información' }}
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                        <x-icon name="arrow-right" class="w-4 h-4" />
                     </a>
                 </div>
             </div>
@@ -147,12 +147,12 @@
         <p class="mt-5 text-lg text-brand-200/80 max-w-2xl mx-auto">{{ $ctaSubheading }}</p>
         <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="{{ route('landing.vende') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-bold text-brand-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <x-icon name="shield-check" class="w-5 h-5" />
                 Valúa tu propiedad
             </a>
             <a href="{{ route('contacto') }}" class="inline-flex items-center gap-2 rounded-xl border-2 border-white/30 px-8 py-4 text-sm font-semibold text-white hover:bg-white/10 transition-all duration-300">
                 Contáctanos
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                <x-icon name="arrow-right" class="w-4 h-4" />
             </a>
         </div>
     </div>

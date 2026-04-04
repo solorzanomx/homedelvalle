@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 
 class User extends Authenticatable
 {
-    protected $fillable = ['name', 'last_name', 'email', 'password', 'phone', 'whatsapp', 'address', 'avatar_path', 'role', 'is_active', 'can_read', 'can_edit', 'can_delete', 'bio', 'title', 'branch', 'language', 'timezone', 'email_signature', 'show_phone_on_properties', 'shared_card_type'];
+    protected $fillable = ['name', 'last_name', 'email', 'password', 'phone', 'whatsapp', 'address', 'avatar_path', 'role', 'is_active', 'show_on_website', 'website_order', 'can_read', 'can_edit', 'can_delete', 'bio', 'title', 'branch', 'language', 'timezone', 'email_signature', 'show_phone_on_properties', 'shared_card_type'];
     protected $hidden = ['password', 'remember_token'];
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -32,6 +32,8 @@ class User extends Authenticatable
             'can_edit' => 'boolean',
             'can_delete' => 'boolean',
             'show_phone_on_properties' => 'boolean',
+            'show_on_website' => 'boolean',
+            'website_order' => 'integer',
         ];
     }
 

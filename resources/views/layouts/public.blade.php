@@ -82,7 +82,7 @@
             <div class="rounded-2xl bg-emerald-50 border border-emerald-200/60 p-4 text-sm text-emerald-800 flex items-center justify-between shadow-premium">
                 <div class="flex items-center gap-2.5">
                     <div class="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-100">
-                        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <x-icon name="check" class="w-4 h-4 text-emerald-600" />
                     </div>
                     <span class="font-medium">{{ session('success') }}</span>
                 </div>
