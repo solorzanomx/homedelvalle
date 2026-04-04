@@ -53,8 +53,10 @@ use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\FooterController;
 use App\Http\Controllers\Admin\FormController;
 use App\Http\Controllers\PublicFormController;
+use App\Http\Controllers\LegalPageController;
 use App\Http\Controllers\ClientEmailController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Admin\LegalController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalDocumentController;
@@ -86,6 +88,9 @@ Route::get('/track/{trackingId}.gif', [ClientEmailController::class, 'track'])->
 // Landing pages (campañas de conversión)
 Route::get('/vende-tu-propiedad', [LandingController::class, 'show'])->name('landing.vende');
 Route::post('/landing/submit', [LandingController::class, 'submit'])->name('landing.submit');
+
+// Documentos legales públicos
+Route::get('/legal/{slug}', [LegalPageController::class, 'show'])->name('legal.public');
 
 // Auth Routes (solo para invitados)
 Route::middleware('guest')->group(function () {
@@ -343,6 +348,19 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::delete('/help/articles/{article}', [HelpCenterController::class, 'destroyArticle'])->name('help.articles.destroy');
         Route::post('/help/tips', [HelpCenterController::class, 'storeTip'])->name('help.tips.store');
         Route::delete('/help/tips/{tip}', [HelpCenterController::class, 'destroyTip'])->name('help.tips.destroy');
+
+        // Legal / Documentos legales
+        Route::prefix('legal')->name('legal.')->group(function () {
+            Route::get('/', [LegalController::class, 'index'])->name('index');
+            Route::get('/create', [LegalController::class, 'create'])->name('create');
+            Route::post('/', [LegalController::class, 'store'])->name('store');
+            Route::get('/acceptances', [LegalController::class, 'allAcceptances'])->name('acceptances');
+            Route::get('/{document}', [LegalController::class, 'show'])->name('show');
+            Route::get('/{document}/edit', [LegalController::class, 'edit'])->name('edit');
+            Route::put('/{document}', [LegalController::class, 'update'])->name('update');
+            Route::delete('/{document}', [LegalController::class, 'destroy'])->name('destroy');
+            Route::get('/{document}/acceptances', [LegalController::class, 'acceptances'])->name('document.acceptances');
+        });
     });
 
     // Gestión de brokers

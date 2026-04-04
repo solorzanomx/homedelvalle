@@ -272,6 +272,16 @@
         }
         @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } .content-body { padding: 1rem; } }
 
+        /* Image lazy loading */
+        .img-loader-wrap { position: relative; overflow: hidden; background: var(--bg); border-radius: var(--radius); }
+        .img-skeleton {
+            position: absolute; inset: 0; background: linear-gradient(90deg, var(--bg) 25%, rgba(255,255,255,0.08) 50%, var(--bg) 75%);
+            background-size: 200% 100%; animation: skeleton-pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes skeleton-pulse { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .img-lazy { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.4s ease; }
+        .img-lazy.img-loaded { opacity: 1; }
+
         @yield('styles')
     </style>
 </head>
@@ -487,6 +497,30 @@
                 @endif
                 @endpermission
 
+                {{-- ===== LEGAL ===== --}}
+                @permission('system.config')
+                <div class="nav-section" data-section="legal">
+                    <span class="nav-label" onclick="toggleSection(this)">Legal <span class="nav-chevron">&#9660;</span></span>
+                    <div class="nav-items">
+                        @if(Route::has('admin.legal.index'))
+                        <a href="{{ route('admin.legal.index') }}" class="nav-item {{ request()->routeIs('admin.legal.index') || request()->routeIs('admin.legal.create') || request()->routeIs('admin.legal.edit') || request()->routeIs('admin.legal.show') ? 'active' : '' }}">
+                            <span class="nav-icon">&#9878;</span> Documentos
+                        </a>
+                        @endif
+                        @if(Route::has('admin.legal.acceptances'))
+                        <a href="{{ route('admin.legal.acceptances') }}" class="nav-item {{ request()->routeIs('admin.legal.acceptances') ? 'active' : '' }}">
+                            <span class="nav-icon">&#9745;</span> Aceptaciones
+                        </a>
+                        @endif
+                        @if(Route::has('admin.contract-templates.index'))
+                        <a href="{{ route('admin.contract-templates.index') }}" class="nav-item {{ request()->routeIs('admin.contract-templates.*') ? 'active' : '' }}">
+                            <span class="nav-icon">&#128196;</span> Plantillas Contrato
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                @endpermission
+
                 {{-- ===== CONFIGURACION ===== --}}
                 @permission('system.config')
                 <div class="nav-section" data-section="config">
@@ -507,11 +541,6 @@
                         @if(Route::has('admin.automations.index'))
                         <a href="{{ route('admin.automations.index') }}" class="nav-item {{ request()->routeIs('admin.automations.*') ? 'active' : '' }}">
                             <span class="nav-icon">&#9889;</span> Automatizaciones
-                        </a>
-                        @endif
-                        @if(Route::has('admin.contract-templates.index'))
-                        <a href="{{ route('admin.contract-templates.index') }}" class="nav-item {{ request()->routeIs('admin.contract-templates.*') ? 'active' : '' }}">
-                            <span class="nav-icon">&#128196;</span> Plantillas Contrato
                         </a>
                         @endif
                         @if(Route::has('admin.checklists.index'))

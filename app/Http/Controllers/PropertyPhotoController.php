@@ -32,7 +32,9 @@ class PropertyPhotoController extends Controller
         $uploaded = [];
 
         foreach ($files as $i => $file) {
-            $path = $file->store('properties/photos', 'public');
+            $optimizer = new \App\Services\ImageOptimizer();
+            $result = $optimizer->optimize($file, 'properties/photos');
+            $path = $result['path'];
             $order++;
             $isPrimary = !$hasPrimary && $i === 0;
             $photo = $property->photos()->create([

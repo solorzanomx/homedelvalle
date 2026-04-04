@@ -89,6 +89,23 @@ class LandingController extends Controller
             'utm_campaign' => $request->input('utm_campaign'),
         ]);
 
+        // Record privacy acceptance
+        if ($request->boolean('accept_privacy')) {
+            $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')
+                ->where('status', 'published')
+                ->first();
+            if ($privacyDoc && $privacyDoc->current_version_id) {
+                \App\Models\LegalAcceptance::record(
+                    $privacyDoc->id,
+                    $privacyDoc->current_version_id,
+                    $validated['email'],
+                    $request,
+                    'landing',
+                    ['name' => $validated['name']]
+                );
+            }
+        }
+
         return back()->with('success', '¡Gracias! Un asesor te contactará en menos de 24 horas.');
     }
 }

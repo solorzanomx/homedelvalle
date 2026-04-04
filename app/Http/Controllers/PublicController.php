@@ -89,6 +89,23 @@ class PublicController extends Controller
 
         ContactSubmission::create($validated);
 
+        // Record privacy acceptance if checkbox was checked
+        if ($request->boolean('accept_privacy')) {
+            $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')
+                ->where('status', 'published')
+                ->first();
+            if ($privacyDoc && $privacyDoc->current_version_id) {
+                \App\Models\LegalAcceptance::record(
+                    $privacyDoc->id,
+                    $privacyDoc->current_version_id,
+                    $validated['email'],
+                    $request,
+                    'contacto',
+                    ['name' => $validated['name']]
+                );
+            }
+        }
+
         return redirect()->back()->with('success', '¡Gracias por tu mensaje! Te contactaremos pronto.');
     }
 }

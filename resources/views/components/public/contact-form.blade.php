@@ -62,6 +62,19 @@
         @error('message') <p class="mt-1.5 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
     </div>
 
+    {{-- Privacy acceptance --}}
+    @php
+        $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
+    @endphp
+    @if($privacyDoc)
+    <div class="flex items-start gap-2 mt-1">
+        <input type="checkbox" name="accept_privacy" id="accept_privacy" required class="mt-1 rounded border-gray-300">
+        <label for="accept_privacy" class="text-xs text-gray-500 leading-snug">
+            He leido y acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-brand-500 underline hover:text-brand-600">Aviso de Privacidad</a>
+        </label>
+    </div>
+    @endif
+
     <button type="submit" :disabled="submitting"
             class="w-full rounded-xl gradient-brand px-5 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none">
         <span x-show="!submitting" class="flex items-center justify-center gap-2">

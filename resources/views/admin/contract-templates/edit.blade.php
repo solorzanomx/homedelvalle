@@ -115,15 +115,30 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('vendor/tinymce/tinymce.min.js') }}"></script>
 <script>
 function insertVariable(variable) {
-    var ta = document.getElementById('contractBody');
-    var start = ta.selectionStart;
-    var end = ta.selectionEnd;
-    var val = ta.value;
-    ta.value = val.substring(0, start) + variable + val.substring(end);
-    ta.selectionStart = ta.selectionEnd = start + variable.length;
-    ta.focus();
+    var editor = tinymce.get('contractBody');
+    if (editor) {
+        editor.insertContent(variable);
+        editor.focus();
+    }
 }
+
+tinymce.init({
+    selector: '#contractBody',
+    height: 500,
+    menubar: false,
+    plugins: 'lists link table code fullscreen',
+    toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link table | code fullscreen',
+    content_style: 'body { font-family: Inter, Arial, sans-serif; font-size: 14px; padding: 8px; }',
+    branding: false,
+    license_key: 'gpl',
+    relative_urls: false,
+    setup: function(editor) {
+        var form = editor.getElement().closest('form');
+        if (form) { form.addEventListener('submit', function() { editor.save(); }); }
+    }
+});
 </script>
 @endsection

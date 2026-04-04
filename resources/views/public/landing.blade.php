@@ -161,6 +161,18 @@
                         </select>
                     </div>
 
+                    @php
+                        $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
+                    @endphp
+                    @if($privacyDoc)
+                    <div class="flex items-start gap-2">
+                        <input type="checkbox" name="accept_privacy" id="accept_privacy_landing" required class="mt-1 rounded border-gray-600 bg-gray-700">
+                        <label for="accept_privacy_landing" class="text-xs text-gray-400 leading-snug">
+                            Acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-indigo-400 underline hover:text-indigo-300">Aviso de Privacidad</a>
+                        </label>
+                    </div>
+                    @endif
+
                     <button type="submit"
                             class="w-full rounded-lg bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors">
                         Quiero mi asesoría gratuita
