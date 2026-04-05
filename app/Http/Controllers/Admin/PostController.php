@@ -8,6 +8,7 @@ use App\Models\PostCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class PostController extends Controller
 {
@@ -41,15 +42,21 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|max:2048',
             'category_id' => 'nullable|exists:post_categories,id',
-            'status' => 'required|in:draft,published,archived',
+            'status' => 'required|in:draft,scheduled,published,archived',
+            'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:255',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
 
-        if ($validated['status'] === 'published' && empty($validated['published_at'])) {
+        if ($validated['status'] === 'scheduled') {
+            $request->validate(['published_at' => 'required|date|after:now']);
+            $validated['published_at'] = Carbon::parse($request->published_at);
+        } elseif ($validated['status'] === 'published' && empty($validated['published_at'])) {
             $validated['published_at'] = now();
+        } elseif ($validated['status'] === 'draft') {
+            $validated['published_at'] = null;
         }
 
         if ($request->hasFile('featured_image')) {
@@ -57,7 +64,6 @@ class PostController extends Controller
         }
 
         $validated['user_id'] = auth()->id();
-
         unset($validated['tags']);
 
         $post = Post::create($validated);
@@ -87,15 +93,21 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|max:2048',
             'category_id' => 'nullable|exists:post_categories,id',
-            'status' => 'required|in:draft,published,archived',
+            'status' => 'required|in:draft,scheduled,published,archived',
+            'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:255',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
         ]);
 
-        if ($validated['status'] === 'published' && !$post->published_at) {
+        if ($validated['status'] === 'scheduled') {
+            $request->validate(['published_at' => 'required|date|after:now']);
+            $validated['published_at'] = Carbon::parse($request->published_at);
+        } elseif ($validated['status'] === 'published' && !$post->published_at) {
             $validated['published_at'] = now();
+        } elseif ($validated['status'] === 'draft') {
+            $validated['published_at'] = null;
         }
 
         if ($request->hasFile('featured_image')) {

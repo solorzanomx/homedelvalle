@@ -7,7 +7,12 @@
         <h2>Blog Posts</h2>
         <p class="text-muted">Gestiona los articulos del blog</p>
     </div>
-    <a href="{{ route('admin.posts.create') }}" class="btn btn-primary">+ Nuevo Post</a>
+    <div style="display: flex; gap: 0.5rem;">
+        @if(Route::has('admin.content-calendar'))
+        <a href="{{ route('admin.content-calendar') }}" class="btn btn-outline"><x-icon name="calendar" class="w-4 h-4" style="margin-right:0.3rem;vertical-align:-2px;" /> Calendario</a>
+        @endif
+        <a href="{{ route('admin.posts.create') }}" class="btn btn-primary">+ Nuevo Post</a>
+    </div>
 </div>
 
 {{-- Filter bar --}}
@@ -30,6 +35,10 @@
             <a href="{{ route('admin.posts.index', ['status' => 'archived']) }}"
                class="btn btn-sm {{ request('status') === 'archived' ? 'btn-primary' : 'btn-outline' }}">
                 Archivado
+            </a>
+            <a href="{{ route('admin.posts.index', ['status' => 'scheduled']) }}"
+               class="btn btn-sm {{ request('status') === 'scheduled' ? 'btn-primary' : 'btn-outline' }}">
+                Programado
             </a>
         </div>
     </div>
@@ -77,6 +86,8 @@
                             <span class="badge badge-green">Publicado</span>
                         @elseif($post->status === 'draft')
                             <span class="badge badge-yellow">Borrador</span>
+                        @elseif($post->status === 'scheduled')
+                            <span class="badge badge-blue">Programado</span>
                         @else
                             <span class="badge badge-red">Archivado</span>
                         @endif

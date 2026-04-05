@@ -479,6 +479,11 @@
                         <a href="{{ route('admin.posts.index') }}" class="nav-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Blog
                         </a>
+                        @if(Route::has('admin.content-calendar'))
+                        <a href="{{ route('admin.content-calendar') }}" class="nav-item {{ request()->routeIs('admin.content-calendar*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
+                            <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario
+                        </a>
+                        @endif
                         @if(Route::has('admin.post-categories.index'))
                         <a href="{{ route('admin.post-categories.index') }}" class="nav-item {{ request()->routeIs('admin.post-categories.*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
                             <span class="nav-icon"><x-icon name="list" class="w-4 h-4" /></span> Categorias

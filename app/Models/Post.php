@@ -21,4 +21,6 @@ class Post extends Model
 
     public function scopePublished($q) { return $q->where('status', 'published')->where('published_at', '<=', now()); }
     public function scopeDraft($q) { return $q->where('status', 'draft'); }
+    public function scopeScheduled($q) { return $q->where('status', 'scheduled')->where('published_at', '>', now()); }
+    public function scopeReadyToPublish($q) { return $q->where('status', 'scheduled')->where('published_at', '<=', now()); }
 }

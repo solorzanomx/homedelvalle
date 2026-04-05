@@ -83,11 +83,18 @@
                 <div class="card-body">
                     <div class="form-group">
                         <label class="form-label">Estado <span class="required">*</span></label>
-                        <select name="status" class="form-select" required>
+                        <select name="status" class="form-select" required id="statusSelect">
                             <option value="draft" {{ old('status', 'draft') === 'draft' ? 'selected' : '' }}>Borrador</option>
+                            <option value="scheduled" {{ old('status') === 'scheduled' ? 'selected' : '' }}>Programado</option>
                             <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>Publicado</option>
                             <option value="archived" {{ old('status') === 'archived' ? 'selected' : '' }}>Archivado</option>
                         </select>
+                    </div>
+
+                    <div class="form-group" id="scheduleDateGroup" style="{{ old('status') === 'scheduled' ? '' : 'display:none;' }}">
+                        <label class="form-label">Fecha de Publicacion <span class="required">*</span></label>
+                        <input type="datetime-local" name="published_at" id="publishedAtInput" class="form-input" value="{{ old('published_at') }}">
+                        <p class="form-hint">El post se publicara automaticamente en esta fecha.</p>
                     </div>
 
                     <div class="form-group">
@@ -236,6 +243,19 @@ document.querySelector('form').addEventListener('submit', function(e) {
         editor.save();
         var content = editor.getContent();
         if (content) document.getElementById('wysiwygEditor').value = content;
+    }
+});
+
+// Toggle scheduled date field
+document.getElementById('statusSelect').addEventListener('change', function() {
+    var group = document.getElementById('scheduleDateGroup');
+    var input = document.getElementById('publishedAtInput');
+    if (this.value === 'scheduled') {
+        group.style.display = '';
+        input.required = true;
+    } else {
+        group.style.display = 'none';
+        input.required = false;
     }
 });
 </script>

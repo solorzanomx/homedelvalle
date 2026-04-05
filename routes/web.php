@@ -44,6 +44,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\PublicController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Admin\PostController;
+use App\Http\Controllers\Admin\ContentCalendarController;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ContactSubmissionController;
 use App\Http\Controllers\Admin\PostCategoryController;
@@ -293,6 +294,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // CMS: Posts y Paginas
         Route::post('cms/upload-image', [PostController::class, 'uploadImage'])->name('cms.upload-image');
         Route::resource('posts', PostController::class)->names('posts');
+        Route::get('content-calendar', [ContentCalendarController::class, 'index'])->name('content-calendar');
+        Route::get('content-calendar/events', [ContentCalendarController::class, 'events'])->name('content-calendar.events');
+        Route::patch('content-calendar/{post}/date', [ContentCalendarController::class, 'updateDate'])->name('content-calendar.update-date');
         Route::resource('pages', PageController::class)->names('pages');
         Route::resource('post-categories', PostCategoryController::class)->names('post-categories')->only(['index', 'store', 'update', 'destroy']);
         Route::resource('tags', TagController::class)->names('tags')->only(['index', 'store', 'update', 'destroy']);
