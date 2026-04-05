@@ -219,7 +219,7 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Registrado</div>
-                <div class="info-value">{{ $referrer->created_at->format('d M Y') }}</div>
+                <div class="info-value">{{ $referrer->created_at->translatedFormat('d M Y') }}</div>
             </div>
         </div>
 

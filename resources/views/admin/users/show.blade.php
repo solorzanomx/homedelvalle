@@ -169,7 +169,7 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Miembro desde</div>
-                <div class="info-value">{{ $user->created_at->format('d M Y') }}</div>
+                <div class="info-value">{{ $user->created_at->translatedFormat('d M Y') }}</div>
             </div>
         </div>
 

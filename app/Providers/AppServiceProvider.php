@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Carbon;
 use App\Models\Client;
 use App\Models\Page;
 use App\Models\Menu;
@@ -31,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Locale español para Carbon (fechas)
+        Carbon::setLocale('es');
+        setlocale(LC_TIME, 'es_MX.UTF-8', 'es_ES.UTF-8', 'es_MX', 'es_ES', 'es');
+
         // Force HTTPS in production
         if (app()->environment('production')) {
             URL::forceScheme('https');

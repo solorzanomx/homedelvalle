@@ -13,7 +13,7 @@
             @if($post->category)
             <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 text-brand-600">{{ $post->category->name }}</span>
             @endif
-            <span class="text-xs text-gray-400">{{ $post->published_at->format('d M, Y') }}</span>
+            <span class="text-xs text-gray-400">{{ $post->published_at->translatedFormat('d M, Y') }}</span>
         </div>
         <h3 class="text-base font-bold text-gray-900 group-hover:text-brand-600 transition-colors duration-300 line-clamp-2">{{ $post->title }}</h3>
         @if($post->excerpt)

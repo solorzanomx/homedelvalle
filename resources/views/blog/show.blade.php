@@ -23,7 +23,7 @@
                 @if($post->category)
                 <span class="inline-flex px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-200 border border-brand-400/20">{{ $post->category->name }}</span>
                 @endif
-                <span class="text-xs text-brand-300/60">{{ $post->published_at->format('d M, Y') }}</span>
+                <span class="text-xs text-brand-300/60">{{ $post->published_at->translatedFormat('d M, Y') }}</span>
                 @if($post->author)
                 <span class="text-xs text-brand-300/60">por {{ $post->author->name }}</span>
                 @endif
@@ -56,7 +56,7 @@
                 @if($post->category)
                 <a href="{{ url('/blog?category=' . $post->category->slug) }}" class="inline-flex px-3 py-1.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-600 hover:bg-brand-100 transition-colors duration-200">{{ $post->category->name }}</a>
                 @endif
-                <span class="text-sm text-gray-400">{{ $post->published_at->format('d \d\e F, Y') }}</span>
+                <span class="text-sm text-gray-400">{{ $post->published_at->translatedFormat('d \d\e F, Y') }}</span>
                 @if($post->author)
                 <span class="text-sm text-gray-400">por <span class="font-medium text-gray-600">{{ $post->author->name }}</span></span>
                 @endif

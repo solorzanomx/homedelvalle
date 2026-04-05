@@ -33,7 +33,7 @@
                 <p style="font-size: 1rem; color: #6b7280; margin-bottom: 0.75rem;">{{ $document->meta_description }}</p>
             @endif
             <p style="font-size: 0.85rem; color: #9ca3af;">
-                Ultima actualizacion: {{ $document->currentVersion?->created_at?->format('d \d\e F \d\e Y') ?? $document->updated_at->format('d \d\e F \d\e Y') }}
+                Ultima actualizacion: {{ $document->currentVersion?->created_at?->translatedFormat('d \d\e F \d\e Y') ?? $document->updated_at->translatedFormat('d \d\e F \d\e Y') }}
                 @if($document->currentVersion)
                     &middot; Version {{ $document->currentVersion->version_number }}
                 @endif

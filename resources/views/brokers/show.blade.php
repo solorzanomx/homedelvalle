@@ -225,7 +225,7 @@
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">Registrado</div>
-                <div class="info-value">{{ $broker->created_at->format('d M Y') }}</div>
+                <div class="info-value">{{ $broker->created_at->translatedFormat('d M Y') }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Ultima actualizacion</div>
