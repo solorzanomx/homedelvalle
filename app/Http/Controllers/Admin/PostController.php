@@ -53,8 +53,10 @@ class PostController extends Controller
         if ($validated['status'] === 'scheduled') {
             $request->validate(['published_at' => 'required|date|after:now']);
             $validated['published_at'] = Carbon::parse($request->published_at);
-        } elseif ($validated['status'] === 'published' && empty($validated['published_at'])) {
-            $validated['published_at'] = now();
+        } elseif ($validated['status'] === 'published') {
+            $validated['published_at'] = !empty($validated['published_at'])
+                ? Carbon::parse($validated['published_at'])->min(now())
+                : now();
         } elseif ($validated['status'] === 'draft') {
             $validated['published_at'] = null;
         }
@@ -104,8 +106,10 @@ class PostController extends Controller
         if ($validated['status'] === 'scheduled') {
             $request->validate(['published_at' => 'required|date|after:now']);
             $validated['published_at'] = Carbon::parse($request->published_at);
-        } elseif ($validated['status'] === 'published' && !$post->published_at) {
-            $validated['published_at'] = now();
+        } elseif ($validated['status'] === 'published') {
+            $validated['published_at'] = !empty($validated['published_at'])
+                ? Carbon::parse($validated['published_at'])->min(now())
+                : ($post->published_at ?? now());
         } elseif ($validated['status'] === 'draft') {
             $validated['published_at'] = null;
         }
