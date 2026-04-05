@@ -230,8 +230,13 @@ tinymce.init({
     }
 });
 
-document.querySelector('form').addEventListener('submit', function() {
-    if (tinymce.get('wysiwygEditor')) tinymce.get('wysiwygEditor').save();
+document.querySelector('form').addEventListener('submit', function(e) {
+    var editor = typeof tinymce !== 'undefined' ? tinymce.get('wysiwygEditor') : null;
+    if (editor) {
+        editor.save();
+        var content = editor.getContent();
+        if (content) document.getElementById('wysiwygEditor').value = content;
+    }
 });
 </script>
 @include('admin.media._browser-modal')
