@@ -74,11 +74,22 @@
 
             {{-- Article body --}}
             <article class="prose prose-lg prose-gray max-w-none
-                prose-headings:font-extrabold prose-headings:tracking-tight
-                prose-a:text-brand-600 prose-a:no-underline hover:prose-a:underline
-                prose-blockquote:border-l-brand-500 prose-blockquote:bg-brand-50/30 prose-blockquote:rounded-r-xl prose-blockquote:py-1
-                prose-img:rounded-2xl prose-img:shadow-premium
-                prose-pre:bg-brand-950 prose-pre:rounded-xl"
+                prose-headings:font-extrabold prose-headings:tracking-tight prose-headings:text-gray-900
+                prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:pb-3 prose-h2:border-b prose-h2:border-gray-100
+                prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+                prose-p:text-gray-600 prose-p:leading-[1.85]
+                prose-a:text-brand-600 prose-a:font-semibold prose-a:no-underline prose-a:border-b prose-a:border-brand-200 hover:prose-a:border-brand-500 hover:prose-a:text-brand-700
+                prose-strong:text-gray-900 prose-strong:font-bold
+                prose-blockquote:border-l-4 prose-blockquote:border-brand-500 prose-blockquote:bg-brand-50/40 prose-blockquote:rounded-r-xl prose-blockquote:py-4 prose-blockquote:px-6 prose-blockquote:not-italic prose-blockquote:text-gray-700
+                prose-img:rounded-2xl prose-img:shadow-premium-lg prose-img:my-8
+                prose-pre:bg-brand-950 prose-pre:rounded-xl prose-pre:shadow-premium
+                prose-code:text-brand-700 prose-code:bg-brand-50 prose-code:rounded-md prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-medium prose-code:before:content-none prose-code:after:content-none
+                prose-ul:my-6 prose-ol:my-6
+                prose-li:text-gray-600 prose-li:leading-relaxed prose-li:marker:text-brand-400
+                prose-hr:border-gray-200 prose-hr:my-10
+                prose-table:overflow-hidden prose-table:rounded-xl prose-table:border prose-table:border-gray-200
+                prose-th:bg-brand-50 prose-th:text-brand-700 prose-th:font-bold prose-th:text-sm prose-th:uppercase prose-th:tracking-wider
+                prose-td:text-gray-600 prose-td:text-sm"
                 x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 {!! $post->body !!}
             </article>
