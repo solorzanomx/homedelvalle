@@ -80,7 +80,7 @@
                 prose-img:rounded-2xl prose-img:shadow-premium
                 prose-pre:bg-brand-950 prose-pre:rounded-xl"
                 x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                {!! nl2br(e($post->body)) !!}
+                {!! $post->body !!}
             </article>
 
             {{-- Share buttons --}}
