@@ -76,6 +76,7 @@ Route::get('/nosotros', [PublicController::class, 'nosotros'])->name('nosotros')
 Route::get('/servicios', [PublicController::class, 'servicios'])->name('servicios');
 Route::get('/contacto', [PublicController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [PublicController::class, 'contactoStore'])->name('contacto.store');
+Route::post('/newsletter/subscribe', [PublicController::class, 'newsletterSubscribe'])->name('newsletter.subscribe');
 
 // Blog público
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');

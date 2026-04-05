@@ -95,6 +95,7 @@
     </main>
 
     <x-public.footer />
+    <x-public.lead-popup />
     <x-public.whatsapp-button />
 
     @yield('scripts')

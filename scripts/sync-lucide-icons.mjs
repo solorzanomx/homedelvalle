@@ -103,6 +103,14 @@ const icons = [
     'plus',
     'eye-off',
     'external-link',
+    // Lead capture
+    'bell-ring',
+    'message-circle',
+    // Chatbot
+    'bot',
+    'send',
+    'landmark',
+    'hard-hat',
 ];
 
 mkdirSync(dest, { recursive: true });

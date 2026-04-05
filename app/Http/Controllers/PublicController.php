@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Broker;
 use App\Models\ContactSubmission;
+use App\Models\NewsletterSubscriber;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -117,5 +118,29 @@ class PublicController extends Controller
         }
 
         return redirect()->back()->with('success', '¡Gracias por tu mensaje! Te contactaremos pronto.');
+    }
+
+    public function newsletterSubscribe(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|max:255',
+            'source' => 'nullable|string|max:50',
+        ]);
+
+        // Honeypot
+        if ($request->filled('website_url')) {
+            return response()->json(['ok' => true]);
+        }
+
+        NewsletterSubscriber::updateOrCreate(
+            ['email' => $request->email],
+            [
+                'source' => $request->input('source', 'popup'),
+                'ip_address' => $request->ip(),
+                'unsubscribed_at' => null,
+            ]
+        );
+
+        return response()->json(['ok' => true, 'message' => '¡Te has suscrito exitosamente!']);
     }
 }

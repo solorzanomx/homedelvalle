@@ -98,6 +98,100 @@
     </section>
 
     {{-- ============================================ --}}
+    {{-- 1.5 SEGMENTACION POR PERFIL --}}
+    {{-- ============================================ --}}
+    <section class="py-16 sm:py-20 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,196,0.04)_0%,_transparent_60%)]"></div>
+        <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">¿Que necesitas?</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Soluciones para cada perfil</h2>
+                <p class="mt-4 text-lg text-gray-500">Selecciona tu perfil y descubre como podemos ayudarte.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                {{-- Propietario --}}
+                <a href="{{ route('landing.vende') }}"
+                   class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
+                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
+                        <x-icon name="home" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
+                    </div>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy propietario</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rapido, al mejor precio y con total seguridad juridica.</p>
+                    <ul class="mt-5 space-y-2">
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Valuacion gratuita en 24h
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Venta en 45 dias promedio
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Acompañamiento legal completo
+                        </li>
+                    </ul>
+                    <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
+                        Solicitar valuacion
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
+                {{-- Comprador --}}
+                <a href="{{ route('propiedades.index') }}"
+                   class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
+                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 100ms">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
+                        <x-icon name="search" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
+                    </div>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy comprador</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco propiedades premium en la Benito Juarez con asesoría profesional y garantia.</p>
+                    <ul class="mt-5 space-y-2">
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Propiedades verificadas
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Asesoria personalizada
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Seguridad en la transaccion
+                        </li>
+                    </ul>
+                    <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
+                        Ver propiedades
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
+                {{-- Desarrollador --}}
+                <a href="{{ route('contacto') }}"
+                   class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
+                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 200ms">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
+                        <x-icon name="landmark" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
+                    </div>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy desarrollador</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco terrenos estrategicos y predios con potencial para proyectos inmobiliarios.</p>
+                    <ul class="mt-5 space-y-2">
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Terrenos en zonas clave
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Analisis de potencial
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Red de contactos consolidada
+                        </li>
+                    </ul>
+                    <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
+                        Contactar equipo
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {{-- ============================================ --}}
     {{-- 2. DIFERENCIADORES --}}
     {{-- ============================================ --}}
     @php
