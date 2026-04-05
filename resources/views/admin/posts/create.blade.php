@@ -61,7 +61,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Contenido <span class="required">*</span></label>
-                        <textarea name="body" id="wysiwygEditor" class="form-textarea" rows="18" required
+                        <textarea name="body" id="wysiwygEditor" class="form-textarea" rows="18"
                                   placeholder="Escribe el contenido del post...">{{ old('body') }}</textarea>
                     </div>
 
