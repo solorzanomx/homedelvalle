@@ -15,7 +15,7 @@
     /* Month grid */
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--border); gap: 1px; }
     .cal-header-cell { padding: 0.5rem 0.25rem; text-align: center; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: var(--bg); color: var(--text-muted); }
-    .cal-cell { min-height: 110px; padding: 0.35rem; background: var(--card); position: relative; transition: background 0.15s; }
+    .cal-cell { min-height: 110px; max-height: 130px; padding: 0.35rem; background: var(--card); position: relative; transition: background 0.15s; overflow: hidden; }
     .cal-cell.today { background: rgba(102,126,234,0.04); }
     .cal-cell.other-month { opacity: 0.35; }
     .cal-cell.drag-over { background: rgba(102,126,234,0.08); outline: 2px dashed var(--primary); outline-offset: -2px; }
@@ -23,12 +23,15 @@
     .cal-cell.today .cal-date { color: #fff; background: var(--primary); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; }
 
     /* Post chips */
-    .cal-post { font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 4px; margin-bottom: 2px; cursor: grab; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid; display: block; text-decoration: none; color: inherit; transition: all 0.1s; }
+    .cal-post { font-size: 0.7rem; padding: 0.2rem 0.4rem; border-radius: 4px; margin-bottom: 2px; cursor: grab; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; white-space: normal; word-break: break-word; text-decoration: none; color: inherit; transition: all 0.1s; line-height: 1.3; max-height: 2.6em; }
     .cal-post:hover { filter: brightness(0.95); transform: scale(1.02); }
     .cal-post.dragging { opacity: 0.4; }
-    .cal-post.status-published { border-left-color: #10b981; background: #ecfdf5; color: #065f46; }
-    .cal-post.status-scheduled { border-left-color: #3b82f6; background: #eef2ff; color: #3730a3; }
-    .cal-post.status-draft { border-left-color: #f59e0b; background: #fffbeb; color: #92400e; }
+
+    /* Status colors — shared by all views */
+    .status-published { border-left-color: #10b981; background: #ecfdf5; color: #065f46; }
+    .status-scheduled { border-left-color: #3b82f6; background: #eef2ff; color: #3730a3; }
+    .status-draft { border-left-color: #f59e0b; background: #fffbeb; color: #92400e; }
+
     .cal-more { font-size: 0.65rem; color: var(--text-muted); padding: 0.1rem 0.3rem; cursor: pointer; }
     .cal-more:hover { color: var(--primary); }
 

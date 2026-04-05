@@ -91,10 +91,10 @@
                         </select>
                     </div>
 
-                    <div class="form-group" id="scheduleDateGroup" style="{{ old('status') === 'scheduled' ? '' : 'display:none;' }}">
-                        <label class="form-label">Fecha de Publicacion <span class="required">*</span></label>
+                    <div class="form-group" id="scheduleDateGroup">
+                        <label class="form-label">Fecha de Publicacion</label>
                         <input type="datetime-local" name="published_at" id="publishedAtInput" class="form-input" value="{{ old('published_at') }}">
-                        <p class="form-hint">El post se publicara automaticamente en esta fecha.</p>
+                        <p class="form-hint">Si esta en "Programado", se publica automaticamente en esta fecha.</p>
                     </div>
 
                     <div class="form-group">
@@ -158,6 +158,19 @@
                         <textarea name="meta_description" class="form-textarea" rows="3"
                                   placeholder="Descripcion para buscadores">{{ old('meta_description') }}</textarea>
                         <p class="form-hint">Recomendado: 150-160 caracteres.</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Preview --}}
+            <div class="card">
+                <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
+                    <h3>Vista Previa</h3>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="togglePreview()">Actualizar</button>
+                </div>
+                <div class="card-body" id="previewPanel" style="padding:0;">
+                    <div id="previewContent" style="padding:0.75rem;font-size:0.82rem;max-height:400px;overflow-y:auto;">
+                        <p class="text-muted text-center" style="padding:1rem;">Escribe contenido y haz click en "Actualizar" para ver la vista previa.</p>
                     </div>
                 </div>
             </div>
@@ -246,18 +259,21 @@ document.querySelector('form').addEventListener('submit', function(e) {
     }
 });
 
-// Toggle scheduled date field
-document.getElementById('statusSelect').addEventListener('change', function() {
-    var group = document.getElementById('scheduleDateGroup');
-    var input = document.getElementById('publishedAtInput');
-    if (this.value === 'scheduled') {
-        group.style.display = '';
-        input.required = true;
-    } else {
-        group.style.display = 'none';
-        input.required = false;
+// Preview
+function togglePreview() {
+    var editor = typeof tinymce !== 'undefined' ? tinymce.get('wysiwygEditor') : null;
+    var content = editor ? editor.getContent() : document.getElementById('wysiwygEditor').value;
+    var title = document.getElementById('titleInput').value;
+    var el = document.getElementById('previewContent');
+    if (!content && !title) {
+        el.innerHTML = '<p class="text-muted text-center" style="padding:1rem;">Sin contenido para previsualizar.</p>';
+        return;
     }
-});
+    var html = '';
+    if (title) html += '<h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem;">' + title.replace(/</g, '&lt;') + '</h2>';
+    if (content) html += '<div class="preview-body" style="line-height:1.6;">' + content + '</div>';
+    el.innerHTML = html;
+}
 </script>
 @include('admin.media._browser-modal')
 @endsection
