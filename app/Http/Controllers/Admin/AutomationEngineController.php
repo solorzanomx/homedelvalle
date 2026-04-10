@@ -122,7 +122,7 @@ class AutomationEngineController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.automations.show', $automation)->with('success', 'Automatizacion actualizada');
+        return redirect()->route('admin.automations-engine.show', $automation)->with('success', 'Automatización actualizada');
     }
 
     public function destroy(Automation $automation)
