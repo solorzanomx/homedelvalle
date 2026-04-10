@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LandingFormRequest;
 use App\Models\ContactSubmission;
+use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
 
@@ -108,7 +109,7 @@ class LandingController extends Controller
     /**
      * Handle lead form submission.
      */
-    public function submit(LandingFormRequest $request, SpamProtectionService $spam)
+    public function submit(LandingFormRequest $request, SpamProtectionService $spam, AutomationEngine $engine)
     {
         $validated = $request->validated();
 
@@ -140,6 +141,13 @@ class LandingController extends Controller
             'utm_medium' => $request->input('utm_medium'),
             'utm_campaign' => $request->input('utm_campaign'),
         ]);
+
+        // Trigger automation engine — enroll lead
+        $engine->processFormSubmitted(array_merge($validated, [
+            'utm_source' => $request->input('utm_source'),
+            'utm_medium' => $request->input('utm_medium'),
+            'utm_campaign' => $request->input('utm_campaign'),
+        ]), 'landing');
 
         // Record privacy acceptance
         if ($request->boolean('accept_privacy')) {

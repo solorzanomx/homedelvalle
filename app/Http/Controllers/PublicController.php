@@ -8,6 +8,7 @@ use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscriber;
 use App\Models\Property;
 use App\Models\User;
+use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
 
@@ -82,7 +83,7 @@ class PublicController extends Controller
         return view('public.contacto');
     }
 
-    public function contactoStore(ContactFormRequest $request, SpamProtectionService $spam)
+    public function contactoStore(ContactFormRequest $request, SpamProtectionService $spam, AutomationEngine $engine)
     {
         $validated = $request->validated();
 
@@ -105,6 +106,9 @@ class PublicController extends Controller
         }
 
         ContactSubmission::create($validated);
+
+        // Trigger automation engine — enroll lead
+        $engine->processFormSubmitted($validated, 'contact');
 
         // Record privacy acceptance if checkbox was checked
         if ($request->boolean('accept_privacy')) {

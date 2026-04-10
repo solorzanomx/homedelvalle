@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\FormSubmission;
+use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,7 @@ class PublicFormController extends Controller
         return view('public.form', compact('form'));
     }
 
-    public function submit(Request $request, string $slug, SpamProtectionService $spam)
+    public function submit(Request $request, string $slug, SpamProtectionService $spam, AutomationEngine $engine)
     {
         $form = Form::where('slug', $slug)->where('is_active', true)->firstOrFail();
 
@@ -90,6 +91,17 @@ class PublicFormController extends Controller
         ]);
 
         $form->increment('submissions_count');
+
+        // Trigger automation engine — enroll lead
+        $engine->processFormSubmitted([
+            'name' => $data['nombre'] ?? $data['name'] ?? 'Lead formulario',
+            'email' => $data['email'] ?? $data['correo'] ?? null,
+            'phone' => $data['telefono'] ?? $data['phone'] ?? null,
+            'message' => $data['mensaje'] ?? $data['message'] ?? '',
+            'utm_source' => $request->input('utm_source'),
+            'utm_medium' => $request->input('utm_medium'),
+            'utm_campaign' => $request->input('utm_campaign'),
+        ], 'form');
 
         return back()->with('success', $form->settings['success_message'] ?? 'Formulario enviado correctamente. Gracias.');
     }

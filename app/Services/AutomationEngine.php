@@ -11,6 +11,7 @@ use App\Models\LeadEvent;
 use App\Models\Message;
 use App\Models\Operation;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\EmailService;
 use Illuminate\Support\Facades\Log;
 
@@ -74,6 +75,110 @@ class AutomationEngine
 
         foreach ($automations as $automation) {
             $this->enroll($automation, $client);
+        }
+    }
+
+    /**
+     * Process a form submission trigger.
+     * Finds or creates a Client from the submission, then enrolls in matching automations.
+     *
+     * @param array  $data   Submission data (name, email, phone, message, etc.)
+     * @param string $source Source identifier: 'contact', 'landing', 'form'
+     */
+    public function processFormSubmitted(array $data, string $source = 'contact'): ?Client
+    {
+        $email = $data['email'] ?? null;
+        if (!$email) return null;
+
+        // Find or create client from submission
+        $client = Client::where('email', $email)->first();
+
+        if (!$client) {
+            $client = Client::create([
+                'name' => $data['name'] ?? 'Lead sin nombre',
+                'email' => $email,
+                'phone' => $data['phone'] ?? null,
+                'lead_temperature' => 'tibio',
+                'priority' => 'media',
+                'initial_notes' => 'Creado automaticamente desde formulario: ' . $source,
+                'utm_source' => $data['utm_source'] ?? null,
+                'utm_medium' => $data['utm_medium'] ?? null,
+                'utm_campaign' => $data['utm_campaign'] ?? null,
+            ]);
+
+            Log::info("AutomationEngine: Client #{$client->id} created from {$source} form submission");
+        }
+
+        // Record lead event
+        LeadEvent::record($client->id, 'form_submitted', [
+            'source' => $source,
+            'properties' => ['message' => \Illuminate\Support\Str::limit($data['message'] ?? '', 200)],
+        ]);
+
+        // Score the event
+        $this->scoringService->processEvent($client->id, 'form_submitted', ['source' => $source]);
+
+        // Find active automations with form_submitted trigger
+        $automations = Automation::active()
+            ->where('trigger_type', 'form_submitted')
+            ->get()
+            ->filter(function ($a) use ($source) {
+                $configSource = $a->trigger_config['source'] ?? 'all';
+                return $configSource === 'all' || $configSource === $source;
+            });
+
+        foreach ($automations as $automation) {
+            $this->enroll($automation, $client);
+        }
+
+        // Send instant email notification to admins
+        $this->notifyAdminsNewLead($data, $source);
+
+        return $client;
+    }
+
+    /**
+     * Send an immediate email notification to admin users about a new lead.
+     */
+    private function notifyAdminsNewLead(array $data, string $source): void
+    {
+        $sourceLabels = ['contact' => 'Contacto', 'landing' => 'Landing (Vende tu propiedad)', 'form' => 'Formulario dinámico'];
+        $sourceLabel = $sourceLabels[$source] ?? $source;
+        $name = $data['name'] ?? 'Sin nombre';
+        $email = $data['email'] ?? 'Sin email';
+        $phone = $data['phone'] ?? 'No proporcionado';
+        $message = $data['message'] ?? '';
+        $now = now()->format('d/m/Y H:i');
+
+        $subject = "Nuevo lead: {$name} — {$sourceLabel}";
+        $body = "
+            <div style='font-family:Arial,sans-serif; max-width:600px; margin:0 auto;'>
+                <div style='background:#667eea; color:#fff; padding:16px 24px; border-radius:8px 8px 0 0;'>
+                    <h2 style='margin:0; font-size:18px;'>Nuevo Lead Recibido</h2>
+                </div>
+                <div style='background:#fff; border:1px solid #e5e7eb; padding:24px; border-radius:0 0 8px 8px;'>
+                    <table style='width:100%; border-collapse:collapse;'>
+                        <tr><td style='padding:8px 0; color:#6b7280; width:120px;'>Nombre:</td><td style='padding:8px 0; font-weight:600;'>{$name}</td></tr>
+                        <tr><td style='padding:8px 0; color:#6b7280;'>Email:</td><td style='padding:8px 0;'><a href='mailto:{$email}'>{$email}</a></td></tr>
+                        <tr><td style='padding:8px 0; color:#6b7280;'>Teléfono:</td><td style='padding:8px 0;'>{$phone}</td></tr>
+                        <tr><td style='padding:8px 0; color:#6b7280;'>Origen:</td><td style='padding:8px 0;'><span style='background:#eef2ff; color:#3730a3; padding:2px 8px; border-radius:4px; font-size:13px;'>{$sourceLabel}</span></td></tr>
+                        <tr><td style='padding:8px 0; color:#6b7280;'>Fecha:</td><td style='padding:8px 0;'>{$now}</td></tr>
+                    </table>"
+                    . ($message ? "<div style='margin-top:16px; padding:12px; background:#f9fafb; border-radius:6px; border-left:3px solid #667eea;'><strong style='font-size:13px; color:#6b7280;'>Mensaje:</strong><p style='margin:8px 0 0; color:#374151;'>" . e($message) . "</p></div>" : '')
+                    . "<div style='margin-top:20px; text-align:center;'>
+                        <a href='" . url('/admin/contact-submissions') . "' style='display:inline-block; background:#667eea; color:#fff; padding:10px 24px; border-radius:6px; text-decoration:none; font-weight:600;'>Ver en el CRM</a>
+                    </div>
+                </div>
+            </div>";
+
+        // Send to all admin users
+        $admins = User::where('is_active', true)
+            ->where('role', 'admin')
+            ->pluck('email')
+            ->filter();
+
+        foreach ($admins as $adminEmail) {
+            $this->emailService->send($adminEmail, $subject, $body);
         }
     }
 

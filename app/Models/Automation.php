@@ -24,6 +24,7 @@ class Automation extends Model
 
     // ── Trigger types ─────────────────────────────────
     public const TRIGGERS = [
+        'form_submitted'  => 'Formulario recibido',
         'segment_enter'   => 'Entra a segmento',
         'segment_exit'    => 'Sale de segmento',
         'stage_change'    => 'Cambio de etapa',

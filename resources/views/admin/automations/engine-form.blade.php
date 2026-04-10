@@ -86,6 +86,15 @@
             </div>
 
             <div id="triggerConfigArea" style="margin-bottom:0.5rem;">
+                <div id="tcFormSource" style="display:none;" class="form-group">
+                    <label class="form-label">Origen del formulario</label>
+                    <select name="trigger_config[source]" class="form-select">
+                        <option value="all" {{ ($automation->trigger_config['source'] ?? 'all') === 'all' ? 'selected' : '' }}>Todos los formularios</option>
+                        <option value="contact" {{ ($automation->trigger_config['source'] ?? '') === 'contact' ? 'selected' : '' }}>Contacto (/contacto)</option>
+                        <option value="landing" {{ ($automation->trigger_config['source'] ?? '') === 'landing' ? 'selected' : '' }}>Landing (vende tu propiedad)</option>
+                        <option value="form" {{ ($automation->trigger_config['source'] ?? '') === 'form' ? 'selected' : '' }}>Formularios dinamicos</option>
+                    </select>
+                </div>
                 <div id="tcSegment" style="display:none;" class="form-group">
                     <label class="form-label">Segmento</label>
                     <select name="trigger_config[segment_id]" class="form-select">
@@ -128,6 +137,7 @@ var stepIdx = 0;
 
 function showTriggerConfig(type) {
     document.querySelectorAll('#triggerConfigArea > div').forEach(function(d) { d.style.display = 'none'; });
+    if (type === 'form_submitted') document.getElementById('tcFormSource').style.display = '';
     if (type === 'segment_enter' || type === 'segment_exit') document.getElementById('tcSegment').style.display = '';
     if (type === 'score_threshold') document.getElementById('tcScore').style.display = '';
     if (type === 'inactivity') document.getElementById('tcInactivity').style.display = '';
