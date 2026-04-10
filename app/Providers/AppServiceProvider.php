@@ -81,6 +81,18 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(3)->by($request->ip());
         });
 
+        RateLimiter::for('public-form', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip())->response(function () {
+                return back()->with('error', 'Demasiados envíos. Por favor espera unos minutos antes de intentar de nuevo.');
+            });
+        });
+
+        RateLimiter::for('newsletter', function (Request $request) {
+            return Limit::perMinute(3)->by($request->ip())->response(function () {
+                return response()->json(['ok' => false, 'message' => 'Demasiados intentos.'], 429);
+            });
+        });
+
         // ─── RBAC: Gates ───────────────────────────────────
 
         Gate::before(function ($user, $ability) {

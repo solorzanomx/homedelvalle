@@ -76,8 +76,8 @@ Route::get('/propiedades/{id}/{slug?}', [PublicController::class, 'propiedadShow
 Route::get('/nosotros', [PublicController::class, 'nosotros'])->name('nosotros');
 Route::get('/servicios', [PublicController::class, 'servicios'])->name('servicios');
 Route::get('/contacto', [PublicController::class, 'contacto'])->name('contacto');
-Route::post('/contacto', [PublicController::class, 'contactoStore'])->name('contacto.store');
-Route::post('/newsletter/subscribe', [PublicController::class, 'newsletterSubscribe'])->name('newsletter.subscribe');
+Route::post('/contacto', [PublicController::class, 'contactoStore'])->middleware('throttle:public-form')->name('contacto.store');
+Route::post('/newsletter/subscribe', [PublicController::class, 'newsletterSubscribe'])->middleware('throttle:newsletter')->name('newsletter.subscribe');
 
 // Blog público
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
@@ -86,14 +86,14 @@ Route::get('/p/{slug}', [BlogController::class, 'page'])->name('page.show');
 
 // Formularios públicos
 Route::get('/form/{slug}', [PublicFormController::class, 'show'])->name('form.show');
-Route::post('/form/{slug}', [PublicFormController::class, 'submit'])->name('form.submit');
+Route::post('/form/{slug}', [PublicFormController::class, 'submit'])->middleware('throttle:public-form')->name('form.submit');
 
 // Email open tracking (public, no auth)
 Route::get('/track/{trackingId}.gif', [ClientEmailController::class, 'track'])->name('email.track');
 
 // Landing pages (campañas de conversión)
 Route::get('/vende-tu-propiedad', [LandingController::class, 'show'])->name('landing.vende');
-Route::post('/landing/submit', [LandingController::class, 'submit'])->name('landing.submit');
+Route::post('/landing/submit', [LandingController::class, 'submit'])->middleware('throttle:public-form')->name('landing.submit');
 
 // Documentos legales públicos
 Route::get('/legal/{slug}', [LegalPageController::class, 'show'])->name('legal.public');

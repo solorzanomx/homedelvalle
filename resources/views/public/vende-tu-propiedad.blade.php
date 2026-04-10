@@ -48,12 +48,13 @@
                 <h2 class="text-xl font-bold text-gray-900">Solicita tu valuación gratuita</h2>
                 <p class="text-sm text-gray-500 mt-1.5 mb-6">Responderemos en menos de 24 horas.</p>
 
-                <form method="POST" action="{{ route('landing.submit') }}" x-data="{ submitting: false }" @submit="submitting = true">
+                <form method="POST" action="{{ route('landing.submit') }}" x-data="{ submitting: false }" @submit="submitting = true" id="vende-form">
                     @csrf
                     <input type="hidden" name="utm_source" value="{{ request('utm_source') }}">
                     <input type="hidden" name="utm_medium" value="{{ request('utm_medium') }}">
                     <input type="hidden" name="utm_campaign" value="{{ request('utm_campaign') }}">
-                    <div style="position:absolute;left:-9999px;" aria-hidden="true"><input type="text" name="website_url" tabindex="-1"></div>
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token_vende">
+                    <div style="position:absolute;left:-9999px;" aria-hidden="true"><input type="text" name="website_url" tabindex="-1" autocomplete="off"></div>
 
                     <div class="space-y-4">
                         <div>
@@ -187,4 +188,29 @@
     </div>
 </section>
 
+@endsection
+
+@section('scripts')
+@if(config('services.recaptcha.site_key'))
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('vende-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var tokenInput = document.getElementById('recaptcha_token_vende');
+            if (tokenInput && !tokenInput.value) {
+                e.preventDefault();
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'landing'}).then(function(token) {
+                        tokenInput.value = token;
+                        form.submit();
+                    });
+                });
+            }
+        });
+    }
+});
+</script>
+@endif
 @endsection

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\FormSubmission;
+use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
 
 class PublicFormController extends Controller
@@ -15,9 +16,14 @@ class PublicFormController extends Controller
         return view('public.form', compact('form'));
     }
 
-    public function submit(Request $request, string $slug)
+    public function submit(Request $request, string $slug, SpamProtectionService $spam)
     {
         $form = Form::where('slug', $slug)->where('is_active', true)->firstOrFail();
+
+        // Honeypot check
+        if ($request->filled('website_url')) {
+            return back()->with('success', $form->settings['success_message'] ?? 'Formulario enviado correctamente. Gracias.');
+        }
 
         // Dynamic validation from fields config
         $rules = [];
@@ -30,7 +36,7 @@ class PublicFormController extends Controller
             }
 
             switch ($field['type'] ?? 'text') {
-                case 'email': $fieldRules[] = 'email'; break;
+                case 'email': $fieldRules[] = 'email:rfc,dns'; break;
                 case 'tel': $fieldRules[] = 'string'; break;
                 case 'textarea': $fieldRules[] = 'string|max:5000'; break;
                 case 'select': case 'radio':
@@ -48,9 +54,29 @@ class PublicFormController extends Controller
 
         // Extract field_ prefix data
         $data = [];
+        $textContent = '';
         foreach ($form->fields as $field) {
             $key = 'field_' . $field['name'];
-            $data[$field['name']] = $validated[$key] ?? null;
+            $value = $validated[$key] ?? null;
+            $data[$field['name']] = $value;
+
+            // Collect text fields for spam analysis
+            if ($value && in_array($field['type'] ?? 'text', ['text', 'textarea', 'email'])) {
+                $textContent .= ' ' . $value;
+            }
+        }
+
+        // Spam protection
+        $spamData = ['message' => trim($textContent), 'email' => $data['email'] ?? $data['correo'] ?? ''];
+        $spamCheck = $spam->check(
+            $spamData,
+            $request->input('recaptcha_token'),
+            $request->ip(),
+            'form'
+        );
+
+        if (! $spamCheck['pass']) {
+            return back()->with('success', $form->settings['success_message'] ?? 'Formulario enviado correctamente. Gracias.');
         }
 
         FormSubmission::create([

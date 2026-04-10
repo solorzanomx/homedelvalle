@@ -16,11 +16,14 @@
             </div>
             @else
             <div class="rounded-2xl border border-gray-200/60 p-8 shadow-premium-lg" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                <form method="POST" action="{{ route('form.submit', $form->slug) }}">
+                <form method="POST" action="{{ route('form.submit', $form->slug) }}" id="dynamic-form">
                     @csrf
                     @if(request('utm_source'))<input type="hidden" name="utm_source" value="{{ request('utm_source') }}">@endif
                     @if(request('utm_medium'))<input type="hidden" name="utm_medium" value="{{ request('utm_medium') }}">@endif
                     @if(request('utm_campaign'))<input type="hidden" name="utm_campaign" value="{{ request('utm_campaign') }}">@endif
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token_form">
+                    {{-- Honeypot --}}
+                    <div style="position:absolute;left:-9999px;" aria-hidden="true"><input type="text" name="website_url" tabindex="-1" autocomplete="off"></div>
 
                     @foreach($form->fields as $field)
                         @if(($field['type'] ?? 'text') === 'hidden')
@@ -85,4 +88,29 @@
             @endif
         </div>
     </section>
+@endsection
+
+@section('scripts')
+@if(config('services.recaptcha.site_key'))
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('dynamic-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var tokenInput = document.getElementById('recaptcha_token_form');
+            if (tokenInput && !tokenInput.value) {
+                e.preventDefault();
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'form'}).then(function(token) {
+                        tokenInput.value = token;
+                        form.submit();
+                    });
+                });
+            }
+        });
+    }
+});
+</script>
+@endif
 @endsection

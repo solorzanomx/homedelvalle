@@ -15,11 +15,17 @@
     <input type="hidden" name="utm_medium" value="{{ request('utm_medium') }}">
     <input type="hidden" name="utm_campaign" value="{{ request('utm_campaign') }}">
 
-    {{-- Honeypot --}}
+    {{-- reCAPTCHA v3 token --}}
+    <input type="hidden" name="recaptcha_token" id="recaptcha_token_contact">
+
+    {{-- Honeypot — positioned off-screen, invisible to humans --}}
     <div class="absolute opacity-0 top-0 left-0 h-0 w-0 -z-10 overflow-hidden" aria-hidden="true" tabindex="-1">
         <label for="website_url">Deja esto vacío</label>
         <input type="text" name="website_url" id="website_url" tabindex="-1" autocomplete="off">
     </div>
+
+    {{-- Honeypot temporal: campo llenado demasiado rápido indica bot --}}
+    <input type="hidden" name="_form_loaded_at" value="{{ now()->timestamp }}">
 
     <div class="{{ $compact ? '' : 'grid sm:grid-cols-2 gap-5' }}">
         <div class="{{ $compact ? 'mb-5' : '' }}">
@@ -87,3 +93,29 @@
         </span>
     </button>
 </form>
+
+{{-- reCAPTCHA v3 script (only loaded if key is configured) --}}
+@if(config('services.recaptcha.site_key'))
+@once
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('form[action*="contacto"]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            var tokenInput = form.querySelector('[name="recaptcha_token"]');
+            if (tokenInput && !tokenInput.value) {
+                e.preventDefault();
+                e.stopPropagation();
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'contact'}).then(function(token) {
+                        tokenInput.value = token;
+                        form.submit();
+                    });
+                });
+            }
+        });
+    });
+});
+</script>
+@endonce
+@endif

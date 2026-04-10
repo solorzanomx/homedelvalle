@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LandingFormRequest;
 use App\Models\ContactSubmission;
+use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
 
 class LandingController extends Controller
@@ -106,18 +108,25 @@ class LandingController extends Controller
     /**
      * Handle lead form submission.
      */
-    public function submit(Request $request)
+    public function submit(LandingFormRequest $request, SpamProtectionService $spam)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'required|string|max:30',
-            'message' => 'nullable|string|max:2000',
-        ]);
+        $validated = $request->validated();
 
         // Honeypot
         if ($request->filled('website_url')) {
             return back()->with('success', 'Gracias, te contactaremos pronto.');
+        }
+
+        // Spam protection
+        $spamCheck = $spam->check(
+            $validated,
+            $request->input('recaptcha_token'),
+            $request->ip(),
+            'landing'
+        );
+
+        if (! $spamCheck['pass']) {
+            return back()->with('success', '¡Gracias! Un asesor te contactará en menos de 24 horas.');
         }
 
         ContactSubmission::create([

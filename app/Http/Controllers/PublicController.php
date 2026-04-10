@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ContactFormRequest;
 use App\Models\Broker;
 use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscriber;
 use App\Models\Property;
 use App\Models\User;
+use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
 
 class PublicController extends Controller
@@ -80,22 +82,26 @@ class PublicController extends Controller
         return view('public.contacto');
     }
 
-    public function contactoStore(Request $request)
+    public function contactoStore(ContactFormRequest $request, SpamProtectionService $spam)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'phone' => 'nullable|string|max:50',
-            'message' => 'required|string|max:2000',
-            'property_id' => 'nullable|exists:properties,id',
-            'utm_source' => 'nullable|string|max:255',
-            'utm_medium' => 'nullable|string|max:255',
-            'utm_campaign' => 'nullable|string|max:255',
-        ]);
+        $validated = $request->validated();
 
-        // Honeypot check
+        // Honeypot check — bots fill hidden fields
         if ($request->filled('website_url')) {
             return redirect()->back()->with('success', 'Mensaje enviado correctamente.');
+        }
+
+        // Spam protection (reCAPTCHA + content analysis + IP rate)
+        $spamCheck = $spam->check(
+            $validated,
+            $request->input('recaptcha_token'),
+            $request->ip(),
+            'contact'
+        );
+
+        if (! $spamCheck['pass']) {
+            // Return fake success so bots don't know they were blocked
+            return redirect()->back()->with('success', '¡Gracias por tu mensaje! Te contactaremos pronto.');
         }
 
         ContactSubmission::create($validated);
@@ -120,15 +126,20 @@ class PublicController extends Controller
         return redirect()->back()->with('success', '¡Gracias por tu mensaje! Te contactaremos pronto.');
     }
 
-    public function newsletterSubscribe(Request $request)
+    public function newsletterSubscribe(Request $request, SpamProtectionService $spam)
     {
         $request->validate([
-            'email' => 'required|email|max:255',
+            'email' => 'required|email:rfc,dns|max:255',
             'source' => 'nullable|string|max:50',
         ]);
 
         // Honeypot
         if ($request->filled('website_url')) {
+            return response()->json(['ok' => true]);
+        }
+
+        // Disposable email check
+        if ($spam->isDisposableEmail($request->email)) {
             return response()->json(['ok' => true]);
         }
 

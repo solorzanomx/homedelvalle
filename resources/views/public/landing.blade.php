@@ -114,12 +114,14 @@
                 </div>
                 @endif
 
-                <form method="POST" action="{{ route('landing.submit') }}" class="space-y-4">
+                <form method="POST" action="{{ route('landing.submit') }}" class="space-y-4" id="landing-form">
                     @csrf
                     {{-- Honeypot --}}
                     <div class="hidden" aria-hidden="true">
                         <input type="text" name="website_url" tabindex="-1" autocomplete="off">
                     </div>
+                    {{-- reCAPTCHA v3 token --}}
+                    <input type="hidden" name="recaptcha_token" id="recaptcha_token_landing">
 
                     {{-- UTM tracking --}}
                     <input type="hidden" name="utm_source" value="{{ request('utm_source') }}">
@@ -390,4 +392,29 @@
     </div>
 </footer>
 
+@endsection
+
+@section('scripts')
+@if(config('services.recaptcha.site_key'))
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.site_key') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('landing-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var tokenInput = document.getElementById('recaptcha_token_landing');
+            if (tokenInput && !tokenInput.value) {
+                e.preventDefault();
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('{{ config('services.recaptcha.site_key') }}', {action: 'landing'}).then(function(token) {
+                        tokenInput.value = token;
+                        form.submit();
+                    });
+                });
+            }
+        });
+    }
+});
+</script>
+@endif
 @endsection
