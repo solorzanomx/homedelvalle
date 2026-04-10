@@ -58,6 +58,10 @@
             </div>
             @if($auto->description)<div class="auto-desc">{{ Str::limit($auto->description, 100) }}</div>@endif
             <div class="auto-trigger">&#9889; {{ \App\Models\Automation::TRIGGERS[$auto->trigger_type] ?? $auto->trigger_type }}</div>
+            @if($auto->trigger_type === 'form_submitted' && ($auto->trigger_config['source'] ?? 'all') !== 'all')
+            @php $srcLabels = ['contact' => 'Contacto', 'landing' => 'Landing', 'form' => 'Dinámicos']; @endphp
+            <div style="font-size:0.68rem; color:var(--text-muted); margin-top:-0.5rem; margin-bottom:0.75rem;">Origen: {{ $srcLabels[$auto->trigger_config['source']] ?? $auto->trigger_config['source'] }}</div>
+            @endif
             <div class="auto-stats">
                 <div><div class="auto-stat-val">{{ $auto->steps_count }}</div><div class="auto-stat-lbl">Pasos</div></div>
                 <div><div class="auto-stat-val">{{ $auto->enrollments_count }}</div><div class="auto-stat-lbl">Inscritos</div></div>

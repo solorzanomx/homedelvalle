@@ -83,7 +83,7 @@
         <div class="show-card">
             <div class="show-card-header">
                 Flujo ({{ $automation->steps->count() }} pasos)
-                <span style="font-size:0.75rem; color:var(--text-muted);">Trigger: {{ \App\Models\Automation::TRIGGERS[$automation->trigger_type] ?? $automation->trigger_type }}</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">Trigger: {{ \App\Models\Automation::TRIGGERS[$automation->trigger_type] ?? $automation->trigger_type }}@if($automation->trigger_type === 'form_submitted') ({{ ['all'=>'Todos','contact'=>'Contacto','landing'=>'Landing','form'=>'Dinámicos'][$automation->trigger_config['source'] ?? 'all'] ?? 'Todos' }})@endif</span>
             </div>
             <div class="show-card-body">
                 @foreach($automation->steps as $step)
@@ -152,6 +152,24 @@
             <div class="show-card-header">Detalles</div>
             <div class="show-card-body" style="padding:0.5rem 1rem;">
                 <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Trigger</span><span style="font-weight:500;">{{ \App\Models\Automation::TRIGGERS[$automation->trigger_type] ?? '' }}</span></div>
+                @if($automation->trigger_type === 'form_submitted')
+                @php
+                    $sourceLabels = ['all' => 'Todos', 'contact' => 'Contacto', 'landing' => 'Landing', 'form' => 'Formularios dinámicos'];
+                @endphp
+                <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Origen</span><span>{{ $sourceLabels[$automation->trigger_config['source'] ?? 'all'] ?? 'Todos' }}</span></div>
+                @endif
+                @if($automation->trigger_type === 'segment_enter' || $automation->trigger_type === 'segment_exit')
+                @php $triggerSegment = \App\Models\Segment::find($automation->trigger_config['segment_id'] ?? 0); @endphp
+                @if($triggerSegment)
+                <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Segmento</span><span>{{ $triggerSegment->name }}</span></div>
+                @endif
+                @endif
+                @if($automation->trigger_type === 'score_threshold')
+                <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Score mínimo</span><span>{{ $automation->trigger_config['min_score'] ?? 50 }}</span></div>
+                @endif
+                @if($automation->trigger_type === 'inactivity')
+                <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Días sin actividad</span><span>{{ $automation->trigger_config['days'] ?? 7 }}</span></div>
+                @endif
                 <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Reentrada</span><span>{{ $automation->allow_reentry ? 'Si' : 'No' }}</span></div>
                 <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Creado por</span><span>{{ $automation->creator->name ?? 'Sistema' }}</span></div>
                 <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Creada</span><span>{{ $automation->created_at->format('d/m/Y') }}</span></div>
