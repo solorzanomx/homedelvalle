@@ -76,11 +76,25 @@
             </div>
 
             <div class="section-label">Trigger (disparador)</div>
+            @php
+                $triggerMeta = [
+                    'form_submitted'  => ['icon' => '&#128233;', 'desc' => 'Cuando un lead envia un formulario del sitio'],
+                    'new_client'      => ['icon' => '&#128100;', 'desc' => 'Cuando se crea un cliente nuevo'],
+                    'segment_enter'   => ['icon' => '&#128202;', 'desc' => 'Cuando un cliente entra a un segmento'],
+                    'segment_exit'    => ['icon' => '&#128201;', 'desc' => 'Cuando un cliente sale de un segmento'],
+                    'stage_change'    => ['icon' => '&#8594;',   'desc' => 'Cuando cambia de etapa en pipeline'],
+                    'manual'          => ['icon' => '&#9998;',   'desc' => 'Inscripcion manual por el admin'],
+                    'score_threshold' => ['icon' => '&#11088;',  'desc' => 'Cuando el lead score alcanza un valor'],
+                    'inactivity'      => ['icon' => '&#9203;',   'desc' => 'Despues de X dias sin actividad'],
+                ];
+            @endphp
             <div class="trigger-cards">
                 @foreach($triggers as $val => $label)
                 <label class="trigger-card {{ old('trigger_type', $automation->trigger_type ?? '') === $val ? 'active' : '' }}" onclick="this.closest('.trigger-cards').querySelectorAll('.trigger-card').forEach(c=>c.classList.remove('active')); this.classList.add('active'); showTriggerConfig('{{ $val }}');">
                     <input type="radio" name="trigger_type" value="{{ $val }}" {{ old('trigger_type', $automation->trigger_type ?? '') === $val ? 'checked' : '' }} required>
+                    <div style="font-size:1.2rem; margin-bottom:0.15rem;">{!! $triggerMeta[$val]['icon'] ?? '&#9889;' !!}</div>
                     <div class="trigger-card-label">{{ $label }}</div>
+                    <div class="trigger-card-desc">{{ $triggerMeta[$val]['desc'] ?? '' }}</div>
                 </label>
                 @endforeach
             </div>
