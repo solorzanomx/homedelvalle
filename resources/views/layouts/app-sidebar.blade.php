@@ -538,6 +538,11 @@
                             <span class="nav-icon"><x-icon name="panel-bottom" class="w-4 h-4" /></span> Footer
                         </a>
                         @endif
+                        @if(Route::has('admin.testimonials.index'))
+                        <a href="{{ route('admin.testimonials.index') }}" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="heart" class="w-4 h-4" /></span> Testimonios
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif

@@ -8,6 +8,7 @@
         ['label' => 'Propiedades', 'url' => '/propiedades'],
         ['label' => 'Servicios', 'url' => '/servicios'],
         ['label' => 'Nosotros', 'url' => '/nosotros'],
+        ['label' => 'Testimonios', 'url' => '/testimonios'],
         ['label' => 'Guía Inmobiliaria', 'url' => '/blog'],
         ['label' => 'Contacto', 'url' => '/contacto'],
     ];

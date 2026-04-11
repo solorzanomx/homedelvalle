@@ -7,6 +7,7 @@ use App\Models\Broker;
 use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscriber;
 use App\Models\Property;
+use App\Models\Testimonial;
 use App\Models\User;
 use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
@@ -81,6 +82,18 @@ class PublicController extends Controller
     public function contacto()
     {
         return view('public.contacto');
+    }
+
+    public function testimonios()
+    {
+        $featured = Testimonial::active()->featured()->first();
+        $testimonials = Testimonial::active()
+            ->orderByDesc('is_featured')
+            ->orderBy('sort_order')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('public.testimonios', compact('testimonials', 'featured'));
     }
 
     public function contactoStore(ContactFormRequest $request, SpamProtectionService $spam, AutomationEngine $engine)

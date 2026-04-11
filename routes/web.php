@@ -63,6 +63,7 @@ use App\Http\Controllers\Admin\LegalController;
 use App\Http\Controllers\Admin\ServiciosPageController;
 use App\Http\Controllers\Admin\NosotrosPageController;
 use App\Http\Controllers\Admin\VenderPageController;
+use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalDocumentController;
@@ -79,6 +80,7 @@ Route::get('/nosotros', [PublicController::class, 'nosotros'])->name('nosotros')
 Route::get('/servicios', [PublicController::class, 'servicios'])->name('servicios');
 Route::get('/contacto', [PublicController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [PublicController::class, 'contactoStore'])->middleware('throttle:public-form')->name('contacto.store');
+Route::get('/testimonios', [PublicController::class, 'testimonios'])->name('testimonios');
 Route::post('/newsletter/subscribe', [PublicController::class, 'newsletterSubscribe'])->middleware('throttle:newsletter')->name('newsletter.subscribe');
 Route::get('/newsletter/unsubscribe/{token}', [PublicController::class, 'newsletterUnsubscribe'])->name('newsletter.unsubscribe');
 
@@ -380,6 +382,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::delete('/newsletters/campaigns/{campaign}', [NewsletterController::class, 'destroyCampaign'])->name('newsletters.campaigns.destroy');
         Route::get('/newsletters/campaigns/{campaign}/preview', [NewsletterController::class, 'previewCampaign'])->name('newsletters.campaigns.preview');
         Route::post('/newsletters/campaigns/{campaign}/send', [NewsletterController::class, 'sendCampaign'])->name('newsletters.campaigns.send');
+
+        // Testimonials
+        Route::resource('testimonials', TestimonialController::class)->except(['show']);
 
         // Help Center (admin management)
         Route::get('/help/manage', [HelpCenterController::class, 'adminIndex'])->name('help.manage');
