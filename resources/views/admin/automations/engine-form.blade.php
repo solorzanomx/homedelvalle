@@ -104,7 +104,9 @@
                     <label class="form-label">Origen del formulario</label>
                     <select name="trigger_config[source]" class="form-select">
                         <option value="all" {{ ($automation->trigger_config['source'] ?? 'all') === 'all' ? 'selected' : '' }}>Todos los formularios</option>
+                        <option value="home" {{ ($automation->trigger_config['source'] ?? '') === 'home' ? 'selected' : '' }}>Home (pagina principal)</option>
                         <option value="contact" {{ ($automation->trigger_config['source'] ?? '') === 'contact' ? 'selected' : '' }}>Contacto (/contacto)</option>
+                        <option value="property" {{ ($automation->trigger_config['source'] ?? '') === 'property' ? 'selected' : '' }}>Propiedad (ficha de inmueble)</option>
                         <option value="landing" {{ ($automation->trigger_config['source'] ?? '') === 'landing' ? 'selected' : '' }}>Landing (vende tu propiedad)</option>
                         <option value="form" {{ ($automation->trigger_config['source'] ?? '') === 'form' ? 'selected' : '' }}>Formularios dinamicos</option>
                     </select>

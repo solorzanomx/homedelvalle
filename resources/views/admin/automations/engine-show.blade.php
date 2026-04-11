@@ -83,7 +83,7 @@
         <div class="show-card">
             <div class="show-card-header">
                 Flujo ({{ $automation->steps->count() }} pasos)
-                <span style="font-size:0.75rem; color:var(--text-muted);">Trigger: {{ \App\Models\Automation::TRIGGERS[$automation->trigger_type] ?? $automation->trigger_type }}@if($automation->trigger_type === 'form_submitted') ({{ ['all'=>'Todos','contact'=>'Contacto','landing'=>'Landing','form'=>'Dinámicos'][$automation->trigger_config['source'] ?? 'all'] ?? 'Todos' }})@endif</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">Trigger: {{ \App\Models\Automation::TRIGGERS[$automation->trigger_type] ?? $automation->trigger_type }}@if($automation->trigger_type === 'form_submitted') ({{ ['all'=>'Todos','home'=>'Home','contact'=>'Contacto','property'=>'Propiedad','landing'=>'Landing','form'=>'Dinámicos'][$automation->trigger_config['source'] ?? 'all'] ?? 'Todos' }})@endif</span>
             </div>
             <div class="show-card-body">
                 @foreach($automation->steps as $step)
@@ -154,7 +154,7 @@
                 <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Trigger</span><span style="font-weight:500;">{{ \App\Models\Automation::TRIGGERS[$automation->trigger_type] ?? '' }}</span></div>
                 @if($automation->trigger_type === 'form_submitted')
                 @php
-                    $sourceLabels = ['all' => 'Todos', 'contact' => 'Contacto', 'landing' => 'Landing', 'form' => 'Formularios dinámicos'];
+                    $sourceLabels = ['all' => 'Todos', 'home' => 'Home', 'contact' => 'Contacto', 'property' => 'Propiedad', 'landing' => 'Landing', 'form' => 'Formularios dinámicos'];
                 @endphp
                 <div style="display:flex; justify-content:space-between; padding:0.35rem 0; font-size:0.82rem;"><span style="color:var(--text-muted);">Origen</span><span>{{ $sourceLabels[$automation->trigger_config['source'] ?? 'all'] ?? 'Todos' }}</span></div>
                 @endif

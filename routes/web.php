@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\MarketingController;
 use App\Http\Controllers\Admin\SegmentController;
 use App\Http\Controllers\Admin\AutomationEngineController;
 use App\Http\Controllers\Admin\LeadScoringController;
+use App\Http\Controllers\Admin\NewsletterController;
 use App\Http\Controllers\Admin\HelpCenterController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\ChecklistTemplateController;
@@ -78,6 +79,7 @@ Route::get('/servicios', [PublicController::class, 'servicios'])->name('servicio
 Route::get('/contacto', [PublicController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [PublicController::class, 'contactoStore'])->middleware('throttle:public-form')->name('contacto.store');
 Route::post('/newsletter/subscribe', [PublicController::class, 'newsletterSubscribe'])->middleware('throttle:newsletter')->name('newsletter.subscribe');
+Route::get('/newsletter/unsubscribe/{token}', [PublicController::class, 'newsletterUnsubscribe'])->name('newsletter.unsubscribe');
 
 // Blog público
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
@@ -359,6 +361,21 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/marketing/scoring', [LeadScoringController::class, 'index'])->name('scoring.index');
         Route::put('/marketing/scoring/rules', [LeadScoringController::class, 'updateRules'])->name('scoring.rules.update');
         Route::get('/marketing/scoring/client/{client}', [LeadScoringController::class, 'clientTimeline'])->name('scoring.client.timeline');
+
+        // Newsletter
+        Route::get('/newsletters/subscribers', [NewsletterController::class, 'index'])->name('newsletters.subscribers');
+        Route::post('/newsletters/subscribers', [NewsletterController::class, 'store'])->name('newsletters.subscribers.store');
+        Route::get('/newsletters/subscribers/export', [NewsletterController::class, 'export'])->name('newsletters.subscribers.export');
+        Route::delete('/newsletters/subscribers/{subscriber}', [NewsletterController::class, 'destroy'])->name('newsletters.subscribers.destroy');
+        Route::get('/newsletters/campaigns', [NewsletterController::class, 'campaigns'])->name('newsletters.campaigns');
+        Route::get('/newsletters/campaigns/create', [NewsletterController::class, 'createCampaign'])->name('newsletters.campaigns.create');
+        Route::post('/newsletters/campaigns', [NewsletterController::class, 'storeCampaign'])->name('newsletters.campaigns.store');
+        Route::get('/newsletters/campaigns/{campaign}', [NewsletterController::class, 'showCampaign'])->name('newsletters.campaigns.show');
+        Route::get('/newsletters/campaigns/{campaign}/edit', [NewsletterController::class, 'editCampaign'])->name('newsletters.campaigns.edit');
+        Route::put('/newsletters/campaigns/{campaign}', [NewsletterController::class, 'updateCampaign'])->name('newsletters.campaigns.update');
+        Route::delete('/newsletters/campaigns/{campaign}', [NewsletterController::class, 'destroyCampaign'])->name('newsletters.campaigns.destroy');
+        Route::get('/newsletters/campaigns/{campaign}/preview', [NewsletterController::class, 'previewCampaign'])->name('newsletters.campaigns.preview');
+        Route::post('/newsletters/campaigns/{campaign}/send', [NewsletterController::class, 'sendCampaign'])->name('newsletters.campaigns.send');
 
         // Help Center (admin management)
         Route::get('/help/manage', [HelpCenterController::class, 'adminIndex'])->name('help.manage');

@@ -601,7 +601,7 @@
                 <div class="rounded-2xl bg-white p-8 lg:p-10 shadow-premium-xl" x-data x-intersect.once="$el.classList.add('animate-slide-in-right')">
                     <h3 class="text-xl font-bold text-gray-900">Envíanos un mensaje</h3>
                     <p class="text-sm text-gray-500 mt-1.5 mb-8">Responderemos en menos de 24 horas.</p>
-                    <x-public.contact-form />
+                    <x-public.contact-form source="home" />
                 </div>
             </div>
         </div>

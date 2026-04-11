@@ -142,7 +142,7 @@ class AutomationEngine
      */
     private function notifyAdminsNewLead(array $data, string $source): void
     {
-        $sourceLabels = ['contact' => 'Contacto', 'landing' => 'Landing (Vende tu propiedad)', 'form' => 'Formulario dinámico'];
+        $sourceLabels = ['contact' => 'Contacto', 'home' => 'Home (página principal)', 'property' => 'Ficha de propiedad', 'landing' => 'Landing (Vende tu propiedad)', 'form' => 'Formulario dinámico'];
         $sourceLabel = $sourceLabels[$source] ?? $source;
         $name = $data['name'] ?? 'Sin nombre';
         $email = $data['email'] ?? 'Sin email';

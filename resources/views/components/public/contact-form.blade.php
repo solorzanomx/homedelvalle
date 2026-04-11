@@ -1,10 +1,13 @@
 @props([
     'propertyId' => null,
     'compact' => false,
+    'source' => 'contact',
 ])
 
 <form method="POST" action="{{ route('contacto.store') }}" class="space-y-5" x-data="{ submitting: false, focused: '' }" @submit.prevent="submitting = true; $el.submit();">
     @csrf
+
+    <input type="hidden" name="form_source" value="{{ $source }}">
 
     @if($propertyId)
     <input type="hidden" name="property_id" value="{{ $propertyId }}">

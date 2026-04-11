@@ -108,7 +108,8 @@ class PublicController extends Controller
         ContactSubmission::create($validated);
 
         // Trigger automation engine — enroll lead
-        $engine->processFormSubmitted($validated, 'contact');
+        $source = $request->input('form_source', 'contact');
+        $engine->processFormSubmitted($validated, $source);
 
         // Record privacy acceptance if checkbox was checked
         if ($request->boolean('accept_privacy')) {
@@ -157,5 +158,22 @@ class PublicController extends Controller
         );
 
         return response()->json(['ok' => true, 'message' => '¡Te has suscrito exitosamente!']);
+    }
+
+    public function newsletterUnsubscribe(string $token)
+    {
+        $subscriber = NewsletterSubscriber::where('unsubscribe_token', $token)->first();
+
+        if (! $subscriber) {
+            return view('public.newsletter-unsubscribe', ['status' => 'invalid']);
+        }
+
+        if ($subscriber->unsubscribed_at) {
+            return view('public.newsletter-unsubscribe', ['status' => 'already']);
+        }
+
+        $subscriber->update(['unsubscribed_at' => now()]);
+
+        return view('public.newsletter-unsubscribe', ['status' => 'success']);
     }
 }

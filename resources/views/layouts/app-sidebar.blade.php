@@ -418,6 +418,16 @@
                             <span class="nav-icon"><x-icon name="trophy" class="w-4 h-4" /></span> Lead Scoring
                         </a>
                         @endif
+                        @if(Route::has('admin.newsletters.subscribers'))
+                        <a href="{{ route('admin.newsletters.subscribers') }}" class="nav-item {{ request()->routeIs('admin.newsletters.subscribers*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Suscriptores
+                        </a>
+                        @endif
+                        @if(Route::has('admin.newsletters.campaigns'))
+                        <a href="{{ route('admin.newsletters.campaigns') }}" class="nav-item {{ request()->routeIs('admin.newsletters.campaigns*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="send" class="w-4 h-4" /></span> Newsletter
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif
