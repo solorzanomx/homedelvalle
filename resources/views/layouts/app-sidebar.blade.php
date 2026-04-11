@@ -420,7 +420,7 @@
                         @endif
                         @if(Route::has('admin.messages.index'))
                         <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="message-square" class="w-4 h-4" /></span> Mensajes
+                            <span class="nav-icon"><x-icon name="message-circle" class="w-4 h-4" /></span> Mensajes
                         </a>
                         @endif
                         @if(Route::has('admin.newsletters.subscribers'))
