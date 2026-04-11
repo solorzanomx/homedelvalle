@@ -106,6 +106,14 @@ class ClientController extends Controller
         }
 
         Client::create($validated);
+
+        // Trigger new_client automations
+        $newClient = Client::where('email', $validated['email'])->first();
+        if ($newClient) {
+            app(\App\Services\AutomationEngine::class)->processNewClient($newClient);
+            \App\Models\LeadEvent::record($newClient->id, 'new_client_created', ['source' => 'manual']);
+        }
+
         return redirect()->route('clients.index')->with('success', 'Cliente creado exitosamente');
     }
 
@@ -264,6 +272,13 @@ class ClientController extends Controller
             'description' => $validated['description'],
             'completed_at' => now(),
         ]);
+
+        // Score the interaction
+        $eventMap = ['call' => 'call_completed', 'visit' => 'visit_completed', 'meeting' => 'visit_completed', 'whatsapp' => 'message_sent'];
+        $scoringEvent = $eventMap[$validated['type']] ?? null;
+        if ($scoringEvent) {
+            app(\App\Services\LeadScoringService::class)->processEvent($client->id, $scoringEvent, ['source' => 'interaction']);
+        }
 
         // Parse @mentions and create notifications
         $this->processMentions($validated['description'], $interaction, $client);

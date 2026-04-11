@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\ClientEmail;
 use App\Models\Interaction;
+use App\Models\Message;
 use App\Models\Property;
 use App\Services\EmailService;
+use App\Services\LeadScoringService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -79,6 +81,24 @@ class ClientEmailController extends Controller
 
         $clientEmail->update(['status' => $sent ? 'sent' : 'failed']);
 
+        // Unify: also create a Message record
+        $msg = Message::create([
+            'client_id' => $client->id,
+            'user_id' => $user->id,
+            'channel' => 'email',
+            'direction' => 'outbound',
+            'subject' => $validated['subject'],
+            'body' => $validated['message'],
+            'status' => $sent ? 'sent' : 'failed',
+            'sent_at' => $sent ? now() : null,
+            'metadata' => ['client_email_id' => $clientEmail->id],
+        ]);
+
+        // Score the email send
+        if ($sent) {
+            app(LeadScoringService::class)->processEvent($client->id, 'message_sent', ['source' => 'manual_email']);
+        }
+
         // Log interaction
         $propertyNames = '';
         if (!empty($propertyIds)) {
@@ -112,6 +132,13 @@ class ClientEmailController extends Controller
 
         if ($email) {
             $email->markAsOpened();
+
+            // Score the open + update unified Message
+            app(LeadScoringService::class)->processEvent($email->client_id, 'message_opened', ['source' => 'tracking_pixel']);
+            $msg = Message::where('metadata->client_email_id', $email->id)->first();
+            if ($msg) {
+                $msg->markOpened();
+            }
         }
 
         // 1x1 transparent GIF

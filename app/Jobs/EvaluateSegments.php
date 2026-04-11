@@ -25,5 +25,16 @@ class EvaluateSegments
                 $engine->processSegmentEnter($entry->segment_id, $entry->client_id);
             }
         }
+
+        // Trigger automations for recently exited segments
+        if (($stats['exited'] ?? 0) > 0) {
+            $recentExits = \Illuminate\Support\Facades\DB::table('client_segment')
+                ->where('exited_at', '>=', now()->subMinutes(10))
+                ->get();
+
+            foreach ($recentExits as $entry) {
+                $engine->processSegmentExit($entry->segment_id, $entry->client_id);
+            }
+        }
     }
 }

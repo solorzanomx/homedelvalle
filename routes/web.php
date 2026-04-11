@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\SegmentController;
 use App\Http\Controllers\Admin\AutomationEngineController;
 use App\Http\Controllers\Admin\LeadScoringController;
 use App\Http\Controllers\Admin\NewsletterController;
+use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\Admin\HelpCenterController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\ChecklistTemplateController;
@@ -361,6 +362,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/marketing/scoring', [LeadScoringController::class, 'index'])->name('scoring.index');
         Route::put('/marketing/scoring/rules', [LeadScoringController::class, 'updateRules'])->name('scoring.rules.update');
         Route::get('/marketing/scoring/client/{client}', [LeadScoringController::class, 'clientTimeline'])->name('scoring.client.timeline');
+
+        // Messages
+        Route::get('/marketing/messages', [MessageController::class, 'index'])->name('messages.index');
 
         // Newsletter
         Route::get('/newsletters/subscribers', [NewsletterController::class, 'index'])->name('newsletters.subscribers');

@@ -50,6 +50,12 @@ class LeadScore extends Model
         ]);
         $this->refresh();
         $this->recalculateGrade();
+
+        // Check if score crossed a threshold for automation triggers
+        $client = $this->client ?? Client::find($this->client_id);
+        if ($client) {
+            app(\App\Services\AutomationEngine::class)->processScoreThreshold($client, $this->total_score);
+        }
     }
 
     public static function getOrCreate(int $clientId): static

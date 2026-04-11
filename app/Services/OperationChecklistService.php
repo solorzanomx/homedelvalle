@@ -174,6 +174,16 @@ class OperationChecklistService
 
         $this->initializeChecklistForStage($operation, $newStage);
 
+        // Fire stage_change trigger for automations + scoring
+        if ($operation->client) {
+            \App\Models\LeadEvent::record($operation->client_id, 'stage_changed', [
+                'source' => 'pipeline',
+                'properties' => ['from_stage' => $fromStage, 'to_stage' => $newStage, 'operation_type' => $operation->type],
+            ]);
+            app(\App\Services\LeadScoringService::class)->processEvent($operation->client_id, 'stage_changed', ['source' => 'pipeline']);
+            app(\App\Services\AutomationEngine::class)->processStageChange($operation->client, $fromStage, $newStage, $operation->type);
+        }
+
         // Auto-calculate referral commissions when operation reaches cierre
         if ($newStage === 'cierre' && $operation->commission_amount) {
             $referrals = Referral::where('operation_id', $operation->id)

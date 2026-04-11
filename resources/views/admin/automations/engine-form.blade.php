@@ -128,6 +128,25 @@
                     <label class="form-label">Dias sin actividad</label>
                     <input type="number" name="trigger_config[days]" class="form-input" value="{{ $automation->trigger_config['days'] ?? 7 }}" min="1">
                 </div>
+                <div id="tcStageChange" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Tipo de operacion (opcional)</label>
+                        <select name="trigger_config[operation_type]" class="form-select">
+                            <option value="" {{ empty($automation->trigger_config['operation_type'] ?? '') ? 'selected' : '' }}>Cualquier tipo</option>
+                            <option value="venta" {{ ($automation->trigger_config['operation_type'] ?? '') === 'venta' ? 'selected' : '' }}>Venta</option>
+                            <option value="renta" {{ ($automation->trigger_config['operation_type'] ?? '') === 'renta' ? 'selected' : '' }}>Renta</option>
+                            <option value="captacion" {{ ($automation->trigger_config['operation_type'] ?? '') === 'captacion' ? 'selected' : '' }}>Captacion</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Etapa origen (opcional)</label>
+                        <input type="text" name="trigger_config[from_stage]" class="form-input" placeholder="Ej: lead, contacto, visita..." value="{{ $automation->trigger_config['from_stage'] ?? '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Etapa destino (opcional)</label>
+                        <input type="text" name="trigger_config[to_stage]" class="form-input" placeholder="Ej: negociacion, firma, cierre..." value="{{ $automation->trigger_config['to_stage'] ?? '' }}">
+                    </div>
+                </div>
             </div>
 
             <div class="section-label">Pasos del flujo</div>
@@ -157,6 +176,7 @@ function showTriggerConfig(type) {
     if (type === 'segment_enter' || type === 'segment_exit') document.getElementById('tcSegment').style.display = '';
     if (type === 'score_threshold') document.getElementById('tcScore').style.display = '';
     if (type === 'inactivity') document.getElementById('tcInactivity').style.display = '';
+    if (type === 'stage_change') document.getElementById('tcStageChange').style.display = '';
 }
 
 function addStep(data) {

@@ -12,6 +12,7 @@ Artisan::command('inspire', function () {
 Schedule::job(new \App\Jobs\ProcessAutomationEnrollments)->everyMinute();
 Schedule::job(new \App\Jobs\EvaluateSegments)->everyFiveMinutes();
 Schedule::job(new \App\Jobs\RecalculateLeadScores)->daily();
+Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00');
 
 // ── Blog Content Scheduler ───────────────────────────
 Schedule::job(new \App\Jobs\PublishScheduledPosts)->everyMinute();

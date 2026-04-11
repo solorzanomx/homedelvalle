@@ -8,6 +8,9 @@ use App\Models\Property;
 use App\Models\Client;
 use App\Models\Broker;
 use App\Models\Notification;
+use App\Models\LeadEvent;
+use App\Services\AutomationEngine;
+use App\Services\LeadScoringService;
 use App\Models\ContractTemplate;
 use App\Helpers\MentionHelper;
 use Illuminate\Http\Request;
@@ -229,6 +232,22 @@ class RentalProcessController extends Controller
             'to_stage' => $newStage,
             'notes' => $validated['notes'] ?? null,
         ]);
+
+        // Fire stage_change for both parties (owner + tenant)
+        foreach (['owner_client_id', 'tenant_client_id'] as $field) {
+            $clientId = $rental->{$field};
+            if ($clientId) {
+                $client = Client::find($clientId);
+                if ($client) {
+                    LeadEvent::record($clientId, 'stage_changed', [
+                        'source' => 'rental',
+                        'properties' => ['from_stage' => $oldStage, 'to_stage' => $newStage],
+                    ]);
+                    app(LeadScoringService::class)->processEvent($clientId, 'stage_changed', ['source' => 'rental']);
+                    app(AutomationEngine::class)->processStageChange($client, $oldStage, $newStage, 'rental');
+                }
+            }
+        }
 
         // Notify assigned broker
         if ($rental->broker_id) {

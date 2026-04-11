@@ -65,7 +65,7 @@ class AutomationEngineController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.automations.index')->with('success', 'Automatizacion creada');
+        return redirect()->route('admin.automations-engine.index')->with('success', 'Automatizacion creada');
     }
 
     public function show(Automation $automation)
@@ -128,7 +128,7 @@ class AutomationEngineController extends Controller
     public function destroy(Automation $automation)
     {
         $automation->delete();
-        return redirect()->route('admin.automations.index')->with('success', 'Automatizacion eliminada');
+        return redirect()->route('admin.automations-engine.index')->with('success', 'Automatizacion eliminada');
     }
 
     public function toggle(Automation $automation)

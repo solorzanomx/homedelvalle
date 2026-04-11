@@ -9,6 +9,7 @@ use App\Models\Property;
 use App\Models\Operation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\LeadScoringService;
 use Carbon\Carbon;
 
 class TaskController extends Controller
@@ -130,6 +131,11 @@ class TaskController extends Controller
 
         $task->update($validated);
 
+        // Score task completion
+        if ($newStatus === 'completed' && $oldStatus !== 'completed' && $task->client_id) {
+            app(LeadScoringService::class)->processEvent($task->client_id, 'task_completed', ['source' => 'task_update']);
+        }
+
         return redirect()->route('tasks.edit', $task)->with('success', 'Tarea actualizada exitosamente.');
     }
 
@@ -147,6 +153,11 @@ class TaskController extends Controller
                 'status' => 'completed',
                 'completed_at' => now(),
             ]);
+
+            // Score task completion
+            if ($task->client_id) {
+                app(LeadScoringService::class)->processEvent($task->client_id, 'task_completed', ['source' => 'task_toggle']);
+            }
         }
 
         return redirect()->back()->with('success', 'Estado de tarea actualizado.');

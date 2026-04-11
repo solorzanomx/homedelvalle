@@ -79,6 +79,74 @@ class AutomationEngine
     }
 
     /**
+     * Enroll clients exiting a segment.
+     */
+    public function processSegmentExit(int $segmentId, int $clientId): void
+    {
+        $automations = Automation::active()
+            ->where('trigger_type', 'segment_exit')
+            ->get()
+            ->filter(fn($a) => ($a->trigger_config['segment_id'] ?? null) == $segmentId);
+
+        $client = Client::find($clientId);
+        if (!$client) return;
+
+        foreach ($automations as $automation) {
+            $this->enroll($automation, $client);
+        }
+    }
+
+    /**
+     * Enroll client when an operation/deal stage changes.
+     */
+    public function processStageChange(Client $client, string $oldStage, string $newStage, string $operationType): void
+    {
+        $automations = Automation::active()
+            ->where('trigger_type', 'stage_change')
+            ->get()
+            ->filter(function ($a) use ($oldStage, $newStage, $operationType) {
+                $config = $a->trigger_config ?? [];
+                if (!empty($config['operation_type']) && $config['operation_type'] !== $operationType) return false;
+                if (!empty($config['from_stage']) && $config['from_stage'] !== $oldStage) return false;
+                if (!empty($config['to_stage']) && $config['to_stage'] !== $newStage) return false;
+                return true;
+            });
+
+        foreach ($automations as $automation) {
+            $this->enroll($automation, $client);
+        }
+    }
+
+    /**
+     * Enroll a newly created client in matching automations.
+     */
+    public function processNewClient(Client $client): void
+    {
+        $automations = Automation::active()
+            ->where('trigger_type', 'new_client')
+            ->get();
+
+        foreach ($automations as $automation) {
+            $this->enroll($automation, $client);
+        }
+    }
+
+    /**
+     * Enroll client when their score crosses a threshold.
+     */
+    public function processScoreThreshold(Client $client, int $newScore): void
+    {
+        $automations = Automation::active()
+            ->where('trigger_type', 'score_threshold')
+            ->get()
+            ->filter(fn($a) => $newScore >= ($a->trigger_config['min_score'] ?? PHP_INT_MAX));
+
+        foreach ($automations as $automation) {
+            $this->enroll($automation, $client);
+        }
+    }
+
+    /**
      * Process a form submission trigger.
      * Finds or creates a Client from the submission, then enrolls in matching automations.
      *
@@ -107,6 +175,24 @@ class AutomationEngine
             ]);
 
             Log::info("AutomationEngine: Client #{$client->id} created from {$source} form submission");
+
+            // Auto-attribute marketing channel/campaign from UTM
+            if ($client->utm_source && !$client->marketing_channel_id) {
+                $channel = \App\Models\MarketingChannel::whereRaw('LOWER(name) = ?', [strtolower($client->utm_source)])->first();
+                if ($channel) {
+                    $client->marketing_channel_id = $channel->id;
+                    if ($client->utm_campaign) {
+                        $campaign = $channel->campaigns()->whereRaw('LOWER(name) = ?', [strtolower($client->utm_campaign)])->first();
+                        if ($campaign) {
+                            $client->marketing_campaign_id = $campaign->id;
+                        }
+                    }
+                    $client->save();
+                }
+            }
+
+            // Trigger new_client automations
+            $this->processNewClient($client);
         }
 
         // Record lead event
@@ -329,6 +415,11 @@ class AutomationEngine
         ]);
 
         $result = $this->whatsAppService->send($phone, $text);
+
+        if ($result['is_mock'] ?? false) {
+            $message->markSkipped();
+            return ['success' => true, 'message_id' => $message->id, 'note' => 'WhatsApp no configurado (mock)'];
+        }
 
         if ($result['success']) {
             $message->markSent();

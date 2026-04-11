@@ -418,6 +418,11 @@
                             <span class="nav-icon"><x-icon name="trophy" class="w-4 h-4" /></span> Lead Scoring
                         </a>
                         @endif
+                        @if(Route::has('admin.messages.index'))
+                        <a href="{{ route('admin.messages.index') }}" class="nav-item {{ request()->routeIs('admin.messages.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="message-square" class="w-4 h-4" /></span> Mensajes
+                        </a>
+                        @endif
                         @if(Route::has('admin.newsletters.subscribers'))
                         <a href="{{ route('admin.newsletters.subscribers') }}" class="nav-item {{ request()->routeIs('admin.newsletters.subscribers*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Suscriptores
@@ -570,11 +575,6 @@
                         <a href="{{ route('admin.email.assets.index') }}" class="nav-item {{ request()->routeIs('admin.email.assets*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="image" class="w-4 h-4" /></span> Assets Email
                         </a>
-                        @if(Route::has('admin.automations.index'))
-                        <a href="{{ route('admin.automations.index') }}" class="nav-item {{ request()->routeIs('admin.automations.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="zap" class="w-4 h-4" /></span> Automatizaciones
-                        </a>
-                        @endif
                         @if(Route::has('admin.checklists.index'))
                         <a href="{{ route('admin.checklists.index') }}" class="nav-item {{ request()->routeIs('admin.checklists.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="square-check" class="w-4 h-4" /></span> Checklists

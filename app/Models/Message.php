@@ -42,4 +42,5 @@ class Message extends Model
     public function markOpened(): void  { $this->increment('open_count'); $this->update(['status' => 'opened', 'opened_at' => $this->opened_at ?? now()]); }
     public function markReplied(): void { $this->update(['status' => 'replied', 'replied_at' => now()]); }
     public function markFailed(): void  { $this->update(['status' => 'failed']); }
+    public function markSkipped(): void { $this->update(['status' => 'skipped']); }
 }

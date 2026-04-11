@@ -6,6 +6,9 @@ use App\Models\Deal;
 use App\Models\Property;
 use App\Models\Client;
 use App\Models\Broker;
+use App\Models\LeadEvent;
+use App\Services\AutomationEngine;
+use App\Services\LeadScoringService;
 use Illuminate\Http\Request;
 
 class DealController extends Controller
@@ -54,6 +57,13 @@ class DealController extends Controller
         }
 
         Deal::create($validated);
+
+        // Score deal creation
+        if (!empty($validated['client_id'])) {
+            app(LeadScoringService::class)->processEvent($validated['client_id'], 'deal_created', ['source' => 'manual']);
+            LeadEvent::record($validated['client_id'], 'deal_created', ['source' => 'manual']);
+        }
+
         return redirect()->route('deals.index')->with('success', 'Deal creado exitosamente');
     }
 
@@ -99,6 +109,8 @@ class DealController extends Controller
     public function updateStage(Request $request, string $id)
     {
         $deal = Deal::findOrFail($id);
+        $oldStage = $deal->stage;
+
         $validated = $request->validate([
             'stage' => 'required|in:lead,contact,visit,negotiation,offer,closing,won,lost',
         ]);
@@ -111,6 +123,20 @@ class DealController extends Controller
         }
 
         $deal->update($data);
+
+        // Fire stage_change for automations + scoring
+        if ($oldStage !== $validated['stage'] && $deal->client_id) {
+            $client = Client::find($deal->client_id);
+            if ($client) {
+                LeadEvent::record($deal->client_id, 'stage_changed', [
+                    'source' => 'deal',
+                    'properties' => ['from_stage' => $oldStage, 'to_stage' => $validated['stage']],
+                ]);
+                app(LeadScoringService::class)->processEvent($deal->client_id, 'stage_changed', ['source' => 'deal']);
+                app(AutomationEngine::class)->processStageChange($client, $oldStage, $validated['stage'], 'deal');
+            }
+        }
+
         return redirect()->back()->with('success', 'Etapa actualizada');
     }
 

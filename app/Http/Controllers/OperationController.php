@@ -14,6 +14,8 @@ use App\Models\User;
 use App\Models\Notification;
 use App\Services\OperationChecklistService;
 use App\Helpers\MentionHelper;
+use App\Models\LeadEvent;
+use App\Services\LeadScoringService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -122,6 +124,12 @@ class OperationController extends Controller
             'to_phase' => 'captacion',
             'notes' => 'Operacion creada',
         ]);
+
+        // Score pipeline entry
+        if ($operation->client_id) {
+            app(LeadScoringService::class)->processEvent($operation->client_id, 'pipeline_entered', ['source' => 'operation']);
+            LeadEvent::record($operation->client_id, 'pipeline_entered', ['operation_id' => $operation->id, 'type' => $operation->type]);
+        }
 
         return redirect()->route('operations.show', $operation)->with('success', 'Operacion creada exitosamente.');
     }
