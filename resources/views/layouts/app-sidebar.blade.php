@@ -86,11 +86,20 @@
         .user-meta { flex: 1; overflow: hidden; }
         .user-name { font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 0.68rem; color: var(--sidebar-text); text-transform: capitalize; }
-        .logout-btn {
-            padding: 0.4rem; border-radius: var(--radius); color: var(--sidebar-text);
-            background: none; border: none; cursor: pointer; font-size: 16px; transition: all 0.15s;
+        .footer-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+        .footer-action-btn {
+            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+            padding: 0.45rem 0.5rem; border-radius: var(--radius); font-size: 0.75rem; font-weight: 500;
+            font-family: inherit; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none;
         }
-        .logout-btn:hover { background: rgba(239,68,68,0.2); color: #fca5a5; }
+        .btn-view-site {
+            background: rgba(99,102,241,0.15); color: #a5b4fc;
+        }
+        .btn-view-site:hover { background: rgba(99,102,241,0.25); color: #c7d2fe; }
+        .btn-logout {
+            background: rgba(239,68,68,0.12); color: #fca5a5;
+        }
+        .btn-logout:hover { background: rgba(239,68,68,0.25); color: #fecaca; }
 
         /* ===== MAIN CONTENT ===== */
         .main-content { flex: 1; margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
@@ -604,23 +613,28 @@
 
             {{-- User card at bottom --}}
             <div class="sidebar-footer">
-                <div style="display:flex; align-items:center; gap:0.5rem;">
-                    <a href="{{ route('profile') }}" class="user-card" style="flex:1;">
-                        <div class="user-avatar">
-                            @if($currentUser && $currentUser->avatar_path)
-                                <img src="{{ Storage::url($currentUser->avatar_path) }}" alt="">
-                            @else
-                                {{ $currentUser ? strtoupper(substr($currentUser->name, 0, 1)) : '' }}
-                            @endif
-                        </div>
-                        <div class="user-meta">
-                            <div class="user-name">{{ $currentUser->name ?? '' }} {{ $currentUser->last_name ?? '' }}</div>
-                            <div class="user-role">{{ $currentUser->role ?? '' }}</div>
-                        </div>
+                <a href="{{ route('profile') }}" class="user-card">
+                    <div class="user-avatar">
+                        @if($currentUser && $currentUser->avatar_path)
+                            <img src="{{ Storage::url($currentUser->avatar_path) }}" alt="">
+                        @else
+                            {{ $currentUser ? strtoupper(substr($currentUser->name, 0, 1)) : '' }}
+                        @endif
+                    </div>
+                    <div class="user-meta">
+                        <div class="user-name">{{ $currentUser->name ?? '' }} {{ $currentUser->last_name ?? '' }}</div>
+                        <div class="user-role">{{ $currentUser->role ?? '' }}</div>
+                    </div>
+                </a>
+                <div class="footer-actions">
+                    <a href="{{ url('/') }}" target="_blank" class="footer-action-btn btn-view-site" title="Ver sitio web">
+                        <x-icon name="external-link" class="w-3.5 h-3.5" /> Ver sitio
                     </a>
-                    <form action="{{ route('logout') }}" method="POST" style="margin:0;">
+                    <form action="{{ route('logout') }}" method="POST" style="margin:0; flex:1; display:flex;">
                         @csrf
-                        <button type="submit" class="logout-btn" title="Cerrar sesion"><x-icon name="log-out" class="w-4 h-4" /></button>
+                        <button type="submit" class="footer-action-btn btn-logout" style="width:100%;" title="Cerrar sesion">
+                            <x-icon name="log-out" class="w-3.5 h-3.5" /> Salir
+                        </button>
                     </form>
                 </div>
             </div>
