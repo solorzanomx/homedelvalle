@@ -5,7 +5,7 @@
 <style>
 .preview-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
 .type-selector { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
-.type-opt { flex: 1; display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; }
+.type-opt { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.85rem; border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all 0.15s; font-size: 0.85rem; }
 .type-opt:hover { border-color: var(--primary); }
 .type-opt.active { border-color: var(--primary); background: rgba(102,126,234,0.04); }
 .type-opt input { display: none; }
@@ -62,22 +62,22 @@
                 <div class="type-selector">
                     <label class="type-opt {{ old('type', $testimonial->type ?? 'text') === 'text' ? 'active' : '' }}" onclick="selectType('text')">
                         <input type="radio" name="type" value="text" {{ old('type', $testimonial->type ?? 'text') === 'text' ? 'checked' : '' }}>
-                        <x-icon name="pen-line" class="w-5 h-5" /> Texto
+                        <x-icon name="pen-line" class="w-4 h-4" /> Texto
                     </label>
                     <label class="type-opt {{ old('type', $testimonial->type ?? 'text') === 'video' ? 'active' : '' }}" onclick="selectType('video')">
                         <input type="radio" name="type" value="video" {{ old('type', $testimonial->type ?? 'text') === 'video' ? 'checked' : '' }}>
-                        <x-icon name="circle-play" class="w-5 h-5" /> Video
+                        <x-icon name="circle-play" class="w-4 h-4" /> Video
                     </label>
                 </div>
             </div>
 
-            {{-- Content (text) --}}
-            <div class="form-group" id="contentField">
-                <label class="form-label">Testimonio</label>
+            {{-- Content (always visible) --}}
+            <div class="form-group">
+                <label class="form-label">Testimonio (texto)</label>
                 <textarea name="content" class="form-textarea" rows="4" placeholder="Escribe el testimonio del cliente...">{{ old('content', $testimonial->content ?? '') }}</textarea>
             </div>
 
-            {{-- Video URL --}}
+            {{-- Video URL (only for video type) --}}
             <div class="form-group" id="videoField" style="display:none;">
                 <label class="form-label">URL del video (YouTube)</label>
                 <input type="url" name="video_url" class="form-input" value="{{ old('video_url', $testimonial->video_url ?? '') }}" placeholder="https://www.youtube.com/watch?v=...">
@@ -146,7 +146,6 @@ function selectType(type) {
     document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('active'));
     document.querySelector('.type-opt input[value="'+type+'"]').checked = true;
     document.querySelector('.type-opt input[value="'+type+'"]').closest('.type-opt').classList.add('active');
-    document.getElementById('contentField').style.display = type === 'text' ? 'block' : 'none';
     document.getElementById('videoField').style.display = type === 'video' ? 'block' : 'none';
 }
 

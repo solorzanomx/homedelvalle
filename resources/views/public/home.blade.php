@@ -437,7 +437,7 @@
             ['name' => 'Carlos Ramírez', 'role' => 'Desarrollador inmobiliario', 'text' => 'Su conocimiento del mercado en Benito Juárez es excepcional. Encontraron el predio perfecto para nuestro proyecto en menos de tres semanas.', 'initials' => 'CR'],
             ['name' => 'Ana Martínez', 'role' => 'Inversionista', 'text' => 'El enfoque boutique hace toda la diferencia. No son un catálogo masivo, realmente entienden lo que necesitas y entregan resultados consistentes.', 'initials' => 'AM'],
         ];
-        $testimonials = $siteSettings?->testimonials_section ?? $defaultTestimonials;
+        $useDbTestimonials = isset($homeTestimonials) && $homeTestimonials->isNotEmpty();
     @endphp
     <section class="py-24 sm:py-32 bg-white" id="testimonios">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -448,28 +448,68 @@
             </div>
 
             <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-                @foreach($testimonials as $ti => $testimonial)
-                <article class="group relative rounded-2xl bg-white border border-gray-200/60 p-8 lg:p-10 hover:shadow-premium-lg hover:border-brand-100 transition-all duration-500"
-                         x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $ti * 120 }}ms">
-                    <svg class="absolute top-8 right-8 w-10 h-10 text-brand-100 group-hover:text-brand-200 transition-colors duration-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609L9.978 5.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H0z"/></svg>
-                    <div class="relative">
-                        <div class="flex items-center gap-0.5 mb-6">
-                            @for($i = 0; $i < 5; $i++)
-                            <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            @endfor
-                        </div>
-                        <blockquote class="text-[15px] text-gray-600 leading-relaxed">"{{ $testimonial['text'] ?? '' }}"</blockquote>
-                        <div class="mt-8 flex items-center gap-3.5">
-                            <div class="flex items-center justify-center w-11 h-11 rounded-full gradient-brand text-white text-xs font-bold shadow-brand/30">{{ $testimonial['initials'] ?? '' }}</div>
-                            <div>
-                                <p class="text-sm font-bold text-gray-900">{{ $testimonial['name'] ?? '' }}</p>
-                                <p class="text-xs text-gray-400 mt-0.5">{{ $testimonial['role'] ?? '' }}</p>
+                @if($useDbTestimonials)
+                    @foreach($homeTestimonials as $ti => $t)
+                    <article class="group relative rounded-2xl bg-white border border-gray-200/60 p-8 lg:p-10 hover:shadow-premium-lg hover:border-brand-100 transition-all duration-500"
+                             x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $ti * 120 }}ms">
+                        <svg class="absolute top-8 right-8 w-10 h-10 text-brand-100 group-hover:text-brand-200 transition-colors duration-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609L9.978 5.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H0z"/></svg>
+                        <div class="relative">
+                            <div class="flex items-center gap-0.5 mb-6">
+                                @for($i = 0; $i < $t->rating; $i++)
+                                <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                @endfor
+                            </div>
+                            @if($t->content)
+                                <blockquote class="text-[15px] text-gray-600 leading-relaxed">"{{ Str::limit($t->content, 200) }}"</blockquote>
+                            @endif
+                            <div class="mt-8 flex items-center gap-3.5">
+                                <div class="flex items-center justify-center w-11 h-11 rounded-full overflow-hidden flex-shrink-0 {{ $t->avatar ? '' : 'gradient-brand text-white text-xs font-bold shadow-brand/30' }}">
+                                    @if($t->avatar)
+                                        <img src="{{ Storage::url($t->avatar) }}" alt="{{ $t->name }}" class="w-full h-full object-cover">
+                                    @else
+                                        {{ strtoupper(substr($t->name, 0, 1)) . strtoupper(substr(explode(' ', $t->name)[1] ?? '', 0, 1)) }}
+                                    @endif
+                                </div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">{{ $t->name }}</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ $t->role ?? $t->location ?? '' }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </article>
-                @endforeach
+                    </article>
+                    @endforeach
+                @else
+                    @foreach($defaultTestimonials as $ti => $testimonial)
+                    <article class="group relative rounded-2xl bg-white border border-gray-200/60 p-8 lg:p-10 hover:shadow-premium-lg hover:border-brand-100 transition-all duration-500"
+                             x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $ti * 120 }}ms">
+                        <svg class="absolute top-8 right-8 w-10 h-10 text-brand-100 group-hover:text-brand-200 transition-colors duration-500" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.731-9.57 8.983-10.609L9.978 5.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H0z"/></svg>
+                        <div class="relative">
+                            <div class="flex items-center gap-0.5 mb-6">
+                                @for($i = 0; $i < 5; $i++)
+                                <svg class="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                @endfor
+                            </div>
+                            <blockquote class="text-[15px] text-gray-600 leading-relaxed">"{{ $testimonial['text'] ?? '' }}"</blockquote>
+                            <div class="mt-8 flex items-center gap-3.5">
+                                <div class="flex items-center justify-center w-11 h-11 rounded-full gradient-brand text-white text-xs font-bold shadow-brand/30">{{ $testimonial['initials'] ?? '' }}</div>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-900">{{ $testimonial['name'] ?? '' }}</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ $testimonial['role'] ?? '' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                    @endforeach
+                @endif
             </div>
+
+            @if($useDbTestimonials)
+            <div class="mt-10 text-center">
+                <a href="{{ route('testimonios') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                    Ver todos los testimonios <x-icon name="arrow-right" class="w-4 h-4" />
+                </a>
+            </div>
+            @endif
         </div>
     </section>
 
