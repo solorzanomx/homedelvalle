@@ -86,20 +86,20 @@
         .user-meta { flex: 1; overflow: hidden; }
         .user-name { font-size: 0.82rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 0.68rem; color: var(--sidebar-text); text-transform: capitalize; }
-        .footer-actions { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+        .footer-actions { display: flex; gap: 0.35rem; margin-top: 0.4rem; }
         .footer-action-btn {
-            flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-            padding: 0.45rem 0.5rem; border-radius: var(--radius); font-size: 0.75rem; font-weight: 500;
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            padding: 0.25rem 0.55rem; border-radius: 4px; font-size: 0.68rem; font-weight: 500;
             font-family: inherit; cursor: pointer; transition: all 0.15s; border: none; text-decoration: none;
         }
         .btn-view-site {
-            background: rgba(99,102,241,0.15); color: #a5b4fc;
+            background: none; color: rgba(199,210,254,0.5);
         }
-        .btn-view-site:hover { background: rgba(99,102,241,0.25); color: #c7d2fe; }
+        .btn-view-site:hover { background: rgba(99,102,241,0.15); color: #c7d2fe; }
         .btn-logout {
-            background: rgba(239,68,68,0.12); color: #fca5a5;
+            background: none; color: rgba(199,210,254,0.5);
         }
-        .btn-logout:hover { background: rgba(239,68,68,0.25); color: #fecaca; }
+        .btn-logout:hover { background: rgba(239,68,68,0.15); color: #fca5a5; }
 
         /* ===== MAIN CONTENT ===== */
         .main-content { flex: 1; margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
@@ -627,13 +627,13 @@
                     </div>
                 </a>
                 <div class="footer-actions">
-                    <a href="{{ url('/') }}" target="_blank" class="footer-action-btn btn-view-site" title="Ver sitio web">
-                        <x-icon name="external-link" class="w-3.5 h-3.5" /> Ver sitio
+                    <a href="{{ url('/?preview') }}" target="_blank" class="footer-action-btn btn-view-site" title="Ver sitio web">
+                        <x-icon name="external-link" class="w-3 h-3" /> Ver sitio
                     </a>
-                    <form action="{{ route('logout') }}" method="POST" style="margin:0; flex:1; display:flex;">
+                    <form action="{{ route('logout') }}" method="POST" style="margin:0;">
                         @csrf
-                        <button type="submit" class="footer-action-btn btn-logout" style="width:100%;" title="Cerrar sesion">
-                            <x-icon name="log-out" class="w-3.5 h-3.5" /> Salir
+                        <button type="submit" class="footer-action-btn btn-logout" title="Cerrar sesion">
+                            <x-icon name="log-out" class="w-3 h-3" /> Salir
                         </button>
                     </form>
                 </div>

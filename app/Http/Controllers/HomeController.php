@@ -6,13 +6,14 @@ use App\Models\Property;
 use App\Models\Client;
 use App\Models\Broker;
 use App\Models\Post;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::check() && !$request->has('preview')) {
             return redirect()->route('admin.dashboard');
         }
 
