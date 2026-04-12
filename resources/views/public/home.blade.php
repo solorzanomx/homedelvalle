@@ -138,12 +138,11 @@
 
                 {{-- Propietario (DESTACADO — centro) --}}
                 <a href="{{ route('landing.vende') }}"
-                   class="group relative rounded-2xl border-2 border-brand-500 bg-gradient-to-b from-brand-50/80 to-white p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 text-left md:-mt-4 md:mb-[-1rem] ring-1 ring-brand-100"
+                   class="group relative rounded-2xl border border-brand-200 bg-white p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 text-left"
+                   style="border-width: 2px; border-color: var(--color-primary); margin-top: -1rem; margin-bottom: -1rem;"
                    x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 100ms">
-                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-600 text-white text-xs font-bold tracking-wide shadow-lg">
-                            <x-icon name="star" class="w-3 h-3" /> MAS SOLICITADO
-                        </span>
+                    <div style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--color-primary); color:#fff; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; padding:0.3rem 1rem; border-radius:50px; box-shadow:0 4px 12px rgba(0,0,0,0.15); white-space:nowrap;">
+                        ★ MAS SOLICITADO
                     </div>
                     <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 shadow-brand transition-all duration-500 group-hover:scale-105">
                         <x-icon name="home" class="w-7 h-7 text-white" />
@@ -152,16 +151,17 @@
                     <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rapido, al mejor precio y con total seguridad juridica.</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-600 shrink-0" /> Valuacion gratuita en 24h
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Valuacion gratuita en 24h
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-600 shrink-0" /> Venta en 45 dias promedio
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Venta en 45 dias promedio
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-600 shrink-0" /> Acompañamiento legal completo
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Acompañamiento legal completo
                         </li>
                     </ul>
-                    <div class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-bold group-hover:bg-brand-700 transition-all shadow-md">
+                    <div class="mt-6 inline-flex items-center gap-2 rounded-xl text-white text-sm font-bold transition-all"
+                         style="background:var(--color-primary); padding:0.6rem 1.25rem; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
                         Solicitar valuacion gratuita
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
