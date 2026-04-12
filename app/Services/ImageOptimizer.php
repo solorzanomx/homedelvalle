@@ -6,15 +6,16 @@ use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ImageOptimizer
 {
     protected ImageManager $manager;
-    protected int $maxWidth = 1920;
-    protected int $maxHeight = 1920;
-    protected int $quality = 78;
-    protected int $thumbWidth = 400;
-    protected int $thumbHeight = 300;
+
+    protected array $sizes = [
+        'lg' => ['width' => 1200, 'quality' => 82],
+        'md' => ['width' => 700, 'quality' => 85],
+    ];
 
     public function __construct()
     {
@@ -22,101 +23,97 @@ class ImageOptimizer
     }
 
     /**
-     * Optimize an uploaded image: resize if too large, compress, optionally convert to WebP.
-     * Returns the relative storage path.
+     * Process an uploaded image for blog posts (featured images).
+     * Generates WebP at 1200px and 700px + keeps original as JPG fallback.
+     * Returns JSON-serializable array with all paths.
      */
-    public function optimize(UploadedFile $file, string $directory, bool $createWebp = true): array
+    public function process(UploadedFile $file, string $directory, string $seoName = ''): array
     {
-        $image = $this->manager->read($file->getRealPath());
+        $slug = $this->slugify($seoName ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $uid = substr(uniqid(), -6);
+        $disk = Storage::disk('public');
 
-        // Resize if larger than max dimensions (maintain aspect ratio)
-        $width = $image->width();
-        $height = $image->height();
-        if ($width > $this->maxWidth || $height > $this->maxHeight) {
-            $image->scaleDown($this->maxWidth, $this->maxHeight);
+        // Original resized to max 1200px as JPG fallback
+        $original = $this->manager->read($file->getRealPath());
+        if ($original->width() > 1200) {
+            $original->scaleDown(width: 1200);
+        }
+        $origPath = "{$directory}/{$slug}-{$uid}.jpg";
+        $disk->put($origPath, (string) $original->toJpeg(82));
+
+        $variants = ['original' => $origPath];
+
+        // Generate WebP variants
+        foreach ($this->sizes as $key => $config) {
+            $img = $this->manager->read($file->getRealPath());
+            if ($img->width() > $config['width']) {
+                $img->scaleDown(width: $config['width']);
+            }
+            $webpPath = "{$directory}/{$slug}-{$uid}-{$key}.webp";
+            $disk->put($webpPath, (string) $img->toWebp($config['quality']));
+            $variants[$key] = $webpPath;
+            $variants["{$key}_width"] = min($img->width(), $config['width']);
         }
 
-        // Generate unique filename
-        $basename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        $basename = \Str::slug($basename) ?: 'image';
-        $filename = $basename . '-' . uniqid() . '.jpg';
-
-        // Encode as JPEG with quality
-        $encoded = $image->toJpeg($this->quality);
-        $path = $directory . '/' . $filename;
-        Storage::disk('public')->put($path, (string) $encoded);
-
-        $result = ['path' => $path, 'webp_path' => null, 'thumb_path' => null];
-
-        // Create WebP version
-        if ($createWebp && function_exists('imagewebp')) {
-            $webpFilename = $basename . '-' . uniqid() . '.webp';
-            $webpPath = $directory . '/' . $webpFilename;
-            $webpEncoded = $image->toWebp($this->quality);
-            Storage::disk('public')->put($webpPath, (string) $webpEncoded);
-            $result['webp_path'] = $webpPath;
-        }
-
-        // Create thumbnail
-        $thumb = $this->manager->read($file->getRealPath());
-        $thumb->cover($this->thumbWidth, $this->thumbHeight);
-        $thumbFilename = $basename . '-thumb-' . uniqid() . '.jpg';
-        $thumbPath = $directory . '/thumbs/' . $thumbFilename;
-        Storage::disk('public')->put($thumbPath, (string) $thumb->toJpeg($this->quality));
-        $result['thumb_path'] = $thumbPath;
-
-        return $result;
+        return $variants;
     }
 
     /**
-     * Optimize an already-stored image by path (for batch processing).
+     * Process an inline CMS image (from TinyMCE editor).
+     * Single 1200px WebP + JPG fallback.
      */
-    public function optimizeExisting(string $storagePath): bool
+    public function processInline(UploadedFile $file, string $directory): array
     {
-        $fullPath = Storage::disk('public')->path($storagePath);
-        if (!file_exists($fullPath)) {
-            return false;
+        $slug = $this->slugify(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $uid = substr(uniqid(), -6);
+        $disk = Storage::disk('public');
+
+        $img = $this->manager->read($file->getRealPath());
+        if ($img->width() > 1200) {
+            $img->scaleDown(width: 1200);
         }
 
-        $image = $this->manager->read($fullPath);
-        $width = $image->width();
-        $height = $image->height();
+        $jpgPath = "{$directory}/{$slug}-{$uid}.jpg";
+        $disk->put($jpgPath, (string) $img->toJpeg(82));
 
-        if ($width > $this->maxWidth || $height > $this->maxHeight) {
-            $image->scaleDown($this->maxWidth, $this->maxHeight);
-        }
+        $webpPath = "{$directory}/{$slug}-{$uid}.webp";
+        $disk->put($webpPath, (string) $img->toWebp(82));
 
-        $encoded = $image->toJpeg($this->quality);
-        Storage::disk('public')->put($storagePath, (string) $encoded);
-        return true;
+        return [
+            'original' => $jpgPath,
+            'webp' => $webpPath,
+            'url' => $disk->url($jpgPath),
+            'webp_url' => $disk->url($webpPath),
+        ];
     }
 
     /**
-     * Process avatar: resize to square, compress
+     * Delete all variant files for a given image data array.
      */
-    public function processAvatar(UploadedFile $file, string $directory): string
+    public function cleanup(array|string|null $imageData): void
     {
-        $image = $this->manager->read($file->getRealPath());
-        $image->cover(400, 400);
+        if (!$imageData) return;
 
-        $filename = 'avatar-' . uniqid() . '.jpg';
-        $path = $directory . '/' . $filename;
-        $encoded = $image->toJpeg($this->quality);
-        Storage::disk('public')->put($path, (string) $encoded);
+        $disk = Storage::disk('public');
 
-        return $path;
+        if (is_string($imageData)) {
+            $disk->delete($imageData);
+            return;
+        }
+
+        foreach (['original', 'lg', 'md'] as $key) {
+            if (!empty($imageData[$key])) {
+                $disk->delete($imageData[$key]);
+            }
+        }
     }
 
-    public function setMaxDimensions(int $width, int $height): self
+    /**
+     * Generate SEO-friendly slug from text.
+     */
+    protected function slugify(string $text): string
     {
-        $this->maxWidth = $width;
-        $this->maxHeight = $height;
-        return $this;
-    }
-
-    public function setQuality(int $quality): self
-    {
-        $this->quality = $quality;
-        return $this;
+        $slug = Str::slug($text);
+        return $slug ?: 'imagen';
     }
 }

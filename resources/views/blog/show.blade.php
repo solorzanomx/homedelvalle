@@ -14,7 +14,12 @@
     {{-- Hero --}}
     @if($post->featured_image)
     <section class="relative overflow-hidden bg-brand-950">
-        <img src="{{ Storage::url($post->featured_image) }}" alt="{{ $post->title }}" class="absolute inset-0 w-full h-full object-cover opacity-30">
+        <picture>
+            @if($post->featured_image_webp_lg)
+            <source type="image/webp" srcset="{{ $post->featured_image_webp_lg }}">
+            @endif
+            <img src="{{ Storage::url($post->featured_image) }}" alt="{{ $post->title }}" class="absolute inset-0 w-full h-full object-cover opacity-30">
+        </picture>
         <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/70 to-brand-950/40"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(59,130,196,0.12)_0%,_transparent_60%)]"></div>
 

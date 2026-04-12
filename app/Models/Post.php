@@ -3,17 +3,37 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
-    protected $fillable = ['user_id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'category_id', 'status', 'published_at', 'meta_title', 'meta_description', 'views_count', 'ctas'];
+    protected $fillable = ['user_id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'featured_image_data', 'category_id', 'status', 'published_at', 'meta_title', 'meta_description', 'views_count', 'ctas'];
     protected function casts(): array
     {
         return [
             'published_at' => 'datetime',
             'views_count' => 'integer',
             'ctas' => 'array',
+            'featured_image_data' => 'array',
         ];
+    }
+
+    public function getFeaturedImageUrlAttribute(): ?string
+    {
+        if (!$this->featured_image) return null;
+        return Storage::disk('public')->url($this->featured_image);
+    }
+
+    public function getFeaturedImageWebpLgAttribute(): ?string
+    {
+        $data = $this->featured_image_data;
+        return !empty($data['lg']) ? Storage::disk('public')->url($data['lg']) : null;
+    }
+
+    public function getFeaturedImageWebpMdAttribute(): ?string
+    {
+        $data = $this->featured_image_data;
+        return !empty($data['md']) ? Storage::disk('public')->url($data['md']) : null;
     }
 
     public function author() { return $this->belongsTo(User::class, 'user_id'); }

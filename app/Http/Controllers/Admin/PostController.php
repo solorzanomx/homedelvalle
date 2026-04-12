@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Tag;
+use App\Services\ImageOptimizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
@@ -67,7 +68,10 @@ class PostController extends Controller
         }
 
         if ($request->hasFile('featured_image')) {
-            $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $optimizer = new ImageOptimizer();
+            $imageData = $optimizer->process($request->file('featured_image'), 'posts', $validated['slug'] ?? '');
+            $validated['featured_image'] = $imageData['original'];
+            $validated['featured_image_data'] = $imageData;
         }
 
         $validated['user_id'] = auth()->id();
@@ -126,10 +130,11 @@ class PostController extends Controller
         }
 
         if ($request->hasFile('featured_image')) {
-            if ($post->featured_image) {
-                Storage::disk('public')->delete($post->featured_image);
-            }
-            $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $optimizer = new ImageOptimizer();
+            $optimizer->cleanup($post->featured_image_data ?: $post->featured_image);
+            $imageData = $optimizer->process($request->file('featured_image'), 'posts', $validated['slug'] ?? $post->slug);
+            $validated['featured_image'] = $imageData['original'];
+            $validated['featured_image_data'] = $imageData;
         }
 
         $validated['ctas'] = $this->filterCtas($request->input('ctas', []));
@@ -144,7 +149,8 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         if ($post->featured_image) {
-            Storage::disk('public')->delete($post->featured_image);
+            $optimizer = new ImageOptimizer();
+            $optimizer->cleanup($post->featured_image_data ?: $post->featured_image);
         }
 
         $post->tags()->detach();
@@ -162,10 +168,11 @@ class PostController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
         ]);
 
-        $path = $request->file('image')->store('cms-images', 'public');
+        $optimizer = new ImageOptimizer();
+        $result = $optimizer->processInline($request->file('image'), 'cms-images');
 
         return response()->json([
-            'url' => Storage::disk('public')->url($path),
+            'url' => $result['url'],
         ]);
     }
 

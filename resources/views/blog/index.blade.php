@@ -52,7 +52,12 @@
                             <a href="{{ url('/blog/' . $post->slug) }}" class="flex flex-col sm:flex-row gap-6 rounded-2xl border border-gray-200/60 bg-white p-4 hover:shadow-premium-lg hover:border-brand-100 hover:-translate-y-0.5 transition-all duration-500">
                                 <div class="sm:w-72 shrink-0 aspect-[16/10] rounded-xl overflow-hidden bg-gray-100">
                                     @if($post->featured_image)
-                                        <img src="{{ Storage::url($post->featured_image) }}" alt="{{ $post->title }}" class="w-full h-full object-cover img-zoom" loading="lazy">
+                                        <picture>
+                                            @if($post->featured_image_webp_md)
+                                            <source type="image/webp" srcset="{{ $post->featured_image_webp_md }}">
+                                            @endif
+                                            <img src="{{ Storage::url($post->featured_image) }}" alt="{{ $post->title }}" class="w-full h-full object-cover img-zoom" loading="lazy" width="700" height="438">
+                                        </picture>
                                     @else
                                         <div class="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
                                             <svg class="w-10 h-10 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
@@ -87,7 +92,12 @@
                         <a href="{{ url('/blog/' . $posts->first()->slug) }}" class="flex flex-col lg:flex-row gap-8 rounded-2xl border border-gray-200/60 bg-white overflow-hidden hover:shadow-premium-lg hover:border-brand-100 transition-all duration-500">
                             <div class="lg:w-3/5 aspect-[16/9] lg:aspect-auto overflow-hidden bg-gray-100">
                                 @if($posts->first()->featured_image)
-                                    <img src="{{ Storage::url($posts->first()->featured_image) }}" alt="{{ $posts->first()->title }}" class="w-full h-full object-cover img-zoom" loading="lazy">
+                                    <picture>
+                                        @if($posts->first()->featured_image_webp_lg)
+                                        <source type="image/webp" srcset="{{ $posts->first()->featured_image_webp_lg }}">
+                                        @endif
+                                        <img src="{{ Storage::url($posts->first()->featured_image) }}" alt="{{ $posts->first()->title }}" class="w-full h-full object-cover img-zoom" loading="lazy" width="1200" height="675">
+                                    </picture>
                                 @else
                                     <div class="w-full h-full min-h-[300px] bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
                                         <svg class="w-16 h-16 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>

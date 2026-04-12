@@ -565,7 +565,12 @@
                     <a href="{{ route('blog.show', $post->slug) }}" class="block">
                         <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-gray-100 shadow-premium group-hover:shadow-premium-lg transition-all duration-500">
                             @if($post->featured_image)
-                                <img src="{{ asset('storage/' . $post->featured_image) }}" alt="{{ $post->title }}" class="w-full h-full object-cover img-zoom" loading="lazy">
+                                <picture>
+                                    @if($post->featured_image_webp_md)
+                                    <source type="image/webp" srcset="{{ $post->featured_image_webp_md }}">
+                                    @endif
+                                    <img src="{{ asset('storage/' . $post->featured_image) }}" alt="{{ $post->title }}" class="w-full h-full object-cover img-zoom" loading="lazy" width="700" height="438">
+                                </picture>
                             @else
                                 <div class="w-full h-full bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center">
                                     <svg class="w-10 h-10 text-brand-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
