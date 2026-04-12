@@ -11,6 +11,11 @@
 @endsection
 
 @section('content')
+    <style>
+        .prose ul, .prose ol { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .prose li { margin-top: 0.15rem; margin-bottom: 0.15rem; line-height: 1.5; }
+        .prose li p { margin: 0; }
+    </style>
     {{-- Hero --}}
     @if($post->featured_image)
     <section class="relative overflow-hidden bg-brand-950">
