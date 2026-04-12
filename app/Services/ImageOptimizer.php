@@ -2,58 +2,66 @@
 
 namespace App\Services;
 
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ImageOptimizer
 {
-    protected ImageManager $manager;
-
     protected array $sizes = [
         'lg' => ['width' => 1200, 'quality' => 82],
         'md' => ['width' => 700, 'quality' => 85],
     ];
 
-    public function __construct()
-    {
-        $this->manager = new ImageManager(new Driver());
-    }
-
     /**
      * Process an uploaded image for blog posts (featured images).
      * Generates WebP at 1200px and 700px + keeps original as JPG fallback.
-     * Returns JSON-serializable array with all paths.
+     * Uses pure GD — no external packages needed.
      */
     public function process(UploadedFile $file, string $directory, string $seoName = ''): array
     {
         $slug = $this->slugify($seoName ?: pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
         $uid = substr(uniqid(), -6);
         $disk = Storage::disk('public');
+        $sourcePath = $file->getRealPath();
 
-        // Original resized to max 1200px as JPG fallback
-        $original = $this->manager->read($file->getRealPath());
-        if ($original->width() > 1200) {
-            $original->scaleDown(width: 1200);
+        $source = $this->loadImage($sourcePath);
+        if (!$source) {
+            // Fallback: store original without processing
+            $path = $file->store($directory, 'public');
+            return ['original' => $path];
         }
+
+        $origW = imagesx($source);
+        $origH = imagesy($source);
+
+        // Save JPG fallback at max 1200px
+        $jpgImage = $this->resizeImage($source, $origW, $origH, 1200);
         $origPath = "{$directory}/{$slug}-{$uid}.jpg";
-        $disk->put($origPath, (string) $original->toJpeg(82));
+        $tmpJpg = tempnam(sys_get_temp_dir(), 'img');
+        imagejpeg($jpgImage, $tmpJpg, 82);
+        $disk->put($origPath, file_get_contents($tmpJpg));
+        unlink($tmpJpg);
+        imagedestroy($jpgImage);
 
         $variants = ['original' => $origPath];
 
         // Generate WebP variants
-        foreach ($this->sizes as $key => $config) {
-            $img = $this->manager->read($file->getRealPath());
-            if ($img->width() > $config['width']) {
-                $img->scaleDown(width: $config['width']);
+        if (function_exists('imagewebp')) {
+            foreach ($this->sizes as $key => $config) {
+                $resized = $this->resizeImage($source, $origW, $origH, $config['width']);
+                $webpPath = "{$directory}/{$slug}-{$uid}-{$key}.webp";
+                $tmpWebp = tempnam(sys_get_temp_dir(), 'webp');
+                imagewebp($resized, $tmpWebp, $config['quality']);
+                $disk->put($webpPath, file_get_contents($tmpWebp));
+                unlink($tmpWebp);
+                $variants[$key] = $webpPath;
+                $variants["{$key}_width"] = imagesx($resized);
+                imagedestroy($resized);
             }
-            $webpPath = "{$directory}/{$slug}-{$uid}-{$key}.webp";
-            $disk->put($webpPath, (string) $img->toWebp($config['quality']));
-            $variants[$key] = $webpPath;
-            $variants["{$key}_width"] = min($img->width(), $config['width']);
         }
+
+        imagedestroy($source);
 
         return $variants;
     }
@@ -67,24 +75,47 @@ class ImageOptimizer
         $slug = $this->slugify(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
         $uid = substr(uniqid(), -6);
         $disk = Storage::disk('public');
+        $sourcePath = $file->getRealPath();
 
-        $img = $this->manager->read($file->getRealPath());
-        if ($img->width() > 1200) {
-            $img->scaleDown(width: 1200);
+        $source = $this->loadImage($sourcePath);
+        if (!$source) {
+            $path = $file->store($directory, 'public');
+            return ['original' => $path, 'url' => $disk->url($path)];
         }
 
+        $origW = imagesx($source);
+        $origH = imagesy($source);
+
+        // JPG fallback
+        $jpgImage = $this->resizeImage($source, $origW, $origH, 1200);
         $jpgPath = "{$directory}/{$slug}-{$uid}.jpg";
-        $disk->put($jpgPath, (string) $img->toJpeg(82));
+        $tmpJpg = tempnam(sys_get_temp_dir(), 'img');
+        imagejpeg($jpgImage, $tmpJpg, 82);
+        $disk->put($jpgPath, file_get_contents($tmpJpg));
+        unlink($tmpJpg);
+        imagedestroy($jpgImage);
 
-        $webpPath = "{$directory}/{$slug}-{$uid}.webp";
-        $disk->put($webpPath, (string) $img->toWebp(82));
-
-        return [
+        $result = [
             'original' => $jpgPath,
-            'webp' => $webpPath,
             'url' => $disk->url($jpgPath),
-            'webp_url' => $disk->url($webpPath),
         ];
+
+        // WebP version
+        if (function_exists('imagewebp')) {
+            $webpImage = $this->resizeImage($source, $origW, $origH, 1200);
+            $webpPath = "{$directory}/{$slug}-{$uid}.webp";
+            $tmpWebp = tempnam(sys_get_temp_dir(), 'webp');
+            imagewebp($webpImage, $tmpWebp, 82);
+            $disk->put($webpPath, file_get_contents($tmpWebp));
+            unlink($tmpWebp);
+            imagedestroy($webpImage);
+            $result['webp'] = $webpPath;
+            $result['webp_url'] = $disk->url($webpPath);
+        }
+
+        imagedestroy($source);
+
+        return $result;
     }
 
     /**
@@ -109,8 +140,70 @@ class ImageOptimizer
     }
 
     /**
-     * Generate SEO-friendly slug from text.
+     * Load image from file path using GD.
      */
+    protected function loadImage(string $path): ?\GdImage
+    {
+        $info = @getimagesize($path);
+        if (!$info) return null;
+
+        return match ($info[2]) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($path),
+            IMAGETYPE_PNG => $this->loadPng($path),
+            IMAGETYPE_GIF => @imagecreatefromgif($path),
+            IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : null,
+            default => null,
+        } ?: null;
+    }
+
+    /**
+     * Load PNG preserving transparency on a white background.
+     */
+    protected function loadPng(string $path): ?\GdImage
+    {
+        $img = @imagecreatefrompng($path);
+        if (!$img) return null;
+
+        $w = imagesx($img);
+        $h = imagesy($img);
+        $flat = imagecreatetruecolor($w, $h);
+        $white = imagecolorallocate($flat, 255, 255, 255);
+        imagefill($flat, 0, 0, $white);
+        imagecopy($flat, $img, 0, 0, 0, 0, $w, $h);
+        imagedestroy($img);
+
+        return $flat;
+    }
+
+    /**
+     * Resize image maintaining aspect ratio. Returns new GD resource.
+     */
+    protected function resizeImage(\GdImage $source, int $origW, int $origH, int $maxWidth): \GdImage
+    {
+        if ($origW <= $maxWidth) {
+            // No resize needed, return a copy
+            $copy = imagecreatetruecolor($origW, $origH);
+            imagecopy($copy, $source, 0, 0, 0, 0, $origW, $origH);
+            return $copy;
+        }
+
+        $newW = $maxWidth;
+        $newH = (int) round($origH * ($maxWidth / $origW));
+
+        $resized = imagecreatetruecolor($newW, $newH);
+        imagecopyresampled($resized, $source, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+
+        // Light sharpen after resize
+        $sharpen = [
+            [-1, -1, -1],
+            [-1, 20, -1],
+            [-1, -1, -1],
+        ];
+        imageconvolution($resized, $sharpen, 12, 0);
+
+        return $resized;
+    }
+
     protected function slugify(string $text): string
     {
         $slug = Str::slug($text);
