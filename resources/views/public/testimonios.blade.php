@@ -24,30 +24,32 @@
                     <x-icon name="star" class="w-3.5 h-3.5" /> Testimonio destacado
                 </span>
             </div>
-            <div class="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-900 aspect-video" x-data="{ playing: false }">
-                <template x-if="!playing">
-                    <button @click="playing = true" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900/60 hover:bg-gray-900/40 transition-all duration-300 group cursor-pointer">
-                        <div class="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                            <svg class="w-8 h-8 text-brand-600 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
-                        <span class="mt-4 text-white font-semibold text-lg">{{ $featured->name }}</span>
-                        @if($featured->role)
-                            <span class="text-white/70 text-sm">{{ $featured->role }}</span>
-                        @endif
-                    </button>
-                </template>
-                <template x-if="playing">
-                    <iframe src="{{ $featured->youtube_embed_url }}?autoplay=1&rel=0" class="w-full h-full absolute inset-0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                </template>
-                @if($featured->avatar)
-                    <img src="{{ Storage::url($featured->avatar) }}" alt="{{ $featured->name }}" class="absolute inset-0 w-full h-full object-cover opacity-40">
+            <div class="flex flex-col items-center gap-8">
+                <div class="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-900" style="width: min(360px, 100%); aspect-ratio: 9/16;" x-data="{ playing: false }">
+                    <template x-if="!playing">
+                        <button @click="playing = true" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900/60 hover:bg-gray-900/40 transition-all duration-300 group cursor-pointer">
+                            <div class="w-20 h-20 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <svg class="w-8 h-8 text-brand-600 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </div>
+                            <span class="mt-4 text-white font-semibold text-lg">{{ $featured->name }}</span>
+                            @if($featured->role)
+                                <span class="text-white/70 text-sm">{{ $featured->role }}</span>
+                            @endif
+                        </button>
+                    </template>
+                    <template x-if="playing">
+                        <iframe src="{{ $featured->youtube_embed_url }}?autoplay=1&rel=0" class="w-full h-full absolute inset-0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </template>
+                    @if($featured->avatar)
+                        <img src="{{ Storage::url($featured->avatar) }}" alt="{{ $featured->name }}" class="absolute inset-0 w-full h-full object-cover opacity-40">
+                    @endif
+                </div>
+                @if($featured->content)
+                    <blockquote class="text-center text-lg text-gray-600 italic max-w-3xl">
+                        "{{ $featured->content }}"
+                    </blockquote>
                 @endif
             </div>
-            @if($featured->content)
-                <blockquote class="mt-8 text-center text-lg text-gray-600 italic max-w-3xl mx-auto">
-                    "{{ $featured->content }}"
-                </blockquote>
-            @endif
         </div>
     </section>
     @endif
@@ -148,7 +150,7 @@
         </div>
     </section>
 
-    {{-- Video Modal --}}
+    {{-- Video Modal (supports vertical reels/shorts) --}}
     <div x-data="{ open: false, url: '', name: '' }"
          @open-video.window="open = true; url = $event.detail.url + '?autoplay=1&rel=0'; name = $event.detail.name"
          @keydown.escape.window="open = false; url = ''"
@@ -158,11 +160,11 @@
          class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
          style="display: none;">
         <div class="absolute inset-0 bg-black/80" @click="open = false; url = ''"></div>
-        <div class="relative w-full max-w-4xl mx-auto z-10" @click.away="open = false; url = ''">
-            <button @click="open = false; url = ''" class="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors">
+        <div class="relative z-10 flex flex-col items-center" @click.away="open = false; url = ''">
+            <button @click="open = false; url = ''" class="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors z-20">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
-            <div class="rounded-2xl overflow-hidden shadow-2xl bg-black aspect-video">
+            <div class="rounded-2xl overflow-hidden shadow-2xl bg-black" style="width: min(360px, 90vw); height: min(640px, 80vh);">
                 <template x-if="open && url">
                     <iframe :src="url" class="w-full h-full" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                 </template>

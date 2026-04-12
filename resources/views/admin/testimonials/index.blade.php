@@ -63,11 +63,12 @@
                         </div>
                     </div>
                 </div>
-                @if($t->type === 'text' && $t->content)
+                @if($t->content)
                     <div class="t-content">"{{ $t->content }}"</div>
-                @elseif($t->type === 'video')
-                    <div style="font-size:0.82rem; color:var(--text-muted);">
-                        <x-icon name="circle-play" class="w-4 h-4" style="vertical-align:middle;" /> Video testimonio
+                @endif
+                @if($t->type === 'video' && $t->video_url)
+                    <div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.4rem; display:flex; align-items:center; gap:0.3rem;">
+                        <x-icon name="circle-play" class="w-3.5 h-3.5" /> <a href="{{ $t->video_url }}" target="_blank" style="color:var(--primary); text-decoration:underline;">Ver video</a>
                     </div>
                 @endif
             </div>
