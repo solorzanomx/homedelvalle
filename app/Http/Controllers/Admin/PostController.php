@@ -172,7 +172,7 @@ class PostController extends Controller
         $result = $optimizer->processInline($request->file('image'), 'cms-images');
 
         return response()->json([
-            'url' => $result['url'],
+            'url' => $result['webp_url'] ?? $result['url'],
         ]);
     }
 
