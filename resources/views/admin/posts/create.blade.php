@@ -244,9 +244,9 @@ tinymce.init({
             tooltip: 'Insertar Call-to-Action',
             fetch: function(callback) {
                 callback([
-                    { type: 'menuitem', text: 'CTA 1', onAction: function() { editor.insertContent('{{CTA1}}'); } },
-                    { type: 'menuitem', text: 'CTA 2', onAction: function() { editor.insertContent('{{CTA2}}'); } },
-                    { type: 'menuitem', text: 'CTA 3', onAction: function() { editor.insertContent('{{CTA3}}'); } }
+                    { type: 'menuitem', text: 'CTA 1', onAction: function() { editor.insertContent('@{{CTA1}}'); } },
+                    { type: 'menuitem', text: 'CTA 2', onAction: function() { editor.insertContent('@{{CTA2}}'); } },
+                    { type: 'menuitem', text: 'CTA 3', onAction: function() { editor.insertContent('@{{CTA3}}'); } }
                 ]);
             }
         });
