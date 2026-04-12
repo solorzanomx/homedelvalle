@@ -224,14 +224,14 @@
                 <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->benefits_subheading ?? 'No somos una inmobiliaria de volumen. Somos una firma boutique que prioriza la calidad del inventario y la seguridad jurídica.' }}</p>
             </div>
 
-            <div class="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
+            <div class="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($benefits as $bi => $benefit)
-                <div class="group relative text-center p-8 rounded-2xl border border-transparent hover:border-brand-100 hover:bg-brand-50/30 transition-all duration-500"
+                <div class="group relative text-center p-8 rounded-2xl bg-white border border-gray-200/60 hover:border-brand-200 hover:shadow-xl transition-all duration-500"
                      x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $bi * 100 }}ms">
-                    <div class="mx-auto flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-110">
-                        <svg class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">{!! $iconSvgs[$benefit['icon'] ?? 'shield'] ?? $iconSvgs['shield'] !!}</svg>
+                    <div class="mx-auto flex items-center justify-center w-20 h-20 rounded-3xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
+                        <svg class="w-10 h-10 text-brand-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">{!! $iconSvgs[$benefit['icon'] ?? 'shield'] ?? $iconSvgs['shield'] !!}</svg>
                     </div>
-                    <h3 class="mt-6 text-base font-bold text-gray-900 tracking-tight">{{ $benefit['title'] ?? '' }}</h3>
+                    <h3 class="mt-7 text-lg font-bold text-gray-900 tracking-tight">{{ $benefit['title'] ?? '' }}</h3>
                     <p class="mt-3 text-sm text-gray-500 leading-relaxed">{{ $benefit['description'] ?? '' }}</p>
                 </div>
                 @endforeach
