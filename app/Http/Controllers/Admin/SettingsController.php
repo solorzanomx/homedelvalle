@@ -24,6 +24,13 @@ class SettingsController extends Controller
             'secondary_color' => 'required|string',
             'home_welcome_text' => 'nullable|string',
             'whatsapp_number' => 'nullable|string|max:20',
+            'contact_phone' => 'nullable|string|max:30',
+            'contact_email' => 'nullable|string|email|max:255',
+            'address' => 'nullable|string|max:500',
+            'facebook_url' => 'nullable|string|url|max:500',
+            'instagram_url' => 'nullable|string|url|max:500',
+            'tiktok_url' => 'nullable|string|url|max:500',
+            'google_maps_embed' => 'nullable|string|max:2000',
             'logo_type' => 'nullable|in:text,image',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
         ]);

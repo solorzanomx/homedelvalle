@@ -118,6 +118,72 @@
         </div>
     </div>
 </div>
+
+{{-- Contacto & Redes --}}
+<div class="card" style="margin-top:1.5rem;">
+    <div class="card-header"><h3>Contacto, Redes y Ubicacion</h3></div>
+    <div class="card-body">
+        <form method="POST" action="{{ route('admin.settings.update') }}">
+            @csrf
+            {{-- Preserve required fields --}}
+            <input type="hidden" name="site_name" value="{{ $settings->site_name ?? 'Homedelvalle' }}">
+            <input type="hidden" name="primary_color" value="{{ $settings->primary_color ?? '#667eea' }}">
+            <input type="hidden" name="secondary_color" value="{{ $settings->secondary_color ?? '#764ba2' }}">
+            <input type="hidden" name="logo_type" value="{{ $settings->logo_type ?? 'text' }}">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Telefono</label>
+                    <input type="text" name="contact_phone" class="form-input" value="{{ old('contact_phone', $settings->contact_phone ?? '') }}" placeholder="55 1345 0978">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email de contacto</label>
+                    <input type="email" name="contact_email" class="form-input" value="{{ old('contact_email', $settings->contact_email ?? '') }}" placeholder="contacto@homedelvalle.mx">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">WhatsApp</label>
+                    <input type="text" name="whatsapp_number" class="form-input" value="{{ old('whatsapp_number', $settings->whatsapp_number ?? '') }}" placeholder="+52 55 1345 0978">
+                    <p class="form-hint">Numero con clave de pais para el boton flotante.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Direccion</label>
+                    <input type="text" name="address" class="form-input" value="{{ old('address', $settings->address ?? '') }}" placeholder="Heriberto Frias 903 C, Col. del Valle, CDMX">
+                </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border); margin:1rem 0 1.25rem; padding-top:1.25rem;">
+                <label class="form-label" style="margin-bottom:0.75rem; font-size:0.85rem; font-weight:600;">Redes sociales</label>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Facebook</label>
+                    <input type="url" name="facebook_url" class="form-input" value="{{ old('facebook_url', $settings->facebook_url ?? '') }}" placeholder="https://facebook.com/homedelvalle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Instagram</label>
+                    <input type="url" name="instagram_url" class="form-input" value="{{ old('instagram_url', $settings->instagram_url ?? '') }}" placeholder="https://instagram.com/homedelvalle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">TikTok</label>
+                    <input type="url" name="tiktok_url" class="form-input" value="{{ old('tiktok_url', $settings->tiktok_url ?? '') }}" placeholder="https://tiktok.com/@homedelvalle">
+                </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border); margin:1rem 0 1.25rem; padding-top:1.25rem;">
+                <label class="form-label" style="margin-bottom:0.75rem; font-size:0.85rem; font-weight:600;">Google Maps</label>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Codigo embed de Google Maps</label>
+                <textarea name="google_maps_embed" class="form-textarea" rows="3" placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." ...></iframe>'>{{ old('google_maps_embed', $settings->google_maps_embed ?? '') }}</textarea>
+                <p class="form-hint">Ve a Google Maps &gt; Compartir &gt; Incorporar mapa &gt; Copiar HTML. Pega el codigo completo del iframe aqui.</p>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Guardar Contacto</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
