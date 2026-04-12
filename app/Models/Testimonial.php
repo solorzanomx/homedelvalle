@@ -28,17 +28,28 @@ class Testimonial extends Model
         return $q->where('is_featured', true);
     }
 
-    public function getYoutubeEmbedUrlAttribute(): ?string
+    public function getYoutubeIdAttribute(): ?string
     {
         if (!$this->video_url) {
             return null;
         }
 
-        // Extract YouTube ID from various URL formats
         if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $this->video_url, $m)) {
-            return "https://www.youtube.com/embed/{$m[1]}";
+            return $m[1];
         }
 
-        return $this->video_url;
+        return null;
+    }
+
+    public function getYoutubeEmbedUrlAttribute(): ?string
+    {
+        $id = $this->youtube_id;
+        return $id ? "https://www.youtube.com/embed/{$id}" : $this->video_url;
+    }
+
+    public function getYoutubeThumbnailAttribute(): ?string
+    {
+        $id = $this->youtube_id;
+        return $id ? "https://img.youtube.com/vi/{$id}/mqdefault.jpg" : null;
     }
 }
