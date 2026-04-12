@@ -73,6 +73,8 @@
                     </div>
                 </div>
             </div>
+
+            @include('admin.posts._cta-fields', ['post' => (object)['ctas' => old('ctas', [])]])
         </div>
 
         {{-- Sidebar --}}
@@ -215,7 +217,7 @@ tinymce.init({
     height: 500,
     menubar: 'edit insert format table',
     plugins: 'lists link image table code fullscreen preview autolink',
-    toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link image imagegallery | table | code fullscreen',
+    toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link image imagegallery | insertcta | table | code fullscreen',
     content_style: 'body { font-family: Inter, Arial, sans-serif; font-size: 14px; padding: 8px; }',
     branding: false,
     license_key: 'gpl',
@@ -237,6 +239,17 @@ tinymce.init({
     },
     setup: function(editor) {
         editor.on('submit', function() { editor.save(); });
+        editor.ui.registry.addMenuButton('insertcta', {
+            text: 'CTA',
+            tooltip: 'Insertar Call-to-Action',
+            fetch: function(callback) {
+                callback([
+                    { type: 'menuitem', text: 'CTA 1', onAction: function() { editor.insertContent('{{CTA1}}'); } },
+                    { type: 'menuitem', text: 'CTA 2', onAction: function() { editor.insertContent('{{CTA2}}'); } },
+                    { type: 'menuitem', text: 'CTA 3', onAction: function() { editor.insertContent('{{CTA3}}'); } }
+                ]);
+            }
+        });
         editor.ui.registry.addButton('imagegallery', {
             icon: 'gallery',
             tooltip: 'Insertar desde biblioteca',

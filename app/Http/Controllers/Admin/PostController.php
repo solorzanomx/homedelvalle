@@ -48,6 +48,11 @@ class PostController extends Controller
             'meta_description' => 'nullable|string|max:255',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
+            'ctas' => 'nullable|array',
+            'ctas.*.title' => 'nullable|string|max:255',
+            'ctas.*.description' => 'nullable|string|max:500',
+            'ctas.*.button_text' => 'nullable|string|max:100',
+            'ctas.*.link' => 'nullable|string|max:500',
         ]);
 
         if ($validated['status'] === 'scheduled') {
@@ -66,6 +71,7 @@ class PostController extends Controller
         }
 
         $validated['user_id'] = auth()->id();
+        $validated['ctas'] = $this->filterCtas($request->input('ctas', []));
         unset($validated['tags']);
 
         $post = Post::create($validated);
@@ -101,6 +107,11 @@ class PostController extends Controller
             'meta_description' => 'nullable|string|max:255',
             'tags' => 'nullable|array',
             'tags.*' => 'exists:tags,id',
+            'ctas' => 'nullable|array',
+            'ctas.*.title' => 'nullable|string|max:255',
+            'ctas.*.description' => 'nullable|string|max:500',
+            'ctas.*.button_text' => 'nullable|string|max:100',
+            'ctas.*.link' => 'nullable|string|max:500',
         ]);
 
         if ($validated['status'] === 'scheduled') {
@@ -121,6 +132,7 @@ class PostController extends Controller
             $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
         }
 
+        $validated['ctas'] = $this->filterCtas($request->input('ctas', []));
         unset($validated['tags']);
 
         $post->update($validated);
@@ -155,5 +167,17 @@ class PostController extends Controller
         return response()->json([
             'url' => Storage::disk('public')->url($path),
         ]);
+    }
+
+    private function filterCtas(array $ctas): array
+    {
+        return array_values(array_map(function ($cta) {
+            return [
+                'title' => trim($cta['title'] ?? ''),
+                'description' => trim($cta['description'] ?? ''),
+                'button_text' => trim($cta['button_text'] ?? ''),
+                'link' => trim($cta['link'] ?? ''),
+            ];
+        }, $ctas));
     }
 }

@@ -91,7 +91,7 @@
                 prose-th:bg-brand-50 prose-th:text-brand-700 prose-th:font-bold prose-th:text-sm prose-th:uppercase prose-th:tracking-wider
                 prose-td:text-gray-600 prose-td:text-sm"
                 x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                {!! $post->body !!}
+                {!! $post->rendered_body !!}
             </article>
 
             {{-- Share buttons --}}
