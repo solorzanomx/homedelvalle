@@ -3,8 +3,8 @@
 
 @section('styles')
 <style>
-.t-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; }
-.t-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.t-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+.t-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; max-width: 420px; }
 .t-card-body { padding: 1rem 1.25rem; }
 .t-top { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
 .t-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1rem; flex-shrink: 0; overflow: hidden; }
