@@ -109,37 +109,11 @@
                 <p class="mt-4 text-lg text-gray-500">Selecciona tu perfil y descubre como podemos ayudarte.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-                {{-- Propietario --}}
-                <a href="{{ route('landing.vende') }}"
-                   class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
-                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
-                        <x-icon name="home" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
-                    </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy propietario</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rapido, al mejor precio y con total seguridad juridica.</p>
-                    <ul class="mt-5 space-y-2">
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Valuacion gratuita en 24h
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Venta en 45 dias promedio
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Acompañamiento legal completo
-                        </li>
-                    </ul>
-                    <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
-                        Solicitar valuacion
-                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                </a>
-
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
                 {{-- Comprador --}}
                 <a href="{{ route('propiedades.index') }}"
                    class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
-                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 100ms">
+                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                     <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
                         <x-icon name="search" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
@@ -158,6 +132,37 @@
                     </ul>
                     <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
                         Ver propiedades
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
+                {{-- Propietario (DESTACADO — centro) --}}
+                <a href="{{ route('landing.vende') }}"
+                   class="group relative rounded-2xl border-2 border-brand-500 bg-gradient-to-b from-brand-50/80 to-white p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 text-left md:-mt-4 md:mb-[-1rem] ring-1 ring-brand-100"
+                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 100ms">
+                    <div class="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-600 text-white text-xs font-bold tracking-wide shadow-lg">
+                            <x-icon name="star" class="w-3 h-3" /> MAS SOLICITADO
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-500 shadow-brand transition-all duration-500 group-hover:scale-105">
+                        <x-icon name="home" class="w-7 h-7 text-white" />
+                    </div>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy propietario</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rapido, al mejor precio y con total seguridad juridica.</p>
+                    <ul class="mt-5 space-y-2">
+                        <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
+                            <x-icon name="check" class="w-4 h-4 text-brand-600 shrink-0" /> Valuacion gratuita en 24h
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
+                            <x-icon name="check" class="w-4 h-4 text-brand-600 shrink-0" /> Venta en 45 dias promedio
+                        </li>
+                        <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
+                            <x-icon name="check" class="w-4 h-4 text-brand-600 shrink-0" /> Acompañamiento legal completo
+                        </li>
+                    </ul>
+                    <div class="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-bold group-hover:bg-brand-700 transition-all shadow-md">
+                        Solicitar valuacion gratuita
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>
