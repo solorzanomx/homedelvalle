@@ -89,8 +89,8 @@
                 prose-img:rounded-2xl prose-img:shadow-premium-lg prose-img:my-8
                 prose-pre:bg-brand-950 prose-pre:rounded-xl prose-pre:shadow-premium
                 prose-code:text-brand-700 prose-code:bg-brand-50 prose-code:rounded-md prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-medium prose-code:before:content-none prose-code:after:content-none
-                prose-ul:my-6 prose-ol:my-6
-                prose-li:text-gray-600 prose-li:leading-relaxed prose-li:marker:text-brand-400
+                prose-ul:my-4 prose-ol:my-4 prose-ul:space-y-1 prose-ol:space-y-1
+                prose-li:text-gray-600 prose-li:leading-normal prose-li:marker:text-brand-400 prose-li:my-0
                 prose-hr:border-gray-200 prose-hr:my-10
                 prose-table:overflow-hidden prose-table:rounded-xl prose-table:border prose-table:border-gray-200
                 prose-th:bg-brand-50 prose-th:text-brand-700 prose-th:font-bold prose-th:text-sm prose-th:uppercase prose-th:tracking-wider
