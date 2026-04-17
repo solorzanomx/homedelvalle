@@ -49,7 +49,7 @@ class EmailService
         return (object) [
             'host' => $global->smtp_server,
             'port' => $global->port,
-            'username' => $global->from_email,
+            'username' => $global->username ?: $global->from_email,
             'password' => $global->password,
             'enable_ssl' => $global->enable_ssl,
             'ssl_mode' => null,

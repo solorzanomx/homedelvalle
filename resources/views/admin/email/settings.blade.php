@@ -43,6 +43,13 @@
                                placeholder="CRM Homedelvalle">
                     </div>
                     <div class="form-group full-width">
+                        <label class="form-label">Usuario SMTP</label>
+                        <input type="text" name="username" class="form-input"
+                               value="{{ old('username', $emailSettings->username ?? '') }}"
+                               placeholder="Dejar vacio para usar el correo remitente">
+                        <p class="form-hint">Para Resend usa "resend". Para Gmail, usa tu correo completo.</p>
+                    </div>
+                    <div class="form-group full-width">
                         <label class="form-label">Contrasena / App Password</label>
                         <input type="password" name="password" class="form-input"
                                placeholder="{{ $emailSettings && $emailSettings->password ? '••••••••  (dejar vacio para no cambiar)' : 'Ingresa la contrasena' }}">
@@ -78,6 +85,7 @@
                     </div>
                     <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">
                         <p><strong>Servidor:</strong> {{ $emailSettings->smtp_server }}:{{ $emailSettings->port }}</p>
+                        <p><strong>Usuario:</strong> {{ $emailSettings->username ?: $emailSettings->from_email }}</p>
                         <p><strong>Remitente:</strong> {{ $emailSettings->from_email }}</p>
                         <p><strong>SSL:</strong> {{ $emailSettings->enable_ssl ? 'Activado' : 'Desactivado' }}</p>
                     </div>
@@ -117,6 +125,14 @@
         <div class="card">
             <div class="card-header"><h3>Guia Rapida</h3></div>
             <div class="card-body" style="font-size:0.82rem; color:var(--text-muted);">
+                <p style="margin-bottom:0.5rem;"><strong>Resend:</strong></p>
+                <ul style="margin-left:1rem; margin-bottom:0.75rem;">
+                    <li>Servidor: smtp.resend.com</li>
+                    <li>Puerto: 465</li>
+                    <li>Usuario: resend</li>
+                    <li>SSL: Activado</li>
+                    <li>Password: tu API Key</li>
+                </ul>
                 <p style="margin-bottom:0.5rem;"><strong>Gmail:</strong></p>
                 <ul style="margin-left:1rem; margin-bottom:0.75rem;">
                     <li>Servidor: smtp.gmail.com</li>

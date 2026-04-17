@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmailSetting extends Model
 {
-    protected $fillable = ['smtp_server', 'port', 'from_email', 'from_name', 'password', 'enable_ssl'];
+    protected $fillable = ['smtp_server', 'port', 'from_email', 'from_name', 'username', 'password', 'enable_ssl'];
     protected function casts(): array
     {
         return [

@@ -22,6 +22,7 @@ class EmailSettingsController extends Controller
             'port' => 'required|integer|min:1|max:65535',
             'from_email' => 'required|email|max:255',
             'from_name' => 'nullable|string|max:255',
+            'username' => 'nullable|string|max:255',
             'password' => 'nullable|string|max:500',
             'enable_ssl' => 'boolean',
         ]);
