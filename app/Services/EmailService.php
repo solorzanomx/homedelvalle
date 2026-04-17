@@ -24,13 +24,13 @@ class EmailService
         // Try user-specific config
         if ($sender) {
             $userConfig = $sender->mailSetting;
-            if ($userConfig && $userConfig->is_active && $userConfig->isConfigured()) {
-                // Use user's email/password, but inherit server settings from global if not set
+            if ($userConfig && $userConfig->is_active && $userConfig->from_email) {
+                // Use user's email, but inherit SMTP credentials from global if not set
                 return (object) [
                     'host' => $userConfig->smtp_server ?: ($global->smtp_server ?? ''),
                     'port' => $userConfig->port ?: ($global->port ?? 587),
-                    'username' => $userConfig->username ?: $userConfig->from_email,
-                    'password' => $userConfig->password,
+                    'username' => $userConfig->username ?: ($global->username ?? $global->from_email ?? $userConfig->from_email),
+                    'password' => $userConfig->password ?: ($global->password ?? ''),
                     'enable_ssl' => $userConfig->encryption !== 'none'
                         ? true
                         : ($global->enable_ssl ?? true),

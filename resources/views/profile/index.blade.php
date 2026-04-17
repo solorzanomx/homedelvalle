@@ -266,7 +266,7 @@
                 @endif
             </div>
             <div class="card-body">
-                <p class="form-hint" style="margin-bottom:1rem;">Configura tu correo de empresa (@homedelvalle.mx) para enviar fichas tecnicas y correos a clientes directamente desde tu cuenta.</p>
+                <p class="form-hint" style="margin-bottom:1rem;">Configura tu correo para enviar fichas tecnicas y correos a clientes directamente desde tu cuenta. El servidor SMTP y credenciales se heredan automaticamente de la configuracion del sistema.</p>
                 <form method="POST" action="{{ route('profile.mail-settings') }}">
                     @csrf
                     <div class="form-grid">
@@ -275,14 +275,8 @@
                             <input type="email" name="from_email" class="form-input"
                                    value="{{ old('from_email', $mailSetting->from_email ?? '') }}"
                                    placeholder="tu.nombre@homedelvalle.mx">
-                            <p class="form-hint">Tu correo @homedelvalle.mx asignado.</p>
+                            <p class="form-hint">El correo desde el cual se enviaran los mensajes a tus clientes.</p>
                             @error('from_email') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Contrasena del Correo <span class="required">*</span></label>
-                            <input type="password" name="password" class="form-input"
-                                   placeholder="{{ $mailSetting && $mailSetting->password ? '••••••••  (dejar vacio para no cambiar)' : 'Contrasena de tu correo' }}">
-                            @error('password') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                         </div>
                         <div class="form-group">
                             <label class="form-label">Nombre del Remitente</label>
@@ -292,7 +286,6 @@
                             <p class="form-hint">Nombre que veran los clientes al recibir tu correo.</p>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" style="visibility:hidden;">Activar</label>
                             <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.55rem 0;">
                                 <input type="hidden" name="is_active" value="0">
                                 <input type="checkbox" name="is_active" value="1"
@@ -306,7 +299,7 @@
                     {{-- Campos avanzados (colapsados por defecto) --}}
                     <details style="margin-top:0.5rem; margin-bottom:1rem;">
                         <summary style="font-size:0.8rem; color:var(--text-muted); cursor:pointer; user-select:none;">
-                            &#9881; Configuracion avanzada (solo si tu correo NO es @homedelvalle.mx)
+                            &#9881; Configuracion avanzada (solo si usas un servidor SMTP diferente al del sistema)
                         </summary>
                         <div class="form-grid" style="margin-top:0.75rem;">
                             <div class="form-group">
@@ -319,14 +312,19 @@
                             <div class="form-group">
                                 <label class="form-label">Puerto</label>
                                 <input type="number" name="port" class="form-input"
-                                       value="{{ old('port', $mailSetting->port ?? 587) }}">
+                                       value="{{ old('port', $mailSetting->port ?? '') }}"
+                                       placeholder="Se hereda del sistema">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Usuario SMTP</label>
                                 <input type="text" name="username" class="form-input"
                                        value="{{ old('username', $mailSetting->username ?? '') }}"
-                                       placeholder="Normalmente igual a tu correo">
-                                <p class="form-hint">Dejar vacio para usar tu correo de empresa.</p>
+                                       placeholder="Se hereda del sistema">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Contrasena / API Key</label>
+                                <input type="password" name="password" class="form-input"
+                                       placeholder="{{ $mailSetting && $mailSetting->password ? '••••••••  (dejar vacio para no cambiar)' : 'Se hereda del sistema' }}">
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Encriptacion</label>

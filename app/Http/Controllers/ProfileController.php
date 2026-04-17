@@ -119,9 +119,10 @@ class ProfileController extends Controller
         $validated['encryption'] = $validated['encryption'] ?? 'tls';
         $validated['port'] = $validated['port'] ?? 587;
 
-        // Username defaults to from_email (standard for most SMTP servers)
+        // Username defaults to from_email only if explicitly provided
+        // If empty, EmailService will inherit from global config
         if (empty($validated['username'])) {
-            $validated['username'] = $validated['from_email'];
+            unset($validated['username']);
         }
 
         // Don't overwrite password if left empty
