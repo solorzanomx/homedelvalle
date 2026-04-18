@@ -9,10 +9,10 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 // ── Marketing Automation Scheduler ────────────────────
-Schedule::job(new \App\Jobs\ProcessAutomationEnrollments)->everyMinute();
-Schedule::job(new \App\Jobs\EvaluateSegments)->everyFiveMinutes();
-Schedule::job(new \App\Jobs\RecalculateLeadScores)->daily();
-Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00');
+Schedule::job(new \App\Jobs\ProcessAutomationEnrollments)->everyMinute()->withoutOverlapping();
+Schedule::job(new \App\Jobs\EvaluateSegments)->everyFiveMinutes()->withoutOverlapping();
+Schedule::job(new \App\Jobs\RecalculateLeadScores)->daily()->withoutOverlapping();
+Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00')->withoutOverlapping();
 
 // ── Blog Content Scheduler ───────────────────────────
-Schedule::job(new \App\Jobs\PublishScheduledPosts)->everyMinute();
+Schedule::job(new \App\Jobs\PublishScheduledPosts)->everyMinute()->withoutOverlapping();

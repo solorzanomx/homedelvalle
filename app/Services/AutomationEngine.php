@@ -301,6 +301,12 @@ class AutomationEngine
      */
     public function executeStep(AutomationEnrollment $enrollment): bool
     {
+        // Refresh to avoid race conditions with parallel execution
+        $enrollment->refresh();
+        if ($enrollment->status !== 'active') {
+            return true;
+        }
+
         $step = $enrollment->getCurrentStep();
         if (!$step) {
             $enrollment->markCompleted();
