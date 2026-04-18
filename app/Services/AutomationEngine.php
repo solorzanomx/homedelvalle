@@ -355,8 +355,20 @@ class AutomationEngine
 
     private function executeDelay(AutomationEnrollment $enrollment, AutomationStep $step): array
     {
+        // The delay step works by advancing immediately and setting next_run_at in the future.
+        // When processReadyEnrollments picks it up again, the delay has elapsed and the next step runs.
         $minutes = $step->getDelayMinutes();
-        $enrollment->update(['next_run_at' => now()->addMinutes($minutes)]);
+        $next = $enrollment->getNextStep();
+
+        if (!$next) {
+            $enrollment->markCompleted();
+            return ['success' => true, 'advance' => false, 'delay_minutes' => $minutes];
+        }
+
+        $enrollment->update([
+            'current_step' => $next->position,
+            'next_run_at' => now()->addMinutes($minutes),
+        ]);
 
         return ['success' => true, 'advance' => false, 'delay_minutes' => $minutes];
     }
