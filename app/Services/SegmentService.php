@@ -44,18 +44,27 @@ class SegmentService
             $existing = DB::table('client_segment')
                 ->where('client_id', $clientId)
                 ->where('segment_id', $segment->id)
-                ->whereNull('exited_at')
-                ->exists();
+                ->first();
 
             if (!$existing) {
                 $segment->clients()->attach($clientId, ['entered_at' => now()]);
                 $entered++;
+            } elseif ($existing->exited_at !== null) {
+                // Re-entering: clear exit date
+                DB::table('client_segment')
+                    ->where('client_id', $clientId)
+                    ->where('segment_id', $segment->id)
+                    ->update(['exited_at' => null, 'entered_at' => now()]);
+                $entered++;
+            } else {
+                // Already in segment, skip
+                continue;
+            }
 
-                // Fire event for automation triggers
-                \App\Models\LeadEvent::record($clientId, 'segment_entered', [
-                    'source' => 'system',
-                    'properties' => ['segment_id' => $segment->id, 'segment_name' => $segment->name],
-                ]);
+            \App\Models\LeadEvent::record($clientId, 'segment_entered', [
+                'source' => 'system',
+                'properties' => ['segment_id' => $segment->id, 'segment_name' => $segment->name],
+            ]);
             }
         }
 
