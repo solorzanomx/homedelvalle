@@ -200,12 +200,20 @@
         @php $mailSetting = $user->mailSetting; @endphp
 
         <div class="p-section-title">Correo corporativo</div>
-        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1rem;">El correo del perfil se utiliza como remitente. Solo necesitas configurar la contrasena para activar el envio.</p>
+        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1rem;">El correo del perfil se utiliza como remitente. Las credenciales SMTP se heredan de la configuracion global del sistema.</p>
         <div class="form-grid">
             <div class="form-group">
-                <label class="form-label">Contrasena del correo</label>
-                <input type="password" name="mail_password" class="form-input"
-                       placeholder="{{ $mailSetting && $mailSetting->password ? 'Guardada — dejar vacio para no cambiar' : 'Ingresa la contrasena del correo' }}">
+                <label class="form-label">Correo de envio</label>
+                <input type="email" name="mail_from_email" class="form-input"
+                       value="{{ old('mail_from_email', $mailSetting->from_email ?? $user->email) }}"
+                       placeholder="{{ $user->email }}">
+                <p class="form-hint">Correo desde el cual se envian mensajes a clientes. Por defecto usa el email del perfil.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nombre del remitente</label>
+                <input type="text" name="mail_from_name" class="form-input"
+                       value="{{ old('mail_from_name', $mailSetting->from_name ?? '') }}"
+                       placeholder="{{ $user->name }} {{ $user->last_name }}">
             </div>
             <div class="form-group" style="display:flex; align-items:flex-end; padding-bottom:0.3rem;">
                 <div class="toggle-wrap">

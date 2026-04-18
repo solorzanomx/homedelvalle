@@ -152,12 +152,8 @@ class UserAdminController extends Controller
         $mailData = [
             'from_email' => $mailEmail,
             'from_name' => $request->input('mail_from_name', $user->name . ' ' . ($user->last_name ?? '')),
-            'username' => $mailEmail,
             'is_active' => $request->boolean('mail_is_active'),
         ];
-        if ($request->filled('mail_password')) {
-            $mailData['password'] = $request->input('mail_password');
-        }
         $user->mailSetting()->updateOrCreate(
             ['user_id' => $user->id],
             $mailData
