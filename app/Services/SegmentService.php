@@ -65,7 +65,6 @@ class SegmentService
                 'source' => 'system',
                 'properties' => ['segment_id' => $segment->id, 'segment_name' => $segment->name],
             ]);
-            }
         }
 
         foreach ($toExit as $clientId) {
