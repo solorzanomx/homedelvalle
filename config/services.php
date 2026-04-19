@@ -41,6 +41,10 @@ return [
         'threshold' => (float) env('RECAPTCHA_THRESHOLD', 0.5),
     ],
 
+    'webhook' => [
+        'api_key' => env('WEBHOOK_API_KEY'),
+    ],
+
     'whatsapp' => [
         'enabled' => (bool) env('WHATSAPP_ENABLED', false),
         'provider' => env('WHATSAPP_PROVIDER', 'mock'),
