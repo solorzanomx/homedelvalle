@@ -1,5 +1,5 @@
-{{-- Chatbot calificador de leads — bottom-left --}}
-<div x-data="leadChatbot()" x-cloak class="fixed bottom-6 left-6 z-50">
+{{-- Chatbot calificador de leads — bottom-right --}}
+<div x-data="leadChatbot()" x-cloak class="fixed bottom-6 right-6 z-50">
 
     {{-- Chat window --}}
     <div x-show="open" x-cloak

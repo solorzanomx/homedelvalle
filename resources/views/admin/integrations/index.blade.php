@@ -114,7 +114,13 @@
                 <div class="int-toggle">
                     <div class="int-toggle-label">
                         <span class="int-status {{ ($settings && $settings->webhook_enabled && $settings->webhook_api_key) ? 'on' : 'off' }}"></span>
-                        {{ ($settings && $settings->webhook_enabled && $settings->webhook_api_key) ? 'Activo' : 'Inactivo' }}
+                        @if($settings && $settings->webhook_enabled && $settings->webhook_api_key)
+                            Activo
+                        @elseif($settings && $settings->webhook_enabled)
+                            Pendiente — genera una API Key
+                        @else
+                            Inactivo
+                        @endif
                     </div>
                     <label class="toggle-switch">
                         <input type="hidden" name="webhook_enabled" value="0">
