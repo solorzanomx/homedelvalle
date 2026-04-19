@@ -266,6 +266,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // Integraciones (tracking codes, APIs)
         Route::get('/integrations', [IntegrationSettingsController::class, 'index'])->name('integrations.index');
         Route::post('/integrations', [IntegrationSettingsController::class, 'update'])->name('integrations.update');
+        Route::post('/integrations/webhook/regenerate', [IntegrationSettingsController::class, 'regenerateWebhookKey'])->name('integrations.webhook.regenerate');
 
         // Automatizaciones
         Route::get('/automations', [AutomationController::class, 'index'])->name('automations.index');

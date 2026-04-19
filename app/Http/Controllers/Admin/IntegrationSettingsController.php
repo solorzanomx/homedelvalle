@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class IntegrationSettingsController extends Controller
 {
@@ -27,6 +28,7 @@ class IntegrationSettingsController extends Controller
         $validated['gtm_enabled'] = $request->boolean('gtm_enabled');
         $validated['ga_enabled'] = $request->boolean('ga_enabled');
         $validated['fb_pixel_enabled'] = $request->boolean('fb_pixel_enabled');
+        $validated['webhook_enabled'] = $request->boolean('webhook_enabled');
 
         $settings = SiteSetting::first();
 
@@ -39,5 +41,24 @@ class IntegrationSettingsController extends Controller
         cache()->forget('site_settings');
 
         return back()->with('success', 'Integraciones actualizadas correctamente.');
+    }
+
+    public function regenerateWebhookKey()
+    {
+        $settings = SiteSetting::first();
+
+        if (!$settings) {
+            $settings = SiteSetting::create([]);
+        }
+
+        $key = 'whk_' . bin2hex(random_bytes(32));
+        $settings->update([
+            'webhook_api_key' => $key,
+            'webhook_enabled' => true,
+        ]);
+
+        cache()->forget('site_settings');
+
+        return back()->with('success', 'API Key regenerada exitosamente. Actualiza la clave en n8n.');
     }
 }

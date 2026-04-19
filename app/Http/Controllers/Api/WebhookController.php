@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\SiteSetting;
 use App\Services\AutomationEngine;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,8 +13,11 @@ class WebhookController extends Controller
     public function lead(Request $request, AutomationEngine $engine): JsonResponse
     {
         // Authenticate via X-Webhook-Secret header
-        $secret = config('services.webhook.api_key');
-        if (!$secret || $request->header('X-Webhook-Secret') !== $secret) {
+        $settings = SiteSetting::first();
+        $secret = $settings?->webhook_api_key;
+        $enabled = $settings?->webhook_enabled;
+
+        if (!$enabled || !$secret || $request->header('X-Webhook-Secret') !== $secret) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 

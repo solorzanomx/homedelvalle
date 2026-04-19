@@ -107,12 +107,48 @@
             </div>
         </div>
 
-        {{-- Placeholder: more integrations --}}
-        <div class="card" style="border: 2px dashed var(--border, #e5e7eb); background: transparent;">
-            <div class="card-body" style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem; text-align:center;">
-                <div style="font-size:2rem; margin-bottom:0.5rem; opacity:0.4;">&#43;</div>
-                <div style="font-weight:600; color:var(--text-muted, #9ca3af); font-size:0.9rem;">Mas integraciones proximamente</div>
-                <div style="color:var(--text-muted, #9ca3af); font-size:0.8rem; margin-top:0.25rem;">TikTok Pixel, Hotjar, Clarity, etc.</div>
+        {{-- Webhook API (n8n) --}}
+        <div class="card">
+            <div class="card-header"><h3>Webhook API</h3></div>
+            <div class="card-body">
+                <div class="int-toggle">
+                    <div class="int-toggle-label">
+                        <span class="int-status {{ ($settings && $settings->webhook_enabled && $settings->webhook_api_key) ? 'on' : 'off' }}"></span>
+                        {{ ($settings && $settings->webhook_enabled && $settings->webhook_api_key) ? 'Activo' : 'Inactivo' }}
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="hidden" name="webhook_enabled" value="0">
+                        <input type="checkbox" name="webhook_enabled" value="1" {{ ($settings && $settings->webhook_enabled) ? 'checked' : '' }} onchange="toggleFields(this, 'webhookFields')">
+                        <span class="toggle-track"></span>
+                    </label>
+                </div>
+                <div id="webhookFields" class="int-fields" style="{{ ($settings && $settings->webhook_enabled) ? '' : 'display:none' }}">
+                    @if($settings && $settings->webhook_api_key)
+                        <div class="form-group">
+                            <label class="form-label">API Key</label>
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <input type="text" id="webhookKey" class="form-input" value="{{ $settings->webhook_api_key }}" readonly style="font-family:monospace; font-size:0.82rem; background:var(--bg-alt, #f9fafb);">
+                                <button type="button" onclick="copyWebhookKey()" class="btn btn-sm" title="Copiar" style="white-space:nowrap;">Copiar</button>
+                            </div>
+                        </div>
+                    @else
+                        <p style="color:var(--text-muted, #9ca3af); font-size:0.85rem; margin-bottom:0.75rem;">No hay API Key generada aun.</p>
+                    @endif
+                    <div style="margin-top:0.75rem;">
+                        <form method="POST" action="{{ route('admin.integrations.webhook.regenerate') }}" style="display:inline;" onsubmit="return confirm('{{ $settings && $settings->webhook_api_key ? 'Esto invalidara la clave actual. Los servicios conectados dejaran de funcionar hasta que actualices la nueva clave. ¿Continuar?' : '¿Generar nueva API Key?' }}')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm {{ $settings && $settings->webhook_api_key ? 'btn-outline' : 'btn-primary' }}">
+                                {{ $settings && $settings->webhook_api_key ? 'Regenerar API Key' : 'Generar API Key' }}
+                            </button>
+                        </form>
+                    </div>
+                    <div style="margin-top:1rem; padding:0.75rem; background:var(--bg-alt, #f9fafb); border-radius:var(--radius, 8px); font-size:0.8rem; color:var(--text-muted, #6b7280);">
+                        <strong>Endpoint:</strong> <code>POST {{ url('/api/webhook/lead') }}</code><br>
+                        <strong>Header:</strong> <code>X-Webhook-Secret: {tu_api_key}</code><br>
+                        <strong>Content-Type:</strong> <code>application/json</code><br>
+                        <div style="margin-top:0.5rem;">Campos: <code>name</code>, <code>email</code> (requeridos), <code>phone</code>, <code>source</code>, <code>lead_type</code>, <code>interest</code>, <code>budget</code>, <code>zone</code>, <code>property_type</code>, <code>message</code>, <code>utm_*</code></div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -150,6 +186,16 @@ function toggleFields(checkbox, targetId) {
     var el = document.getElementById(targetId);
     if (el) {
         el.style.display = checkbox.checked ? '' : 'none';
+    }
+}
+function copyWebhookKey() {
+    var input = document.getElementById('webhookKey');
+    if (input) {
+        navigator.clipboard.writeText(input.value).then(function() {
+            var btn = input.nextElementSibling;
+            btn.textContent = 'Copiado!';
+            setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
+        });
     }
 }
 </script>

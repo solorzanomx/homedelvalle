@@ -12,6 +12,18 @@ class EasyBrokerSettingsController extends Controller
     public function index()
     {
         $ebSettings = EasyBrokerSetting::first();
+
+        // If encrypted api_key can't be decrypted (APP_KEY changed), clear it
+        if ($ebSettings) {
+            try {
+                $ebSettings->api_key;
+            } catch (\Illuminate\Contracts\Encryption\DecryptionException $e) {
+                $ebSettings->update(['api_key' => null]);
+                $ebSettings->refresh();
+                session()->flash('warning', 'La API Key de EasyBroker se invalido por un cambio de clave del sistema. Por favor ingresala de nuevo.');
+            }
+        }
+
         return view('admin.easybroker.settings', compact('ebSettings'));
     }
 
