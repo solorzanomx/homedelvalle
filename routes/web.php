@@ -74,8 +74,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Propiedades públicas
 Route::get('/propiedades', [PublicController::class, 'propiedades'])->name('propiedades.index');
-Route::get('/propiedades/{id}/{slug?}', [PublicController::class, 'propiedadShow'])->name('propiedades.show');
 Route::get('/propiedades/{property}/ficha.pdf', [PropertyFichaController::class, 'pdf'])->name('properties.pdf.public');
+Route::get('/propiedades/{id}/{slug?}', [PublicController::class, 'propiedadShow'])->name('propiedades.show');
 
 // Páginas estáticas públicas
 Route::get('/nosotros', [PublicController::class, 'nosotros'])->name('nosotros');
