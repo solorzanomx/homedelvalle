@@ -4,12 +4,12 @@
     $hasPhotos = $photoCount > 0;
 @endphp
 
-<div x-data="propertyCarousel({{ $photoCount }})" class="relative aspect-[16/10] rounded-2xl overflow-hidden bg-gray-100 shadow-premium group" x-intersect.once="$el.classList.add('animate-fade-in')">
+<div x-data="propertyCarousel({{ $photoCount }})" class="relative aspect-[16/10] rounded-2xl overflow-hidden bg-gray-100 shadow-premium group" style="overflow: hidden;" x-intersect.once="$el.classList.add('animate-fade-in')">
     @if($hasPhotos)
         {{-- Slides container --}}
-        <div class="flex h-full transition-transform duration-300 ease-out" :style="'transform: translateX(-' + (current * 100) + '%)'">
+        <div class="flex h-full" style="transition: transform 0.3s ease-out;" :style="'transform: translateX(-' + (current * 100) + '%)'">
             @foreach($photos as $photo)
-            <div class="w-full h-full flex-shrink-0">
+            <div style="min-width: 100%; width: 100%; height: 100%; flex-shrink: 0;">
                 <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description ?? $property->title }}" class="w-full h-full object-cover" loading="{{ $loop->index < 2 ? 'eager' : 'lazy' }}">
             </div>
             @endforeach
