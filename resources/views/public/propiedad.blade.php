@@ -41,16 +41,9 @@
     {{-- FULLWIDTH TEMPLATE --}}
     {{-- ============================== --}}
 
-    {{-- Full-width image --}}
-    <div class="relative aspect-[21/9] bg-gray-100 overflow-hidden" x-data x-intersect.once="$el.classList.add('animate-fade-in')">
-        @if($property->photo_url)
-            <img src="{{ $property->photo_url }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
-        @else
-            <div class="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
-                <x-icon name="home" class="w-20 h-20 text-brand-300" />
-            </div>
-        @endif
-        <div class="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent"></div>
+    {{-- Full-width carousel --}}
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6">
+        @include('public.propiedad._gallery', ['property' => $property])
     </div>
 
     <section class="py-12 sm:py-16 bg-white">
@@ -86,8 +79,6 @@
 
             @include('public.propiedad._share', ['property' => $property])
 
-            @include('public.propiedad._gallery', ['property' => $property])
-
             {{-- Specs --}}
             @if($specs->count())
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
@@ -112,42 +103,10 @@
     {{-- GALLERY TEMPLATE --}}
     {{-- ============================== --}}
 
-    {{-- Gallery mosaic --}}
+    {{-- Gallery carousel --}}
     <div class="bg-gray-100 pt-20">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6" x-data x-intersect.once="$el.classList.add('animate-fade-in')">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 rounded-2xl overflow-hidden" style="max-height: 500px">
-                <div class="lg:col-span-2 aspect-[16/10] lg:aspect-auto overflow-hidden bg-gray-200">
-                    @if($property->photo_url)
-                        <img src="{{ $property->photo_url }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
-                    @else
-                        <div class="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
-                            <x-icon name="home" class="w-16 h-16 text-brand-300" />
-                        </div>
-                    @endif
-                </div>
-                <div class="hidden lg:grid grid-rows-2 gap-3">
-                    <div class="overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center">
-                        <div class="text-center p-6">
-                            <p class="text-3xl font-extrabold text-brand-700">{{ $property->formatted_price }}</p>
-                            <p class="mt-1 text-sm text-brand-500 font-medium">{{ $opLabels[$property->operation_type] ?? '' }}</p>
-                        </div>
-                    </div>
-                    <div class="overflow-hidden bg-gradient-to-br from-brand-800 to-brand-950 flex items-center justify-center">
-                        <div class="text-center p-6 text-white">
-                            @if($specs->count())
-                            <div class="grid grid-cols-2 gap-3">
-                                @foreach($specs->take(4) as $spec)
-                                <div class="text-center">
-                                    <p class="text-xl font-bold">{{ $spec['value'] }}</p>
-                                    <p class="text-xs text-brand-200/70">{{ $spec['label'] }}</p>
-                                </div>
-                                @endforeach
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+            @include('public.propiedad._gallery', ['property' => $property])
         </div>
     </div>
 
@@ -176,7 +135,6 @@
                     </div>
 
                     @include('public.propiedad._share', ['property' => $property])
-                    @include('public.propiedad._gallery', ['property' => $property])
                     @include('public.propiedad._description', ['property' => $property])
                 </div>
 
@@ -223,20 +181,10 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
                 {{-- Main content --}}
                 <div class="lg:col-span-2">
-                    {{-- Image --}}
-                    <div class="aspect-[16/10] rounded-2xl overflow-hidden bg-gray-100 shadow-premium" x-data x-intersect.once="$el.classList.add('animate-fade-in')">
-                        @if($property->photo_url)
-                            <img src="{{ $property->photo_url }}" alt="{{ $property->title }}" class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full bg-gradient-to-br from-brand-50 to-brand-100 flex items-center justify-center">
-                                <x-icon name="home" class="w-16 h-16 text-brand-300" />
-                            </div>
-                        @endif
-                    </div>
+                    {{-- Image Carousel --}}
+                    @include('public.propiedad._gallery', ['property' => $property])
 
                     @include('public.propiedad._share', ['property' => $property])
-
-                    @include('public.propiedad._gallery', ['property' => $property])
 
                     {{-- Specs --}}
                     @if($specs->count())
