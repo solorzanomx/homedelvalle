@@ -10,65 +10,98 @@
 </div>
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
-    {{-- Logo Section --}}
-    <div class="card">
-        <div class="card-header"><h3>Logotipo</h3></div>
-        <div class="card-body">
-            {{-- Toggle: Texto o Imagen --}}
-            <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; background:var(--bg); border-radius:var(--radius); padding:4px;">
-                <button type="button" class="btn btn-sm {{ (!$settings || !$settings->logo_type || $settings->logo_type === 'text') ? 'btn-primary' : 'btn-outline' }}"
-                        style="flex:1; justify-content:center;" onclick="setLogoType('text')" id="btnLogoText">
-                    Texto
-                </button>
-                <button type="button" class="btn btn-sm {{ ($settings && $settings->logo_type === 'image') ? 'btn-primary' : 'btn-outline' }}"
-                        style="flex:1; justify-content:center;" onclick="setLogoType('image')" id="btnLogoImage">
-                    Imagen
-                </button>
-            </div>
-
-            <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" id="logoForm">
-                @csrf
-                <input type="hidden" name="logo_type" id="logoTypeInput" value="{{ $settings->logo_type ?? 'text' }}">
-                {{-- Enviar config existente para no perderla --}}
-                <input type="hidden" name="site_name" value="{{ $settings->site_name ?? 'Homedelvalle' }}">
-                <input type="hidden" name="site_tagline" value="{{ $settings->site_tagline ?? '' }}">
-                <input type="hidden" name="primary_color" value="{{ $settings->primary_color ?? '#667eea' }}">
-                <input type="hidden" name="secondary_color" value="{{ $settings->secondary_color ?? '#764ba2' }}">
-                <input type="hidden" name="home_welcome_text" value="{{ $settings->home_welcome_text ?? '' }}">
-
-                {{-- Modo Texto --}}
-                <div id="logoTextSection" style="{{ ($settings && $settings->logo_type === 'image') ? 'display:none' : '' }}">
-                    <div class="text-center" style="padding:1.5rem 0;">
-                        <div style="display:inline-flex; align-items:center; gap:0.75rem; background:var(--sidebar-bg); padding:0.75rem 1.5rem; border-radius:var(--radius); color:#fff;">
-                            <div style="width:30px; height:30px; background:var(--primary); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:16px;">&#9830;</div>
-                            <span style="font-size:1rem; font-weight:700;">{{ $settings->site_name ?? 'Homedelvalle' }}</span>
-                        </div>
-                        <p class="form-hint" style="margin-top:0.75rem;">El nombre del sitio se mostrara como logo en el sidebar.</p>
-                    </div>
-                    <div class="form-actions" style="border:none; padding-top:0;">
-                        <button type="submit" class="btn btn-primary">Usar Nombre como Logo</button>
-                    </div>
+    {{-- Logo + Favicon Section --}}
+    <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        {{-- Logo --}}
+        <div class="card">
+            <div class="card-header"><h3>Logotipo</h3></div>
+            <div class="card-body">
+                {{-- Toggle: Texto o Imagen --}}
+                <div style="display:flex; gap:0.5rem; margin-bottom:1.25rem; background:var(--bg); border-radius:var(--radius); padding:4px;">
+                    <button type="button" class="btn btn-sm {{ (!$settings || !$settings->logo_type || $settings->logo_type === 'text') ? 'btn-primary' : 'btn-outline' }}"
+                            style="flex:1; justify-content:center;" onclick="setLogoType('text')" id="btnLogoText">
+                        Texto
+                    </button>
+                    <button type="button" class="btn btn-sm {{ ($settings && $settings->logo_type === 'image') ? 'btn-primary' : 'btn-outline' }}"
+                            style="flex:1; justify-content:center;" onclick="setLogoType('image')" id="btnLogoImage">
+                        Imagen
+                    </button>
                 </div>
 
-                {{-- Modo Imagen --}}
-                <div id="logoImageSection" style="{{ (!$settings || $settings->logo_type !== 'image') ? 'display:none' : '' }}">
+                <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" id="logoForm">
+                    @csrf
+                    <input type="hidden" name="logo_type" id="logoTypeInput" value="{{ $settings->logo_type ?? 'text' }}">
+                    <input type="hidden" name="site_name" value="{{ $settings->site_name ?? 'Homedelvalle' }}">
+                    <input type="hidden" name="site_tagline" value="{{ $settings->site_tagline ?? '' }}">
+                    <input type="hidden" name="primary_color" value="{{ $settings->primary_color ?? '#667eea' }}">
+                    <input type="hidden" name="secondary_color" value="{{ $settings->secondary_color ?? '#764ba2' }}">
+                    <input type="hidden" name="home_welcome_text" value="{{ $settings->home_welcome_text ?? '' }}">
+
+                    {{-- Modo Texto --}}
+                    <div id="logoTextSection" style="{{ ($settings && $settings->logo_type === 'image') ? 'display:none' : '' }}">
+                        <div class="text-center" style="padding:1.5rem 0;">
+                            <div style="display:inline-flex; align-items:center; gap:0.75rem; background:var(--sidebar-bg); padding:0.75rem 1.5rem; border-radius:var(--radius); color:#fff;">
+                                <div style="width:30px; height:30px; background:var(--primary); border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:16px;">&#9830;</div>
+                                <span style="font-size:1rem; font-weight:700;">{{ $settings->site_name ?? 'Homedelvalle' }}</span>
+                            </div>
+                            <p class="form-hint" style="margin-top:0.75rem;">El nombre del sitio se mostrara como logo en el sidebar.</p>
+                        </div>
+                        <div class="form-actions" style="border:none; padding-top:0;">
+                            <button type="submit" class="btn btn-primary">Usar Nombre como Logo</button>
+                        </div>
+                    </div>
+
+                    {{-- Modo Imagen --}}
+                    <div id="logoImageSection" style="{{ (!$settings || $settings->logo_type !== 'image') ? 'display:none' : '' }}">
+                        <div class="text-center">
+                            <div class="logo-preview">
+                                @if($settings && $settings->logo_path)
+                                    <img src="{{ Storage::url($settings->logo_path) }}" alt="Logo" id="logoPreview">
+                                @else
+                                    <span class="text-muted" id="logoPlaceholder" style="font-size:0.85rem;">Sin imagen</span>
+                                @endif
+                            </div>
+                            <p class="form-hint" style="margin-bottom:0.5rem; color: var(--primary); font-weight:500;">Solo se muestra en el sitio publico</p>
+                            <div style="display:flex; gap:0.5rem; justify-content:center;">
+                                <input type="file" id="logoInput" name="logo" accept="image/*" style="display:none" onchange="previewLogo(this)">
+                                <label for="logoInput" class="btn btn-outline" style="cursor:pointer;">Seleccionar imagen</label>
+                                <button type="submit" class="btn btn-primary" id="saveLogoBtn">Guardar</button>
+                            </div>
+                            <p class="form-hint" style="margin-top:0.5rem;">JPG, PNG, SVG, WebP (max 2MB)</p>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- Favicon --}}
+        <div class="card">
+            <div class="card-header"><h3>Favicon</h3></div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="site_name" value="{{ $settings->site_name ?? 'Homedelvalle' }}">
+                    <input type="hidden" name="primary_color" value="{{ $settings->primary_color ?? '#667eea' }}">
+                    <input type="hidden" name="secondary_color" value="{{ $settings->secondary_color ?? '#764ba2' }}">
+                    <input type="hidden" name="logo_type" value="{{ $settings->logo_type ?? 'text' }}">
+
                     <div class="text-center">
-                        <div class="logo-preview">
-                            @if($settings && $settings->logo_path)
-                                <img src="{{ Storage::url($settings->logo_path) }}" alt="Logo" id="logoPreview">
+                        <div style="display:inline-block; width:80px; height:80px; border-radius:50%; overflow:hidden; border:3px solid var(--border); margin-bottom:1rem; background:var(--bg);">
+                            @if($settings && $settings->favicon_path)
+                                <img src="{{ Storage::url($settings->favicon_path) }}" alt="Favicon" id="faviconPreview" style="width:100%; height:100%; object-fit:cover; display:block;">
                             @else
-                                <span class="text-muted" id="logoPlaceholder" style="font-size:0.85rem;">Sin imagen</span>
+                                <div id="faviconPlaceholder" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.75rem;">Sin icono</div>
                             @endif
                         </div>
                         <div style="display:flex; gap:0.5rem; justify-content:center;">
-                            <input type="file" id="logoInput" name="logo" accept="image/*" style="display:none" onchange="previewLogo(this)">
-                            <label for="logoInput" class="btn btn-outline" style="cursor:pointer;">Seleccionar imagen</label>
-                            <button type="submit" class="btn btn-primary" id="saveLogoBtn">Guardar</button>
+                            <input type="file" id="faviconInput" name="favicon" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="previewFavicon(this)">
+                            <label for="faviconInput" class="btn btn-outline" style="cursor:pointer;">Seleccionar imagen</label>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
                         </div>
-                        <p class="form-hint" style="margin-top:0.5rem;">JPG, PNG, SVG, WebP (max 2MB)</p>
+                        <p class="form-hint" style="margin-top:0.75rem;">Sube una imagen cuadrada. Se recortara en circulo automaticamente y se usara como icono en la pestana del navegador.</p>
                     </div>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -218,6 +251,23 @@ function previewLogo(input) {
             else {
                 img = document.createElement('img'); img.src = e.target.result; img.id = 'logoPreview';
                 document.querySelector('.logo-preview').appendChild(img);
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewFavicon(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var p = document.getElementById('faviconPlaceholder');
+            if (p) p.style.display = 'none';
+            var img = document.getElementById('faviconPreview');
+            if (img) { img.src = e.target.result; }
+            else {
+                img = document.createElement('img'); img.src = e.target.result; img.id = 'faviconPreview'; img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+                p.parentNode.appendChild(img);
             }
         };
         reader.readAsDataURL(input.files[0]);

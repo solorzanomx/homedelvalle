@@ -7,6 +7,12 @@
 
     @yield('meta')
 
+    {{-- Favicon --}}
+    @if($siteSettings?->favicon_path)
+    <link rel="icon" type="image/png" href="{{ asset('storage/' . $siteSettings->favicon_path) }}">
+    <link rel="apple-touch-icon" href="{{ asset('storage/' . $siteSettings->favicon_path) }}">
+    @endif
+
     {{-- Fonts: Inter with optical sizing --}}
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800,900" rel="stylesheet">

@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Panel') - {{ $siteSettings->site_name ?? 'Homedelvalle' }}</title>
+    @if($siteSettings->favicon_path ?? false)
+    <link rel="icon" type="image/png" href="{{ asset('storage/' . $siteSettings->favicon_path) }}">
+    @endif
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -306,14 +309,10 @@
         {{-- ===== SIDEBAR ===== --}}
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                @if($siteSettings && $siteSettings->logo_type === 'image' && $siteSettings->logo_path)
-                    <img src="{{ Storage::url($siteSettings->logo_path) }}" alt="Logo">
-                @else
-                    <div class="sidebar-brand">
-                        <div class="brand-icon"><x-icon name="home" class="w-[18px] h-[18px]" /></div>
-                        <span class="brand-text">{{ $siteSettings->site_name ?? 'Homedelvalle' }}</span>
-                    </div>
-                @endif
+                <div class="sidebar-brand">
+                    <div class="brand-icon"><x-icon name="home" class="w-[18px] h-[18px]" /></div>
+                    <span class="brand-text">{{ $siteSettings->site_name ?? 'Homedelvalle' }}</span>
+                </div>
             </div>
 
             <nav style="flex:1; padding: 0.75rem 0; overflow-y: auto;">
