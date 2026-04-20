@@ -324,6 +324,8 @@
 
     <div class="prop-actions">
         <a href="{{ route('properties.edit', $property) }}" class="btn btn-primary">&#9998; Editar</a>
+        <a href="{{ route('properties.pdf', $property) }}" target="_blank" class="btn btn-outline">&#128196; Ficha PDF</a>
+        <button type="button" onclick="document.getElementById('fichaModal').style.display='flex'" class="btn btn-outline">&#9993; Enviar ficha</button>
         @if($property->broker && $property->broker->phone)
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $property->broker->phone) }}" target="_blank" class="btn btn-outline" style="color:#25d366; border-color:#25d366;">&#128172; Broker</a>
         @endif
@@ -768,9 +770,32 @@
         </div>
     </div>
 </div>
-@endsection
 
-@section('scripts')
+{{-- Send Ficha Modal --}}
+<div id="fichaModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:24px; width:400px; max-width:90vw; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:1rem;">Enviar ficha por email</h3>
+            <button type="button" onclick="document.getElementById('fichaModal').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color:#9ca3af;">&times;</button>
+        </div>
+        <form id="fichaForm" onsubmit="sendFicha(event)">
+            <div style="margin-bottom:12px;">
+                <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Nombre (opcional)</label>
+                <input type="text" name="name" class="form-input" placeholder="Nombre del destinatario">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:0.82rem; font-weight:600; margin-bottom:4px;">Email *</label>
+                <input type="email" name="email" class="form-input" placeholder="correo@ejemplo.com" required>
+            </div>
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('fichaModal').style.display='none'" class="btn btn-outline btn-sm">Cancelar</button>
+                <button type="submit" class="btn btn-primary btn-sm" id="fichaSubmitBtn">Enviar</button>
+            </div>
+        </form>
+        <p id="fichaMsg" style="margin:12px 0 0; font-size:0.82rem; display:none;"></p>
+    </div>
+</div>
+@endsection
 <script>
 // Gallery photos data
 @php
@@ -841,6 +866,44 @@ function filterTimeline(type, btn) {
     document.querySelectorAll('#timelineBody .timeline-item').forEach(function(item) {
         item.style.display = (type === 'all' || item.dataset.type === type) ? '' : 'none';
     });
+}
+
+function sendFicha(e) {
+    e.preventDefault();
+    var form = document.getElementById('fichaForm');
+    var btn = document.getElementById('fichaSubmitBtn');
+    var msg = document.getElementById('fichaMsg');
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    msg.style.display = 'none';
+
+    fetch('{{ route("properties.send-ficha", $property) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+            email: form.email.value,
+            name: form.name.value
+        })
+    }).then(function(r) { return r.json(); })
+      .then(function(data) {
+          msg.style.display = 'block';
+          msg.style.color = data.success ? '#16a34a' : '#dc2626';
+          msg.textContent = data.message;
+          if (data.success) {
+              setTimeout(function() { document.getElementById('fichaModal').style.display = 'none'; msg.style.display = 'none'; form.reset(); }, 2000);
+          }
+      }).catch(function() {
+          msg.style.display = 'block';
+          msg.style.color = '#dc2626';
+          msg.textContent = 'Error de conexion.';
+      }).finally(function() {
+          btn.disabled = false;
+          btn.textContent = 'Enviar';
+      });
 }
 </script>
 @endsection

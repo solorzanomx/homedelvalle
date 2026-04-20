@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\PropertyPhotoController;
+use App\Http\Controllers\PropertyFichaController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\BrokerController;
 use App\Http\Controllers\BrokerCompanyController;
@@ -130,6 +131,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'update'])->name('properties.photos.update');
     Route::post('properties/{property}/photos/reorder', [PropertyPhotoController::class, 'reorder'])->name('properties.photos.reorder');
     Route::delete('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'destroy'])->name('properties.photos.destroy');
+    Route::get('properties/{property}/pdf', [PropertyFichaController::class, 'pdf'])->name('properties.pdf');
+    Route::post('properties/{property}/send-ficha', [PropertyFichaController::class, 'email'])->name('properties.send-ficha');
     Route::resource('clients', ClientController::class);
     Route::get('clients/{client}/email', [ClientEmailController::class, 'compose'])->name('clients.email.compose');
     Route::post('clients/{client}/email', [ClientEmailController::class, 'send'])->name('clients.email.send');
