@@ -14,4 +14,9 @@
         <x-icon name="share-2" class="w-3.5 h-3.5" />
         <span>Copiar enlace</span>
     </button>
+    <a href="{{ route('properties.pdf.public', $property) }}" target="_blank" rel="noopener noreferrer"
+       class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-50 text-gray-400 hover:bg-purple-50 hover:text-purple-600 transition-all duration-300 text-xs font-medium" aria-label="Descargar PDF">
+        <x-icon name="file-text" class="w-3.5 h-3.5" />
+        Ficha PDF
+    </a>
 </div>

@@ -796,6 +796,8 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
 <script>
 // Gallery photos data
 @php
