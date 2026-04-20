@@ -46,7 +46,12 @@ class AutomationEnrollment extends Model
 
     public function markCompleted(): void
     {
-        $this->update(['status' => 'completed', 'completed_at' => now(), 'next_run_at' => null]);
+        try {
+            $this->update(['status' => 'completed', 'completed_at' => now(), 'next_run_at' => null]);
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Duplicate completed enrollment exists — just delete this one
+            $this->delete();
+        }
     }
 
     public function advance(): void
