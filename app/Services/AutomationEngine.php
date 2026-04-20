@@ -162,6 +162,11 @@ class AutomationEngine
         $client = Client::where('email', $email)->first();
 
         if (!$client) {
+            // Assign to first admin user by default
+            $adminUser = \App\Models\User::whereHas('roles', function ($q) {
+                $q->where('slug', 'super_admin');
+            })->first();
+
             $client = Client::create([
                 'name' => $data['name'] ?? 'Lead sin nombre',
                 'email' => $email,
@@ -169,6 +174,7 @@ class AutomationEngine
                 'lead_temperature' => 'tibio',
                 'priority' => 'media',
                 'initial_notes' => 'Creado automaticamente desde formulario: ' . $source,
+                'assigned_user_id' => $adminUser?->id,
                 'utm_source' => $data['utm_source'] ?? null,
                 'utm_medium' => $data['utm_medium'] ?? null,
                 'utm_campaign' => $data['utm_campaign'] ?? null,
