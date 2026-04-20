@@ -184,7 +184,7 @@
                 @if($client->priority)
                     <span class="badge {{ $prioBadges[$client->priority] ?? 'badge-blue' }}">P: {{ $prioLabels[$client->priority] ?? '' }}</span>
                 @endif
-                @if($client->interest_types && count($client->interest_types))
+                @if(is_array($client->interest_types) && count($client->interest_types))
                     @foreach($client->interest_types as $it)
                         <span class="badge" style="background:#f3f0ff; color:#6d28d9;">{{ $interestLabels[$it] ?? $it }}</span>
                     @endforeach

@@ -69,7 +69,7 @@ class WebhookController extends Controller
             $extra['city'] = $validated['zone'];
         }
         if (!empty($validated['interest'])) {
-            $extra['interest_types'] = $validated['interest'];
+            $extra['interest_types'] = [$validated['interest']];
         }
         if (!empty($validated['property_type'])) {
             $extra['property_type'] = $validated['property_type'];
