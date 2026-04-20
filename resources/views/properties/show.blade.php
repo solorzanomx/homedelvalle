@@ -225,7 +225,7 @@
 @php
     $types = ['House'=>'Casa','Apartment'=>'Depto','Land'=>'Terreno','Office'=>'Oficina','Commercial'=>'Comercial','Warehouse'=>'Bodega','Building'=>'Edificio'];
     $opLabels = ['sale'=>'Venta','rental'=>'Renta','temporary_rental'=>'Renta Temporal'];
-    $photos = $property->photos;
+    $photos = $property->photos->sortBy(fn($p) => $p->is_primary ? 0 : 1)->values();
     $primary = $property->primaryPhoto();
     $mainSrc = $primary ? asset('storage/' . $primary->path) : ($property->photo ? asset('storage/' . $property->photo) : null);
 
