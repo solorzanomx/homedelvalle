@@ -319,6 +319,20 @@ class AutomationEngine
             return true;
         }
 
+        // Prevent re-execution of already completed steps
+        $alreadyExecuted = AutomationStepLog::where('enrollment_id', $enrollment->id)
+            ->where('step_id', $step->id)
+            ->where('status', 'executed')
+            ->exists();
+
+        if ($alreadyExecuted) {
+            Log::info("AutomationEngine: Step #{$step->id} already executed for enrollment #{$enrollment->id}, skipping");
+            if ($enrollment->current_step == $step->position) {
+                $enrollment->advance();
+            }
+            return true;
+        }
+
         try {
             $result = match ($step->type) {
                 'delay'         => $this->executeDelay($enrollment, $step),
