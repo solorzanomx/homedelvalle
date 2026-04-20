@@ -1,4 +1,4 @@
-{{-- Chatbot calificador de leads — bottom-right --}}
+{{-- Chatbot conversacional con IA — bottom-right --}}
 <div x-data="leadChatbot()" x-cloak class="fixed bottom-6 right-6 z-50">
 
     {{-- Chat window --}}
@@ -67,57 +67,17 @@
             </div>
         </div>
 
-        {{-- Options / Input --}}
+        {{-- Chat input --}}
         <div class="border-t border-gray-100 p-3 shrink-0">
-            {{-- Quick reply buttons --}}
-            <template x-if="step === 'qualify'">
-                <div class="space-y-2">
-                    <button @click="selectType('vendedor')" class="w-full flex items-center gap-2.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-left hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors">
-                        <x-icon name="home" class="w-4 h-4 text-[var(--color-primary)] shrink-0" />
-                        <span>Quiero vender mi propiedad</span>
-                    </button>
-                    <button @click="selectType('comprador')" class="w-full flex items-center gap-2.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-left hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors">
-                        <x-icon name="search" class="w-4 h-4 text-[var(--color-primary)] shrink-0" />
-                        <span>Busco comprar o rentar</span>
-                    </button>
-                    <button @click="selectType('desarrollador')" class="w-full flex items-center gap-2.5 rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-left hover:border-[var(--color-primary)] hover:bg-[var(--color-primary)]/5 transition-colors">
-                        <x-icon name="landmark" class="w-4 h-4 text-[var(--color-primary)] shrink-0" />
-                        <span>Soy desarrollador inmobiliario</span>
-                    </button>
-                </div>
-            </template>
-
-            {{-- Email input --}}
-            <template x-if="step === 'email'">
-                <form @submit.prevent="submitEmail()" class="flex gap-2">
-                    <input type="email" x-model="email" required placeholder="tu@email.com"
-                           class="flex-1 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:border-[var(--color-primary)] transition-colors"
-                           x-ref="emailInput">
-                    <button type="submit" :disabled="loading"
-                            class="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all disabled:opacity-60">
-                        <x-icon name="send" class="w-4 h-4" />
-                    </button>
-                </form>
-            </template>
-
-            {{-- Final CTA --}}
-            <template x-if="step === 'done'">
-                <div class="space-y-2">
-                    <a :href="ctaUrl" class="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] text-white py-2.5 text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all">
-                        <x-icon name="arrow-right" class="w-4 h-4" />
-                        <span x-text="ctaText"></span>
-                    </a>
-                    @if($siteSettings?->whatsapp_number)
-                    @php $phone = preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number); @endphp
-                    <a href="https://wa.me/{{ $phone }}?text={{ urlencode('Hola, me interesa información sobre sus propiedades.') }}"
-                       target="_blank" rel="noopener noreferrer"
-                       class="w-full flex items-center justify-center gap-2 rounded-xl bg-[#25D366] text-white py-2.5 text-sm font-semibold hover:bg-[#1ebe57] active:scale-[0.98] transition-all">
-                        <x-icon name="brands/whatsapp" class="w-4 h-4" />
-                        O escríbenos por WhatsApp
-                    </a>
-                    @endif
-                </div>
-            </template>
+            <form @submit.prevent="sendMessage()" class="flex gap-2">
+                <input type="text" x-model="input" :disabled="loading" placeholder="Escribe tu mensaje..."
+                       class="flex-1 min-w-0 rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 focus:border-[var(--color-primary)] transition-colors"
+                       x-ref="chatInput">
+                <button type="submit" :disabled="loading || !input.trim()"
+                        class="shrink-0 w-10 h-10 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center hover:opacity-90 active:scale-95 transition-all disabled:opacity-60">
+                    <x-icon name="send" class="w-4 h-4" />
+                </button>
+            </form>
         </div>
     </div>
 
@@ -140,22 +100,19 @@ function leadChatbot() {
         open: false,
         opened: false,
         typing: false,
-        step: 'init',
-        leadType: '',
-        email: '',
         loading: false,
+        input: '',
         messages: [],
-        ctaUrl: '',
-        ctaText: '',
+        sessionId: '',
 
         init() {
-            // Auto-open hint after 25s if not interacted
-            if (!localStorage.getItem('hdv_chat_done')) {
-                setTimeout(() => {
-                    if (!this.opened) this.open = true;
-                    this.startChat();
-                }, 25000);
-            }
+            this.sessionId = sessionStorage.getItem('hdv_chat_session') || crypto.randomUUID();
+            sessionStorage.setItem('hdv_chat_session', this.sessionId);
+
+            setTimeout(() => {
+                if (!this.opened) this.open = true;
+                this.startChat();
+            }, 25000);
         },
 
         toggle() {
@@ -163,90 +120,64 @@ function leadChatbot() {
             if (this.open && !this.opened) {
                 this.startChat();
             }
+            if (this.open) {
+                this.$nextTick(() => {
+                    if (this.$refs.chatInput) this.$refs.chatInput.focus();
+                });
+            }
         },
 
         startChat() {
             if (this.opened) return;
             this.opened = true;
-            this.botSay('¡Hola! 👋 Soy el asistente de <strong>Home del Valle</strong>. ¿En qué te puedo ayudar?', () => {
-                this.step = 'qualify';
-            });
+            this.botSay('¡Hola! 👋 Soy el asistente de <strong>Home del Valle</strong>. ¿En qué te puedo ayudar?');
         },
 
-        selectType(type) {
-            this.leadType = type;
-            const labels = {
-                vendedor: 'Quiero vender mi propiedad',
-                comprador: 'Busco comprar o rentar',
-                desarrollador: 'Soy desarrollador inmobiliario',
-            };
-            this.userSay(labels[type]);
+        async sendMessage() {
+            const text = this.input.trim();
+            if (!text || this.loading) return;
 
-            const responses = {
-                vendedor: '¡Excelente! Podemos darte una <strong>valuación gratuita</strong> de tu propiedad. Déjame tu email para contactarte.',
-                comprador: '¡Perfecto! Te puedo enviar propiedades nuevas <strong>antes que nadie</strong>. ¿Me dejas tu email?',
-                desarrollador: 'Trabajamos con desarrolladores en <strong>proyectos exclusivos</strong>. Déjame tu email para coordinar.',
-            };
-            this.step = null;
-            this.botSay(responses[type], () => {
-                this.step = 'email';
-                this.$nextTick(() => {
-                    if (this.$refs.emailInput) this.$refs.emailInput.focus();
-                });
-            });
-        },
+            this.input = '';
+            this.messages.push({ from: 'user', text });
+            this.scrollDown();
 
-        async submitEmail() {
-            if (!this.email || this.loading) return;
+            this.typing = true;
             this.loading = true;
-            this.userSay(this.email);
+            this.scrollDown();
 
             try {
-                await fetch('{{ route("newsletter.subscribe") }}', {
+                const res = await fetch('https://n8n.hod3v4.com/webhook/da08653e-fd1d-4bc5-8afb-f7d54d5f4c85', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: this.email,
-                        source: 'chatbot_' + this.leadType,
-                        website_url: '',
+                        message: text,
+                        session_id: this.sessionId,
+                        page: window.location.href,
                     }),
                 });
-            } catch(e) {}
+                const data = await res.json();
+                this.typing = false;
+                this.messages.push({ from: 'bot', text: data.reply || data.output || data.message || 'Gracias por tu mensaje.' });
+            } catch (e) {
+                this.typing = false;
+                this.messages.push({ from: 'bot', text: 'Disculpa, tuve un problema de conexion. ¿Puedes intentar de nuevo?' });
+            }
 
             this.loading = false;
-            this.step = null;
-            localStorage.setItem('hdv_chat_done', '1');
-
-            const ctas = {
-                vendedor: { url: '{{ route("landing.vende") }}', text: 'Solicitar valuación gratuita' },
-                comprador: { url: '{{ route("propiedades.index") }}', text: 'Ver propiedades disponibles' },
-                desarrollador: { url: '{{ route("contacto") }}', text: 'Contactar al equipo' },
-            };
-            this.ctaUrl = ctas[this.leadType].url;
-            this.ctaText = ctas[this.leadType].text;
-
-            this.botSay('¡Gracias! Te contactaremos pronto. Mientras tanto:', () => {
-                this.step = 'done';
+            this.scrollDown();
+            this.$nextTick(() => {
+                if (this.$refs.chatInput) this.$refs.chatInput.focus();
             });
         },
 
-        botSay(text, cb) {
+        botSay(text) {
             this.typing = true;
             this.scrollDown();
             setTimeout(() => {
                 this.typing = false;
                 this.messages.push({ from: 'bot', text });
                 this.scrollDown();
-                if (cb) cb();
             }, 800 + Math.random() * 400);
-        },
-
-        userSay(text) {
-            this.messages.push({ from: 'user', text });
-            this.scrollDown();
         },
 
         scrollDown() {
