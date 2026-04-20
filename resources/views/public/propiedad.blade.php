@@ -86,6 +86,8 @@
 
             @include('public.propiedad._share', ['property' => $property])
 
+            @include('public.propiedad._gallery', ['property' => $property])
+
             {{-- Specs --}}
             @if($specs->count())
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
@@ -174,6 +176,7 @@
                     </div>
 
                     @include('public.propiedad._share', ['property' => $property])
+                    @include('public.propiedad._gallery', ['property' => $property])
                     @include('public.propiedad._description', ['property' => $property])
                 </div>
 
@@ -232,6 +235,8 @@
                     </div>
 
                     @include('public.propiedad._share', ['property' => $property])
+
+                    @include('public.propiedad._gallery', ['property' => $property])
 
                     {{-- Specs --}}
                     @if($specs->count())
