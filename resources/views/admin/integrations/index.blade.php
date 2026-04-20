@@ -141,12 +141,9 @@
                         <p style="color:var(--text-muted, #9ca3af); font-size:0.85rem; margin-bottom:0.75rem;">No hay API Key generada aun.</p>
                     @endif
                     <div style="margin-top:0.75rem;">
-                        <form method="POST" action="{{ route('admin.integrations.webhook.regenerate') }}" style="display:inline;" onsubmit="return confirm('{{ $settings && $settings->webhook_api_key ? 'Esto invalidara la clave actual. Los servicios conectados dejaran de funcionar hasta que actualices la nueva clave. ¿Continuar?' : '¿Generar nueva API Key?' }}')">
-                            @csrf
-                            <button type="submit" class="btn btn-sm {{ $settings && $settings->webhook_api_key ? 'btn-outline' : 'btn-primary' }}">
-                                {{ $settings && $settings->webhook_api_key ? 'Regenerar API Key' : 'Generar API Key' }}
-                            </button>
-                        </form>
+                        <button type="button" onclick="regenerateWebhookKey()" class="btn btn-sm {{ $settings && $settings->webhook_api_key ? 'btn-outline' : 'btn-primary' }}" id="btnRegenerate">
+                            {{ $settings && $settings->webhook_api_key ? 'Regenerar API Key' : 'Generar API Key' }}
+                        </button>
                     </div>
                     <div style="margin-top:1rem; padding:0.75rem; background:var(--bg-alt, #f9fafb); border-radius:var(--radius, 8px); font-size:0.8rem; color:var(--text-muted, #6b7280);">
                         <strong>Endpoint:</strong> <code>POST {{ url('/api/webhook/lead') }}</code><br>
@@ -203,6 +200,43 @@ function copyWebhookKey() {
             setTimeout(function() { btn.textContent = 'Copiar'; }, 2000);
         });
     }
+}
+function regenerateWebhookKey() {
+    var hasKey = !!document.getElementById('webhookKey');
+    var msg = hasKey
+        ? 'Esto invalidara la clave actual. Los servicios conectados dejaran de funcionar hasta que actualices la nueva clave. ¿Continuar?'
+        : '¿Generar nueva API Key?';
+    if (!confirm(msg)) return;
+
+    var btn = document.getElementById('btnRegenerate');
+    btn.disabled = true;
+    btn.textContent = 'Generando...';
+
+    fetch('{{ route('admin.integrations.webhook.regenerate') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    }).then(function(r) { return r.json(); })
+      .then(function(data) {
+          if (data.key) {
+              var input = document.getElementById('webhookKey');
+              if (input) {
+                  input.value = data.key;
+              } else {
+                  location.reload();
+              }
+              btn.textContent = 'Regenerar API Key';
+              btn.className = 'btn btn-sm btn-outline';
+          } else {
+              location.reload();
+          }
+      }).catch(function() {
+          location.reload();
+      }).finally(function() {
+          btn.disabled = false;
+      });
 }
 </script>
 @endsection

@@ -59,6 +59,10 @@ class IntegrationSettingsController extends Controller
 
         cache()->forget('site_settings');
 
+        if (request()->expectsJson()) {
+            return response()->json(['key' => $key, 'message' => 'API Key regenerada exitosamente.']);
+        }
+
         return back()->with('success', 'API Key regenerada exitosamente. Actualiza la clave en n8n.');
     }
 }
