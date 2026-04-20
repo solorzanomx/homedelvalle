@@ -109,6 +109,8 @@
                         <option value="property" {{ ($automation->trigger_config['source'] ?? '') === 'property' ? 'selected' : '' }}>Propiedad (ficha de inmueble)</option>
                         <option value="landing" {{ ($automation->trigger_config['source'] ?? '') === 'landing' ? 'selected' : '' }}>Landing (vende tu propiedad)</option>
                         <option value="form" {{ ($automation->trigger_config['source'] ?? '') === 'form' ? 'selected' : '' }}>Formularios dinamicos</option>
+                        <option value="webhook" {{ ($automation->trigger_config['source'] ?? '') === 'webhook' ? 'selected' : '' }}>Webhook API</option>
+                        <option value="web_chat" {{ ($automation->trigger_config['source'] ?? '') === 'web_chat' ? 'selected' : '' }}>Chatbot del sitio</option>
                     </select>
                 </div>
                 <div id="tcSegment" style="display:none;" class="form-group">
