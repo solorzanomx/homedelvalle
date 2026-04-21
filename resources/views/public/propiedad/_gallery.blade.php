@@ -18,7 +18,7 @@
 .gallery-expand { position: absolute; top: 20px; right: 20px; width: 48px; height: 48px; border-radius: 50%; background: rgba(30,41,59,0.7); backdrop-filter: blur(12px); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; transition: all 0.3s; color: white; font-size: 22px; }
 .gallery-expand:hover { background: rgba(30,41,59,0.9); transform: scale(1.12); }
 .gallery-counter { position: absolute; top: 20px; left: 20px; background: rgba(30,41,59,0.8); backdrop-filter: blur(12px); color: white; padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 5; letter-spacing: 0.5px; }
-.gallery-thumbs { display: flex; gap: 10px; padding: 16px 18px; overflow-x: auto; scroll-behavior: smooth; background: white; border-top: 1px solid #e2e8f0; scrollbar-width: thin; }
+.gallery-thumbs { display: none; gap: 10px; padding: 16px 18px; overflow-x: auto; scroll-behavior: smooth; background: white; border-top: 1px solid #e2e8f0; scrollbar-width: thin; }
 .gallery-thumbs::-webkit-scrollbar { height: 4px; }
 .gallery-thumbs::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 .gallery-thumb { flex-shrink: 0; width: 80px; height: 60px; border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); opacity: 0.65; }
