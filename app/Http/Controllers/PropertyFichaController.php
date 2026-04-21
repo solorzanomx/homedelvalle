@@ -14,32 +14,48 @@ class PropertyFichaController extends Controller
 {
     /**
      * Download property ficha as PDF.
+     *
+     * Query params:
+     *   ?broker=0  — force institutional mode (no broker block)
+     *   ?broker=1  — force broker mode (overrides default)
      */
-    public function pdf(Property $property)
+    public function pdf(Request $request, Property $property)
     {
-        $property->load(['photos', 'broker']);
-        $siteName = SiteSetting::first()?->site_name ?? 'Home del Valle';
+        $property->load(['photos', 'broker', 'qrCode']);
+
+        $siteSetting   = SiteSetting::current();
+        $siteName      = $siteSetting?->site_name ?? 'Home del Valle';
+
+        // Default: show broker block if property has an assigned broker.
+        // Can be overridden via ?broker=0 or ?broker=1 query param.
+        $includeBroker = $property->broker_id && $property->broker;
+        if ($request->has('broker')) {
+            $includeBroker = (bool) $request->integer('broker');
+        }
 
         $html = view('properties.partials.ficha', [
-            'property' => $property,
-            'siteName' => $siteName,
-            'mode' => 'pdf',
+            'property'      => $property,
+            'siteName'      => $siteName,
+            'siteSetting'   => $siteSetting,
+            'includeBroker' => $includeBroker,
+            'mode'          => 'pdf',
         ])->render();
 
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
         $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'sans-serif');
+        $options->set('defaultFont', 'Arial');
+        $options->set('isFontSubsettingEnabled', true);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('letter', 'portrait');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
         $filename = 'Ficha-' . \Illuminate\Support\Str::slug($property->title) . '.pdf';
 
         return response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
+            'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
     }
@@ -51,16 +67,21 @@ class PropertyFichaController extends Controller
     {
         $request->validate([
             'email' => 'required|email|max:255',
-            'name' => 'nullable|string|max:255',
+            'name'  => 'nullable|string|max:255',
         ]);
 
-        $property->load(['photos', 'broker']);
-        $siteName = SiteSetting::first()?->site_name ?? 'Home del Valle';
+        $property->load(['photos', 'broker', 'qrCode']);
+
+        $siteSetting   = SiteSetting::current();
+        $siteName      = $siteSetting?->site_name ?? 'Home del Valle';
+        $includeBroker = $property->broker_id && $property->broker;
 
         $html = view('properties.partials.ficha', [
-            'property' => $property,
-            'siteName' => $siteName,
-            'mode' => 'email',
+            'property'      => $property,
+            'siteName'      => $siteName,
+            'siteSetting'   => $siteSetting,
+            'includeBroker' => $includeBroker,
+            'mode'          => 'email',
         ])->render();
 
         $subject = $property->title . ' — ' . $siteName;
