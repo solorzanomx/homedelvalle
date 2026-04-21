@@ -1,91 +1,96 @@
-<div class="bg-white rounded-lg border border-gray-200 p-6">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Código QR</h3>
-
-    @if($property->qrCode)
-        <!-- QR Existe -->
-        <div class="space-y-4">
-            <!-- Vista previa del QR -->
-            <div class="flex justify-center p-4 bg-gray-50 rounded-lg">
+<div class="side-card">
+    <div class="side-card-header">Código QR</div>
+    <div class="side-card-body">
+        @if($property->qrCode)
+            <!-- QR Existe -->
+            <div style="text-align: center; margin-bottom: 1rem;">
                 <img
                     src="{{ Storage::url($property->qrCode->qr_code_path) }}"
                     alt="QR Code"
-                    class="w-48 h-48 object-contain"
+                    style="width: 180px; height: 180px; object-fit: contain;"
                 >
             </div>
 
-            <!-- Información del QR -->
-            <div class="border-t pt-4">
-                <p class="text-sm text-gray-600 mb-2">
-                    <strong>URL codificada:</strong><br>
-                    <code class="text-xs bg-gray-100 p-2 rounded block break-all">
+            <div style="border-top: 1px solid var(--border); padding-top: 0.75rem; margin-bottom: 0.75rem; font-size: 0.78rem;">
+                <div style="margin-bottom: 0.5rem;">
+                    <strong style="display: block; margin-bottom: 0.25rem;">URL:</strong>
+                    <code style="display: block; background: var(--bg); padding: 0.5rem; border-radius: 4px; word-break: break-all; font-size: 0.7rem; color: var(--text-muted);">
                         {{ $property->qrCode->qr_url }}
                     </code>
-                </p>
-                <p class="text-sm text-gray-500">
+                </div>
+                <div style="color: var(--text-muted);">
                     <strong>Generado:</strong> {{ $property->qrCode->generated_at->format('d/m/Y H:i') }}
-                </p>
+                </div>
             </div>
 
-            <!-- Botones de acción -->
-            <div class="flex gap-2 pt-4 border-t">
-                <form action="{{ route('properties.qr.generate', $property) }}" method="POST" class="flex-1">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <form action="{{ route('properties.qr.generate', $property) }}" method="POST" style="flex: 1;">
                     @csrf
                     <input type="hidden" name="force" value="1">
                     <button
                         type="submit"
-                        class="w-full px-3 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg transition"
+                        class="btn btn-sm btn-outline"
+                        style="width: 100%; justify-content: center; font-size: 0.75rem;"
                     >
-                        Regenerar QR
+                        🔄 Regenerar
                     </button>
                 </form>
+            </div>
 
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                 <a
                     href="{{ route('properties.qr.download', ['property' => $property, 'format' => 'png']) }}"
-                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    class="btn btn-sm btn-outline"
+                    style="flex: 1; justify-content: center; font-size: 0.75rem; text-decoration: none;"
                     download
                 >
-                    Descargar PNG
+                    📥 PNG
                 </a>
 
                 <a
                     href="{{ route('properties.qr.download', ['property' => $property, 'format' => 'svg']) }}"
-                    class="px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    class="btn btn-sm btn-outline"
+                    style="flex: 1; justify-content: center; font-size: 0.75rem; text-decoration: none;"
                     download
                 >
-                    Descargar SVG
+                    📥 SVG
                 </a>
             </div>
 
-            <!-- Eliminar QR -->
             <form
                 action="{{ route('properties.qr.delete', $property) }}"
                 method="POST"
-                onsubmit="return confirm('¿Eliminar este QR?')"
-                class="pt-2 border-t"
+                onsubmit="return confirm('¿Eliminar este QR?');"
+                style="margin-top: 0.5rem;"
             >
                 @csrf
                 @method('DELETE')
                 <button
                     type="submit"
-                    class="w-full px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
+                    class="btn btn-sm btn-danger"
+                    style="width: 100%; justify-content: center; font-size: 0.75rem;"
                 >
-                    Eliminar QR
+                    🗑️ Eliminar
                 </button>
             </form>
-        </div>
-    @else
-        <!-- QR No existe -->
-        <div class="text-center py-8">
-            <p class="text-gray-600 mb-4">No hay código QR generado para esta propiedad.</p>
-            <form action="{{ route('properties.qr.generate', $property) }}" method="POST">
-                @csrf
-                <button
-                    type="submit"
-                    class="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition"
-                >
-                    Generar QR
-                </button>
-            </form>
-        </div>
-    @endif
+        @else
+            <!-- QR No existe -->
+            <div style="text-align: center; padding: 1rem 0;">
+                <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.85rem;">
+                    No hay QR generado
+                </p>
+                <form action="{{ route('properties.qr.generate', $property) }}" method="POST">
+                    @csrf
+                    <button
+                        type="submit"
+                        class="btn btn-sm"
+                        style="width: 100%; justify-content: center;"
+                    >
+                        ✨ Generar QR
+                    </button>
+                </form>
+            </div>
+        @endif
+    </div>
 </div>
+
