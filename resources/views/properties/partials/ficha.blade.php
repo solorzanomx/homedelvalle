@@ -130,7 +130,7 @@ $today      = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
    PAGE  —  A4, margins 12mm top/bottom · 14mm left/right
    Content area: 182 × 269 mm
 ════════════════════════════════════════════════════════════════════════════ */
-@page { size: A4 portrait; margin: 14mm; }
+@page { size: A4 portrait; margin: 13mm 15mm; }
 
 html, body {
     font-family: Arial, Helvetica, sans-serif;
@@ -160,12 +160,12 @@ html, body {
 ════════════════════════════════════════════════════════════════════════════ */
 .pg1 {
     width: 100%;
-    height: 269mm;
+    height: 271mm;
     page-break-after: always;
     position: relative;
     overflow: hidden;
 }
-.pg2 { width: 100%; height: 269mm; position: relative; overflow: hidden; }
+.pg2 { width: 100%; height: 271mm; position: relative; overflow: hidden; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — COVER HEADER
@@ -291,7 +291,7 @@ html, body {
 /* ════════════════════════════════════════════════════════════════════════════
    DESCRIPTION
 ════════════════════════════════════════════════════════════════════════════ */
-.desc { font-size: 9.5px; color: #404040; line-height: 1.7; }
+.desc { font-size: 9.5px; color: #404040; line-height: 1.75; text-align: justify; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    SPECS + AMENITIES — TWO COLUMNS
@@ -304,20 +304,23 @@ html, body {
 .spec-row { padding: 4px 0; border-bottom: 1px solid #F0F2F5; }
 .spec-tbl  { width: 100%; border-collapse: collapse; }
 .spec-tbl td { vertical-align: middle; padding: 0; }
-.spec-k { font-size: 7.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-.spec-v { text-align: right; font-size: 9.5px; color: #0C1A2E; font-weight: 700; }
+.spec-k { font-size: 8px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+.spec-v { text-align: right; font-size: 10px; color: #0C1A2E; font-weight: 700; }
 
-.amen-row { display: block; font-size: 8.5px; color: #404040; padding: 4px 0; border-bottom: 1px solid #F0F2F5; line-height: 1.3; }
+.amen-row { display: block; font-size: 9px; color: #404040; padding: 4px 0; border-bottom: 1px solid #F0F2F5; line-height: 1.3; }
 .amen-row:last-child { border-bottom: none; }
 .amen-dot { display: inline-block; width: 5px; height: 5px; background: #2563A0; margin-right: 7px; vertical-align: middle; }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   GALLERY — 3 columns, max 9 images, 72px cells
+   GALLERY — 3 columns, max 9 images, 110px cells
+   height must be explicit on both td AND img — DomPDF ignores overflow:hidden
+   on td when img has height:auto, causing pg2 to overflow and push the footer
+   off the bottom of the page.
 ════════════════════════════════════════════════════════════════════════════ */
-.gal-tbl { width: 100%; border-collapse: separate; border-spacing: 4px; }
-.gal-cell { width: 33.33%; height: 72px; overflow: hidden; background: #E8ECF0; vertical-align: top; padding: 0; }
-.gal-cell img { width: 100%; height: auto; display: block; }
-.gal-empty { width: 100%; height: 72px; background: #F0F2F5; display: table; }
+.gal-tbl { width: 100%; border-collapse: separate; border-spacing: 5px; }
+.gal-cell { width: 33.33%; height: 110px; overflow: hidden; background: #E8ECF0; vertical-align: top; padding: 0; }
+.gal-cell img { width: 100%; height: 110px; display: block; }
+.gal-empty { width: 100%; height: 110px; background: #F0F2F5; display: table; }
 .gal-empty-in { display: table-cell; vertical-align: middle; text-align: center; font-size: 7.5px; color: #C8CDD5; }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -358,8 +361,8 @@ html, body {
 ════════════════════════════════════════════════════════════════════════════ */
 .footer { position: absolute; bottom: 0; left: 0; right: 0; background: #0C1A2E; padding: 9px 14px; margin-top: 0; border-top: 2px solid #2563A0; }
 .footer-brand { font-size: 7.5px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
-.footer-text  { font-size: 6.5px; color: rgba(255,255,255,0.38); line-height: 1.6; }
-.footer-copy  { font-size: 6.5px; color: rgba(255,255,255,0.22); margin-top: 5px; text-align: center; }
+.footer-text  { font-size: 7px; color: rgba(255,255,255,0.40); line-height: 1.6; }
+.footer-copy  { font-size: 7px; color: rgba(255,255,255,0.25); margin-top: 5px; text-align: center; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    UTILITIES
