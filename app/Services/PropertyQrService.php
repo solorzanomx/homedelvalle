@@ -57,8 +57,6 @@ class PropertyQrService
 
         // Generar imagen QR con la API v6
         $qrCode = new QrCode($url);
-        $qrCode->setEncoding('UTF-8');
-        $qrCode->setSize(self::QR_SIZE);
 
         $pngWriter = new PngWriter();
         $result = $pngWriter->write($qrCode);
@@ -149,8 +147,6 @@ class PropertyQrService
     public function getAsSvg(PropertyQrCode $qrCode): string
     {
         $qr = new QrCode($qrCode->qr_url);
-        $qr->setEncoding('UTF-8');
-        $qr->setSize(self::QR_SIZE);
 
         $svgWriter = new SvgWriter();
         $result = $svgWriter->write($qr);
