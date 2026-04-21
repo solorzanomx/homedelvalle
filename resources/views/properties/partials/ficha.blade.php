@@ -442,7 +442,8 @@ html, body {
         <div class="prop-title">{{ $property->title }}</div>
         @if($locationStr || $property->address)
             <div class="prop-loc">
-                <span class="dash">—</span>@if($locationStr){{ $locationStr }}@endif@if($property->address)<br>{{ $property->address }}@endif
+                <span class="dash">—</span>@if($locationStr){{ $locationStr }}@endif
+                @if($property->address)<br>{{ $property->address }}@endif
             </div>
         @endif
         <div>
