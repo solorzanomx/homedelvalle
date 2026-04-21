@@ -70,10 +70,10 @@ class PropertyQrService
             Storage::disk(self::QR_DISK)->makeDirectory($directory);
         }
 
-        // Guardar archivo - usar el contenido string del resultado
+        // Guardar archivo
         Storage::disk(self::QR_DISK)->put(
             $qrPath,
-            (string)$result
+            $result->getString()
         );
 
         // Guardar o actualizar registro en BD
@@ -151,7 +151,7 @@ class PropertyQrService
         $svgWriter = new SvgWriter();
         $result = $svgWriter->write($qr);
 
-        return (string)$result;
+        return $result->getString();
     }
 
     /**
