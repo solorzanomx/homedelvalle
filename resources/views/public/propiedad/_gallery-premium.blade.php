@@ -274,21 +274,21 @@
             </div>
             @endforeach
         </div>
-
-        {{-- Navegación --}}
-        @if($photoCount > 1)
-        <button class="gallery-nav-btn prev" aria-label="Anterior">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-        </button>
-        <button class="gallery-nav-btn next" aria-label="Siguiente">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-        </button>
-        @endif
     </div>
+
+    {{-- Navegación (FUERA del swiper) --}}
+    @if($photoCount > 1)
+    <button class="gallery-nav-btn prev" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+    </button>
+    <button class="gallery-nav-btn next" aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+    </button>
+    @endif
 
     {{-- Contador --}}
     <div class="gallery-counter">
@@ -325,17 +325,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox.css" />
 
 <script>
-// ============================================
-// GALERÍA PREMIUM: Swiper + Fancybox
-// ============================================
+// Esperar a que Swiper esté disponible en window
+function initGallery() {
+    if (typeof Swiper === 'undefined') {
+        console.log('Esperando Swiper...');
+        setTimeout(initGallery, 100);
+        return;
+    }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const swiperContainer = document.getElementById('propertyGallerySwiper');
-    if (!swiperContainer) return;
+    const swiperEl = document.getElementById('propertyGallerySwiper');
+    if (!swiperEl) return;
 
-    console.log('🖼️ Inicializando galería premium...');
+    console.log('✅ Inicializando galería...');
 
-    // ========== INICIALIZAR SWIPER ==========
+    // Crear instancia de Swiper
     const swiper = new Swiper('#propertyGallerySwiper', {
         loop: true,
         speed: 800,
@@ -345,81 +348,69 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         autoplay: {
             delay: 5000,
-            disableOnInteraction: true
+            disableOnInteraction: false
         },
         navigation: {
             nextEl: '.gallery-nav-btn.next',
             prevEl: '.gallery-nav-btn.prev'
         },
         keyboard: {
-            enabled: true
+            enabled: true,
+            onlyInViewport: true
         },
-        touchEventsTarget: 'container',
         on: {
-            slideChange: () => updateGalleryUI(swiper)
-        }
-    });
-
-    // ========== INICIALIZAR FANCYBOX ==========
-    Fancybox.bind('[data-fancybox="gallery"]', {
-        on: {
-            reveal: () => {
-                document.body.style.overflow = 'hidden';
-            },
-            done: () => {
-                document.body.style.overflow = '';
+            slideChange: () => {
+                updateUI();
             }
         }
     });
 
-    // ========== UI: CONTADOR Y MINIATURAS ==========
-    function updateGalleryUI(swiper) {
-        const currentIndex = swiper.realIndex;
-        const currentSlideEl = document.getElementById('currentSlide');
+    // Actualizar UI
+    function updateUI() {
+        const idx = swiper.realIndex;
+        const current = document.getElementById('currentSlide');
+        if (current) current.textContent = idx + 1;
 
-        if (currentSlideEl) {
-            currentSlideEl.textContent = currentIndex + 1;
-        }
-
-        // Sincronizar miniaturas
-        document.querySelectorAll('.gallery-thumb').forEach((thumb, idx) => {
-            const isActive = idx === currentIndex;
-            thumb.classList.toggle('active', isActive);
-
-            if (isActive) {
-                setTimeout(() => {
-                    thumb.scrollIntoView({
-                        behavior: 'smooth',
-                        inline: 'center',
-                        block: 'nearest'
-                    });
-                }, 100);
-            }
+        // Miniaturas
+        document.querySelectorAll('.gallery-thumb').forEach((el, i) => {
+            el.classList.toggle('active', i === idx);
         });
     }
 
-    // ========== MINIATURAS: Click para navegar ==========
+    // Click en miniaturas
     document.querySelectorAll('.gallery-thumb').forEach(thumb => {
-        thumb.addEventListener('click', (e) => {
-            const slideIndex = parseInt(e.currentTarget.dataset.slide, 10);
-            swiper.slideToLoop(slideIndex);
+        thumb.addEventListener('click', () => {
+            const idx = parseInt(thumb.dataset.slide, 10);
+            swiper.slideToLoop(idx);
         });
     });
 
-    // ========== BOTÓN EXPANDIR ==========
+    // Botón expandir
     const expandBtn = document.getElementById('expandGallery');
     if (expandBtn) {
         expandBtn.addEventListener('click', () => {
-            const firstImage = document.querySelector('[data-fancybox="gallery"]');
-            if (firstImage) {
-                firstImage.click();
+            const img = document.querySelector('[data-fancybox="gallery"]');
+            if (img) img.click();
+        });
+    }
+
+    // Fancybox
+    if (typeof Fancybox !== 'undefined') {
+        Fancybox.bind('[data-fancybox="gallery"]', {
+            on: {
+                reveal: () => document.body.style.overflow = 'hidden',
+                done: () => document.body.style.overflow = ''
             }
         });
     }
 
-    // Actualizar UI inicial
-    updateGalleryUI(swiper);
+    updateUI();
+}
 
-    console.log('✅ Galería premium inicializada');
-});
+// Iniciar cuando DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGallery);
+} else {
+    initGallery();
+}
 </script>
