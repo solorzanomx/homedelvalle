@@ -5,10 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Property;
 use App\Models\SiteSetting;
 use App\Services\EmailService;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Browsershot\Browsershot;
 
 class PropertyFichaController extends Controller
 {
@@ -26,8 +25,6 @@ class PropertyFichaController extends Controller
         $siteSetting   = SiteSetting::current();
         $siteName      = $siteSetting?->site_name ?? 'Home del Valle';
 
-        // Default: show broker block if property has an assigned broker.
-        // Can be overridden via ?broker=0 or ?broker=1 query param.
         $includeBroker = $property->broker_id && $property->broker;
         if ($request->has('broker')) {
             $includeBroker = (bool) $request->integer('broker');
@@ -41,20 +38,17 @@ class PropertyFichaController extends Controller
             'mode'          => 'pdf',
         ])->render();
 
-        $options = new Options();
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'Arial');
-        $options->set('isFontSubsettingEnabled', true);
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
+        $pdf = Browsershot::html($html)
+            ->setChromePath(config('browsershot.chrome_path'))
+            ->setNodeBinary(config('browsershot.node_path'))
+            ->setNpmBinary(config('browsershot.npm_path'))
+            ->noSandbox()
+            ->format('A4')
+            ->pdf();
 
         $filename = 'Ficha-' . \Illuminate\Support\Str::slug($property->title) . '.pdf';
 
-        return response($dompdf->output(), 200, [
+        return response($pdf, 200, [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ]);
