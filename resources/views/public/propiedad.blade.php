@@ -43,7 +43,7 @@
 
     {{-- Full-width carousel --}}
     <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6">
-        @include('public.propiedad._gallery-premium', ['property' => $property])
+        @include('public.propiedad._gallery-simple', ['property' => $property])
     </div>
 
     <section class="py-12 sm:py-16 bg-white">
