@@ -43,6 +43,7 @@
 
     {{-- Full-width carousel --}}
     <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6">
+        <div style="background: #ff0000; color: white; padding: 10px; text-align: center; font-weight: bold; margin-bottom: 10px;">✅ NUEVA GALERÍA CARGADA - Si ves esto, los cambios se están aplicando</div>
         @php $photos = $property->photos->sortBy(fn($p) => $p->is_primary ? 0 : 1)->values(); $pc = $photos->count(); @endphp
         @if($pc > 0)
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
