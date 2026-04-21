@@ -19,10 +19,14 @@
             {{-- Brand --}}
             <div class="lg:pr-8">
                 <div class="flex items-center gap-2.5 mb-5">
-                    <div class="flex items-center justify-center w-9 h-9 rounded-xl gradient-brand">
-                        <x-icon name="home" class="w-4.5 h-4.5 text-white" />
-                    </div>
-                    <span class="text-lg font-bold text-white">{{ $siteName }}</span>
+                    @if($siteSettings?->logo_path_dark && $siteSettings?->logo_type === 'image')
+                        <img src="{{ Storage::url($siteSettings->logo_path_dark) }}" alt="{{ $siteName }}" style="max-height:40px; max-width:200px; display:block;">
+                    @else
+                        <div class="flex items-center justify-center w-9 h-9 rounded-xl gradient-brand">
+                            <x-icon name="home" class="w-4.5 h-4.5 text-white" />
+                        </div>
+                        <span class="text-lg font-bold text-white">{{ $siteName }}</span>
+                    @endif
                 </div>
                 <p class="text-sm leading-relaxed text-gray-500">{{ $footerAbout ?: ($siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precisión en la Benito Juárez, CDMX. Pocos inmuebles. Más control. Mejores resultados.') }}</p>
 

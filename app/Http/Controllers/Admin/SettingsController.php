@@ -33,6 +33,7 @@ class SettingsController extends Controller
             'google_maps_embed' => 'nullable|string|max:2000',
             'logo_type' => 'nullable|in:text,image',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'logo_dark' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'favicon' => 'nullable|image|mimes:png,jpg,jpeg,webp|max:2048',
         ]);
 
@@ -45,6 +46,14 @@ class SettingsController extends Controller
             }
             $validated['logo_path'] = $request->file('logo')->store('logos', 'public');
             $validated['logo_type'] = 'image';
+        }
+
+        // Handle dark logo upload
+        if ($request->hasFile('logo_dark')) {
+            if ($settings && $settings->logo_path_dark) {
+                Storage::disk('public')->delete($settings->logo_path_dark);
+            }
+            $validated['logo_path_dark'] = $request->file('logo_dark')->store('logos', 'public');
         }
 
         // If switching to text, keep logo_path but set type to text
@@ -61,6 +70,7 @@ class SettingsController extends Controller
         }
 
         unset($validated['logo']);
+        unset($validated['logo_dark']);
         unset($validated['favicon']);
 
         if ($settings) {

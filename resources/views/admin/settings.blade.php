@@ -61,13 +61,31 @@
                                     <span class="text-muted" id="logoPlaceholder" style="font-size:0.85rem;">Sin imagen</span>
                                 @endif
                             </div>
-                            <p class="form-hint" style="margin-bottom:0.5rem; color: var(--primary); font-weight:500;">Solo se muestra en el sitio publico</p>
+                            <p class="form-hint" style="margin-bottom:0.5rem; color: var(--primary); font-weight:500;">Logo para fondo claro</p>
                             <div style="display:flex; gap:0.5rem; justify-content:center;">
                                 <input type="file" id="logoInput" name="logo" accept="image/*" style="display:none" onchange="previewLogo(this)">
                                 <label for="logoInput" class="btn btn-outline" style="cursor:pointer;">Seleccionar imagen</label>
                                 <button type="submit" class="btn btn-primary" id="saveLogoBtn">Guardar</button>
                             </div>
                             <p class="form-hint" style="margin-top:0.5rem;">JPG, PNG, SVG, WebP (max 2MB)</p>
+                        </div>
+                        <hr style="border:none; border-top:1px solid var(--border); margin:1.5rem 0;">
+                        {{-- Logo Oscuro --}}
+                        <div class="text-center">
+                            <h4 style="font-size:0.9rem; font-weight:600; margin-bottom:1rem;">Logo para Fondo Oscuro</h4>
+                            <div class="logo-dark-preview">
+                                @if($settings && $settings->logo_path_dark)
+                                    <img src="{{ Storage::url($settings->logo_path_dark) }}" alt="Logo Oscuro" id="logoDarkPreview" style="max-height:80px; max-width:100%; display:block;">
+                                @else
+                                    <span class="text-muted" id="logoDarkPlaceholder" style="font-size:0.85rem; display:block; padding:1rem;">Sin imagen</span>
+                                @endif
+                            </div>
+                            <div style="display:flex; gap:0.5rem; justify-content:center; margin-top:1rem;">
+                                <input type="file" id="logoDarkInput" name="logo_dark" accept="image/*" style="display:none" onchange="previewLogoDark(this)">
+                                <label for="logoDarkInput" class="btn btn-outline" style="cursor:pointer;">Seleccionar imagen</label>
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                            <p class="form-hint" style="margin-top:0.5rem;">Se mostrara en el footer y areas con fondo oscuro. JPG, PNG, SVG, WebP (max 2MB)</p>
                         </div>
                     </div>
                 </form>
@@ -268,6 +286,23 @@ function previewFavicon(input) {
             else {
                 img = document.createElement('img'); img.src = e.target.result; img.id = 'faviconPreview'; img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
                 p.parentNode.appendChild(img);
+            }
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function previewLogoDark(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var p = document.getElementById('logoDarkPlaceholder');
+            if (p) p.style.display = 'none';
+            var img = document.getElementById('logoDarkPreview');
+            if (img) { img.src = e.target.result; }
+            else {
+                img = document.createElement('img'); img.src = e.target.result; img.id = 'logoDarkPreview'; img.style.cssText = 'max-height:80px;max-width:100%;display:block;';
+                document.querySelector('.logo-dark-preview').appendChild(img);
             }
         };
         reader.readAsDataURL(input.files[0]);
