@@ -49,7 +49,17 @@ $imgSrc = function (?string $path) use ($mode): ?string {
 $primaryPhoto = $property->primaryPhoto();
 $heroSrc      = $imgSrc($primaryPhoto?->path ?? $property->photo);
 
-$galleryPhotos = $property->photos->reject(fn($p) => $p->is_primary)->take(9)->values();
+$galleryPhotos = $property->photos
+    ->reject(fn($p) => $p->is_primary)
+    ->filter(function($p) use ($mode) {
+        if ($mode === 'email') return true; // no podemos verificar en email
+        $full = storage_path('app/public/' . $p->path);
+        if (!file_exists($full)) return false;
+        [$w, $h] = @getimagesize($full) ?: [0, 0];
+        return $w > 0 && $w >= $h; // descartar verticales
+    })
+    ->take(9)
+    ->values();
 $gallerySrcs   = $galleryPhotos->map(fn($p) => $imgSrc($p->path))->filter()->values();
 
 $logoSrc = null;
@@ -169,18 +179,15 @@ html, body {
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — COVER HEADER
-   Three columns: logo | brand name + tagline | ficha ref + date
+   Three columns: logo | tipo propiedad + calle/colonia | ficha ref + date
 ════════════════════════════════════════════════════════════════════════════ */
 .hdr { padding-bottom: 9px; border-bottom: 1px solid #E0E4EA; }
 .hdr-tbl { width: 100%; border-collapse: collapse; }
 .hdr-tbl td { vertical-align: middle; padding: 0; }
 .hdr-logo { width: 110px; }
 .hdr-logo img { height: 30px; width: auto; display: block; }
-.hdr-name {
-    font-family: Georgia, 'Times New Roman', serif;
-    font-size: 17px; font-weight: 700; color: #0C1A2E; letter-spacing: 0.2px; line-height: 1;
-}
-.hdr-sub { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
+.hdr-prop-type { font-size: 12px; font-weight: 700; color: #0C1A2E; letter-spacing: 0.2px; line-height: 1.2; }
+.hdr-prop-addr { font-size: 8.5px; color: #6B7280; margin-top: 3px; line-height: 1.3; }
 .hdr-ref-col { text-align: right; }
 .hdr-label { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.5px; }
 .hdr-ref { font-size: 11px; font-weight: 700; color: #0C1A2E; letter-spacing: 0.2px; margin-top: 2px; }
@@ -190,12 +197,12 @@ html, body {
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — HERO IMAGE
-   183mm tall — dominant visual; fills ~67% of the page
+   90mm = 1/3 of A4 page height
 ════════════════════════════════════════════════════════════════════════════ */
-.hero { width: 100%; height: 183mm; overflow: hidden; background: #1A2F4E; margin-top: 7px; }
-.hero img { width: 100%; height: auto; display: block; }
+.hero { width: 100%; height: 90mm; overflow: hidden; background: #1A2F4E; margin-top: 7px; }
+.hero img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 .hero-empty {
-    width: 100%; height: 183mm;
+    width: 100%; height: 90mm;
     background: linear-gradient(160deg, #1A2F4E 0%, #0C1A2E 100%);
     display: table;
 }
@@ -232,14 +239,14 @@ html, body {
 .identity { padding: 12px 0 9px; border-bottom: 1px solid #E0E4EA; }
 .prop-title {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 16px; font-weight: 700; color: #0C1A2E;
-    line-height: 1.3; margin-bottom: 4px; letter-spacing: -0.2px;
+    font-size: 21px; font-weight: 700; color: #0C1A2E;
+    line-height: 1.3; margin-bottom: 6px; letter-spacing: -0.2px;
 }
-.prop-loc { font-size: 8.5px; color: #707070; margin-bottom: 6px; line-height: 1.4; }
+.prop-loc { font-size: 11px; color: #707070; margin-bottom: 8px; line-height: 1.5; }
 .prop-loc .dash { color: #2563A0; margin-right: 4px; }
 .badge {
-    display: inline-block; padding: 2px 8px; border-radius: 1px;
-    font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-right: 4px;
+    display: inline-block; padding: 3px 10px; border-radius: 1px;
+    font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-right: 4px;
 }
 .b-type   { background: #F0F4F8; color: #1A2F4E; }
 .b-op     { background: #2563A0; color: #FFFFFF; }
@@ -254,9 +261,9 @@ html, body {
 .stat-v {
     display: block;
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 19px; font-weight: 700; color: #0C1A2E; line-height: 1;
+    font-size: 24px; font-weight: 700; color: #0C1A2E; line-height: 1;
 }
-.stat-l { display: block; font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; font-weight: 700; }
+.stat-l { display: block; font-size: 8px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; font-weight: 700; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — BOTTOM STRIP
@@ -283,7 +290,7 @@ html, body {
    SECTION LABEL  —  small caps, blue, tight bottom rule
 ════════════════════════════════════════════════════════════════════════════ */
 .sec-lbl {
-    font-size: 7px; font-weight: 700; color: #2563A0;
+    font-size: 8px; font-weight: 700; color: #2563A0;
     text-transform: uppercase; letter-spacing: 2px;
     padding-bottom: 5px; border-bottom: 1px solid #E0E4EA; margin-bottom: 9px;
 }
@@ -291,7 +298,7 @@ html, body {
 /* ════════════════════════════════════════════════════════════════════════════
    DESCRIPTION
 ════════════════════════════════════════════════════════════════════════════ */
-.desc { font-size: 9.5px; color: #404040; line-height: 1.75; text-align: justify; }
+.desc { font-size: 11px; color: #404040; line-height: 1.75; text-align: justify; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    SPECS + AMENITIES — TWO COLUMNS
@@ -301,44 +308,41 @@ html, body {
 .col-specs { width: 52%; padding-right: 16px; }
 .col-amen  { width: 48%; padding-left: 14px; border-left: 1px solid #E0E4EA; }
 
-.spec-row { padding: 4px 0; border-bottom: 1px solid #F0F2F5; }
-.spec-tbl  { width: 100%; border-collapse: collapse; }
+.spec-row { padding: 5px 0; border-bottom: 1px solid #F0F2F5; }
+.spec-tbl  { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .spec-tbl td { vertical-align: middle; padding: 0; }
-.spec-k { font-size: 8px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-.spec-v { text-align: right; font-size: 10px; color: #0C1A2E; font-weight: 700; }
+.spec-tbl td:first-child { width: 58%; }
+.spec-tbl td:last-child  { width: 42%; }
+.spec-k { font-size: 9px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+.spec-v { display: block; text-align: right; font-size: 11px; color: #0C1A2E; font-weight: 700; }
 
-.amen-row { display: block; font-size: 9px; color: #404040; padding: 4px 0; border-bottom: 1px solid #F0F2F5; line-height: 1.3; }
+.amen-row { display: block; font-size: 10.5px; color: #404040; padding: 5px 0; border-bottom: 1px solid #F0F2F5; line-height: 1.3; }
 .amen-row:last-child { border-bottom: none; }
 .amen-dot { display: inline-block; width: 5px; height: 5px; background: #2563A0; margin-right: 7px; vertical-align: middle; }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   GALLERY — 3 columns, max 9 images, 110px cells
-   height must be explicit on both td AND img — DomPDF ignores overflow:hidden
-   on td when img has height:auto, causing pg2 to overflow and push the footer
-   off the bottom of the page.
+   GALLERY — 3 columns, max 9 landscape images
+   object-fit: cover crops to fill without distortion (Chrome/Browsershot)
+   Portrait images are filtered in PHP before reaching here
 ════════════════════════════════════════════════════════════════════════════ */
 .gal-tbl { width: 100%; border-collapse: separate; border-spacing: 5px; }
 .gal-cell { width: 33.33%; height: 110px; overflow: hidden; background: #E8ECF0; vertical-align: top; padding: 0; }
-.gal-cell img { width: 100%; height: 110px; display: block; }
+.gal-cell img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
 .gal-empty { width: 100%; height: 110px; background: #F0F2F5; display: table; }
 .gal-empty-in { display: table-cell; vertical-align: middle; text-align: center; font-size: 7.5px; color: #C8CDD5; }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   BROKER BLOCK  —  conditional
+   BROKER BLOCK  —  centered card with round photo
 ════════════════════════════════════════════════════════════════════════════ */
-.broker-wrap { border: 1px solid #E0E4EA; padding: 9px 12px; }
-.broker-eyebrow { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 8px; }
-.broker-tbl { width: 100%; border-collapse: collapse; }
-.broker-tbl td { vertical-align: top; padding: 0; }
-.broker-img-cell { width: 48px; padding-right: 12px; }
-.broker-img { width: 48px; height: 48px; overflow: hidden; background: #E8ECF0; }
-.broker-img img { width: 48px; height: 48px; display: block; }
-.broker-init-wrap { width: 48px; height: 48px; background: linear-gradient(135deg, #1A2F4E 0%, #2563A0 100%); display: table; }
-.broker-init-in { display: table-cell; vertical-align: middle; text-align: center; font-family: Georgia, serif; font-size: 17px; font-weight: 700; color: #fff; }
-.broker-name { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; font-weight: 700; color: #0C1A2E; margin-bottom: 1px; }
-.broker-role { font-size: 7px; color: #2563A0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 5px; }
-.broker-line { font-size: 8.5px; color: #404040; margin-bottom: 2px; }
-.broker-k { font-size: 7px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-right: 4px; }
+.broker-wrap { border: 1px solid #E0E4EA; padding: 16px 20px; text-align: center; max-width: 260px; margin: 0 auto; }
+.broker-eyebrow { font-size: 7px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; margin-bottom: 12px; }
+.broker-avatar { width: 80px; height: 80px; border-radius: 50%; overflow: hidden; margin: 0 auto 10px; background: linear-gradient(135deg, #1A2F4E 0%, #2563A0 100%); }
+.broker-avatar img { width: 80px; height: 80px; object-fit: cover; display: block; border-radius: 50%; }
+.broker-avatar-init { width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 28px; font-weight: 700; color: #fff; }
+.broker-name { font-family: Georgia, 'Times New Roman', serif; font-size: 13px; font-weight: 700; color: #0C1A2E; margin-bottom: 3px; }
+.broker-role { font-size: 8px; color: #2563A0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 10px; }
+.broker-line { font-size: 10px; color: #404040; margin-bottom: 3px; }
+.broker-k { font-size: 7.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-right: 4px; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    CONTACT + QR
@@ -346,15 +350,15 @@ html, body {
 .contact-tbl { width: 100%; border-collapse: collapse; }
 .contact-tbl td { vertical-align: top; padding: 0; }
 .contact-left { padding-right: 22px; border-right: 1px solid #E0E4EA; }
-.contact-right { width: 96px; padding-left: 22px; text-align: center; }
-.contact-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 12px; font-weight: 700; color: #0C1A2E; margin-bottom: 1px; }
-.contact-tag   { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
-.contact-row   { font-size: 9px; color: #404040; margin-bottom: 4px; line-height: 1.35; }
-.contact-k     { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; display: block; margin-bottom: 1px; }
-.qr-box { width: 74px; height: 74px; margin: 0 auto 5px; border: 1px solid #E0E4EA; padding: 4px; background: #FAFAFA; }
-.qr-box img { width: 66px; height: 66px; display: block; }
-.qr-lbl { font-size: 6.5px; color: #9CA3AF; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; }
-.qr-cta { font-size: 6px; color: #2563A0; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+.contact-right { width: 116px; padding-left: 22px; text-align: center; }
+.contact-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 13px; font-weight: 700; color: #0C1A2E; margin-bottom: 2px; }
+.contact-tag   { font-size: 7px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+.contact-row   { font-size: 10.5px; color: #404040; margin-bottom: 5px; line-height: 1.4; }
+.contact-k     { font-size: 7.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; display: block; margin-bottom: 1px; }
+.qr-box { width: 92px; height: 92px; margin: 0 auto 6px; border: 1px solid #E0E4EA; padding: 4px; background: #FAFAFA; }
+.qr-box img { width: 84px; height: 84px; display: block; }
+.qr-lbl { font-size: 7px; color: #9CA3AF; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; }
+.qr-cta { font-size: 7px; color: #2563A0; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 3px; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    LEGAL FOOTER  —  dark band, gold top border
@@ -399,11 +403,11 @@ html, body {
                     @endif
                 </td>
                 <td>
-                    @if($logoSrc)
-                        <div class="hdr-name">HOME DEL VALLE</div>
-                        <div class="hdr-sub">Inmobiliaria Boutique</div>
-                    @else
-                        <div class="hdr-sub">Inmobiliaria Boutique</div>
+                    @if($propertyType)
+                        <div class="hdr-prop-type">{{ $propertyType }}</div>
+                    @endif
+                    @if($property->address || $property->colony)
+                        <div class="hdr-prop-addr">{{ implode(', ', array_filter([$property->address, $property->colony])) }}</div>
                     @endif
                 </td>
                 <td class="hdr-ref-col">
@@ -567,31 +571,25 @@ html, body {
         <hr class="rule">
         <div class="broker-wrap">
             <div class="broker-eyebrow">Asesor Inmobiliario</div>
-            <table class="broker-tbl">
-                <tr>
-                    <td class="broker-img-cell">
-                        @if($brokerPhotoSrc)
-                            <div class="broker-img"><img src="{{ $brokerPhotoSrc }}" alt="{{ $broker->name }}"></div>
-                        @else
-                            @php $ini = strtoupper(mb_substr($broker->name ?? 'A', 0, 1)); @endphp
-                            <div class="broker-init-wrap"><div class="broker-init-in">{{ $ini }}</div></div>
-                        @endif
-                    </td>
-                    <td>
-                        <div class="broker-name">{{ $broker->name }}</div>
-                        <div class="broker-role">{{ $broker->specialty ?? $broker->type ?? 'Asesor Inmobiliario' }}</div>
-                        @if($broker->phone)
-                            <div class="broker-line"><span class="broker-k">Tel</span>{{ $broker->phone }}</div>
-                        @endif
-                        @if($broker->email)
-                            <div class="broker-line"><span class="broker-k">Email</span>{{ $broker->email }}</div>
-                        @endif
-                        @if($broker->company_name)
-                            <div class="broker-line"><span class="broker-k">Empresa</span>{{ $broker->company_name }}</div>
-                        @endif
-                    </td>
-                </tr>
-            </table>
+            <div class="broker-avatar">
+                @if($brokerPhotoSrc)
+                    <img src="{{ $brokerPhotoSrc }}" alt="{{ $broker->name }}">
+                @else
+                    @php $ini = strtoupper(mb_substr($broker->name ?? 'A', 0, 1)); @endphp
+                    <div class="broker-avatar-init">{{ $ini }}</div>
+                @endif
+            </div>
+            <div class="broker-name">{{ $broker->name }}</div>
+            <div class="broker-role">{{ $broker->specialty ?? $broker->type ?? 'Asesor Inmobiliario' }}</div>
+            @if($broker->phone)
+                <div class="broker-line"><span class="broker-k">Tel</span> {{ $broker->phone }}</div>
+            @endif
+            @if($broker->email)
+                <div class="broker-line"><span class="broker-k">Email</span> {{ $broker->email }}</div>
+            @endif
+            @if($broker->company_name)
+                <div class="broker-line"><span class="broker-k">Empresa</span> {{ $broker->company_name }}</div>
+            @endif
         </div>
     @endif
 
