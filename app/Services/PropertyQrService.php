@@ -55,10 +55,10 @@ class PropertyQrService
     {
         $url = $url ?? $this->getPropertyPublicUrl($property);
 
-        // Generar imagen QR
-        $qrCode = QrCode::create($url)
-            ->setSize(self::QR_SIZE)
-            ->setEncoding('UTF-8');
+        // Generar imagen QR con la API v6
+        $qrCode = new QrCode($url);
+        $qrCode->setEncoding('UTF-8');
+        $qrCode->setSize(self::QR_SIZE);
 
         $pngWriter = new PngWriter();
         $result = $pngWriter->write($qrCode);
@@ -148,12 +148,12 @@ class PropertyQrService
      */
     public function getAsSvg(PropertyQrCode $qrCode): string
     {
-        $qrCode = QrCode::create($qrCode->qr_url)
-            ->setSize(self::QR_SIZE)
-            ->setEncoding('UTF-8');
+        $qr = new QrCode($qrCode->qr_url);
+        $qr->setEncoding('UTF-8');
+        $qr->setSize(self::QR_SIZE);
 
         $svgWriter = new SvgWriter();
-        $result = $svgWriter->write($qrCode);
+        $result = $svgWriter->write($qr);
 
         return $result->getStream()->getContents();
     }
