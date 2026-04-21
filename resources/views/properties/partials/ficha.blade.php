@@ -141,15 +141,16 @@ html, body {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   COLOR PALETTE
-   Deep navy   #0A1628   (darkest — price bar, bottom strip)
-   Brand navy  #1B3560   (headers, titles)
-   Blue accent #2563A0   (section labels, links)
-   Gold accent #B8946A   (decorative lines, badges, markers)
-   Off-white   #F5F6F8   (stat cells, backgrounds)
-   Divider     #E0E4EA
-   Body text   #404040
-   Muted text  #9CA3AF
+   COLOR PALETTE  —  brand blues only (from app.css @theme)
+   brand-950  #0C1A2E   price bar, bottom strip, legal footer bg
+   brand-800  #1A2F4E   titles, brand name, body dark
+   brand-600  #2563A0   accent line, section labels, markers, borders
+   brand-500  #3B82C4   mid blue (available for hover/secondary use)
+   brand-50   #F0F7FF   light tint backgrounds
+   Neutral    #F8F9FA   stat cell backgrounds
+   Divider    #E5E7EB
+   Body text  #404040
+   Muted      #6B7280 / #9CA3AF
 ════════════════════════════════════════════════════════════════════════════ */
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -177,26 +178,26 @@ html, body {
 .hdr-logo img { height: 30px; width: auto; display: block; }
 .hdr-name {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 17px; font-weight: 700; color: #0A1628; letter-spacing: 0.2px; line-height: 1;
+    font-size: 17px; font-weight: 700; color: #0C1A2E; letter-spacing: 0.2px; line-height: 1;
 }
 .hdr-sub { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; margin-top: 3px; }
 .hdr-ref-col { text-align: right; }
 .hdr-label { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.5px; }
-.hdr-ref { font-size: 11px; font-weight: 700; color: #0A1628; letter-spacing: 0.2px; margin-top: 2px; }
+.hdr-ref { font-size: 11px; font-weight: 700; color: #0C1A2E; letter-spacing: 0.2px; margin-top: 2px; }
 .hdr-date { font-size: 7px; color: #9CA3AF; margin-top: 1px; }
 
-/* Gold rule under header */
-.gold-rule { height: 2px; background: #B8946A; width: 36px; margin: 7px 0 0 0; }
+.accent-rule { height: 2px; background: #2563A0; width: 36px; margin: 7px 0 0 0; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — HERO IMAGE
    183mm tall — dominant visual; fills ~67% of the page
 ════════════════════════════════════════════════════════════════════════════ */
-.hero { width: 100%; height: 183mm; overflow: hidden; background: #1B3560; margin-top: 7px; }
+.hero { width: 100%; height: 183mm; overflow: hidden; background: #1A2F4E; margin-top: 7px; }
 .hero img { width: 100%; height: 183mm; display: block; }
 .hero-empty {
     width: 100%; height: 183mm;
-    background: linear-gradient(160deg, #1B3560 0%, #0A1628 100%); display: table;
+    background: linear-gradient(160deg, #1A2F4E 0%, #0C1A2E 100%);
+    display: table;
 }
 .hero-empty-inner {
     display: table-cell; vertical-align: middle; text-align: center;
@@ -208,7 +209,7 @@ html, body {
    PAGE 1 — PRICE BAR
    Full-width dark band immediately below hero
 ════════════════════════════════════════════════════════════════════════════ */
-.price-bar { background: #0A1628; padding: 9px 14px; }
+.price-bar { background: #0C1A2E; padding: 9px 14px; }
 .price-bar-tbl { width: 100%; border-collapse: collapse; }
 .price-bar-tbl td { vertical-align: middle; padding: 0; }
 .price-lbl { font-size: 6px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px; }
@@ -219,8 +220,8 @@ html, body {
 .price-currency { font-size: 10px; color: rgba(255,255,255,0.55); vertical-align: top; margin-right: 2px; line-height: 26px; }
 .op-badge {
     display: inline-block;
-    border: 1px solid #B8946A; padding: 5px 13px;
-    font-size: 7.5px; font-weight: 700; color: #B8946A;
+    border: 1.5px solid rgba(255,255,255,0.35); padding: 5px 13px;
+    font-size: 7.5px; font-weight: 700; color: #FFFFFF;
     text-transform: uppercase; letter-spacing: 2px;
 }
 
@@ -231,16 +232,16 @@ html, body {
 .identity { padding: 12px 0 9px; border-bottom: 1px solid #E0E4EA; }
 .prop-title {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 16px; font-weight: 700; color: #0A1628;
+    font-size: 16px; font-weight: 700; color: #0C1A2E;
     line-height: 1.3; margin-bottom: 4px; letter-spacing: -0.2px;
 }
 .prop-loc { font-size: 8.5px; color: #707070; margin-bottom: 6px; line-height: 1.4; }
-.prop-loc .dash { color: #B8946A; margin-right: 4px; }
+.prop-loc .dash { color: #2563A0; margin-right: 4px; }
 .badge {
     display: inline-block; padding: 2px 8px; border-radius: 1px;
     font-size: 7px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-right: 4px;
 }
-.b-type   { background: #F0F4F8; color: #1B3560; }
+.b-type   { background: #F0F4F8; color: #1A2F4E; }
 .b-op     { background: #2563A0; color: #FFFFFF; }
 .b-status { background: #DCFCE7; color: #166534; }
 
@@ -249,11 +250,11 @@ html, body {
    4 equal cells, gold top border, serif numbers
 ════════════════════════════════════════════════════════════════════════════ */
 .stats-tbl { width: 100%; border-collapse: separate; border-spacing: 5px 0; margin-top: 9px; }
-.stat-cell { text-align: center; padding: 11px 4px 9px; border-top: 2px solid #B8946A; background: #F5F6F8; }
+.stat-cell { text-align: center; padding: 11px 4px 9px; border-top: 3px solid #2563A0; background: #F8F9FA; }
 .stat-v {
     display: block;
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 19px; font-weight: 700; color: #0A1628; line-height: 1;
+    font-size: 19px; font-weight: 700; color: #0C1A2E; line-height: 1;
 }
 .stat-l { display: block; font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; font-weight: 700; }
 
@@ -261,7 +262,7 @@ html, body {
    PAGE 1 — BOTTOM STRIP
    Anchored to bottom via position:absolute (strictly necessary here)
 ════════════════════════════════════════════════════════════════════════════ */
-.pg1-footer { position: absolute; bottom: 0; left: 0; right: 0; background: #0A1628; padding: 7px 0; text-align: center; }
+.pg1-footer { position: absolute; bottom: 0; left: 0; right: 0; background: #0C1A2E; padding: 7px 0; text-align: center; }
 .pg1-footer span { font-size: 6px; color: rgba(255,255,255,0.28); text-transform: uppercase; letter-spacing: 3.5px; }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -272,7 +273,7 @@ html, body {
 .mini-hdr-tbl td { vertical-align: middle; padding: 0; }
 .mini-logo { width: 65px; }
 .mini-logo img { height: 22px; width: auto; display: block; }
-.mini-name { font-family: Georgia, 'Times New Roman', serif; font-size: 10.5px; font-weight: 700; color: #0A1628; }
+.mini-name { font-family: Georgia, 'Times New Roman', serif; font-size: 10.5px; font-weight: 700; color: #0C1A2E; }
 .mini-sub  { font-size: 6px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 1px; }
 .mini-right { text-align: right; }
 .mini-ref    { font-size: 7px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; }
@@ -296,7 +297,7 @@ html, body {
    SPECS + AMENITIES — TWO COLUMNS
 ════════════════════════════════════════════════════════════════════════════ */
 .cols-tbl { width: 100%; border-collapse: collapse; }
-.cols-tbl > tr > td { vertical-align: top; padding: 0; }
+.cols-tbl td { vertical-align: top; padding: 0; }
 .col-specs { width: 52%; padding-right: 16px; }
 .col-amen  { width: 48%; padding-left: 14px; border-left: 1px solid #E0E4EA; }
 
@@ -304,11 +305,11 @@ html, body {
 .spec-tbl  { width: 100%; border-collapse: collapse; }
 .spec-tbl td { vertical-align: middle; padding: 0; }
 .spec-k { font-size: 7.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
-.spec-v { text-align: right; font-size: 9.5px; color: #0A1628; font-weight: 700; }
+.spec-v { text-align: right; font-size: 9.5px; color: #0C1A2E; font-weight: 700; }
 
 .amen-row { display: block; font-size: 8.5px; color: #404040; padding: 4px 0; border-bottom: 1px solid #F0F2F5; line-height: 1.3; }
 .amen-row:last-child { border-bottom: none; }
-.amen-dot { display: inline-block; width: 5px; height: 5px; background: #B8946A; margin-right: 7px; vertical-align: middle; }
+.amen-dot { display: inline-block; width: 5px; height: 5px; background: #2563A0; margin-right: 7px; vertical-align: middle; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    GALLERY — 3 columns, max 9 images, 72px cells
@@ -329,9 +330,9 @@ html, body {
 .broker-img-cell { width: 48px; padding-right: 12px; }
 .broker-img { width: 48px; height: 48px; overflow: hidden; background: #E8ECF0; }
 .broker-img img { width: 48px; height: 48px; display: block; }
-.broker-init-wrap { width: 48px; height: 48px; background: linear-gradient(135deg, #1B3560 0%, #2563A0 100%); display: table; }
+.broker-init-wrap { width: 48px; height: 48px; background: linear-gradient(135deg, #1A2F4E 0%, #2563A0 100%); display: table; }
 .broker-init-in { display: table-cell; vertical-align: middle; text-align: center; font-family: Georgia, serif; font-size: 17px; font-weight: 700; color: #fff; }
-.broker-name { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; font-weight: 700; color: #0A1628; margin-bottom: 1px; }
+.broker-name { font-family: Georgia, 'Times New Roman', serif; font-size: 11px; font-weight: 700; color: #0C1A2E; margin-bottom: 1px; }
 .broker-role { font-size: 7px; color: #2563A0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 5px; }
 .broker-line { font-size: 8.5px; color: #404040; margin-bottom: 2px; }
 .broker-k { font-size: 7px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-right: 4px; }
@@ -343,7 +344,7 @@ html, body {
 .contact-tbl td { vertical-align: top; padding: 0; }
 .contact-left { padding-right: 22px; border-right: 1px solid #E0E4EA; }
 .contact-right { width: 96px; padding-left: 22px; text-align: center; }
-.contact-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 12px; font-weight: 700; color: #0A1628; margin-bottom: 1px; }
+.contact-brand { font-family: Georgia, 'Times New Roman', serif; font-size: 12px; font-weight: 700; color: #0C1A2E; margin-bottom: 1px; }
 .contact-tag   { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
 .contact-row   { font-size: 9px; color: #404040; margin-bottom: 4px; line-height: 1.35; }
 .contact-k     { font-size: 6.5px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; display: block; margin-bottom: 1px; }
@@ -355,7 +356,7 @@ html, body {
 /* ════════════════════════════════════════════════════════════════════════════
    LEGAL FOOTER  —  dark band, gold top border
 ════════════════════════════════════════════════════════════════════════════ */
-.footer { background: #0A1628; padding: 9px 14px; margin-top: 13px; border-top: 2px solid #B8946A; }
+.footer { background: #0C1A2E; padding: 9px 14px; margin-top: 13px; border-top: 2px solid #2563A0; }
 .footer-brand { font-size: 7.5px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
 .footer-text  { font-size: 6.5px; color: rgba(255,255,255,0.38); line-height: 1.6; }
 .footer-copy  { font-size: 6.5px; color: rgba(255,255,255,0.22); margin-top: 5px; text-align: center; }
@@ -409,7 +410,7 @@ html, body {
                 </td>
             </tr>
         </table>
-        <div class="gold-rule"></div>
+        <div class="accent-rule"></div>
     </div>
 
     {{-- Hero image --}}
