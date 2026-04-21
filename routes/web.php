@@ -469,24 +469,36 @@ Route::get('/test-pdf', function () {
 
     $path = storage_path('app/test.pdf');
 
-    \Spatie\Browsershot\Browsershot::html('<!DOCTYPE html>
-        <html><head><meta charset="UTF-8"></head>
-        <body style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
-            <h1 style="color: #1A2F4E;">PDF OK ✓</h1>
-            <p>Google Chrome + Node + Puppeteer + Browsershot funcionando.</p>
-            <p style="color: #666; font-size: 12px;">Generado: ' . now()->format('d/m/Y H:i:s') . '</p>
-            <hr style="margin: 20px 0; border-color: #2563A0;">
-            <table style="font-size: 13px; border-collapse: collapse;">
-                <tr><td style="padding: 4px 12px 4px 0; color:#666;">Chrome</td><td><strong>' . $chrome . '</strong></td></tr>
-                <tr><td style="padding: 4px 12px 4px 0; color:#666;">Node</td><td><strong>' . $node . '</strong></td></tr>
-                <tr><td style="padding: 4px 12px 4px 0; color:#666;">PHP</td><td><strong>' . PHP_VERSION . '</strong></td></tr>
-            </table>
-        </body></html>')
-        ->setChromePath($chrome)
-        ->setNodeBinary($node)
-        ->noSandbox()
-        ->format('A4')
-        ->savePdf($path);
+    try {
+        \Spatie\Browsershot\Browsershot::html('<!DOCTYPE html>
+            <html><head><meta charset="UTF-8"></head>
+            <body style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
+                <h1 style="color: #1A2F4E;">PDF OK ✓</h1>
+                <p>Google Chrome + Node + Puppeteer + Browsershot funcionando.</p>
+                <p style="color: #666; font-size: 12px;">Generado: ' . now()->format('d/m/Y H:i:s') . '</p>
+                <hr style="margin: 20px 0; border-color: #2563A0;">
+                <table style="font-size: 13px; border-collapse: collapse;">
+                    <tr><td style="padding: 4px 12px 4px 0; color:#666;">Chrome</td><td><strong>' . $chrome . '</strong></td></tr>
+                    <tr><td style="padding: 4px 12px 4px 0; color:#666;">Node</td><td><strong>' . $node . '</strong></td></tr>
+                    <tr><td style="padding: 4px 12px 4px 0; color:#666;">PHP</td><td><strong>' . PHP_VERSION . '</strong></td></tr>
+                </table>
+            </body></html>')
+            ->setChromePath($chrome)
+            ->setNodeBinary($node)
+            ->noSandbox()
+            ->format('A4')
+            ->savePdf($path);
 
-    return response()->download($path, 'test-browsershot.pdf');
+        return response()->download($path, 'test-browsershot.pdf');
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error'        => $e->getMessage(),
+            'chrome'       => $chrome,
+            'node'         => $node,
+            'node_version' => trim(shell_exec($node . ' --version 2>&1') ?? ''),
+            'puppeteer'    => trim(shell_exec('ls ' . base_path('node_modules/puppeteer') . ' 2>&1') ?? ''),
+            'storage_writable' => is_writable(storage_path('app')),
+        ], 500);
+    }
 });
