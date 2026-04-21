@@ -445,6 +445,10 @@ Route::get('/test-pdf', function () {
     $nodePaths = [
         '/usr/bin/node',
         '/usr/local/bin/node',
+        '/usr/local/node/bin/node',
+        trim(shell_exec('which node 2>/dev/null') ?? ''),
+        ...glob('/root/.nvm/versions/node/*/bin/node'),
+        ...glob('/home/*/.nvm/versions/node/*/bin/node'),
         '/opt/homebrew/bin/node',
     ];
 
