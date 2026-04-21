@@ -434,30 +434,45 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
 // ─── TEST: Browsershot diagnóstico (eliminar en producción) ──────────────────
 Route::get('/test-pdf', function () {
     try {
-        $chrome = trim(shell_exec('which google-chrome 2>/dev/null')
-                ?? shell_exec('which google-chrome-stable 2>/dev/null')
-                ?? '');
-        $node   = trim(shell_exec('which node 2>/dev/null') ?? '');
-
-        $info = [
-            'php'              => PHP_VERSION,
-            'chrome_path'      => $chrome,
-            'chrome_exists'    => file_exists($chrome),
-            'node_path'        => $node,
-            'node_exists'      => file_exists($node),
-            'node_version'     => trim(shell_exec($node . ' --version 2>&1') ?? ''),
-            'puppeteer_exists' => is_dir(base_path('node_modules/puppeteer')),
-            'storage_writable' => is_writable(storage_path('app')),
-            'browsershot_class'=> class_exists(\Spatie\Browsershot\Browsershot::class),
+        // Sin shell_exec — rutas conocidas de Ubuntu + aaPanel
+        $chromeCandidates = [
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable',
+            '/opt/google/chrome/google-chrome',
+            '/usr/bin/chromium-browser',
+        ];
+        $nodeCandidates = [
+            '/usr/bin/node',
+            '/usr/local/bin/node',
+            '/usr/local/node/bin/node',
         ];
 
-        if (!$info['chrome_exists'] || !$info['node_exists']) {
-            return response()->json(['status' => 'BINARIOS NO ENCONTRADOS'] + $info, 500);
+        $chrome = collect($chromeCandidates)->first(fn($p) => file_exists($p));
+        $node   = collect($nodeCandidates)->first(fn($p) => file_exists($p));
+
+        // Diagnóstico previo sin generar PDF
+        $info = [
+            'php'               => PHP_VERSION,
+            'chrome'            => $chrome ?? 'NO ENCONTRADO — intentados: ' . implode(', ', $chromeCandidates),
+            'node'              => $node   ?? 'NO ENCONTRADO — intentados: ' . implode(', ', $nodeCandidates),
+            'proc_open'         => function_exists('proc_open'),
+            'puppeteer_exists'  => is_dir(base_path('node_modules/puppeteer')),
+            'storage_writable'  => is_writable(storage_path('app')),
+            'browsershot_class' => class_exists(\Spatie\Browsershot\Browsershot::class),
+            'disabled_functions'=> ini_get('disable_functions'),
+        ];
+
+        if (!$chrome || !$node) {
+            return response()->json(['status' => 'BINARIOS NO ENCONTRADOS'] + $info);
+        }
+
+        if (!$info['proc_open']) {
+            return response()->json(['status' => 'proc_open DESHABILITADO — Browsershot no puede funcionar'] + $info);
         }
 
         $path = storage_path('app/test.pdf');
 
-        \Spatie\Browsershot\Browsershot::html('<h1>PDF OK</h1><p>Generado: ' . now() . '</p>')
+        \Spatie\Browsershot\Browsershot::html('<h1>PDF OK</h1><p>' . now() . '</p>')
             ->setChromePath($chrome)
             ->setNodeBinary($node)
             ->noSandbox()
@@ -471,7 +486,6 @@ Route::get('/test-pdf', function () {
             'status'  => 'ERROR',
             'message' => $e->getMessage(),
             'file'    => $e->getFile() . ':' . $e->getLine(),
-            'trace'   => explode("\n", $e->getTraceAsString()),
         ], 500);
     }
 });
