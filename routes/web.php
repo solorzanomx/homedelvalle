@@ -430,3 +430,31 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
     Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
     Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
 });
+
+// ─── TEST: Browsershot + Chromium (eliminar en producción) ───────────────────
+Route::get('/test-pdf', function () {
+    $path = storage_path('app/test.pdf');
+
+    \Spatie\Browsershot\Browsershot::html('
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="UTF-8"></head>
+        <body style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
+            <h1 style="color: #1A2F4E;">PDF OK ✓</h1>
+            <p>Chrome (Brave) + Node + Puppeteer + Browsershot funcionando.</p>
+            <p style="color: #666; font-size: 12px;">Generado: ' . now()->format('d/m/Y H:i:s') . '</p>
+            <hr style="margin: 20px 0; border-color: #2563A0;">
+            <p>Node: <strong>' . trim(shell_exec('node --version')) . '</strong> &nbsp;|&nbsp;
+               PHP: <strong>' . PHP_VERSION . '</strong></p>
+        </body>
+        </html>
+    ')
+        ->setChromePath('/Applications/Brave Browser.app/Contents/MacOS/Brave Browser')
+        ->setNodeBinary('/opt/homebrew/bin/node')
+        ->setNpmBinary('/opt/homebrew/bin/npm')
+        ->noSandbox()
+        ->format('A4')
+        ->savePdf($path);
+
+    return response()->download($path, 'test-browsershot.pdf');
+});
