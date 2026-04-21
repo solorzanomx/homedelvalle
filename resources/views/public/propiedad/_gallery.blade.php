@@ -4,113 +4,87 @@
 @endphp
 
 @if($photoCount > 0)
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-
 <style>
-.property-gallery { position: relative; border-radius: 20px; overflow: hidden; background: #f3f4f6; box-shadow: 0 20px 60px rgba(0,0,0,0.08); }
-.property-gallery .swiper { aspect-ratio: 16/10; width: 100%; }
-.property-gallery img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.gallery-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: all 0.3s; color: #1e293b; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-.gallery-btn:hover { background: rgba(255,255,255,1); transform: translateY(-50%) scale(1.1); }
-.gallery-btn svg { width: 24px; height: 24px; stroke-width: 2.5; }
-.gallery-btn.prev { left: 20px; }
-.gallery-btn.next { right: 20px; }
-
-.gallery-counter { position: absolute; top: 20px; left: 20px; background: rgba(30,41,59,0.75); backdrop-filter: blur(12px); color: white; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 24px; z-index: 10; }
-.gallery-expand { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; border-radius: 50%; background: rgba(30,41,59,0.6); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; color: white; transition: all 0.3s; }
-.gallery-expand:hover { background: rgba(30,41,59,0.85); transform: scale(1.08); }
-.gallery-expand svg { width: 20px; height: 20px; }
-
-.gallery-thumbs { display: flex; gap: 10px; padding: 16px 20px; overflow-x: auto; scroll-behavior: smooth; background: white; border-top: 1px solid #e2e8f0; }
-.gallery-thumb { flex-shrink: 0; width: 80px; height: 60px; border-radius: 10px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; opacity: 0.6; }
-.gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.gallery-thumb:hover { opacity: 0.85; transform: scale(1.05); }
-.gallery-thumb.active { border-color: var(--color-primary, #667eea); opacity: 1; }
-
-@media (max-width: 768px) {
-    .gallery-btn { width: 40px; height: 40px; }
-    .gallery-btn svg { width: 20px; height: 20px; }
-    .gallery-btn.prev { left: 12px; }
-    .gallery-btn.next { right: 12px; }
-    .property-gallery .swiper { aspect-ratio: 4/3; }
-}
+.gal { position: relative; border-radius: 16px; overflow: hidden; background: #f3f4f6; }
+.gal-main { position: relative; aspect-ratio: 16/10; display: flex; }
+.gal-img { position: absolute; inset: 0; opacity: 0; transition: opacity 0.4s; width: 100%; height: 100%; object-fit: cover; }
+.gal-img.show { opacity: 1; z-index: 1; }
+.gal-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.85); border: none; cursor: pointer; z-index: 10; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.gal-btn:hover { background: white; transform: translateY(-50%) scale(1.1); }
+.gal-prev { left: 16px; }
+.gal-next { right: 16px; }
+.gal-cnt { position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.5); color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; z-index: 5; }
+.gal-exp { position: absolute; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; background: rgba(0,0,0,0.5); border: none; color: white; cursor: pointer; z-index: 5; transition: all 0.2s; }
+.gal-exp:hover { background: rgba(0,0,0,0.7); }
+.gal-thumbs { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; background: white; border-top: 1px solid #e2e8f0; }
+.gal-thumb { flex-shrink: 0; width: 70px; height: 52px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: 0.6; transition: all 0.2s; }
+.gal-thumb:hover { opacity: 0.9; }
+.gal-thumb.act { border-color: #667eea; opacity: 1; }
+.gal-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.gal-light { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 999; }
+.gal-light.open { display: flex; }
+.gal-light img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+.gal-light-close { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 28px; cursor: pointer; border-radius: 50%; }
+@media (max-width: 640px) { .gal-main { aspect-ratio: 4/3; } .gal-btn { width: 36px; height: 36px; } .gal-prev { left: 8px; } .gal-next { right: 8px; } }
 </style>
 
-<div class="property-gallery">
-    <div class="swiper" id="propGallerySwiper">
-        <div class="swiper-wrapper">
-            @foreach($photos as $photo)
-            <div class="swiper-slide" data-fancybox="gallery" data-src="{{ asset('storage/' . $photo->path) }}">
-                <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description ?? $property->title }}" loading="lazy">
-            </div>
-            @endforeach
-        </div>
+<div class="gal">
+    <div class="gal-main" id="galMain">
+        @foreach($photos as $index => $photo)
+        <img class="gal-img {{ $index === 0 ? 'show' : '' }}" src="{{ asset('storage/' . $photo->path) }}" alt="Foto {{ $index + 1 }}" data-idx="{{ $index }}">
+        @endforeach
     </div>
 
     @if($photoCount > 1)
-    <button class="gallery-btn prev" onclick="window.propGallerySwiper.slidePrev()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="15 18 9 12 15 6"></polyline></svg>
-    </button>
-    <button class="gallery-btn next" onclick="window.propGallerySwiper.slideNext()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 18 15 12 9 6"></polyline></svg>
-    </button>
+    <button class="gal-btn gal-prev" onclick="galPrev()">❮</button>
+    <button class="gal-btn gal-next" onclick="galNext()">❯</button>
     @endif
 
-    <div class="gallery-counter"><span id="galleryCount">1</span> / {{ $photoCount }}</div>
-    <button class="gallery-expand" onclick="document.querySelector('[data-fancybox=gallery]')?.click()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-    </button>
+    <div class="gal-cnt"><span id="galNum">1</span> / {{ $photoCount }}</div>
+    <button class="gal-exp" onclick="galLight()" title="Expandir">⛶</button>
 </div>
 
 @if($photoCount > 1)
-<div class="gallery-thumbs">
+<div class="gal-thumbs" id="galThumbs">
     @foreach($photos as $index => $photo)
-    <div class="gallery-thumb {{ $index === 0 ? 'active' : '' }}" data-index="{{ $index }}" onclick="window.propGallerySwiper.slideToLoop(this.dataset.index)">
-        <img src="{{ asset('storage/' . $photo->path) }}" alt="Thumb {{ $index + 1 }}" loading="lazy">
+    <div class="gal-thumb {{ $index === 0 ? 'act' : '' }}" onclick="galShow({{ $index }})">
+        <img src="{{ asset('storage/' . $photo->path) }}" alt="Thumb">
     </div>
     @endforeach
 </div>
 @endif
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox.umd.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox.css" />
+<div class="gal-light" id="galLight" onclick="this.classList.remove('open')">
+    <button class="gal-light-close" onclick="event.stopPropagation(); document.getElementById('galLight').classList.remove('open')">×</button>
+    <img id="galLightImg" src="" alt="Foto completa">
+</div>
 
 <script>
-function initGallery() {
-    if (!window.Swiper) {
-        setTimeout(initGallery, 100);
-        return;
-    }
+let galIdx = 0;
+const galCount = {{ $photoCount }};
 
-    window.propGallerySwiper = new Swiper('#propGallerySwiper', {
-        loop: true,
-        effect: 'fade',
-        fadeEffect: { crossFade: true },
-        autoplay: { delay: 5000, disableOnInteraction: false },
-        speed: 800,
-        on: {
-            slideChange: function() {
-                document.getElementById('galleryCount').textContent = this.realIndex + 1;
-                document.querySelectorAll('.gallery-thumb').forEach((el, i) => {
-                    el.classList.toggle('active', i === this.realIndex);
-                });
-            }
-        }
-    });
-
-    if (window.Fancybox) {
-        Fancybox.bind('[data-fancybox="gallery"]', {
-            on: {
-                reveal: () => document.body.style.overflow = 'hidden',
-                done: () => document.body.style.overflow = ''
-            }
-        });
-    }
+function galShow(n) {
+    galIdx = (n + galCount) % galCount;
+    document.querySelectorAll('#galMain .gal-img').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('#galMain .gal-img')[galIdx].classList.add('show');
+    document.querySelectorAll('.gal-thumb').forEach((el, i) => el.classList.toggle('act', i === galIdx));
+    document.getElementById('galNum').textContent = galIdx + 1;
 }
 
-initGallery();
+function galNext() { galShow(galIdx + 1); }
+function galPrev() { galShow(galIdx - 1); }
+
+function galLight() {
+    const img = document.querySelectorAll('#galMain .gal-img')[galIdx];
+    document.getElementById('galLightImg').src = img.src;
+    document.getElementById('galLight').classList.add('open');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') galNext();
+    if (e.key === 'ArrowLeft') galPrev();
+    if (e.key === 'Escape') document.getElementById('galLight').classList.remove('open');
+});
 </script>
 
 @endif
