@@ -5,6 +5,9 @@
 @endphp
 
 @if($hasPhotos)
+{{-- Cargar CSS de Swiper --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
 <style>
     /* ========== GALERÍA PRINCIPAL ========== */
     .gallery-container {
@@ -317,6 +320,10 @@
 
 @endif
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5/dist/fancybox.css" />
+
 <script>
 // ============================================
 // GALERÍA PREMIUM: Swiper + Fancybox
@@ -324,15 +331,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const swiperContainer = document.getElementById('propertyGallerySwiper');
-    if (!swiperContainer) return; // No hay galería
+    if (!swiperContainer) return;
 
-    // ========== IMPORTAR DEPENDENCIAS ==========
-    // IMPORTANTE: Estos se cargan vía Vite en app.js
-    // import Swiper from 'swiper';
-    // import { Fancybox } from '@fancyapps/ui';
+    console.log('🖼️ Inicializando galería premium...');
 
     // ========== INICIALIZAR SWIPER ==========
-    const swiper = new window.Swiper('#propertyGallerySwiper', {
+    const swiper = new Swiper('#propertyGallerySwiper', {
         loop: true,
         speed: 800,
         effect: 'fade',
@@ -344,27 +348,52 @@ document.addEventListener('DOMContentLoaded', () => {
             disableOnInteraction: true
         },
         navigation: {
-            nextEl: '.swiper-main + .gallery-nav-btn.next',
-            prevEl: '.swiper-main + .gallery-nav-btn.prev'
+            nextEl: '.gallery-nav-btn.next',
+            prevEl: '.gallery-nav-btn.prev'
         },
-        keyboard: true,
-        mousewheel: false,
+        keyboard: {
+            enabled: true
+        },
         touchEventsTarget: 'container',
         on: {
-            slideChange: () => updateUI()
+            slideChange: () => updateGalleryUI(swiper)
+        }
+    });
+
+    // ========== INICIALIZAR FANCYBOX ==========
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        on: {
+            reveal: () => {
+                document.body.style.overflow = 'hidden';
+            },
+            done: () => {
+                document.body.style.overflow = '';
+            }
         }
     });
 
     // ========== UI: CONTADOR Y MINIATURAS ==========
-    function updateUI() {
+    function updateGalleryUI(swiper) {
         const currentIndex = swiper.realIndex;
-        document.getElementById('currentSlide').textContent = currentIndex + 1;
+        const currentSlideEl = document.getElementById('currentSlide');
+
+        if (currentSlideEl) {
+            currentSlideEl.textContent = currentIndex + 1;
+        }
 
         // Sincronizar miniaturas
         document.querySelectorAll('.gallery-thumb').forEach((thumb, idx) => {
-            thumb.classList.toggle('active', idx === currentIndex);
-            if (idx === currentIndex) {
-                thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            const isActive = idx === currentIndex;
+            thumb.classList.toggle('active', isActive);
+
+            if (isActive) {
+                setTimeout(() => {
+                    thumb.scrollIntoView({
+                        behavior: 'smooth',
+                        inline: 'center',
+                        block: 'nearest'
+                    });
+                }, 100);
             }
         });
     }
@@ -372,25 +401,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // ========== MINIATURAS: Click para navegar ==========
     document.querySelectorAll('.gallery-thumb').forEach(thumb => {
         thumb.addEventListener('click', (e) => {
-            const slideIndex = parseInt(e.currentTarget.dataset.slide);
+            const slideIndex = parseInt(e.currentTarget.dataset.slide, 10);
             swiper.slideToLoop(slideIndex);
         });
     });
 
-    // ========== BOTÓN EXPANDIR: Abre Fancybox en modo fullscreen ==========
-    document.getElementById('expandGallery')?.addEventListener('click', () => {
-        // Fancybox se abre con los data-fancybox de las imágenes
-        const firstImage = document.querySelector('[data-fancybox="gallery"]');
-        if (firstImage) firstImage.click();
-    });
+    // ========== BOTÓN EXPANDIR ==========
+    const expandBtn = document.getElementById('expandGallery');
+    if (expandBtn) {
+        expandBtn.addEventListener('click', () => {
+            const firstImage = document.querySelector('[data-fancybox="gallery"]');
+            if (firstImage) {
+                firstImage.click();
+            }
+        });
+    }
 
-    // ========== INICIALIZAR FANCYBOX ==========
-    // IMPORTANTE: Esto se hace en app.js cuando se carga @fancyapps/ui
-    // Fancybox.bind('[data-fancybox="gallery"]', {
-    //     on: { done: (fancybox) => { ... } }
-    // });
+    // Actualizar UI inicial
+    updateGalleryUI(swiper);
 
-    // Actualizar UI al cargar
-    updateUI();
+    console.log('✅ Galería premium inicializada');
 });
 </script>
