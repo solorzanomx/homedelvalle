@@ -431,59 +431,33 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
     Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
 });
 
-// ─── TEST: Browsershot + Chrome (eliminar en producción) ─────────────────────
+// ─── TEST: Browsershot diagnóstico (eliminar en producción) ──────────────────
 Route::get('/test-pdf', function () {
-    // Auto-detect binaries (works on Linux VPS and macOS)
-    $chromePaths = [
-        '/usr/bin/google-chrome',
-        '/usr/bin/google-chrome-stable',
-        '/opt/google/chrome/google-chrome',
-        '/usr/bin/chromium-browser',
-        '/usr/bin/chromium',
-        '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
-    ];
-    $nodePaths = array_merge([
-        '/usr/bin/node',
-        '/usr/local/bin/node',
-        '/usr/local/node/bin/node',
-        trim(shell_exec('which node 2>/dev/null') ?? ''),
-        '/opt/homebrew/bin/node',
-    ],
-        glob('/root/.nvm/versions/node/*/bin/node') ?: [],
-        glob('/home/*/.nvm/versions/node/*/bin/node') ?: []
-    );
-
-    $chrome = collect($chromePaths)->first(fn($p) => file_exists($p));
-    $node   = collect($nodePaths)->first(fn($p) => file_exists($p));
-
-    if (!$chrome || !$node) {
-        return response()->json([
-            'error'         => 'Binario no encontrado',
-            'chrome_found'  => $chrome,
-            'node_found'    => $node,
-            'chrome_tried'  => $chromePaths,
-            'node_tried'    => $nodePaths,
-            'which_chrome'  => trim(shell_exec('which google-chrome 2>&1') ?? ''),
-            'which_node'    => trim(shell_exec('which node 2>&1') ?? ''),
-        ], 500);
-    }
-
-    $path = storage_path('app/test.pdf');
-
     try {
-        \Spatie\Browsershot\Browsershot::html('<!DOCTYPE html>
-            <html><head><meta charset="UTF-8"></head>
-            <body style="font-family: Arial, sans-serif; padding: 40px; color: #1a1a1a;">
-                <h1 style="color: #1A2F4E;">PDF OK ✓</h1>
-                <p>Google Chrome + Node + Puppeteer + Browsershot funcionando.</p>
-                <p style="color: #666; font-size: 12px;">Generado: ' . now()->format('d/m/Y H:i:s') . '</p>
-                <hr style="margin: 20px 0; border-color: #2563A0;">
-                <table style="font-size: 13px; border-collapse: collapse;">
-                    <tr><td style="padding: 4px 12px 4px 0; color:#666;">Chrome</td><td><strong>' . $chrome . '</strong></td></tr>
-                    <tr><td style="padding: 4px 12px 4px 0; color:#666;">Node</td><td><strong>' . $node . '</strong></td></tr>
-                    <tr><td style="padding: 4px 12px 4px 0; color:#666;">PHP</td><td><strong>' . PHP_VERSION . '</strong></td></tr>
-                </table>
-            </body></html>')
+        $chrome = trim(shell_exec('which google-chrome 2>/dev/null')
+                ?? shell_exec('which google-chrome-stable 2>/dev/null')
+                ?? '');
+        $node   = trim(shell_exec('which node 2>/dev/null') ?? '');
+
+        $info = [
+            'php'              => PHP_VERSION,
+            'chrome_path'      => $chrome,
+            'chrome_exists'    => file_exists($chrome),
+            'node_path'        => $node,
+            'node_exists'      => file_exists($node),
+            'node_version'     => trim(shell_exec($node . ' --version 2>&1') ?? ''),
+            'puppeteer_exists' => is_dir(base_path('node_modules/puppeteer')),
+            'storage_writable' => is_writable(storage_path('app')),
+            'browsershot_class'=> class_exists(\Spatie\Browsershot\Browsershot::class),
+        ];
+
+        if (!$info['chrome_exists'] || !$info['node_exists']) {
+            return response()->json(['status' => 'BINARIOS NO ENCONTRADOS'] + $info, 500);
+        }
+
+        $path = storage_path('app/test.pdf');
+
+        \Spatie\Browsershot\Browsershot::html('<h1>PDF OK</h1><p>Generado: ' . now() . '</p>')
             ->setChromePath($chrome)
             ->setNodeBinary($node)
             ->noSandbox()
@@ -494,12 +468,10 @@ Route::get('/test-pdf', function () {
 
     } catch (\Throwable $e) {
         return response()->json([
-            'error'        => $e->getMessage(),
-            'chrome'       => $chrome,
-            'node'         => $node,
-            'node_version' => trim(shell_exec($node . ' --version 2>&1') ?? ''),
-            'puppeteer'    => trim(shell_exec('ls ' . base_path('node_modules/puppeteer') . ' 2>&1') ?? ''),
-            'storage_writable' => is_writable(storage_path('app')),
+            'status'  => 'ERROR',
+            'message' => $e->getMessage(),
+            'file'    => $e->getFile() . ':' . $e->getLine(),
+            'trace'   => explode("\n", $e->getTraceAsString()),
         ], 500);
     }
 });
