@@ -309,10 +309,14 @@
         {{-- ===== SIDEBAR ===== --}}
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-brand">
-                    <div class="brand-icon"><x-icon name="home" class="w-[18px] h-[18px]" /></div>
-                    <span class="brand-text">{{ $siteSettings->site_name ?? 'Homedelvalle' }}</span>
-                </div>
+                @if($siteSettings?->logo_path_dark)
+                    <img src="{{ Storage::url($siteSettings->logo_path_dark) }}" alt="Logo" style="max-height:36px; max-width:90%; object-fit:contain; display:block;">
+                @else
+                    <div class="sidebar-brand">
+                        <div class="brand-icon"><x-icon name="home" class="w-[18px] h-[18px]" /></div>
+                        <span class="brand-text">{{ $siteSettings->site_name ?? 'Homedelvalle' }}</span>
+                    </div>
+                @endif
             </div>
 
             <nav style="flex:1; padding: 0.75rem 0; overflow-y: auto;">
