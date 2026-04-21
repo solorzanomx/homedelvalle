@@ -434,40 +434,25 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
 // ─── TEST: Browsershot diagnóstico (eliminar en producción) ──────────────────
 Route::get('/test-pdf', function () {
     try {
-        // Sin shell_exec — rutas conocidas de Ubuntu + aaPanel
-        $chromeCandidates = [
-            '/usr/bin/google-chrome',
-            '/usr/bin/google-chrome-stable',
-            '/opt/google/chrome/google-chrome',
-            '/usr/bin/chromium-browser',
-        ];
-        $nodeCandidates = [
-            '/usr/bin/node',
-            '/usr/local/bin/node',
-            '/usr/local/node/bin/node',
-        ];
+        // open_basedir en aaPanel bloquea file_exists fuera del webroot,
+        // así que hardcodeamos los paths conocidos de Ubuntu con Google Chrome apt
+        $chrome = '/usr/bin/google-chrome';
+        $node   = '/usr/local/node/bin/node'; // aaPanel Node manager
 
-        $chrome = collect($chromeCandidates)->first(fn($p) => file_exists($p));
-        $node   = collect($nodeCandidates)->first(fn($p) => file_exists($p));
-
-        // Diagnóstico previo sin generar PDF
         $info = [
             'php'               => PHP_VERSION,
-            'chrome'            => $chrome ?? 'NO ENCONTRADO — intentados: ' . implode(', ', $chromeCandidates),
-            'node'              => $node   ?? 'NO ENCONTRADO — intentados: ' . implode(', ', $nodeCandidates),
+            'chrome'            => $chrome,
+            'node'              => $node,
             'proc_open'         => function_exists('proc_open'),
             'puppeteer_exists'  => is_dir(base_path('node_modules/puppeteer')),
             'storage_writable'  => is_writable(storage_path('app')),
             'browsershot_class' => class_exists(\Spatie\Browsershot\Browsershot::class),
             'disabled_functions'=> ini_get('disable_functions'),
+            'open_basedir'      => ini_get('open_basedir'),
         ];
 
-        if (!$chrome || !$node) {
-            return response()->json(['status' => 'BINARIOS NO ENCONTRADOS'] + $info);
-        }
-
         if (!$info['proc_open']) {
-            return response()->json(['status' => 'proc_open DESHABILITADO — Browsershot no puede funcionar'] + $info);
+            return response()->json(['status' => 'proc_open DESHABILITADO — habilitar en aaPanel PHP disable_functions'] + $info);
         }
 
         $path = storage_path('app/test.pdf');
