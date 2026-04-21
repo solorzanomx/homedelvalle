@@ -128,13 +128,13 @@ $today      = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE  —  A4, margins 12mm top/bottom · 14mm left/right
-   Content area: 182 × 273 mm
+   Content area: 182 × 269 mm
 ════════════════════════════════════════════════════════════════════════════ */
-@page { size: A4 portrait; margin: 12mm 14mm 12mm 14mm; }
+@page { size: A4 portrait; margin: 14mm; }
 
 html, body {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 10px;
+    font-size: 11px;
     color: #1A1A1A;
     background: #FFFFFF;
     line-height: 1.5;
@@ -160,12 +160,12 @@ html, body {
 ════════════════════════════════════════════════════════════════════════════ */
 .pg1 {
     width: 100%;
-    height: 273mm;
+    height: 269mm;
     page-break-after: always;
     position: relative;
     overflow: hidden;
 }
-.pg2 { width: 100%; }
+.pg2 { width: 100%; height: 269mm; position: relative; overflow: hidden; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — COVER HEADER
@@ -193,7 +193,7 @@ html, body {
    183mm tall — dominant visual; fills ~67% of the page
 ════════════════════════════════════════════════════════════════════════════ */
 .hero { width: 100%; height: 183mm; overflow: hidden; background: #1A2F4E; margin-top: 7px; }
-.hero img { width: 100%; height: 183mm; display: block; }
+.hero img { width: 100%; height: auto; display: block; }
 .hero-empty {
     width: 100%; height: 183mm;
     background: linear-gradient(160deg, #1A2F4E 0%, #0C1A2E 100%);
@@ -316,7 +316,7 @@ html, body {
 ════════════════════════════════════════════════════════════════════════════ */
 .gal-tbl { width: 100%; border-collapse: separate; border-spacing: 4px; }
 .gal-cell { width: 33.33%; height: 72px; overflow: hidden; background: #E8ECF0; vertical-align: top; padding: 0; }
-.gal-cell img { width: 100%; height: 72px; display: block; }
+.gal-cell img { width: 100%; height: auto; display: block; }
 .gal-empty { width: 100%; height: 72px; background: #F0F2F5; display: table; }
 .gal-empty-in { display: table-cell; vertical-align: middle; text-align: center; font-size: 7.5px; color: #C8CDD5; }
 
@@ -356,7 +356,7 @@ html, body {
 /* ════════════════════════════════════════════════════════════════════════════
    LEGAL FOOTER  —  dark band, gold top border
 ════════════════════════════════════════════════════════════════════════════ */
-.footer { background: #0C1A2E; padding: 9px 14px; margin-top: 13px; border-top: 2px solid #2563A0; }
+.footer { position: absolute; bottom: 0; left: 0; right: 0; background: #0C1A2E; padding: 9px 14px; margin-top: 0; border-top: 2px solid #2563A0; }
 .footer-brand { font-size: 7.5px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
 .footer-text  { font-size: 6.5px; color: rgba(255,255,255,0.38); line-height: 1.6; }
 .footer-copy  { font-size: 6.5px; color: rgba(255,255,255,0.22); margin-top: 5px; text-align: center; }
