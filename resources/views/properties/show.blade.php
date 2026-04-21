@@ -759,6 +759,9 @@
         </div>
         @endif
 
+        {{-- QR Code --}}
+        @include('admin.properties.partials.qr-card', ['property' => $property])
+
         {{-- Danger zone --}}
         <div class="side-card" style="border-color: rgba(239,68,68,0.2);">
             <div class="side-card-body" style="text-align:center;">

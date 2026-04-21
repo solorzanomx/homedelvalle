@@ -62,12 +62,7 @@ use App\Http\Controllers\ClientEmailController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\LegalController;
 use App\Http\Controllers\Admin\ServiciosPageController;
-use App\Http\Controllers\Admin\NosotrosPageController;
-use App\Http\Controllers\Admin\VenderPageController;
-use App\Http\Controllers\Admin\TestimonialController;
-use App\Http\Controllers\Portal\PortalDashboardController;
-use App\Http\Controllers\Portal\PortalRentalController;
-use App\Http\Controllers\Portal\PortalDocumentController;
+use App\Http\Controllers\Admin\PropertyQrController;
 
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -134,6 +129,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'destroy'])->name('properties.photos.destroy');
     Route::get('properties/{property}/pdf', [PropertyFichaController::class, 'pdf'])->name('properties.pdf');
     Route::post('properties/{property}/send-ficha', [PropertyFichaController::class, 'email'])->name('properties.send-ficha');
+    // QR Codes
+    Route::post('properties/{property}/qr/generate', [PropertyQrController::class, 'generate'])->name('properties.qr.generate');
+    Route::get('properties/{property}/qr/download', [PropertyQrController::class, 'download'])->name('properties.qr.download');
+    Route::delete('properties/{property}/qr', [PropertyQrController::class, 'delete'])->name('properties.qr.delete');
     Route::resource('clients', ClientController::class);
     Route::get('clients/{client}/email', [ClientEmailController::class, 'compose'])->name('clients.email.compose');
     Route::post('clients/{client}/email', [ClientEmailController::class, 'send'])->name('clients.email.send');
