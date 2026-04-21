@@ -167,7 +167,7 @@
     {{-- Gallery carousel --}}
     <div class="bg-gray-100 pt-20">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-            @include('public.propiedad._gallery-premium', ['property' => $property])
+            @include('public.propiedad._gallery', ['property' => $property])
         </div>
     </div>
 
@@ -243,7 +243,7 @@
                 {{-- Main content --}}
                 <div class="lg:col-span-2">
                     {{-- Image Carousel --}}
-                    @include('public.propiedad._gallery-premium', ['property' => $property])
+                    @include('public.propiedad._gallery', ['property' => $property])
 
                     @include('public.propiedad._share', ['property' => $property])
 
