@@ -310,7 +310,9 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 @if($siteSettings?->logo_path_dark)
-                    <img src="{{ Storage::url($siteSettings->logo_path_dark) }}" alt="Logo" style="max-height:36px; max-width:90%; object-fit:contain; display:block;">
+                    <div style="display:flex; align-items:center; justify-content:center; width:100%; height:100%;">
+                        <img src="{{ Storage::url($siteSettings->logo_path_dark) }}" alt="Logo" style="max-height:36px; max-width:85%; object-fit:contain;">
+                    </div>
                 @else
                     <div class="sidebar-brand">
                         <div class="brand-icon"><x-icon name="home" class="w-[18px] h-[18px]" /></div>
