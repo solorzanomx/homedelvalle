@@ -437,7 +437,7 @@ Route::get('/test-pdf', function () {
         // open_basedir en aaPanel bloquea file_exists fuera del webroot,
         // así que hardcodeamos los paths conocidos de Ubuntu con Google Chrome apt
         $chrome = '/usr/bin/google-chrome';
-        $node   = '/www/server/nodejs/v22.22.2/bin/node'; // aaPanel Node manager
+        $node   = '/usr/bin/node';
 
         $info = [
             'php'               => PHP_VERSION,
