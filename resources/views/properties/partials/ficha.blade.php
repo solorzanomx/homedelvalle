@@ -177,10 +177,13 @@ html, body {
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE WRAPPER  —  each .page = one A4 sheet
+   min-height forces content to fill the A4 content area (297mm - margins)
 ════════════════════════════════════════════════════════════════════════════ */
 .page {
     width: 100%;
+    min-height: 262mm;
     page-break-after: always;
+    position: relative;
 }
 .page:last-child { page-break-after: avoid; }
 
@@ -299,23 +302,23 @@ html, body {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   HERO IMAGE
+   HERO IMAGE  —  tall to fill cover page
 ════════════════════════════════════════════════════════════════════════════ */
 .hero-container {
     width: 100%;
-    height: 195px;
+    height: 290px;
     overflow: hidden;
     margin-bottom: 0;
     background: #E9ECEF;
 }
 .hero-container img {
     width: 100%;
-    height: 195px;
+    height: 290px;
     display: block;
 }
 .hero-placeholder {
     width: 100%;
-    height: 195px;
+    height: 290px;
     background: linear-gradient(135deg, #EEF2F7 0%, #DDE4EF 100%);
     display: table;
 }
@@ -379,9 +382,9 @@ html, body {
    PROPERTY IDENTITY BLOCK
 ════════════════════════════════════════════════════════════════════════════ */
 .identity-block {
-    padding: 16px 0 12px;
+    padding: 20px 0 16px;
     border-bottom: 1px solid #D4D8DC;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
 }
 .property-title {
     font-family: Georgia, 'Times New Roman', Times, serif;
@@ -428,24 +431,24 @@ html, body {
 }
 .feature-cell {
     background: #F8F9FA;
-    padding: 10px 6px 8px;
+    padding: 16px 6px 14px;
     text-align: center;
     border-top: 3px solid #2563A0;
 }
 .feature-value {
     font-family: Georgia, 'Times New Roman', Times, serif;
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 700;
     color: #1A2F4E;
     display: block;
     line-height: 1.1;
 }
 .feature-label {
-    font-size: 7px;
+    font-size: 7.5px;
     color: #6B7280;
     text-transform: uppercase;
     letter-spacing: 0.6px;
-    margin-top: 3px;
+    margin-top: 5px;
     display: block;
     font-weight: 600;
 }
@@ -522,9 +525,12 @@ html, body {
 }
 .amenity-item:last-child { border-bottom: none; }
 .amenity-check {
-    color: #2563A0;
-    font-weight: 700;
-    margin-right: 5px;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: #2563A0;
+    margin-right: 7px;
+    vertical-align: middle;
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -888,6 +894,11 @@ html, body {
         </table>
     @endif
 
+    {{-- Cover bottom bar —— anchors the cover page visually --}}
+    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: #0C1A2E; padding: 9px 0; text-align: center;">
+        <span style="color: rgba(255,255,255,0.35); font-size: 7.5px; letter-spacing: 3px; text-transform: uppercase;">{{ $siteUrl }}</span>
+    </div>
+
 </div>{{-- /page 1 --}}
 
 
@@ -957,7 +968,7 @@ html, body {
                         @foreach($amenities as $a)
                             @php $aLabel = $amenityLabels[$a] ?? ucfirst(str_replace('_', ' ', $a)); @endphp
                             <div class="amenity-item">
-                                <span class="amenity-check">&#10003;</span>{{ $aLabel }}
+                                <span class="amenity-check"></span>{{ $aLabel }}
                             </div>
                         @endforeach
                     </td>
