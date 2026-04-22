@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Post;
 use App\Services\AI\AIManager;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TopicDiscoveryAgentService
 {
@@ -41,39 +42,48 @@ class TopicDiscoveryAgentService
 
     public function discoverFromWeb(string $extraContext = ''): array
     {
-        $contextLine = $extraContext ? "\nContexto adicional del usuario: {$extraContext}" : '';
+        $contextLine = $extraContext ? " Contexto adicional: {$extraContext}." : '';
+
+        // Paso 1: Perplexity busca datos reales de mercado (query factual, no creativa)
+        $searchQuery = "Tendencias mercado inmobiliario CDMX 2025: precios metro cuadrado Benito Juárez, Narvarte, Del Valle, Portales. Cambios regulatorios, demanda compradores, tasas hipotecarias Mexico. Noticias recientes.{$contextLine}";
+
+        $marketData = '';
+        try {
+            $marketData = $this->ai->search($searchQuery);
+        } catch (\Throwable $e) {
+            Log::warning('TopicDiscoveryAgentService: Perplexity search failed', ['error' => $e->getMessage()]);
+        }
+
+        // Paso 2: Claude convierte los datos reales en ideas de carrusel
+        $marketBlock = $marketData
+            ? "Datos reales del mercado obtenidos hoy:\n{$marketData}"
+            : "No se obtuvieron datos de mercado externos. Usa tu conocimiento general del mercado inmobiliario CDMX.";
 
         $prompt = <<<PROMPT
-Eres un estratega de contenido para Home del Valle, una inmobiliaria boutique en Ciudad de México (CDMX) especializada en propiedades residenciales de gama media-alta.
-Analiza las tendencias actuales del mercado inmobiliario en CDMX y Mexico.{$contextLine}
+Eres un estratega de contenido para Home del Valle, inmobiliaria boutique en CDMX especializada en Benito Juárez.
 
-Genera exactamente 10 ideas de carruseles para Instagram que sean oportunas, relevantes y de alto engagement para compradores, vendedores e inversionistas inmobiliarios.
+{$marketBlock}
+
+Basándote en estos datos de mercado actuales, genera exactamente 10 ideas de carruseles para Instagram que sean oportunas, relevantes y concretas. Prioriza temas que conecten con datos reales que acabas de leer.
 
 Devuelve SOLO un array JSON válido con exactamente 10 objetos, sin texto adicional:
 [
   {
     "title": "Título del carrusel (máximo 60 caracteres)",
     "description": "Qué cubriría este carrusel en 2-3 oraciones",
-    "reasoning": "Por qué este tema es relevante ahora mismo (1-2 oraciones)",
+    "reasoning": "Por qué este tema es relevante AHORA según los datos del mercado (1-2 oraciones)",
     "type": "educational|commercial|informative|capture|branding",
     "keywords": ["keyword1", "keyword2", "keyword3"],
     "relevance_score": 85
   }
 ]
-
-Tipos de carrusel:
-- educational: Enseña algo sobre el mercado, proceso de compra/venta, financiamiento
-- commercial: Muestra o promueve propiedades específicas
-- informative: Datos, estadísticas, reportes del mercado
-- capture: Orienta a propietarios que quieren vender/rentar con la agencia
-- branding: Muestra los valores, diferenciadores y casos de éxito de la agencia
 PROMPT;
 
         try {
-            $raw = $this->ai->search($prompt);
+            $raw = $this->ai->complete($prompt, null, ['temperature' => 0.65]);
             return $this->parseTopicsArray($raw, 'web');
         } catch (\Throwable $e) {
-            Log::warning('TopicDiscoveryAgentService web discovery failed', ['error' => $e->getMessage()]);
+            Log::warning('TopicDiscoveryAgentService web synthesis failed', ['error' => $e->getMessage()]);
             return [];
         }
     }
@@ -90,7 +100,7 @@ PROMPT;
         }
 
         $blogSummary = $posts->map(fn ($p) =>
-            "- {$p->title}: " . \Str::limit($p->excerpt ?: \Str::limit(strip_tags($p->body ?? ''), 150), 150)
+            "- {$p->title}: " . Str::limit($p->excerpt ?: Str::limit(strip_tags($p->body ?? ''), 150), 150)
         )->implode("\n");
 
         $contextLine = $extraContext ? "\nContexto adicional: {$extraContext}" : '';
@@ -170,7 +180,7 @@ PROMPT;
         $clean = [];
 
         foreach ($topics as $topic) {
-            $key = \Str::slug($topic['title'] ?? '');
+            $key = Str::slug($topic['title'] ?? '');
             if ($key && !in_array($key, $seen)) {
                 $seen[]  = $key;
                 $clean[] = $topic;
@@ -214,7 +224,7 @@ PROMPT;
             $title = trim($item['title'] ?? '');
             if (!$title) return null;
             return [
-                'title'           => \Str::limit($title, 100),
+                'title'           => Str::limit($title, 100),
                 'description'     => trim($item['description'] ?? ''),
                 'reasoning'       => trim($item['reasoning'] ?? ''),
                 'type'            => in_array($item['type'] ?? '', $valid_types) ? $item['type'] : 'educational',

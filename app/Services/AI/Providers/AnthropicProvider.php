@@ -48,7 +48,7 @@ class AnthropicProvider implements AIProviderContract
 
         $response = Http::withHeaders([
             'x-api-key'         => $this->apiKey,
-            'anthropic-version' => '2023-06-01',
+            'anthropic-version' => '2024-06-01',
             'content-type'      => 'application/json',
         ])->timeout(60)->post('https://api.anthropic.com/v1/messages', $payload);
 

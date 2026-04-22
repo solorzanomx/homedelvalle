@@ -34,9 +34,10 @@ class RenderSlideAction
             Browsershot::html($html)
                 ->windowSize(1080, 1080)
                 ->deviceScaleFactor(2)
-                ->setNodeBinary(config('browsershot.node_binary', '/usr/bin/node'))
-                ->setNpmBinary(config('browsershot.npm_binary', '/usr/bin/npm'))
-                ->addChromiumArguments(['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'])
+                ->setChromePath(config('browsershot.chrome_path'))
+                ->setNodeBinary(config('browsershot.node_path'))
+                ->setNpmBinary(config('browsershot.npm_path'))
+                ->addChromiumArguments(['no-sandbox', 'disable-setuid-sandbox', 'disable-dev-shm-usage'])
                 ->waitUntilNetworkIdle()
                 ->screenshot($absolutePath);
 

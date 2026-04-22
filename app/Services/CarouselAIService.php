@@ -104,6 +104,7 @@ SYSTEM;
             default       => $carousel->type,
         };
 
+        $slideCount = count($slideTypes);
         $slidesSpec = implode("\n", array_map(
             fn($i, $type) => "  - Slide " . ($i + 1) . ": tipo \"$type\"",
             array_keys($slideTypes),
@@ -131,7 +132,7 @@ Tipo de carrusel: {$typeName}
 {$cta}
 {$contextBlock}
 
-Estructura requerida ({$this->count($slideTypes)} slides):
+Estructura requerida ({$slideCount} slides):
 {$slidesSpec}
 
 Responde SOLO con este JSON (sin texto antes ni después):
@@ -209,8 +210,4 @@ PROMPT;
         return $decoded;
     }
 
-    private function count(array $arr): int
-    {
-        return count($arr);
-    }
 }
