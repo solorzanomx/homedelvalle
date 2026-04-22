@@ -29,7 +29,7 @@ return new class extends Migration
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
-            $table->index(['market_colonia_id', 'property_type', 'age_category', 'period']);
+            $table->index(['market_colonia_id', 'property_type', 'age_category', 'period'], 'mps_colonia_type_age_period_idx');
         });
     }
 
