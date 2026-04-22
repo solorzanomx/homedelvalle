@@ -54,7 +54,7 @@
         padding-top: 28px;
         border-top: 1px solid rgba(255,255,255,0.08);
     ">
-        <span style="font-size: 18px; color: var(--gold); font-weight: 600;">
+        <span style="font-size: 18px; color: var(--accent-light); font-weight: 600;">
             → {{ $slide->cta_text }}
         </span>
     </div>

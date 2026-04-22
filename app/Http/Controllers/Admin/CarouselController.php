@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CarouselPost;
 use App\Models\CarouselTemplate;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CarouselController extends Controller
@@ -12,7 +13,7 @@ class CarouselController extends Controller
     public function index(Request $request)
     {
         $query = CarouselPost::with(['template', 'user'])
-            ->withCount('slides')
+            ->withCount(['slides', 'slides as done_slides_count' => fn($q) => $q->where('render_status', 'done')])
             ->latest();
 
         if ($request->filled('status')) {
@@ -74,21 +75,27 @@ class CarouselController extends Controller
         return view('admin.carousels.edit', compact('carousel', 'templates'));
     }
 
-    public function update(Request $request, CarouselPost $carousel)
+    public function update(Request $request, CarouselPost $carousel): JsonResponse|\Illuminate\Http\RedirectResponse
     {
+        $isAjax = $request->expectsJson();
+
         $data = $request->validate([
-            'title'         => 'required|string|max:255',
-            'type'          => 'required|in:commercial,educational,capture,informative,branding',
-            'source_type'   => 'nullable|in:property,blog_post,free',
-            'source_id'     => 'nullable|integer',
-            'template_id'   => 'nullable|exists:carousel_templates,id',
-            'caption_short' => 'nullable|string|max:280',
-            'caption_long'  => 'nullable|string',
-            'cta'           => 'nullable|string|max:255',
+            'title'         => ($isAjax ? 'sometimes|' : 'required|') . 'string|max:255',
+            'type'          => ($isAjax ? 'sometimes|' : 'required|') . 'in:commercial,educational,capture,informative,branding',
+            'source_type'   => 'sometimes|nullable|in:property,blog_post,free',
+            'source_id'     => 'sometimes|nullable|integer',
+            'template_id'   => 'sometimes|nullable|exists:carousel_templates,id',
+            'caption_short' => 'sometimes|nullable|string|max:280',
+            'caption_long'  => 'sometimes|nullable|string',
+            'cta'           => 'sometimes|nullable|string|max:255',
             'status'        => 'sometimes|in:draft,review,approved,archived',
         ]);
 
         $carousel->update($data);
+
+        if ($isAjax) {
+            return response()->json(['ok' => true]);
+        }
 
         return redirect()
             ->route('admin.carousels.show', $carousel)

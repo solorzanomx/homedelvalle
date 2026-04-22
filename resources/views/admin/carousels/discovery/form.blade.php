@@ -83,8 +83,50 @@
 
     </form>
 
-    {{-- Info panel --}}
+    {{-- Sidebar --}}
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        {{-- Búsquedas recientes --}}
+        @if($recentSessions->isNotEmpty())
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Búsquedas recientes</h3></div>
+            <div style="padding: 0;">
+                @foreach($recentSessions as $session)
+                @php
+                    $allConverted = $session->converted_count >= $session->total;
+                    $someConverted = $session->converted_count > 0;
+                @endphp
+                <a href="{{ route('admin.carousels.discovery.review', $session->session_id) }}"
+                   style="display: flex; align-items: center; justify-content: space-between;
+                          padding: .65rem 1.1rem; border-bottom: 1px solid #f0f2f5;
+                          text-decoration: none; color: inherit;
+                          transition: background .12s;"
+                   onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                    <div>
+                        <div style="font-size: .82rem; font-weight: 500; color: #111827;">
+                            {{ \Carbon\Carbon::parse($session->latest_at)->format('d/m/Y H:i') }}
+                        </div>
+                        <div style="font-size: .72rem; color: #9ca3af; margin-top: 1px;">
+                            {{ $session->total }} temas
+                            @if($session->converted_count > 0)
+                                · <span style="color: #16a34a;">{{ $session->converted_count }} generados</span>
+                            @endif
+                        </div>
+                    </div>
+                    @if($allConverted)
+                        <span style="font-size: .7rem; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap;">✓ Todo usado</span>
+                    @elseif($someConverted)
+                        <span style="font-size: .7rem; background: #fef9c3; color: #854d0e; padding: 2px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap;">Parcial</span>
+                    @else
+                        <span style="font-size: .7rem; background: #f0f4ff; color: #4338ca; padding: 2px 8px; border-radius: 20px; font-weight: 600; white-space: nowrap;">Sin usar</span>
+                    @endif
+                </a>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- Cómo funciona --}}
         <div class="card">
             <div class="card-header"><h3 class="card-title">¿Cómo funciona?</h3></div>
             <div class="card-body">
@@ -101,6 +143,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
 </div>

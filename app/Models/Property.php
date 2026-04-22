@@ -47,6 +47,16 @@ class Property extends Model
         return $this->hasOne(PropertyQrCode::class);
     }
 
+    public function valuations(): HasMany
+    {
+        return $this->hasMany(PropertyValuation::class)->latest();
+    }
+
+    public function latestValuation(): HasOne
+    {
+        return $this->hasOne(PropertyValuation::class)->latestOfMany();
+    }
+
     /**
      * Emails that included this property (stored as JSON array).
      */

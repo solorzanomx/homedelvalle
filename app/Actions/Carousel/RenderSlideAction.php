@@ -18,7 +18,7 @@ class RenderSlideAction
     /** @throws \Throwable */
     public function execute(CarouselSlide $slide): void
     {
-        $carousel = $slide->carouselPost()->with('slides')->first();
+        $carousel = $slide->carouselPost()->with(['slides', 'template'])->first();
 
         $slide->update(['render_status' => 'rendering', 'render_error' => null]);
 
@@ -32,14 +32,13 @@ class RenderSlideAction
             $absolutePath = Storage::disk('public')->path($file);
 
             Browsershot::html($html)
-                ->windowSize(1080, 1080)
-                ->deviceScaleFactor(2)
+                ->windowSize(1080, 1350)
                 ->setChromePath(config('browsershot.chrome_path'))
                 ->setNodeBinary(config('browsershot.node_path'))
                 ->setNpmBinary(config('browsershot.npm_path'))
                 ->addChromiumArguments(['no-sandbox', 'disable-setuid-sandbox', 'disable-dev-shm-usage'])
                 ->waitUntilNetworkIdle()
-                ->screenshot($absolutePath);
+                ->save($absolutePath);
 
             $slide->update([
                 'rendered_image_path' => $file,
@@ -57,9 +56,17 @@ class RenderSlideAction
 
     private function renderHtml(CarouselSlide $slide, CarouselPost $carousel): string
     {
-        $type         = in_array($slide->type, self::KNOWN_TYPES) ? $slide->type : 'generic';
-        $viewName     = "carousels.templates.premium-dark.{$type}";
-        $totalSlides  = $carousel->slides->count();
+        $type        = in_array($slide->type, self::KNOWN_TYPES) ? $slide->type : 'generic';
+        $folder      = $carousel->template?->blade_view ?? 'premium-dark';
+        $totalSlides = $carousel->slides->count();
+
+        $viewName = "carousels.templates.{$folder}.{$type}";
+        if (!view()->exists($viewName)) {
+            $viewName = "carousels.templates.{$folder}.generic";
+        }
+        if (!view()->exists($viewName)) {
+            $viewName = "carousels.templates.premium-dark.{$type}";
+        }
 
         return view($viewName, compact('slide', 'carousel', 'totalSlides'))->render();
     }

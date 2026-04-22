@@ -13,8 +13,8 @@
     <div style="
         width: 72px; height: 72px;
         border-radius: 16px;
-        background: rgba(201,168,76,0.12);
-        border: 2px solid rgba(201,168,76,0.35);
+        background: rgba(59,130,246,0.10);
+        border: 2px solid rgba(59,130,246,0.30);
         display: flex; align-items: center; justify-content: center;
         font-size: 36px;
         margin-bottom: 40px;
@@ -22,7 +22,7 @@
 
     {{-- Label --}}
     <div style="margin-bottom: 28px;">
-        <span class="chip gold">El problema</span>
+        <span class="chip">El problema</span>
     </div>
 
     {{-- Headline --}}
@@ -36,14 +36,14 @@
         max-width: 820px;
     ">{{ $slide->headline }}</h2>
 
-    <div class="accent-line gold"></div>
+    <div class="accent-line"></div>
 
     {{-- Subheadline --}}
     @if($slide->subheadline ?? null)
     <p style="
         font-size: 26px;
         font-weight: 600;
-        color: rgba(201,168,76,0.85);
+        color: var(--accent-light);
         margin-bottom: 22px;
         line-height: 1.4;
     ">{{ $slide->subheadline }}</p>

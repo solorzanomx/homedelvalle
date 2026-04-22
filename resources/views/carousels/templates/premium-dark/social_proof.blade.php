@@ -18,7 +18,7 @@
         transform: translate(-50%, -50%);
         width: 700px; height: 700px;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%);
         pointer-events: none;
     "></div>
 
@@ -27,7 +27,7 @@
         font-size: 120px;
         line-height: 1;
         font-family: Georgia, serif;
-        color: rgba(201,168,76,0.25);
+        color: rgba(59,130,246,0.22);
         margin-bottom: -20px;
         position: relative;
         z-index: 1;
@@ -48,9 +48,9 @@
 
     {{-- Divider dots --}}
     <div style="display: flex; gap: 8px; margin-bottom: 32px;">
-        <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--gold);"></div>
-        <div style="width: 8px; height: 8px; border-radius: 50%; background: rgba(201,168,76,0.4);"></div>
-        <div style="width: 8px; height: 8px; border-radius: 50%; background: rgba(201,168,76,0.15);"></div>
+        <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-light);"></div>
+        <div style="width: 8px; height: 8px; border-radius: 50%; background: rgba(59,130,246,0.4);"></div>
+        <div style="width: 8px; height: 8px; border-radius: 50%; background: rgba(59,130,246,0.15);"></div>
     </div>
 
     {{-- Source / attribution --}}
@@ -58,7 +58,7 @@
     <p style="
         font-size: 20px;
         font-weight: 600;
-        color: var(--gold);
+        color: var(--accent-light);
         letter-spacing: 0.5px;
         margin-bottom: 12px;
     ">{{ $slide->subheadline }}</p>

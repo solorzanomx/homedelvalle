@@ -14,7 +14,18 @@ class CarouselDiscoveryController extends Controller
     /** Show the discovery form */
     public function form(): View
     {
-        return view('admin.carousels.discovery.form');
+        $recentSessions = CarouselTopicSuggestion::selectRaw(
+                'session_id,
+                 MAX(created_at) as latest_at,
+                 COUNT(*) as total,
+                 SUM(CASE WHEN status = "converted" THEN 1 ELSE 0 END) as converted_count'
+            )
+            ->groupBy('session_id')
+            ->orderByDesc('latest_at')
+            ->limit(8)
+            ->get();
+
+        return view('admin.carousels.discovery.form', compact('recentSessions'));
     }
 
     /** Run discovery, persist suggestions, redirect to review screen */

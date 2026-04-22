@@ -46,7 +46,7 @@
     <p style="
         font-size: 26px;
         font-weight: 600;
-        color: var(--gold);
+        color: var(--accent-light);
         margin-bottom: 24px;
         line-height: 1.4;
     ">{{ $slide->subheadline }}</p>

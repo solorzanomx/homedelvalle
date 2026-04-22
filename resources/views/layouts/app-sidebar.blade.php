@@ -9,6 +9,7 @@
     <link rel="icon" type="image/png" href="{{ asset('storage/' . $siteSettings->favicon_path) }}">
     @endif
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -296,6 +297,26 @@
         .img-lazy { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.4s ease; }
         .img-lazy.img-loaded { opacity: 1; }
 
+        /* ===== TOAST NOTIFICATIONS ===== */
+        #toast-container {
+            position: fixed; bottom: 1.25rem; right: 1.25rem; z-index: 9999;
+            display: flex; flex-direction: column; gap: 0.5rem; pointer-events: none;
+        }
+        .toast {
+            display: flex; align-items: center; gap: 0.6rem;
+            padding: 0.7rem 1rem; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 500; max-width: 360px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+            pointer-events: all; cursor: pointer;
+            animation: toast-in 0.25s ease; transition: opacity 0.3s, transform 0.3s;
+        }
+        .toast.hiding { opacity: 0; transform: translateX(100%); }
+        .toast-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .toast-error   { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+        .toast-info    { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .toast-icon { font-size: 1rem; flex-shrink: 0; }
+        @keyframes toast-in { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+
         @yield('styles')
     </style>
 </head>
@@ -332,6 +353,11 @@
                         <a href="{{ route('properties.index') }}" class="nav-item {{ request()->routeIs('properties.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Propiedades
                         </a>
+                        @if(Route::has('admin.valuations.index'))
+                        <a href="{{ route('admin.valuations.index') }}" class="nav-item {{ request()->routeIs('admin.valuations.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Opinión de Valor
+                        </a>
+                        @endif
                         <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="users" class="w-4 h-4" /></span> Clientes
                         </a>
@@ -509,8 +535,14 @@
                             <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Blog
                         </a>
                         @if(Route::has('admin.carousels.index'))
-                        <a href="{{ route('admin.carousels.index') }}" class="nav-item {{ request()->routeIs('admin.carousels.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.carousels.index') }}" class="nav-item {{ request()->routeIs('admin.carousels.index') || (request()->routeIs('admin.carousels.*') && !request()->routeIs('admin.carousels.image-test')) ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Carruseles IG
+                        </a>
+                        <a href="{{ route('admin.carousels.image-test') }}" class="nav-item {{ request()->routeIs('admin.carousels.image-test') ? 'active' : '' }}" style="padding-left:2.75rem;font-size:.82rem;">
+                            <span class="nav-icon"><x-icon name="image" class="w-3.5 h-3.5" /></span> Test imágenes IA
+                        </a>
+                        <a href="{{ route('admin.carousels.prompts') }}" class="nav-item {{ request()->routeIs('admin.carousels.prompts') ? 'active' : '' }}" style="padding-left:2.75rem;font-size:.82rem;">
+                            <span class="nav-icon"><x-icon name="settings" class="w-3.5 h-3.5" /></span> Prompts IA
                         </a>
                         @endif
                         @if(Route::has('admin.content-calendar'))
@@ -679,21 +711,10 @@
             </div>
 
             @if(session('success'))
-                <div style="padding: 0 1.5rem; padding-top: 1rem;">
-                    <div class="alert alert-success">
-                        <span style="display:inline-flex;align-items:center;"><x-icon name="check" class="w-4 h-4" /></span> {{ session('success') }}
-                        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
-                    </div>
-                </div>
+                <script>document.addEventListener('DOMContentLoaded', () => window.toast(@json(session('success')), 'success'));</script>
             @endif
-
             @if(session('error'))
-                <div style="padding: 0 1.5rem; padding-top: 1rem;">
-                    <div class="alert alert-error">
-                        <span style="display:inline-flex;align-items:center;"><x-icon name="triangle-alert" class="w-4 h-4" /></span> {{ session('error') }}
-                        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
-                    </div>
-                </div>
+                <script>document.addEventListener('DOMContentLoaded', () => window.toast(@json(session('error')), 'error'));</script>
             @endif
 
             <div class="content-body">
@@ -736,7 +757,25 @@
 
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
+    <div id="toast-container"></div>
+
     <script>
+        window.toast = function(msg, type, duration) {
+            type = type || 'info';
+            duration = duration || 4000;
+            var icons = { success: '✓', error: '✗', info: 'ℹ' };
+            var el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.innerHTML = '<span class="toast-icon">' + (icons[type] || 'ℹ') + '</span><span>' + msg + '</span>';
+            el.onclick = function() { hideToast(el); };
+            document.getElementById('toast-container').appendChild(el);
+            setTimeout(function() { hideToast(el); }, duration);
+        };
+        function hideToast(el) {
+            el.classList.add('hiding');
+            setTimeout(function() { el.remove(); }, 300);
+        }
+
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebarOverlay').classList.toggle('show');
@@ -772,13 +811,6 @@
             }
         }
         restoreSidebarState();
-        // Auto-hide alerts
-        setTimeout(function() {
-            document.querySelectorAll('.alert').forEach(function(a) {
-                a.style.transition = 'opacity 0.3s'; a.style.opacity = '0';
-                setTimeout(function() { a.remove(); }, 300);
-            });
-        }, 5000);
 
         // ===== NOTIFICATIONS =====
         var notifOpen = false;

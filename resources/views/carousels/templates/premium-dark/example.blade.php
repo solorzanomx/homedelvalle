@@ -30,7 +30,7 @@
     <p style="
         font-size: 26px;
         font-weight: 600;
-        color: var(--gold);
+        color: var(--accent-light);
         margin-bottom: 24px;
         line-height: 1.4;
     ">{{ $slide->subheadline }}</p>
@@ -59,8 +59,8 @@
         margin-top: 32px;
         display: flex; align-items: center; gap: 14px;
     ">
-        <div style="width: 32px; height: 2px; background: var(--gold);"></div>
-        <span style="font-size: 18px; color: var(--gold); font-weight: 600;">{{ $slide->cta_text }}</span>
+        <div style="width: 32px; height: 2px; background: var(--accent-light);"></div>
+        <span style="font-size: 18px; color: var(--accent-light); font-weight: 600;">{{ $slide->cta_text }}</span>
     </div>
     @endif
 </div>

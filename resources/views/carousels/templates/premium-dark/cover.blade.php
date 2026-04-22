@@ -22,7 +22,7 @@
     {{-- Chip / type label --}}
     @if($carousel->type)
     <div style="margin-bottom: 36px;">
-        <span class="chip gold">{{ strtoupper($carousel->type === 'educational' ? 'Educativo' : ($carousel->type === 'commercial' ? 'Inmueble' : ($carousel->type === 'informative' ? 'Informe' : ($carousel->type === 'capture' ? 'Captación' : 'Marca')))) }}</span>
+        <span class="chip">{{ strtoupper($carousel->type === 'educational' ? 'Educativo' : ($carousel->type === 'commercial' ? 'Inmueble' : ($carousel->type === 'informative' ? 'Informe' : ($carousel->type === 'capture' ? 'Captación' : 'Marca')))) }}</span>
     </div>
     @endif
 
@@ -38,7 +38,7 @@
     ">{{ $slide->headline ?? $carousel->title }}</h1>
 
     {{-- Accent line --}}
-    <div class="accent-line gold"></div>
+    <div class="accent-line"></div>
 
     {{-- Subheadline --}}
     @if($slide->subheadline ?? null)
@@ -54,7 +54,7 @@
     {{-- CTA indicator --}}
     @if($carousel->cta)
     <div style="margin-top: 52px; display: flex; align-items: center; gap: 16px;">
-        <div style="width: 36px; height: 2px; background: var(--gold);"></div>
+        <div style="width: 36px; height: 2px; background: var(--accent-light);"></div>
         <span style="font-size: 18px; color: var(--gray-2); font-weight: 500; letter-spacing: 0.5px;">
             {{ $carousel->cta }}
         </span>

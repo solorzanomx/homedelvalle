@@ -42,7 +42,7 @@
 
     <div style="
         width: 80px; height: 4px;
-        background: var(--gold);
+        background: var(--accent-light);
         border-radius: 2px;
         margin: 36px 0;
     "></div>

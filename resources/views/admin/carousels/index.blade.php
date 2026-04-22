@@ -45,49 +45,78 @@
                 <tr>
                     <th>Carrusel</th>
                     <th>Tipo</th>
-                    <th>Plantilla</th>
-                    <th>Diapositivas</th>
+                    <th>Contenido</th>
+                    <th>Render</th>
                     <th>Estado</th>
-                    <th>Creado por</th>
                     <th>Fecha</th>
-                    <th>Acciones</th>
+                    <th>Acción</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($carousels as $carousel)
+                @php
+                    $total  = $carousel->slides_count;
+                    $done   = $carousel->done_slides_count;
+                    $hasSlides = $total > 0;
+                    $allDone   = $hasSlides && $done === $total;
+                @endphp
                 <tr>
                     <td>
-                        <div style="font-weight: 500;">{{ Str::limit($carousel->title, 55) }}</div>
-                        @if($carousel->cta)
-                            <div class="text-muted" style="font-size: 0.75rem;">{{ Str::limit($carousel->cta, 50) }}</div>
+                        <a href="{{ route('admin.carousels.show', $carousel) }}"
+                           style="font-weight:600;color:#1e293b;text-decoration:none;">
+                            {{ Str::limit($carousel->title, 50) }}
+                        </a>
+                        <div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">
+                            {{ $carousel->template?->name ?? 'Sin plantilla' }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-blue" style="font-size:.7rem;">{{ ucfirst($carousel->type) }}</span>
+                    </td>
+                    <td>
+                        @if(!$hasSlides)
+                            <span style="font-size:.8rem;color:#f59e0b;font-weight:500;">⚪ Sin contenido</span>
+                        @else
+                            <span style="font-size:.8rem;color:#10b981;font-weight:500;">✓ {{ $total }} slides</span>
                         @endif
                     </td>
                     <td>
-                        <span class="badge badge-blue">{{ ucfirst($carousel->type) }}</span>
+                        @if(!$hasSlides)
+                            <span style="font-size:.8rem;color:#d1d5db;">—</span>
+                        @elseif($allDone)
+                            <span style="font-size:.8rem;color:#10b981;font-weight:500;">✓ {{ $done }}/{{ $total }}</span>
+                        @else
+                            <span style="font-size:.8rem;color:#f59e0b;font-weight:500;">{{ $done }}/{{ $total }} renders</span>
+                        @endif
                     </td>
-                    <td>{{ $carousel->template?->name ?? '—' }}</td>
-                    <td style="text-align: center;">{{ $carousel->slides_count }}</td>
                     <td>
                         @php $color = $carousel->status_color; @endphp
                         <span class="badge badge-{{ $color }}">{{ $carousel->status_label }}</span>
                     </td>
-                    <td>{{ $carousel->user?->name ?? '—' }}</td>
-                    <td style="font-size: 0.8rem; color: #6b7280;">{{ $carousel->created_at->format('d/m/Y') }}</td>
+                    <td style="font-size:.8rem;color:#6b7280;white-space:nowrap;">
+                        {{ $carousel->created_at->format('d/m/y') }}
+                    </td>
                     <td>
-                        <div style="display: flex; gap: 0.4rem;">
-                            <a href="{{ route('admin.carousels.show', $carousel) }}" class="btn btn-sm btn-outline">Ver</a>
-                            <a href="{{ route('admin.carousels.edit', $carousel) }}" class="btn btn-sm btn-outline">Editar</a>
-                            <form method="POST" action="{{ route('admin.carousels.destroy', $carousel) }}"
-                                  onsubmit="return confirm('¿Eliminar este carrusel?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger-outline">Eliminar</button>
-                            </form>
-                        </div>
+                        @if(!$hasSlides)
+                            {{-- No slides: go directly to generate --}}
+                            <a href="{{ route('admin.carousels.generate', $carousel) }}"
+                               class="btn btn-sm btn-primary">✦ Generar</a>
+                        @elseif(!$allDone)
+                            {{-- Has slides but not rendered: go to show for rendering --}}
+                            <a href="{{ route('admin.carousels.show', $carousel) }}"
+                               class="btn btn-sm btn-primary">⬡ Renderizar</a>
+                        @else
+                            {{-- All rendered --}}
+                            <a href="{{ route('admin.carousels.show', $carousel) }}"
+                               class="btn btn-sm btn-outline">Ver</a>
+                        @endif
+                        <a href="{{ route('admin.carousels.edit', $carousel) }}"
+                           class="btn btn-sm btn-outline" style="margin-left:.25rem;">Editar</a>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="8" style="text-align: center; padding: 2rem; color: #9ca3af;">
+                    <td colspan="7" style="text-align:center;padding:2rem;color:#9ca3af;">
                         No hay carruseles todavía.
                         <a href="{{ route('admin.carousels.create') }}">Crear el primero</a>
                     </td>

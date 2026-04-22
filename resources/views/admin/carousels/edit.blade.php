@@ -126,18 +126,22 @@
             </div>
         </div>
 
-        <div class="card" style="border-color: #fecaca;">
-            <div class="card-body">
-                <p style="font-size: 0.82rem; color: #6b7280; margin-bottom: 0.75rem;">Zona de peligro</p>
-                <form method="POST" action="{{ route('admin.carousels.destroy', $carousel) }}"
-                      onsubmit="return confirm('¿Eliminar este carrusel y todas sus diapositivas?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger-outline" style="width: 100%;">Eliminar carrusel</button>
-                </form>
-            </div>
-        </div>
-
     </div>
 </div>
 </form>
+
+{{-- Zona de peligro FUERA del form principal para evitar submit accidental --}}
+<div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;margin-top:0;">
+    <div></div>
+    <div class="card" style="border-color:#fecaca;">
+        <div class="card-body">
+            <p style="font-size:.82rem;color:#6b7280;margin-bottom:.75rem;">Zona de peligro</p>
+            <form method="POST" action="{{ route('admin.carousels.destroy', $carousel) }}"
+                  onsubmit="return confirm('¿Eliminar este carrusel y todas sus diapositivas? Esta acción no se puede deshacer.')">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-danger-outline" style="width:100%;">Eliminar carrusel</button>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

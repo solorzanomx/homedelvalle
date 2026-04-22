@@ -92,6 +92,17 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/p/{slug}', [BlogController::class, 'page'])->name('page.show');
 
+// ===== OBSERVATORIO DE MERCADO (público) =====
+Route::prefix('mercado')->name('mercado.')->group(function () {
+    // opinion-de-valor DEBE ir ANTES del wildcard /{zona}
+    Route::get('/opinion-de-valor',  [\App\Http\Controllers\MarketController::class, 'opinionForm'])->name('opinion');
+    Route::post('/opinion-de-valor', [\App\Http\Controllers\ValuationLeadController::class, 'store'])->middleware('throttle:public-form')->name('opinion.store');
+
+    Route::get('/',               [\App\Http\Controllers\MarketController::class, 'index'])->name('index');
+    Route::get('/{zona}',         [\App\Http\Controllers\MarketController::class, 'zone'])->name('zone');
+    Route::get('/{zona}/{colonia}',[\App\Http\Controllers\MarketController::class, 'colonia'])->name('colonia');
+});
+
 // Formularios públicos
 Route::get('/form/{slug}', [PublicFormController::class, 'show'])->name('form.show');
 Route::post('/form/{slug}', [PublicFormController::class, 'submit'])->middleware('throttle:public-form')->name('form.submit');
@@ -436,6 +447,16 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::delete('/{template}',     [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'destroy'])->name('destroy');
         });
 
+        // Image generation test/diagnostic — must be BEFORE /{carousel} wildcard
+        Route::get('/image-test',  [\App\Http\Controllers\Admin\CarouselImageTestController::class, 'show'])->name('image-test');
+        Route::post('/image-test', [\App\Http\Controllers\Admin\CarouselImageTestController::class, 'test'])->name('image-test.run');
+
+        // Prompt settings — must be BEFORE /{carousel} wildcard
+        Route::get('/prompts',         [\App\Http\Controllers\Admin\CarouselPromptController::class, 'index'])->name('prompts');
+        Route::post('/prompts',        [\App\Http\Controllers\Admin\CarouselPromptController::class, 'update'])->name('prompts.update');
+        Route::post('/prompts/reset',  [\App\Http\Controllers\Admin\CarouselPromptController::class, 'reset'])->name('prompts.reset');
+        Route::post('/prompts/preview',[\App\Http\Controllers\Admin\CarouselPromptController::class, 'preview'])->name('prompts.preview');
+
         // Topic discovery — must be BEFORE /{carousel} wildcard
         Route::get('/discovery',                     [\App\Http\Controllers\Admin\CarouselDiscoveryController::class, 'form'])->name('discovery.form');
         Route::post('/discovery',                    [\App\Http\Controllers\Admin\CarouselDiscoveryController::class, 'discover'])->name('discovery.discover');
@@ -459,12 +480,38 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // Render pipeline
         Route::post('/{carousel}/render',                [\App\Http\Controllers\Admin\CarouselRenderController::class, 'renderAll'])->name('render');
         Route::get('/{carousel}/render/status',          [\App\Http\Controllers\Admin\CarouselRenderController::class, 'status'])->name('render.status');
-        Route::post('/{carousel}/slides/{slide}/render', [\App\Http\Controllers\Admin\CarouselRenderController::class, 'renderSlide'])->name('slides.render');
+        Route::get('/{carousel}/download',               [\App\Http\Controllers\Admin\CarouselRenderController::class, 'downloadSlides'])->name('download');
+        Route::post('/{carousel}/slides/{slide}/render',   [\App\Http\Controllers\Admin\CarouselRenderController::class, 'renderSlide'])->name('slides.render');
+        Route::delete('/{carousel}/slides/{slide}/render', [\App\Http\Controllers\Admin\CarouselRenderController::class, 'clearRender'])->name('slides.render.clear');
 
         // Approval & publishing
         Route::post('/{carousel}/approve', [\App\Http\Controllers\Admin\CarouselApprovalController::class, 'approve'])->name('approve');
         Route::post('/{carousel}/reject',  [\App\Http\Controllers\Admin\CarouselApprovalController::class, 'reject'])->name('reject');
         Route::post('/{carousel}/webhook', [\App\Http\Controllers\Admin\CarouselApprovalController::class, 'webhook'])->name('webhook');
+
+        // Slide content editing (autosave)
+        Route::patch('/{carousel}/slides/{slide}', [\App\Http\Controllers\Admin\CarouselSlideController::class, 'update'])->name('slides.update');
+
+        // Slide images (DALL-E + upload)
+        Route::post('/{carousel}/generate-images',                      [\App\Http\Controllers\Admin\CarouselSlideController::class, 'generateImages'])->name('images.generate');
+        Route::post('/{carousel}/slides/{slide}/generate-image',        [\App\Http\Controllers\Admin\CarouselSlideController::class, 'generateImage'])->name('slides.image.generate');
+        Route::post('/{carousel}/slides/{slide}/background',            [\App\Http\Controllers\Admin\CarouselSlideController::class, 'uploadBackground'])->name('slides.background.upload');
+        Route::delete('/{carousel}/slides/{slide}/background',          [\App\Http\Controllers\Admin\CarouselSlideController::class, 'removeBackground'])->name('slides.background.remove');
+    });
+
+    // ===== OPINIÓN DE VALOR =====
+    Route::prefix('valuations')->name('valuations.')->group(function () {
+        Route::get('/',                              [\App\Http\Controllers\Admin\ValuationController::class, 'index'])->name('index');
+        Route::get('/analytics',                     [\App\Http\Controllers\Admin\ValuationController::class, 'analytics'])->name('analytics');
+        Route::get('/create',                        [\App\Http\Controllers\Admin\ValuationController::class, 'create'])->name('create');
+        Route::post('/',                             [\App\Http\Controllers\Admin\ValuationController::class, 'store'])->name('store');
+        Route::get('/{valuation}',                   [\App\Http\Controllers\Admin\ValuationController::class, 'show'])->name('show');
+        Route::get('/{valuation}/edit',              [\App\Http\Controllers\Admin\ValuationController::class, 'edit'])->name('edit');
+        Route::put('/{valuation}',                   [\App\Http\Controllers\Admin\ValuationController::class, 'update'])->name('update');
+        Route::patch('/{valuation}/status',          [\App\Http\Controllers\Admin\ValuationController::class, 'updateStatus'])->name('status');
+        Route::get('/{valuation}/pdf',           [\App\Http\Controllers\Admin\ValuationController::class, 'pdf'])->name('pdf');
+        Route::post('/{valuation}/record-sale',  [\App\Http\Controllers\Admin\ValuationController::class, 'recordSale'])->name('record-sale');
+        Route::delete('/{valuation}',                [\App\Http\Controllers\Admin\ValuationController::class, 'destroy'])->name('destroy');
     });
 });
 
