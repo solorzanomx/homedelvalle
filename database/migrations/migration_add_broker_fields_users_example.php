@@ -15,22 +15,24 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Información de perfil
-            $table->string('last_name')->nullable()->after('name');
-            $table->string('position')->nullable()->after('last_name'); // Cargo: Gerente, Agente, etc.
-
-            // Contacto
-            $table->string('phone')->nullable()->after('email');
-            $table->string('mobile')->nullable()->after('phone');
-
-            // Fotos de perfil
-            $table->string('profile_photo_url')->nullable()->after('mobile');
-            $table->string('photo_path')->nullable()->after('profile_photo_url');
-
-            // Metadata
-            $table->text('bio')->nullable();
-            $table->boolean('is_broker')->default(false);
-            $table->boolean('is_active')->default(true);
+            if (!Schema::hasColumn('users', 'last_name'))
+                $table->string('last_name')->nullable()->after('name');
+            if (!Schema::hasColumn('users', 'position'))
+                $table->string('position')->nullable()->after('last_name');
+            if (!Schema::hasColumn('users', 'phone'))
+                $table->string('phone')->nullable()->after('email');
+            if (!Schema::hasColumn('users', 'mobile'))
+                $table->string('mobile')->nullable()->after('phone');
+            if (!Schema::hasColumn('users', 'profile_photo_url'))
+                $table->string('profile_photo_url')->nullable()->after('mobile');
+            if (!Schema::hasColumn('users', 'photo_path'))
+                $table->string('photo_path')->nullable()->after('profile_photo_url');
+            if (!Schema::hasColumn('users', 'bio'))
+                $table->text('bio')->nullable();
+            if (!Schema::hasColumn('users', 'is_broker'))
+                $table->boolean('is_broker')->default(false);
+            if (!Schema::hasColumn('users', 'is_active'))
+                $table->boolean('is_active')->default(true);
         });
     }
 
