@@ -1,3 +1,7 @@
+@extends('layouts.app-sidebar')
+@section('title', 'Agentes IA')
+
+@section('content')
 @php
     $providerModels = App\Models\AiAgentConfig::$providerModels;
     $providerColors = [
@@ -12,10 +16,7 @@
     ];
 @endphp
 
-<x-layouts.app>
-    <x-slot:title>Configuración de Agentes IA</x-slot:title>
-
-    <div class="max-w-5xl mx-auto px-4 py-8">
+<div class="max-w-5xl mx-auto px-4 py-8">
 
         {{-- Header --}}
         <div class="mb-8">
@@ -187,4 +188,4 @@
         </div>
 
     </div>
-</x-layouts.app>
+@endsection
