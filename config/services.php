@@ -52,4 +52,20 @@ return [
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
     ],
 
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+    ],
+
+    'perplexity' => [
+        'api_key' => env('PERPLEXITY_API_KEY'),
+    ],
+
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
+    'n8n' => [
+        'carousel_webhook_url' => env('N8N_CAROUSEL_WEBHOOK_URL'),
+    ],
+
 ];

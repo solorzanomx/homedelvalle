@@ -62,6 +62,12 @@ use App\Http\Controllers\ClientEmailController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\LegalController;
 use App\Http\Controllers\Admin\ServiciosPageController;
+use App\Http\Controllers\Admin\NosotrosPageController;
+use App\Http\Controllers\Admin\VenderPageController;
+use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Portal\PortalDashboardController;
+use App\Http\Controllers\Portal\PortalRentalController;
+use App\Http\Controllers\Portal\PortalDocumentController;
 use App\Http\Controllers\Admin\PropertyQrController;
 
 // Página pública
@@ -417,6 +423,49 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/brokers-mgmt/{user}/approve', [BrokerManagementController::class, 'approveBroker'])->name('brokers.approve');
     Route::post('/brokers-mgmt/{user}/revoke', [BrokerManagementController::class, 'revokeBroker'])->name('brokers.revoke');
     Route::post('/brokers-mgmt/{user}/make-admin', [BrokerManagementController::class, 'makeAdmin'])->name('brokers.makeAdmin');
+
+    // ===== CARRUSELES IG =====
+    Route::prefix('carousels')->name('carousels.')->group(function () {
+        // Templates (admin only)
+        Route::middleware('admin')->prefix('templates')->name('templates.')->group(function () {
+            Route::get('/',              [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'index'])->name('index');
+            Route::get('/create',        [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'create'])->name('create');
+            Route::post('/',             [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'store'])->name('store');
+            Route::get('/{template}/edit',   [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'edit'])->name('edit');
+            Route::put('/{template}',        [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'update'])->name('update');
+            Route::delete('/{template}',     [\App\Http\Controllers\Admin\CarouselTemplateController::class, 'destroy'])->name('destroy');
+        });
+
+        // Topic discovery — must be BEFORE /{carousel} wildcard
+        Route::get('/discovery',                     [\App\Http\Controllers\Admin\CarouselDiscoveryController::class, 'form'])->name('discovery.form');
+        Route::post('/discovery',                    [\App\Http\Controllers\Admin\CarouselDiscoveryController::class, 'discover'])->name('discovery.discover');
+        Route::get('/discovery/{session}',           [\App\Http\Controllers\Admin\CarouselDiscoveryController::class, 'review'])->name('discovery.review');
+        Route::post('/discovery/{session}/generate', [\App\Http\Controllers\Admin\CarouselDiscoveryController::class, 'generate'])->name('discovery.generate');
+
+        // Main carousel CRUD
+        Route::get('/',                  [\App\Http\Controllers\Admin\CarouselController::class, 'index'])->name('index');
+        Route::get('/create',            [\App\Http\Controllers\Admin\CarouselController::class, 'create'])->name('create');
+        Route::post('/',                 [\App\Http\Controllers\Admin\CarouselController::class, 'store'])->name('store');
+        Route::get('/{carousel}',        [\App\Http\Controllers\Admin\CarouselController::class, 'show'])->name('show');
+        Route::get('/{carousel}/edit',   [\App\Http\Controllers\Admin\CarouselController::class, 'edit'])->name('edit');
+        Route::put('/{carousel}',        [\App\Http\Controllers\Admin\CarouselController::class, 'update'])->name('update');
+        Route::delete('/{carousel}',     [\App\Http\Controllers\Admin\CarouselController::class, 'destroy'])->name('destroy');
+
+        // AI generation
+        Route::get('/{carousel}/generate',            [\App\Http\Controllers\Admin\CarouselAIController::class, 'showForm'])->name('generate');
+        Route::post('/{carousel}/generate',           [\App\Http\Controllers\Admin\CarouselAIController::class, 'generate'])->name('generate.run');
+        Route::post('/{carousel}/regenerate-caption', [\App\Http\Controllers\Admin\CarouselAIController::class, 'regenerateCaption'])->name('regenerate-caption');
+
+        // Render pipeline
+        Route::post('/{carousel}/render',                [\App\Http\Controllers\Admin\CarouselRenderController::class, 'renderAll'])->name('render');
+        Route::get('/{carousel}/render/status',          [\App\Http\Controllers\Admin\CarouselRenderController::class, 'status'])->name('render.status');
+        Route::post('/{carousel}/slides/{slide}/render', [\App\Http\Controllers\Admin\CarouselRenderController::class, 'renderSlide'])->name('slides.render');
+
+        // Approval & publishing
+        Route::post('/{carousel}/approve', [\App\Http\Controllers\Admin\CarouselApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{carousel}/reject',  [\App\Http\Controllers\Admin\CarouselApprovalController::class, 'reject'])->name('reject');
+        Route::post('/{carousel}/webhook', [\App\Http\Controllers\Admin\CarouselApprovalController::class, 'webhook'])->name('webhook');
+    });
 });
 
 // ===== PORTAL DE CLIENTE =====
@@ -429,48 +478,4 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
     Route::post('/documents/upload', [PortalDocumentController::class, 'upload'])->name('documents.upload');
     Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
     Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
-});
-
-// ─── TEST: Browsershot diagnóstico (eliminar en producción) ──────────────────
-Route::get('/test-pdf', function () {
-    try {
-        // open_basedir en aaPanel bloquea file_exists fuera del webroot,
-        // así que hardcodeamos los paths conocidos de Ubuntu con Google Chrome apt
-        $chrome = '/usr/bin/google-chrome';
-        $node   = '/usr/bin/node';
-
-        $info = [
-            'php'               => PHP_VERSION,
-            'chrome'            => $chrome,
-            'node'              => $node,
-            'proc_open'         => function_exists('proc_open'),
-            'puppeteer_exists'  => is_dir(base_path('node_modules/puppeteer')),
-            'storage_writable'  => is_writable(storage_path('app')),
-            'browsershot_class' => class_exists(\Spatie\Browsershot\Browsershot::class),
-            'disabled_functions'=> ini_get('disable_functions'),
-            'open_basedir'      => ini_get('open_basedir'),
-        ];
-
-        if (!$info['proc_open']) {
-            return response()->json(['status' => 'proc_open DESHABILITADO — habilitar en aaPanel PHP disable_functions'] + $info);
-        }
-
-        $path = storage_path('app/test.pdf');
-
-        \Spatie\Browsershot\Browsershot::html('<h1>PDF OK</h1><p>' . now() . '</p>')
-            ->setChromePath($chrome)
-            ->setNodeBinary($node)
-            ->noSandbox()
-            ->format('A4')
-            ->savePdf($path);
-
-        return response()->download($path, 'test-browsershot.pdf');
-
-    } catch (\Throwable $e) {
-        return response()->json([
-            'status'  => 'ERROR',
-            'message' => $e->getMessage(),
-            'file'    => $e->getFile() . ':' . $e->getLine(),
-        ], 500);
-    }
 });

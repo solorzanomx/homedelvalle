@@ -175,7 +175,8 @@ html, body {
     position: relative;
     overflow: hidden;
 }
-.pg2 { width: 100%; height: 271mm; position: relative; overflow: hidden; }
+.pg2 { width: 100%; height: 271mm; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.pg2-body { flex: 1; overflow: hidden; }
 
 /* ════════════════════════════════════════════════════════════════════════════
    PAGE 1 — COVER HEADER
@@ -222,7 +223,7 @@ html, body {
 .price-lbl { font-size: 6px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px; }
 .price-amount {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 26px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1;
+    font-size: 29px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px; line-height: 1;
 }
 .price-currency { font-size: 10px; color: rgba(255,255,255,0.55); vertical-align: top; margin-right: 2px; line-height: 26px; }
 .op-badge {
@@ -239,7 +240,7 @@ html, body {
 .identity { padding: 12px 0 9px; border-bottom: 1px solid #E0E4EA; }
 .prop-title {
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 21px; font-weight: 700; color: #0C1A2E;
+    font-size: 22px; font-weight: 700; color: #0C1A2E;
     line-height: 1.3; margin-bottom: 6px; letter-spacing: -0.2px;
 }
 .prop-loc { font-size: 11px; color: #707070; margin-bottom: 8px; line-height: 1.5; }
@@ -326,9 +327,9 @@ html, body {
    Portrait images are filtered in PHP before reaching here
 ════════════════════════════════════════════════════════════════════════════ */
 .gal-tbl { width: 100%; border-collapse: separate; border-spacing: 5px; }
-.gal-cell { width: 33.33%; height: 110px; overflow: hidden; background: #E8ECF0; vertical-align: top; padding: 0; }
+.gal-cell { width: 33.33%; height: 88px; overflow: hidden; background: #E8ECF0; vertical-align: top; padding: 0; }
 .gal-cell img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
-.gal-empty { width: 100%; height: 110px; background: #F0F2F5; display: table; }
+.gal-empty { width: 100%; height: 88px; background: #F0F2F5; display: table; }
 .gal-empty-in { display: table-cell; vertical-align: middle; text-align: center; font-size: 7.5px; color: #C8CDD5; }
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -363,7 +364,7 @@ html, body {
 /* ════════════════════════════════════════════════════════════════════════════
    LEGAL FOOTER  —  dark band, gold top border
 ════════════════════════════════════════════════════════════════════════════ */
-.footer { position: absolute; bottom: 0; left: 0; right: 0; background: #0C1A2E; padding: 9px 14px; margin-top: 0; border-top: 2px solid #2563A0; }
+.footer { background: #0C1A2E; padding: 9px 14px; border-top: 2px solid #2563A0; flex-shrink: 0; }
 .footer-brand { font-size: 7.5px; color: rgba(255,255,255,0.8); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
 .footer-text  { font-size: 7px; color: rgba(255,255,255,0.40); line-height: 1.6; }
 .footer-copy  { font-size: 7px; color: rgba(255,255,255,0.25); margin-top: 5px; text-align: center; }
@@ -484,6 +485,7 @@ html, body {
      PÁGINA 2  ·  DESCRIPCIÓN · ESPECIFICACIONES · GALERÍA · CONTACTO
      ═══════════════════════════════════════════════════════════════════════ --}}
 <div class="pg2">
+<div class="pg2-body">
 
     {{-- Mini header --}}
     <div class="mini-hdr">
@@ -623,16 +625,17 @@ html, body {
     </table>
 
     {{-- ── FOOTER LEGAL ─────────────────────────────────────────────────── --}}
-    <div class="footer">
-        <div class="footer-brand">{{ $siteName }} &mdash; {{ $siteUrl }}</div>
-        <div class="footer-text">
-            La informacion contenida en esta ficha tecnica es proporcionada unicamente con fines informativos y no constituye una oferta
-            vinculante. Los precios, disponibilidades, superficies y caracteristicas estan sujetos a cambios sin previo aviso y deben
-            verificarse directamente con el asesor inmobiliario asignado. Las imagenes son ilustrativas. Para cualquier transaccion
-            inmobiliaria se recomienda la asesoria de profesionales legales y financieros independientes.
-        </div>
-        <div class="footer-copy">&copy; {{ now()->year }} {{ $siteName }}. Todos los derechos reservados. &nbsp;|&nbsp; {{ $siteUrl }}</div>
+</div>{{-- /pg2-body --}}
+<div class="footer">
+    <div class="footer-brand">{{ $siteName }} &mdash; {{ $siteUrl }}</div>
+    <div class="footer-text">
+        La informacion contenida en esta ficha tecnica es proporcionada unicamente con fines informativos y no constituye una oferta
+        vinculante. Los precios, disponibilidades, superficies y caracteristicas estan sujetos a cambios sin previo aviso y deben
+        verificarse directamente con el asesor inmobiliario asignado. Las imagenes son ilustrativas. Para cualquier transaccion
+        inmobiliaria se recomienda la asesoria de profesionales legales y financieros independientes.
     </div>
+    <div class="footer-copy">&copy; {{ now()->year }} {{ $siteName }}. Todos los derechos reservados. &nbsp;|&nbsp; {{ $siteUrl }}</div>
+</div>
 
 </div>{{-- /pg2 --}}
 

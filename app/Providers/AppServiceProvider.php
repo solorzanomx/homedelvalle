@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\SegmentService::class);
         $this->app->singleton(\App\Services\LeadScoringService::class);
         $this->app->singleton(\App\Services\AutomationEngine::class);
+        $this->app->singleton(\App\Services\AI\AIManager::class);
     }
 
     public function boot(): void

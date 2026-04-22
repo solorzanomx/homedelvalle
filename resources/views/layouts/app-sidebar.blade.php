@@ -508,6 +508,11 @@
                         <a href="{{ route('admin.posts.index') }}" class="nav-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Blog
                         </a>
+                        @if(Route::has('admin.carousels.index'))
+                        <a href="{{ route('admin.carousels.index') }}" class="nav-item {{ request()->routeIs('admin.carousels.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Carruseles IG
+                        </a>
+                        @endif
                         @if(Route::has('admin.content-calendar'))
                         <a href="{{ route('admin.content-calendar') }}" class="nav-item {{ request()->routeIs('admin.content-calendar*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
                             <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario
