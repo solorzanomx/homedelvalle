@@ -107,6 +107,9 @@ code.key { background:var(--card); border:1px solid var(--border); border-radius
 </div>
 
 {{-- Agent cards --}}
+{{-- All provider models as JSON — used by Alpine inside each card --}}
+@php $allModelsJson = json_encode($providerModels, JSON_HEX_TAG | JSON_HEX_APOS) @endphp
+
 <div style="margin-bottom:1.5rem;">
     @foreach($agents as $agent)
     @php
@@ -114,7 +117,21 @@ code.key { background:var(--card); border:1px solid var(--border); border-radius
         $icon    = $providerIcon[$agent->provider] ?? '🤖';
         $isImage = in_array($agent->key, $imageAgents);
     @endphp
-    <div class="agent-card" x-data="{ open: false }">
+    <div class="agent-card"
+         x-data="{
+             open: false,
+             provider: '{{ $agent->provider }}',
+             model:    '{{ $agent->model }}',
+             allModels: {{ $allModelsJson }},
+             get models() { return this.allModels[this.provider] ?? {}; },
+             get modelIds() { return Object.keys(this.models); },
+             onProviderChange() {
+                 const ids = Object.keys(this.allModels[this.provider] ?? {});
+                 this.model = ids.length ? ids[0] : '';
+             }
+         }">
+
+        {{-- Header row --}}
         <div class="agent-header">
             <span class="agent-icon">{{ $icon }}</span>
             <div class="agent-info">
@@ -127,12 +144,15 @@ code.key { background:var(--card); border:1px solid var(--border); border-radius
                 <div class="agent-desc">{{ $agent->description }}</div>
             </div>
             <div class="agent-badges">
-                <span class="badge" style="color:{{ $badge['color'] }};background:{{ $badge['bg'] }};border-color:{{ $badge['color'] }}40;">
-                    {{ $badge['label'] }}
-                </span>
-                <span class="badge" style="color:var(--text-muted);background:var(--bg);border-color:var(--border);">
-                    {{ $agent->model }}
-                </span>
+                {{-- Provider badge — updates reactively --}}
+                <template x-for="[prov, cfg] in Object.entries({ anthropic: { label:'Anthropic', color:'#f97316', bg:'#fff7ed' }, perplexity: { label:'Perplexity', color:'#2563eb', bg:'#eff6ff' }, openai: { label:'OpenAI', color:'#16a34a', bg:'#f0fdf4' } })" :key="prov">
+                    <span x-show="provider === prov" class="badge"
+                          :style="`color:${cfg.color};background:${cfg.bg};border-color:${cfg.color}40`"
+                          x-text="cfg.label"></span>
+                </template>
+                {{-- Model badge --}}
+                <span class="badge" style="color:var(--text-muted);background:var(--bg);border-color:var(--border);"
+                      x-text="model"></span>
                 @if(!$isImage)
                 <span class="badge" style="color:var(--text-muted);background:var(--bg);border-color:var(--border);">
                     {{ number_format($agent->max_tokens) }} tk
@@ -144,6 +164,7 @@ code.key { background:var(--card); border:1px solid var(--border); border-radius
             </div>
         </div>
 
+        {{-- Edit form --}}
         <div class="agent-edit-body" x-show="open" x-transition>
             <form method="POST" action="{{ route('admin.ai-config.update', $agent) }}">
                 @csrf
@@ -153,27 +174,22 @@ code.key { background:var(--card); border:1px solid var(--border); border-radius
                     {{-- Provider --}}
                     <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label">Proveedor</label>
-                        <select name="provider" class="form-select">
-                            <option value="anthropic"  {{ $agent->provider==='anthropic'  ? 'selected':'' }}>🧠 Anthropic (Claude)</option>
-                            <option value="perplexity" {{ $agent->provider==='perplexity' ? 'selected':'' }}>🔍 Perplexity</option>
-                            <option value="openai"     {{ $agent->provider==='openai'     ? 'selected':'' }}>⚡ OpenAI</option>
+                        <select name="provider" x-model="provider" @change="onProviderChange()" class="form-select">
+                            <option value="anthropic">🧠 Anthropic (Claude)</option>
+                            <option value="perplexity">🔍 Perplexity</option>
+                            <option value="openai">⚡ OpenAI</option>
                         </select>
                     </div>
 
-                    {{-- Model --}}
+                    {{-- Model — reactive select that changes with provider --}}
                     <div class="form-group" style="margin-bottom:0;">
                         <label class="form-label">Modelo</label>
-                        <input type="text" name="model" value="{{ $agent->model }}"
-                               list="models-{{ $agent->id }}"
-                               class="form-input" placeholder="nombre-del-modelo">
-                        <datalist id="models-{{ $agent->id }}">
-                            @foreach($providerModels as $models)
-                                @foreach($models as $mid => $mlabel)
-                                    <option value="{{ $mid }}">{{ $mlabel }}</option>
-                                @endforeach
-                            @endforeach
-                        </datalist>
-                        <div class="agent-form-note">Escribe cualquier ID de modelo válido</div>
+                        <select name="model" x-model="model" class="form-select">
+                            <template x-for="[id, label] in Object.entries(models)" :key="id">
+                                <option :value="id" x-text="label" :selected="id === model"></option>
+                            </template>
+                        </select>
+                        <div class="agent-form-note">Los modelos se actualizan según el proveedor seleccionado</div>
                     </div>
 
                     @if(!$isImage)
@@ -187,18 +203,19 @@ code.key { background:var(--card); border:1px solid var(--border); border-radius
 
                     {{-- Temperature --}}
                     <div class="form-group" style="margin-bottom:0;">
-                        <label class="form-label">Temperatura <span style="font-weight:400;color:var(--text-muted);">(0 exacto · 1 creativo)</span></label>
+                        <label class="form-label">
+                            Temperatura
+                            <span style="font-weight:400;color:var(--text-muted);">(0 exacto · 1 creativo)</span>
+                        </label>
                         <input type="number" name="temperature" value="{{ $agent->temperature }}"
                                min="0" max="2" step="0.05" class="form-input">
                     </div>
                     @else
-                    {{-- Image generation: hidden fields with dummy values --}}
                     <input type="hidden" name="max_tokens"  value="{{ $agent->max_tokens }}">
                     <input type="hidden" name="temperature" value="{{ $agent->temperature }}">
                     <div class="form-group" style="margin-bottom:0; grid-column:span 2;">
                         <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:0.75rem 1rem;font-size:0.82rem;color:#92400e;">
                             ⚠️ Para generación de imágenes, solo aplican <strong>Proveedor</strong> y <strong>Modelo</strong>.
-                            Temperatura y tokens no se usan en llamadas de imagen.
                         </div>
                     </div>
                     @endif
