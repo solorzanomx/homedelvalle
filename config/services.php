@@ -68,13 +68,4 @@ return [
         'carousel_webhook_url' => env('N8N_CAROUSEL_WEBHOOK_URL'),
     ],
 
-    'mifiel' => [
-        'app_id'         => env('MIFIEL_APP_ID'),
-        'app_secret'     => env('MIFIEL_APP_SECRET'),
-        'sandbox'        => env('MIFIEL_SANDBOX', true),
-        'webhook_secret' => env('MIFIEL_WEBHOOK_SECRET'),
-        'url_production' => 'https://www.mifiel.com/api/v1/',
-        'url_sandbox'    => 'https://sandbox.mifiel.com/api/v1/',
-    ],
-
 ];

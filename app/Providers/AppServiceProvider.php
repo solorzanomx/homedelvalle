@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Carbon;
-use App\Events\DocumentoFirmado;
-use App\Listeners\ProcesarDocumentoFirmado;
 use App\Models\Client;
 use App\Models\Page;
 use App\Models\Menu;
@@ -32,13 +30,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\LeadScoringService::class);
         $this->app->singleton(\App\Services\AutomationEngine::class);
         $this->app->singleton(\App\Services\AI\AIManager::class);
-        $this->app->singleton(\App\Services\MifielService::class);
     }
 
     public function boot(): void
     {
-        // ─── Eventos Mifiel ────────────────────────────────
-        Event::listen(DocumentoFirmado::class, ProcesarDocumentoFirmado::class);
         // Locale español para Carbon (fechas)
         Carbon::setLocale('es');
         setlocale(LC_TIME, 'es_MX.UTF-8', 'es_ES.UTF-8', 'es_MX', 'es_ES', 'es');
