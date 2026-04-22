@@ -248,6 +248,10 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
         Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
+        // Agentes IA
+        Route::get('/ai-config', [\App\Http\Controllers\Admin\AiConfigController::class, 'index'])->name('ai-config');
+        Route::patch('/ai-config/{agent}', [\App\Http\Controllers\Admin\AiConfigController::class, 'update'])->name('ai-config.update');
+
         // Homepage CMS
         Route::get('/homepage', [HomepageController::class, 'index'])->name('homepage');
         Route::post('/homepage', [HomepageController::class, 'update'])->name('homepage.update');

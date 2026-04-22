@@ -26,7 +26,7 @@ Evitas generalidades. Siempre refieres cifras concretas del análisis proporcion
 SYSTEM;
 
         try {
-            $raw = $this->ai->complete($prompt, $system, ['max_tokens' => 900]);
+            $raw = $this->ai->agent('valuation.narrative', $prompt, $system);
             $narrative = $this->parse($raw);
         } catch (\Throwable $e) {
             Log::warning('ValuationNarrativeService: failed', [

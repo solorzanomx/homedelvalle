@@ -6,6 +6,7 @@
     // Orden persuasivo: interés → validación → confianza → conversión
     $defaultLinks = [
         ['label' => 'Propiedades', 'url' => '/propiedades'],
+        ['label' => 'Precios de Mercado', 'url' => '/mercado'],
         ['label' => 'Servicios', 'url' => '/servicios'],
         ['label' => 'Nosotros', 'url' => '/nosotros'],
         ['label' => 'Testimonios', 'url' => '/testimonios'],

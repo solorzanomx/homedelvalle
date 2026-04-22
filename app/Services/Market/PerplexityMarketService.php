@@ -69,7 +69,7 @@ Si no encuentras suficientes anuncios (menos de 3), responde: {"error": "sin_dat
 PROMPT;
 
         try {
-            $raw = $this->ai->search($prompt, null, ['max_tokens' => 1024]);
+            $raw = $this->ai->agent('market.fetch', $prompt);
             Log::info('PerplexityMarketService: raw listings', [
                 'colonia'       => $colonia->name,
                 'property_type' => $propertyType,
@@ -159,7 +159,7 @@ Omite categorías sin datos suficientes. Si todos los datos son inválidos, resp
 PROMPT;
 
         try {
-            $raw = $this->ai->complete($prompt, $system, ['max_tokens' => 2000]);
+            $raw = $this->ai->agent('market.analysis', $prompt, $system);
         } catch (\Throwable $e) {
             Log::error('PerplexityMarketService: Claude analysis error', [
                 'colonia' => $colonia->name,
