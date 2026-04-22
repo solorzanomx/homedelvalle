@@ -2,6 +2,7 @@
 
 namespace App\Actions\Carousel;
 
+use App\Models\AiAgentConfig;
 use App\Models\CarouselImagePrompt;
 use App\Models\CarouselSlide;
 use Illuminate\Support\Facades\Http;
@@ -11,7 +12,11 @@ use Illuminate\Support\Facades\Storage;
 class GenerateSlideImageAction
 {
     private const DALLE_SIZE  = '1024x1792'; // portrait, cropped to 4:5 via object-fit:cover
-    private const DALLE_MODEL = 'dall-e-3';
+
+    private function model(): string
+    {
+        return AiAgentConfig::optionsFor('carousel.image_generation')['model'] ?? 'dall-e-3';
+    }
 
     /**
      * Per-template framing instructions sent to DALL-E.
@@ -46,7 +51,7 @@ class GenerateSlideImageAction
         Log::info('GenerateSlideImage: calling DALL-E', [
             'slide_id' => $slide->id,
             'type'     => $slide->type,
-            'model'    => self::DALLE_MODEL,
+            'model'    => $this->model(),
             'size'     => self::DALLE_SIZE,
             'prompt'   => $prompt,
         ]);
@@ -54,7 +59,7 @@ class GenerateSlideImageAction
         $response = Http::withToken($apiKey)
             ->timeout(90)
             ->post('https://api.openai.com/v1/images/generations', [
-                'model'           => self::DALLE_MODEL,
+                'model'           => $this->model(),
                 'prompt'          => $prompt,
                 'n'               => 1,
                 'size'            => self::DALLE_SIZE,

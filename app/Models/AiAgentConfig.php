@@ -33,6 +33,8 @@ class AiAgentConfig extends Model
         'openai' => [
             'gpt-4o'      => 'GPT-4o (potente)',
             'gpt-4o-mini' => 'GPT-4o Mini (económico)',
+            'dall-e-3'    => 'DALL-E 3 — $0.04/img standard · $0.08 HD',
+            'dall-e-2'    => 'DALL-E 2 — $0.02/img (menor calidad)',
         ],
     ];
 
