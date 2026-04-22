@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1397106899b8cb3107191c0292d13825",
+    "content-hash": "24964a392b580a30051a3381fb357cfd",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2555,6 +2555,65 @@
                 "source": "https://github.com/Masterminds/html5-php/tree/2.10.0"
             },
             "time": "2025-07-25T09:04:22+00:00"
+        },
+        {
+            "name": "mifiel/api-client",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Mifiel/php-api-client.git",
+                "reference": "78a210bde4e7b37b8759a462a1332c35ac057c56"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Mifiel/php-api-client/zipball/78a210bde4e7b37b8759a462a1332c35ac057c56",
+                "reference": "78a210bde4e7b37b8759a462a1332c35ac057c56",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "php": ">=8.3"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.6",
+                "php-coveralls/php-coveralls": "^2.2",
+                "phpunit/phpunit": "^10.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Mifiel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mifiel Team and Contributors",
+                    "email": "hola@mifiel.com",
+                    "homepage": "https://www.mifiel.com",
+                    "role": "Publisher"
+                },
+                {
+                    "name": "Genaro Madrid",
+                    "email": "genmadrid@gmail.com"
+                }
+            ],
+            "description": "Mifiel API Client for PHP",
+            "keywords": [
+                "Firma documentos electrónicos",
+                "Firma electrónica",
+                "Firma electrónica Avanzada",
+                "Mifiel",
+                "fiel"
+            ],
+            "support": {
+                "issues": "https://github.com/Mifiel/php-api-client/issues",
+                "source": "https://github.com/Mifiel/php-api-client/tree/v3.0.0"
+            },
+            "time": "2026-04-17T18:03:00+00:00"
         },
         {
             "name": "monolog/monolog",
