@@ -625,6 +625,9 @@
                         <a href="{{ route('admin.ai-config') }}" class="nav-item {{ request()->routeIs('admin.ai-config*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="bot" class="w-4 h-4" /></span> Agentes IA
                         </a>
+                        <a href="{{ route('admin.market.prices') }}" class="nav-item {{ request()->routeIs('admin.market.prices*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="trending-up" class="w-4 h-4" /></span> Precios Mercado
+                        </a>
                         <a href="{{ route('admin.email.settings') }}" class="nav-item {{ request()->routeIs('admin.email.settings*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Correo SMTP
                         </a>
