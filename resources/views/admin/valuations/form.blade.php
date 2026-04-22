@@ -4,6 +4,10 @@
 @section('content')
 @php $editing = isset($valuation) && $valuation->exists; @endphp
 
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
 <div class="page-header">
     <div>
         <h2>{{ $editing ? 'Editar valuación' : 'Nueva opinión de valor' }}</h2>
@@ -18,7 +22,8 @@
 
 <form method="POST"
       action="{{ $editing ? route('admin.valuations.update', $valuation) : route('admin.valuations.store') }}"
-      x-data="{ propType: '{{ old('input_type', $valuation->input_type ?? 'apartment') }}' }">
+      x-data="{ propType: '{{ old('input_type', $valuation->input_type ?? 'apartment') }}', submitting: false }"
+      @submit="submitting = true">
     @csrf
     @if($editing) @method('PUT') @endif
 
@@ -247,8 +252,16 @@
             <div class="card">
                 <div class="card-header"><h3 class="card-title">Calcular</h3></div>
                 <div class="card-body" style="display:flex;flex-direction:column;gap:.6rem;">
-                    <button type="submit" class="btn btn-primary" style="width:100%;">
-                        {{ $editing ? '🔄 Recalcular valuación' : '📊 Calcular valuación' }}
+                    <button type="submit" class="btn btn-primary" style="width:100%;"
+                            :disabled="submitting"
+                            :style="submitting ? 'opacity:.7;cursor:not-allowed;' : ''">
+                        <span x-show="!submitting">{{ $editing ? '🔄 Recalcular valuación' : '📊 Calcular valuación' }}</span>
+                        <span x-show="submitting" style="display:flex;align-items:center;justify-content:center;gap:.5rem;">
+                            <svg style="width:16px;height:16px;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="60" stroke-dashoffset="20" stroke-linecap="round"/>
+                            </svg>
+                            {{ $editing ? 'Recalculando…' : 'Calculando…' }}
+                        </span>
                     </button>
                     @if($editing)
                     <a href="{{ route('admin.valuations.show', $valuation) }}" class="btn btn-outline" style="width:100%;text-align:center;">
