@@ -484,6 +484,25 @@ html, body { font-family: 'Inter', Arial, Helvetica, sans-serif; font-size: 14px
                 @if($amenList)
                 <tr><td>Amenidades</td><td>{{ $amenList }}</td></tr>
                 @endif
+                @if($valuation->input_type === 'apartment')
+                @if($valuation->input_unit_position)
+                <tr><td>Posición</td><td>{{ $valuation->input_unit_position === 'exterior' ? 'Exterior' : 'Interior' }}</td></tr>
+                @endif
+                @if($valuation->input_orientation)
+                <tr><td>Orientación</td><td>{{ ucfirst($valuation->input_orientation) }}</td></tr>
+                @endif
+                @if($valuation->input_seismic_status && $valuation->input_seismic_status !== 'none')
+                <tr>
+                    <td>Historial sísmico</td>
+                    <td>{{ match($valuation->input_seismic_status) {
+                        'damaged_repaired'   => 'Edificio con daño sísmico — reparado',
+                        'damaged_reinforced' => 'Edificio con daño sísmico — reforzado estructuralmente',
+                        'unknown'            => 'Historial sísmico desconocido',
+                        default              => '—',
+                    } }}</td>
+                </tr>
+                @endif
+                @endif
             </table>
         </div>
 

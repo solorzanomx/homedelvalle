@@ -151,6 +151,9 @@ class ValuationEngine
             $this->factorAge($v),
             $this->factorCondition($v),
             $this->factorFloorElevator($v),
+            $this->factorUnitPosition($v),
+            $this->factorOrientation($v),
+            $this->factorSeismic($v),
             $this->factorParking($v),
             $this->factorAmenities($v),
             $this->factorSize($v),
@@ -224,8 +227,84 @@ class ValuationEngine
         ];
     }
 
-    protected function factorParking(PropertyValuation $v): array
+    protected function factorUnitPosition(PropertyValuation $v): ?array
     {
+        if ($v->input_type !== 'apartment' || !$v->input_unit_position) return null;
+
+        [$value, $label, $desc] = match($v->input_unit_position) {
+            'exterior' => [+0.05, 'Departamento exterior', 'Vista a calle o jardín, ventilación e iluminación natural. Prima de mercado.'],
+            'interior' => [-0.05, 'Departamento interior', 'Sin vista directa al exterior. Descuento por menor iluminación y privacidad.'],
+            default    => [0.00,  '',                       ''],
+        };
+
+        return [
+            'key'         => 'unit_position',
+            'label'       => $label,
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorOrientation(PropertyValuation $v): ?array
+    {
+        if ($v->input_type !== 'apartment' || !$v->input_orientation) return null;
+
+        // En CDMX: sur/sureste = más luz natural todo el año → prima
+        // Norte = menos luz → descuento. Este/Oeste = neutro.
+        [$value, $desc] = match($v->input_orientation) {
+            'sur'      => [+0.04, 'Orientación sur: máxima luz natural durante todo el año en CDMX. Prima de mercado.'],
+            'sureste'  => [+0.03, 'Orientación sureste: excelente luz matutina y tarde. Prima moderada.'],
+            'suroeste' => [+0.02, 'Orientación suroeste: buena iluminación vespertina. Prima leve.'],
+            'este'     => [+0.01, 'Orientación este: luz matutina. Ajuste mínimo positivo.'],
+            'oeste'    => [0.00,  'Orientación oeste: luz vespertina. Sin ajuste significativo.'],
+            'noreste'  => [-0.01, 'Orientación noreste: luz limitada. Ajuste mínimo negativo.'],
+            'noroeste' => [-0.02, 'Orientación noroeste: poca luz solar directa. Descuento leve.'],
+            'norte'    => [-0.04, 'Orientación norte: mínima luz natural en CDMX. Descuento de mercado.'],
+            default    => [0.00,  ''],
+        };
+
+        $label = ucfirst($v->input_orientation);
+
+        return [
+            'key'         => 'orientation',
+            'label'       => "Orientación: {$label}",
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorSeismic(PropertyValuation $v): ?array
+    {
+        if (!$v->input_seismic_status || $v->input_seismic_status === 'none') return null;
+
+        [$value, $label, $desc] = match($v->input_seismic_status) {
+            'damaged_repaired' => [
+                -0.08,
+                'Edificio con daño sísmico reparado',
+                'El edificio sufrió daños en sismo y fue reparado. Existe percepción negativa de mercado (factor psicológico) pese a la reparación. Descuento por menor demanda.',
+            ],
+            'damaged_reinforced' => [
+                -0.04,
+                'Edificio con daño sísmico y reforzamiento estructural',
+                'El edificio fue dañado en sismo pero sometido a reforzamiento estructural certificado. El reforzamiento da garantía técnica; descuento reducido por percepción de mercado residual.',
+            ],
+            'unknown' => [
+                -0.03,
+                'Historial sísmico desconocido',
+                'No se cuenta con información verificable sobre daño sísmico. Descuento de precaución por incertidumbre.',
+            ],
+            default => [0.00, '', ''],
+        };
+
+        return [
+            'key'         => 'seismic_status',
+            'label'       => $label,
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorParking(PropertyValuation $v): array    {
         $parking = $v->input_parking;
 
         [$value, $desc] = match(true) {

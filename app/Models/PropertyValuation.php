@@ -15,6 +15,7 @@ class PropertyValuation extends Model
         'input_condition', 'input_bedrooms', 'input_bathrooms', 'input_parking',
         'input_floor', 'input_has_elevator', 'input_has_rooftop',
         'input_has_balcony', 'input_has_service_room', 'input_has_storage',
+        'input_unit_position', 'input_orientation', 'input_seismic_status',
         'input_notes',
         'base_price_m2', 'adjusted_price_m2',
         'total_value_low', 'total_value_mid', 'total_value_high', 'suggested_list_price',

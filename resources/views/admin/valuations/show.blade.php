@@ -277,7 +277,17 @@
                     'Balcón'         => $valuation->input_has_balcony ? 'Sí' : '—',
                     'Cuarto servicio'=> $valuation->input_has_service_room ? 'Sí' : '—',
                     'Bodega'         => $valuation->input_has_storage ? 'Sí' : '—',
-                ];
+                ] + ($valuation->input_type === 'apartment' ? [
+                    'Posición'       => match($valuation->input_unit_position) { 'exterior'=>'Exterior','interior'=>'Interior', default=>'—' },
+                    'Orientación'    => $valuation->input_orientation ? ucfirst($valuation->input_orientation) : '—',
+                    'Historial sísmico' => match($valuation->input_seismic_status) {
+                        'none'               => 'Sin daño conocido',
+                        'damaged_repaired'   => '⚠️ Dañado — reparado',
+                        'damaged_reinforced' => '🔧 Dañado — reforzado',
+                        'unknown'            => 'Desconocido',
+                        default              => '—',
+                    },
+                ] : []);
                 @endphp
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);">
                     @foreach($chars as $lbl => $val)

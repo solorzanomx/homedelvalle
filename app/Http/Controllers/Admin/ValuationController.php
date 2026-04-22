@@ -66,6 +66,9 @@ class ValuationController extends Controller
             'input_has_balcony'    => 'boolean',
             'input_has_service_room' => 'boolean',
             'input_has_storage'    => 'boolean',
+            'input_unit_position'  => 'nullable|in:exterior,interior',
+            'input_orientation'    => 'nullable|in:norte,noreste,este,sureste,sur,suroeste,oeste,noroeste',
+            'input_seismic_status' => 'nullable|in:none,damaged_repaired,damaged_reinforced,unknown',
             'input_notes'          => 'nullable|string|max:1000',
         ]);
 
@@ -75,6 +78,12 @@ class ValuationController extends Controller
         $data['input_has_balcony']    = $request->boolean('input_has_balcony');
         $data['input_has_service_room'] = $request->boolean('input_has_service_room');
         $data['input_has_storage']    = $request->boolean('input_has_storage');
+        // Nullify apartment-specific fields when not apartment
+        if (($data['input_type'] ?? '') !== 'apartment') {
+            $data['input_unit_position']  = null;
+            $data['input_orientation']    = null;
+            $data['input_seismic_status'] = null;
+        }
 
         $valuation = PropertyValuation::create($data);
 
@@ -131,6 +140,9 @@ class ValuationController extends Controller
             'input_has_balcony'    => 'boolean',
             'input_has_service_room' => 'boolean',
             'input_has_storage'    => 'boolean',
+            'input_unit_position'  => 'nullable|in:exterior,interior',
+            'input_orientation'    => 'nullable|in:norte,noreste,este,sureste,sur,suroeste,oeste,noroeste',
+            'input_seismic_status' => 'nullable|in:none,damaged_repaired,damaged_reinforced,unknown',
             'input_notes'          => 'nullable|string|max:1000',
         ]);
 
@@ -139,6 +151,11 @@ class ValuationController extends Controller
         $data['input_has_balcony']     = $request->boolean('input_has_balcony');
         $data['input_has_service_room']= $request->boolean('input_has_service_room');
         $data['input_has_storage']     = $request->boolean('input_has_storage');
+        if (($data['input_type'] ?? '') !== 'apartment') {
+            $data['input_unit_position']  = null;
+            $data['input_orientation']    = null;
+            $data['input_seismic_status'] = null;
+        }
 
         $valuation->update($data);
 

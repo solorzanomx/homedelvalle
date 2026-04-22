@@ -17,7 +17,8 @@
 </div>
 
 <form method="POST"
-      action="{{ $editing ? route('admin.valuations.update', $valuation) : route('admin.valuations.store') }}">
+      action="{{ $editing ? route('admin.valuations.update', $valuation) : route('admin.valuations.store') }}"
+      x-data="{ propType: '{{ old('input_type', $valuation->input_type ?? 'apartment') }}' }">
     @csrf
     @if($editing) @method('PUT') @endif
 
@@ -64,7 +65,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Tipo de inmueble <span class="required">*</span></label>
-                            <select name="input_type" class="form-select">
+                            <select name="input_type" class="form-select" x-model="propType">
                                 @foreach(['apartment'=>'Departamento','house'=>'Casa','land'=>'Terreno','office'=>'Oficina'] as $val => $lbl)
                                 <option value="{{ $val }}"
                                     {{ old('input_type', $valuation->input_type ?? 'apartment') === $val ? 'selected' : '' }}>
@@ -169,6 +170,61 @@
                             {{ $label }}
                         </label>
                         @endforeach
+                    </div>
+
+                    {{-- Atributos específicos de departamento --}}
+                    <div x-show="propType === 'apartment'" x-transition style="margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem;">
+                        <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.75rem;">
+                            Atributos del departamento
+                        </div>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.85rem;">
+
+                            {{-- Posición --}}
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label">Posición</label>
+                                <select name="input_unit_position" class="form-select">
+                                    <option value="">— No especificada —</option>
+                                    <option value="exterior" {{ old('input_unit_position', $valuation->input_unit_position ?? '') === 'exterior' ? 'selected' : '' }}>Exterior (vista a calle/jardín)</option>
+                                    <option value="interior" {{ old('input_unit_position', $valuation->input_unit_position ?? '') === 'interior' ? 'selected' : '' }}>Interior (patio interior)</option>
+                                </select>
+                            </div>
+
+                            {{-- Orientación --}}
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label class="form-label">Orientación principal</label>
+                                <select name="input_orientation" class="form-select">
+                                    <option value="">— No especificada —</option>
+                                    @foreach(['sur'=>'Sur ☀️ (mejor)','sureste'=>'Sureste','suroeste'=>'Suroeste','este'=>'Este','oeste'=>'Oeste','noreste'=>'Noreste','noroeste'=>'Noroeste','norte'=>'Norte (menos luz)'] as $val => $lbl)
+                                    <option value="{{ $val }}" {{ old('input_orientation', $valuation->input_orientation ?? '') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="form-hint">En CDMX la orientación sur tiene prima de mercado</div>
+                            </div>
+                        </div>
+
+                        {{-- Daño sísmico --}}
+                        <div class="form-group" style="margin-top:.85rem;margin-bottom:0;">
+                            <label class="form-label">Historial sísmico del edificio</label>
+                            <div style="display:grid;gap:.4rem;margin-top:.35rem;">
+                                @foreach([
+                                    'none'                => ['label'=>'Sin daño sísmico conocido','desc'=>'Sin impacto en valuación','color'=>'#16a34a'],
+                                    'damaged_reinforced'  => ['label'=>'Dañado en sismo — reforzado estructuralmente','desc'=>'Descuento leve (-4%): el reforzamiento certifica la reparación pero persiste algo de percepción','color'=>'#d97706'],
+                                    'damaged_repaired'    => ['label'=>'Dañado en sismo — reparado (sin reforzamiento)','desc'=>'Descuento moderado (-8%): factor psicológico de mercado','color'=>'#dc2626'],
+                                    'unknown'             => ['label'=>'Se desconoce si tuvo daño','desc'=>'Descuento de precaución (-3%)','color'=>'#94a3b8'],
+                                ] as $val => $cfg)
+                                @php $checked = old('input_seismic_status', $valuation->input_seismic_status ?? 'none') === $val; @endphp
+                                <label style="display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;padding:.55rem .75rem;border:1px solid {{ $checked ? $cfg['color'] : 'var(--border)' }};border-radius:var(--radius);background:{{ $checked ? $cfg['color'].'12' : 'var(--bg)' }};">
+                                    <input type="radio" name="input_seismic_status" value="{{ $val }}"
+                                           {{ $checked ? 'checked' : '' }}
+                                           style="margin-top:2px;accent-color:{{ $cfg['color'] }};">
+                                    <div>
+                                        <div style="font-size:.83rem;font-weight:600;color:var(--text);">{{ $cfg['label'] }}</div>
+                                        <div style="font-size:.73rem;color:var(--text-muted);">{{ $cfg['desc'] }}</div>
+                                    </div>
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
