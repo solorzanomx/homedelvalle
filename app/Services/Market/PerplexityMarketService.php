@@ -127,7 +127,8 @@ INSTRUCCIONES DE ANÁLISIS:
    - "mid": 11–30 años
    - "old": más de 30 años
    - Listings sin antigüedad: asígnalos a "mid" por defecto
-   - Si hay pocos listings, agrupa "new" con "mid" antes de reportar estadísticas vacías
+   - Si una categoría tiene < 2 listings, NO la reportes (omítela del JSON)
+   - Si "new" tiene < 2 listings, agrúpalos con "mid" y solo reporta "mid"
 
 5. ESTADÍSTICAS POR CATEGORÍA (solo si hay ≥ 2 listings válidos en el grupo)
    - low = percentil 25 del precio_m2
@@ -135,10 +136,19 @@ INSTRUCCIONES DE ANÁLISIS:
    - high = percentil 75 del precio_m2
    - Redondea todos los valores al entero más cercano
 
-6. CONFIANZA
-   - "high": ≥ 5 listings válidos en la categoría
+6. VALIDACIÓN DE LÓGICA DE MERCADO (OBLIGATORIO)
+   En Benito Juárez, CDMX, el precio/m² sigue esta jerarquía de mercado:
+   - Inmuebles nuevos (0-10 años) son MÁS caros que seminuevos
+   - Seminuevos (11-30 años) son MÁS caros que viejos (>30 años)
+   Si tus estadísticas violan esta jerarquía (ej: new_avg < mid_avg), significa
+   que la muestra de esa categoría es demasiado pequeña o sesgada.
+   En ese caso: OMITE esa categoría del resultado (no la reportes).
+   Es mejor omitir una categoría que reportar datos engañosos.
+
+7. CONFIANZA
+   - "high": ≥ 5 listings válidos en la categoría dominante
    - "medium": 2–4 listings válidos
-   - "low": 1 listing válido (solo reporta como referencia)
+   - "low": datos insuficientes o categorías omitidas por lógica
 
 Responde ÚNICAMENTE con este JSON exacto, sin texto adicional ni markdown:
 {
@@ -212,6 +222,25 @@ PROMPT;
                 'avg'  => (int) $prices[$cat]['avg'],
                 'high' => (int) $prices[$cat]['high'],
             ];
+        }
+
+        // Sanity check: enforce new >= mid >= old hierarchy.
+        // If violated, drop the offending category rather than show wrong data.
+        if (isset($result['new'], $result['mid']) && $result['new']['avg'] < $result['mid']['avg']) {
+            Log::warning('PerplexityMarketService: new < mid, dropping new category', [
+                'colonia' => $coloniaName,
+                'new_avg' => $result['new']['avg'],
+                'mid_avg' => $result['mid']['avg'],
+            ]);
+            unset($result['new']);
+        }
+        if (isset($result['old'], $result['mid']) && $result['old']['avg'] > $result['mid']['avg']) {
+            Log::warning('PerplexityMarketService: old > mid, dropping old category', [
+                'colonia' => $coloniaName,
+                'old_avg' => $result['old']['avg'],
+                'mid_avg' => $result['mid']['avg'],
+            ]);
+            unset($result['old']);
         }
 
         // Attach metadata for the job to persist
