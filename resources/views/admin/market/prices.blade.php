@@ -36,8 +36,7 @@
             @csrf
             <input type="hidden" name="colonia_id" value="all">
             <button type="submit" class="btn btn-primary run-btn">
-                <x-icon name="refresh-cw" class="w-4 h-4" />
-                Actualizar todas las colonias
+                ↺ Actualizar todas las colonias
             </button>
         </form>
     </div>
@@ -82,9 +81,7 @@
             <form method="POST" action="{{ route('admin.market.prices.run') }}" style="flex-shrink:0;">
                 @csrf
                 <input type="hidden" name="colonia_id" value="{{ $colonia->id }}">
-                <button type="submit" class="btn btn-outline btn-sm" title="Actualizar esta colonia">
-                    <x-icon name="refresh-cw" class="w-3 h-3" />
-                </button>
+                <button type="submit" class="btn btn-outline btn-sm" title="Actualizar esta colonia">↺</button>
             </form>
         </div>
 
