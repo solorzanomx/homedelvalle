@@ -17,7 +17,12 @@ Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00')->withoutOve
 // ── Blog Content Scheduler ───────────────────────────
 Schedule::job(new \App\Jobs\PublishScheduledPosts)->everyMinute()->withoutOverlapping();
 
-// ── Market Observatory Scheduler ─────────────────────
+// ── Google eSignature Scheduler ──────────────────────
+Schedule::command('google:check-signatures')
+    ->everyThirtyMinutes()
+    ->withoutOverlapping()
+    ->runInBackground();
+
 Schedule::command('market:update-prices')
     ->monthlyOn(1, '08:00')
     ->withoutOverlapping()

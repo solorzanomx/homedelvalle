@@ -6,6 +6,8 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
+use App\Events\DocumentoFirmadoGoogle;
+use App\Listeners\ProcesarDocumentoFirmadoGoogle;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
@@ -30,10 +32,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\LeadScoringService::class);
         $this->app->singleton(\App\Services\AutomationEngine::class);
         $this->app->singleton(\App\Services\AI\AIManager::class);
+        $this->app->singleton(\App\Services\GoogleDriveService::class);
+        $this->app->singleton(\App\Services\GoogleESignatureService::class);
     }
 
     public function boot(): void
     {
+        // ─── Eventos Google eSignature ────────────────────
+        Event::listen(DocumentoFirmadoGoogle::class, ProcesarDocumentoFirmadoGoogle::class);
+
         // Locale español para Carbon (fechas)
         Carbon::setLocale('es');
         setlocale(LC_TIME, 'es_MX.UTF-8', 'es_ES.UTF-8', 'es_MX', 'es_ES', 'es');

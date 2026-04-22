@@ -534,3 +534,65 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
     Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
     Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
 });
+
+// ── Test Google eSignature (temporal — quitar en producción) ─────────────────
+// Edita el email de $testEmail antes de usar esta ruta.
+Route::middleware(['auth', 'admin'])->get('/test-google-signature', function () {
+    $testEmail = 'tu-email@ejemplo.com'; // ← CAMBIA ESTO antes de probar
+
+    // Generar PDF dummy
+    $dompdf = new \Dompdf\Dompdf();
+    $dompdf->loadHtml('<html><body style="font-family:sans-serif;padding:40px;">
+        <h1>Contrato de Prueba — Google eSignature</h1>
+        <p>Fecha: ' . now()->format('d/m/Y H:i') . '</p>
+        <br><br>
+        <p>Firmante: _______________________</p>
+    </body></html>');
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    $pdfPath = storage_path('app/private/test-google-dummy.pdf');
+    @mkdir(dirname($pdfPath), 0775, true);
+    file_put_contents($pdfPath, $dompdf->output());
+
+    try {
+        /** @var \App\Services\GoogleDriveService $drive */
+        $drive = app(\App\Services\GoogleDriveService::class);
+        /** @var \App\Services\GoogleESignatureService $eSignature */
+        $eSignature = app(\App\Services\GoogleESignatureService::class);
+
+        // 1. Subir PDF a Drive
+        $fileId = $drive->uploadPdf($pdfPath, 'contrato-prueba-' . now()->format('YmdHis') . '.pdf');
+
+        // 2. Iniciar solicitud de firma
+        $result = $eSignature->requestSignature(
+            fileId:  $fileId,
+            signers: [['name' => 'Firmante de Prueba', 'email' => $testEmail, 'role' => 'signer']],
+        );
+
+        // 3. Guardar en BD
+        \App\Models\GoogleSignatureRequest::create([
+            'file_id'              => $fileId,
+            'signature_request_id' => $result['signature_request_id'],
+            'tipo'                 => 'test',
+            'status'               => 'pending',
+            'signers'              => [['name' => 'Firmante de Prueba', 'email' => $testEmail]],
+            'document_name'        => 'contrato-prueba.pdf',
+            'google_response'      => $result['raw'] ?? $result,
+        ]);
+
+        return response()->json([
+            'ok'      => true,
+            'file_id' => $fileId,
+            'result'  => $result,
+        ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'ok'    => false,
+            'error' => $e->getMessage(),
+            'hint'  => 'Verifica que service-account.json existe, GOOGLE_WORKSPACE_ADMIN_EMAIL está configurado y el SA tiene domain-wide delegation.',
+        ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+});
+

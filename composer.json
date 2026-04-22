@@ -9,6 +9,7 @@
         "php": "^8.2",
         "dompdf/dompdf": "^3.0",
         "endroid/qr-code": "^6.0",
+        "google/apiclient": "^2.15",
         "intervention/image": "^3.0",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
