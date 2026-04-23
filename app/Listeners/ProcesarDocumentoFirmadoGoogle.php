@@ -3,7 +3,9 @@
 namespace App\Listeners;
 
 use App\Events\DocumentoFirmadoGoogle;
+use App\Services\ClientPortalService;
 use App\Services\GoogleDriveService;
+use App\Services\WhatsAppService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 
@@ -47,10 +49,47 @@ class ProcesarDocumentoFirmadoGoogle implements ShouldQueue
             ]);
         }
 
-        // TODO: conectar al CRM cuando sea necesario
-        // Ejemplo futuro:
-        //   $client = $request->contacto;
-        //   $client->activities()->create([...]);
-        //   Notification::send($client, new ContratoFirmadoNotification($request));
+        // Si es contrato de confidencialidad: crear acceso al portal del cliente
+        if ($request->tipo === 'confidencialidad' && $request->contacto) {
+            $client = $request->contacto;
+
+            // Solo crear si aún no tiene acceso
+            if (!$client->user_id) {
+                try {
+                    $portalService = app(ClientPortalService::class);
+                    $result = $portalService->createPortalAccount($client);
+
+                    Log::info('DocumentoFirmadoGoogle: portal creado tras firma', [
+                        'client_id' => $client->id,
+                        'email'     => $client->email,
+                    ]);
+
+                    // Enviar WhatsApp con credenciales
+                    $phone = $client->whatsapp ?? $client->phone ?? null;
+                    if ($phone && isset($result['password'])) {
+                        try {
+                            app(WhatsAppService::class)->send(
+                                $phone,
+                                "¡Hola {$client->name}! Firmaste tu contrato de confidencialidad. " .
+                                'Ya tienes acceso a tu portal de valuación en: ' . url('/portal') .
+                                ' — Usuario: ' . $client->email .
+                                ' — Contraseña: ' . $result['password']
+                            );
+                        } catch (\Throwable $e) {
+                            Log::warning('DocumentoFirmadoGoogle: no se pudo enviar WhatsApp de bienvenida', [
+                                'client_id' => $client->id,
+                                'error'     => $e->getMessage(),
+                            ]);
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    Log::error('DocumentoFirmadoGoogle: error al crear portal', [
+                        'client_id' => $client->id,
+                        'error'     => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
     }
 }
+

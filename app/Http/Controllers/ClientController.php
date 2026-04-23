@@ -194,7 +194,12 @@ class ClientController extends Controller
 
         $timeline = $timeline->sortByDesc('date')->values();
 
-        return view('clients.show', compact('client', 'emails', 'interactions', 'emailsSent', 'emailsOpened', 'timeline', 'ownedProperties', 'dealProperties', 'emailProperties'));
+        $confidencialidadRequest = \App\Models\GoogleSignatureRequest::where('contacto_id', $client->id)
+            ->where('tipo', 'confidencialidad')
+            ->latest()
+            ->first();
+
+        return view('clients.show', compact('client', 'emails', 'interactions', 'emailsSent', 'emailsOpened', 'timeline', 'ownedProperties', 'dealProperties', 'emailProperties', 'confidencialidadRequest'));
     }
 
     public function edit(string $id)

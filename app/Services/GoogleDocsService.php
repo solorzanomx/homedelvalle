@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Google\Client as GoogleClient;
 use Google\Service\Docs as GoogleDocs;
 use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile;
@@ -11,45 +10,22 @@ use Illuminate\Support\Facades\Log;
 /**
  * Genera documentos de Google Docs a partir de un template.
  *
- * Flujo:
- *  1. Se tiene un Google Doc template en Drive con placeholders: {{NOMBRE_CLIENTE}}, etc.
- *  2. El servicio copia el template a la carpeta de destino en Drive.
- *  3. Reemplaza todos los placeholders con los datos reales del cliente.
- *  4. Retorna el fileId del documento generado.
- *
- * PREREQUISITO MANUAL:
- *  - Crea el template en Google Docs (dentro de la Unidad Compartida HDV-Contratos
- *    o compartido con home-del-valle@tokyo-silicon-360922.iam.gserviceaccount.com)
- *  - Copia el ID del documento y ponlo en GOOGLE_DOCS_TEMPLATE_ID_CONFIDENCIALIDAD
- *  - Placeholders en el template deben estar en formato: {{NOMBRE_CLIENTE}}
+ * El template debe estar en la Unidad Compartida HDV-Contratos (accesible por el SA).
+ * Placeholders en el template: {{NOMBRE_CLIENTE}}, {{EMAIL_CLIENTE}}, etc.
  */
 class GoogleDocsService
 {
-    private GoogleClient $client;
-    private GoogleDocs   $docs;
-    private GoogleDrive  $drive;
+    private GoogleDocs  $docs;
+    private GoogleDrive $drive;
 
-    public function __construct()
+    public function __construct(GoogleDriveService $driveService)
     {
-        $this->client = $this->buildClient();
-        $this->docs   = new GoogleDocs($this->client);
-        $this->drive  = new GoogleDrive($this->client);
-    }
+        // Reutilizamos el cliente autenticado de GoogleDriveService (probado y funcional)
+        $client = $driveService->getDriveClient();
+        $client->addScope(GoogleDocs::DOCUMENTS);
 
-    // ── Auth ─────────────────────────────────────────────────────────────────
-
-    private function buildClient(): GoogleClient
-    {
-        $credentialsPath = base_path(config('services.google_drive.credentials_path'));
-
-        $client = new GoogleClient();
-        $client->setAuthConfig($credentialsPath);
-        $client->setScopes([
-            GoogleDrive::DRIVE,
-            GoogleDocs::DOCUMENTS,
-        ]);
-
-        return $client;
+        $this->docs  = new GoogleDocs($client);
+        $this->drive = new GoogleDrive($client);
     }
 
     // ── Template → Documento ─────────────────────────────────────────────────
@@ -142,7 +118,6 @@ class GoogleDocsService
 
     /**
      * Exporta el Google Doc como PDF y retorna el contenido binario.
-     * Útil para guardar una copia PDF localmente después de generado.
      */
     public function exportAsPdf(string $fileId): string
     {

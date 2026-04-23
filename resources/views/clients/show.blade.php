@@ -439,6 +439,32 @@
                     </div>
                 @else
                     <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">Sin acceso al portal</div>
+
+                    {{-- Contrato de confidencialidad --}}
+                    @if($confidencialidadRequest)
+                        @php
+                            $badgeColor = match($confidencialidadRequest->status) {
+                                'completed' => 'var(--success)',
+                                'declined'  => 'var(--danger)',
+                                default     => 'var(--warning)',
+                            };
+                            $badgeLabel = match($confidencialidadRequest->status) {
+                                'completed' => 'Firmado',
+                                'declined'  => 'Rechazado',
+                                default     => 'Pendiente de firma',
+                            };
+                        @endphp
+                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem;">
+                            <span style="width:8px; height:8px; border-radius:50%; background:{{ $badgeColor }};"></span>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">Confidencialidad: {{ $badgeLabel }}</span>
+                        </div>
+                    @else
+                        <form method="POST" action="{{ route('admin.clients.contrato-confidencialidad', $client) }}" style="margin-bottom:0.5rem;">
+                            @csrf
+                            <button class="btn btn-sm btn-outline" style="width:100%;">Enviar Contrato de Confidencialidad</button>
+                        </form>
+                    @endif
+
                     <form method="POST" action="{{ route('clients.create-portal', $client) }}" style="display:flex; gap:0.4rem;">
                         @csrf
                         <input type="password" name="password" class="form-input" placeholder="Contrasena (opc)" style="flex:1; font-size:0.82rem; padding:0.35rem 0.6rem;">

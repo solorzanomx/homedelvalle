@@ -12,6 +12,7 @@ class GoogleSignatureRequest extends Model
     protected $fillable = [
         'file_id',
         'signature_request_id',
+        'token',
         'tipo',
         'contacto_id',
         'status',

@@ -159,6 +159,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('clients/{client}/toggle-portal', [ClientController::class, 'togglePortalAccess'])->name('clients.toggle-portal');
     Route::delete('clients/{client}/delete-portal', [ClientController::class, 'deletePortalAccess'])->name('clients.delete-portal');
     Route::post('clients/{client}/reset-portal-password', [ClientController::class, 'resetPortalPassword'])->name('clients.reset-portal-password');
+    Route::post('clients/{client}/contrato-confidencialidad', [\App\Http\Controllers\ClientContratoController::class, 'enviarConfidencialidad'])->name('admin.clients.contrato-confidencialidad');
     Route::resource('brokers', BrokerController::class);
     Route::resource('broker-companies', BrokerCompanyController::class);
     Route::resource('referrers', ReferrerController::class);
@@ -535,10 +536,11 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
     Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
 });
 
+// ── Firma pública — estado del proceso de firma ──────────────────────────────
+Route::get('/firma/{token}', [\App\Http\Controllers\ContratoPublicoController::class, 'show'])
+    ->name('firma.show');
+
 // ── Test Google Docs Template (temporal — quitar en producción) ──────────────
-// Antes de probar: crea un Google Doc template en la Unidad Compartida HDV-Contratos,
-// ponle placeholders como {{NOMBRE_CLIENTE}}, {{FECHA}}, etc.
-// Copia su ID y ponlo en GOOGLE_DOCS_TEMPLATE_CONFIDENCIALIDAD en .env
 Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
     $templateId = config('services.google_drive.template_confidencialidad');
 
@@ -546,6 +548,27 @@ Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
         return response()->json([
             'ok'   => false,
             'hint' => 'Agrega GOOGLE_DOCS_TEMPLATE_CONFIDENCIALIDAD=<id_del_template> en .env',
+        ]);
+    }
+
+    // ── Diagnóstico: verificar que el SA puede ver el template ────────────
+    try {
+        $driveService = app(\App\Services\GoogleDriveService::class);
+        $driveClient  = $driveService->getDriveClient();
+        $driveApi     = new \Google\Service\Drive($driveClient);
+
+        $file = $driveApi->files->get($templateId, [
+            'supportsAllDrives' => true,
+            'fields'            => 'id,name,mimeType,parents',
+        ]);
+
+        $fileInfo = ['id' => $file->getId(), 'name' => $file->getName(), 'mime' => $file->getMimeType()];
+    } catch (\Throwable $e) {
+        return response()->json([
+            'ok'    => false,
+            'step'  => 'get_template',
+            'error' => $e->getMessage(),
+            'hint'  => 'El SA no puede ver el template. Verifica que esté en la Unidad Compartida donde el SA es miembro.',
         ]);
     }
 
@@ -566,9 +589,10 @@ Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
         );
 
         return response()->json([
-            'ok'       => true,
-            'file_id'  => $fileId,
-            'view_url' => $docs->viewUrl($fileId),
+            'ok'        => true,
+            'template'  => $fileInfo,
+            'file_id'   => $fileId,
+            'view_url'  => $docs->viewUrl($fileId),
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
     } catch (\Throwable $e) {
