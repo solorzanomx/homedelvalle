@@ -538,7 +538,7 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
 // ── Test Google eSignature (temporal — quitar en producción) ─────────────────
 // Edita el email de $testEmail antes de usar esta ruta.
 Route::middleware(['auth', 'admin'])->get('/test-google-signature', function () {
-    $testEmail = 'tu-email@ejemplo.com'; // ← CAMBIA ESTO antes de probar
+    $testEmail = 'alejandro@homedelvalle.mx';
 
     // Generar PDF dummy
     $dompdf = new \Dompdf\Dompdf();
