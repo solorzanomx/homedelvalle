@@ -69,10 +69,11 @@ class GoogleDriveService
         $file = $this->drive->files->create(
             $fileMetadata,
             [
-                'data'       => file_get_contents($localPdfPath),
-                'mimeType'   => 'application/pdf',
-                'uploadType' => 'multipart',
-                'fields'     => 'id,name,webViewLink',
+                'data'              => file_get_contents($localPdfPath),
+                'mimeType'          => 'application/pdf',
+                'uploadType'        => 'multipart',
+                'fields'            => 'id,name,webViewLink',
+                'supportsAllDrives' => true,
             ]
         );
 
@@ -99,7 +100,10 @@ class GoogleDriveService
         }
 
         try {
-            $response = $this->drive->files->get($fileId, ['alt' => 'media']);
+            $response = $this->drive->files->get($fileId, [
+                'alt'               => 'media',
+                'supportsAllDrives' => true,
+            ]);
             file_put_contents($destinationPath, $response->getBody()->getContents());
 
             Log::info('GoogleDrive: archivo descargado', [
@@ -144,8 +148,10 @@ class GoogleDriveService
     public function listFolders(): array
     {
         $results = $this->drive->files->listFiles([
-            'q'      => "mimeType='application/vnd.google-apps.folder' and trashed=false",
-            'fields' => 'files(id,name)',
+            'q'                         => "mimeType='application/vnd.google-apps.folder' and trashed=false",
+            'fields'                    => 'files(id,name)',
+            'includeItemsFromAllDrives' => true,
+            'supportsAllDrives'         => true,
         ]);
 
         return array_map(fn($f) => ['id' => $f->getId(), 'name' => $f->getName()],
