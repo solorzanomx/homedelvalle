@@ -69,14 +69,16 @@ return [
     ],
 
     'google_drive' => [
-        // Ruta al JSON del Service Account (relativa a la raíz del proyecto)
         'credentials_path'  => env('GOOGLE_APPLICATION_CREDENTIALS', 'storage/app/google/service-account.json'),
-        // ID de la carpeta de Drive donde se subirán los contratos
         'folder_id'         => env('GOOGLE_DRIVE_FOLDER_ID'),
-        // Email del admin de Workspace que el SA impersonará para eSignature
         'admin_email'       => env('GOOGLE_WORKSPACE_ADMIN_EMAIL'),
-        // Webhook secret para verificar notificaciones push de Drive
         'webhook_secret'    => env('GOOGLE_DRIVE_WEBHOOK_SECRET'),
+        // IDs de los templates de Google Docs en Drive
+        'template_confidencialidad' => env('GOOGLE_DOCS_TEMPLATE_CONFIDENCIALIDAD'),
+    ],
+
+    'google_maps' => [
+        'key' => env('GOOGLE_MAPS_KEY'),
     ],
 
 ];

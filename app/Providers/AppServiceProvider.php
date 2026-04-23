@@ -32,8 +32,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\LeadScoringService::class);
         $this->app->singleton(\App\Services\AutomationEngine::class);
         $this->app->singleton(\App\Services\AI\AIManager::class);
-        $this->app->singleton(\App\Services\GoogleDriveService::class);
-        $this->app->singleton(\App\Services\GoogleESignatureService::class);
+        $this->app->singleton(\App\Services\GoogleDriveService::class, fn() => new \App\Services\GoogleDriveService());
+        $this->app->singleton(\App\Services\GoogleESignatureService::class, fn($app) => new \App\Services\GoogleESignatureService($app->make(\App\Services\GoogleDriveService::class)));
+        $this->app->singleton(\App\Services\GoogleDocsService::class);
     }
 
     public function boot(): void
