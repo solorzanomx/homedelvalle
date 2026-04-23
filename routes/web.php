@@ -540,84 +540,46 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
 Route::get('/firma/{token}', [\App\Http\Controllers\ContratoPublicoController::class, 'show'])
     ->name('firma.show');
 
-// ── Test Google Docs Template (temporal — quitar en producción) ──────────────
+// ── Test contrato de confidencialidad — DomPDF + Drive upload ────────────────
 Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
-    $templateId = config('services.google_drive.template_confidencialidad');
-
-    if (!$templateId) {
-        return response()->json([
-            'ok'   => false,
-            'hint' => 'Agrega GOOGLE_DOCS_TEMPLATE_CONFIDENCIALIDAD=<id_del_template> en .env',
-        ]);
-    }
-
-    // ── Diagnóstico: listar archivos visibles para el SA en el Shared Drive ──
     try {
-        $driveService = app(\App\Services\GoogleDriveService::class);
-        $driveClient  = $driveService->getDriveClient();
-        $driveApi     = new \Google\Service\Drive($driveClient);
-
-        $sharedDriveId = '0AJnAtWjE68kvUk9PVA';
-
-        $list = $driveApi->files->listFiles([
-            'corpora'                   => 'drive',
-            'driveId'                   => $sharedDriveId,
-            'includeItemsFromAllDrives' => true,
-            'supportsAllDrives'         => true,
-            'fields'                    => 'files(id,name,mimeType)',
-            'pageSize'                  => 20,
+        $fakeClient = new \App\Models\Client([
+            'name'  => 'Juan Pérez García',
+            'email' => 'juan@ejemplo.com',
+            'phone' => '+52 55 1234 5678',
         ]);
+        $fakeClient->id = 0;
 
-        $visibleFiles = array_map(
-            fn($f) => ['id' => $f->getId(), 'name' => $f->getName(), 'mime' => $f->getMimeType()],
-            $list->getFiles()
-        );
+        $fecha   = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+        $empresa = config('app.name', 'Home del Valle');
 
-        // Intentar get directo del template
-        try {
-            $file     = $driveApi->files->get($templateId, ['supportsAllDrives' => true, 'fields' => 'id,name']);
-            $fileInfo = ['id' => $file->getId(), 'name' => $file->getName()];
-        } catch (\Throwable $e) {
-            $fileInfo = ['error' => $e->getMessage()];
-        }
+        // Generar HTML del contrato
+        $html = view('contratos.confidencialidad', compact('fakeClient', 'fecha', 'empresa'))
+            ->with('client', $fakeClient)
+            ->render();
+
+        // Generar PDF
+        $options = new \Dompdf\Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans');
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('letter', 'portrait');
+        $dompdf->render();
+
+        // Guardar temporalmente y subir a Drive
+        $tmpPath = storage_path('app/private/contratos/test-' . time() . '.pdf');
+        @mkdir(dirname($tmpPath), 0755, true);
+        file_put_contents($tmpPath, $dompdf->output());
+
+        $drive    = app(\App\Services\GoogleDriveService::class);
+        $fileId   = $drive->uploadPdf($tmpPath, 'Contrato-Test-' . now()->format('Ymd-His') . '.pdf');
+        @unlink($tmpPath);
 
         return response()->json([
-            'ok'             => false,
-            'step'           => 'list_drive',
-            'template_id'    => $templateId,
-            'template_get'   => $fileInfo,
-            'visible_files'  => $visibleFiles,
-            'count'          => count($visibleFiles),
-        ]);
-    } catch (\Throwable $e) {
-        return response()->json([
-            'ok'    => false,
-            'step'  => 'list_drive_error',
-            'error' => $e->getMessage(),
-        ]);
-    }
-
-    try {
-        /** @var \App\Services\GoogleDocsService $docs */
-        $docs = app(\App\Services\GoogleDocsService::class);
-
-        $fileId = $docs->createFromTemplate(
-            templateId:    $templateId,
-            documentName:  'Contrato Prueba — ' . now()->format('d/m/Y H:i'),
-            replacements:  [
-                '{{NOMBRE_CLIENTE}}' => 'Juan Pérez García',
-                '{{EMAIL_CLIENTE}}'  => 'juan@ejemplo.com',
-                '{{TELEFONO}}'       => '+52 55 1234 5678',
-                '{{FECHA}}'          => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
-                '{{EMPRESA}}'        => config('app.name', 'Home del Valle'),
-            ],
-        );
-
-        return response()->json([
-            'ok'        => true,
-            'template'  => $fileInfo,
-            'file_id'   => $fileId,
-            'view_url'  => $docs->viewUrl($fileId),
+            'ok'       => true,
+            'file_id'  => $fileId,
+            'drive_url' => "https://drive.google.com/file/d/{$fileId}/view",
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
     } catch (\Throwable $e) {
