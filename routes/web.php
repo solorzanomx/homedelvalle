@@ -551,24 +551,49 @@ Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
         ]);
     }
 
-    // ── Diagnóstico: verificar que el SA puede ver el template ────────────
+    // ── Diagnóstico: listar archivos visibles para el SA en el Shared Drive ──
     try {
         $driveService = app(\App\Services\GoogleDriveService::class);
         $driveClient  = $driveService->getDriveClient();
         $driveApi     = new \Google\Service\Drive($driveClient);
 
-        $file = $driveApi->files->get($templateId, [
-            'supportsAllDrives' => true,
-            'fields'            => 'id,name,mimeType,parents',
+        $sharedDriveId = '0AJnAtWjE68kvUk9PVA';
+
+        $list = $driveApi->files->listFiles([
+            'corpora'                   => 'drive',
+            'driveId'                   => $sharedDriveId,
+            'includeItemsFromAllDrives' => true,
+            'supportsAllDrives'         => true,
+            'fields'                    => 'files(id,name,mimeType)',
+            'pageSize'                  => 20,
         ]);
 
-        $fileInfo = ['id' => $file->getId(), 'name' => $file->getName(), 'mime' => $file->getMimeType()];
+        $visibleFiles = array_map(
+            fn($f) => ['id' => $f->getId(), 'name' => $f->getName(), 'mime' => $f->getMimeType()],
+            $list->getFiles()
+        );
+
+        // Intentar get directo del template
+        try {
+            $file     = $driveApi->files->get($templateId, ['supportsAllDrives' => true, 'fields' => 'id,name']);
+            $fileInfo = ['id' => $file->getId(), 'name' => $file->getName()];
+        } catch (\Throwable $e) {
+            $fileInfo = ['error' => $e->getMessage()];
+        }
+
+        return response()->json([
+            'ok'             => false,
+            'step'           => 'list_drive',
+            'template_id'    => $templateId,
+            'template_get'   => $fileInfo,
+            'visible_files'  => $visibleFiles,
+            'count'          => count($visibleFiles),
+        ]);
     } catch (\Throwable $e) {
         return response()->json([
             'ok'    => false,
-            'step'  => 'get_template',
+            'step'  => 'list_drive_error',
             'error' => $e->getMessage(),
-            'hint'  => 'El SA no puede ver el template. Verifica que esté en la Unidad Compartida donde el SA es miembro.',
         ]);
     }
 
