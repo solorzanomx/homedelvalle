@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Google\Client as GoogleClient;
+use Google\Service\Docs as GoogleDocs;
 use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile;
 use Illuminate\Support\Facades\Log;
@@ -34,7 +35,10 @@ class GoogleDriveService
 
         $client = new GoogleClient();
         $client->setAuthConfig($credentialsPath);
-        $client->setScopes([GoogleDrive::DRIVE]);
+        $client->setScopes([
+            GoogleDrive::DRIVE,
+            GoogleDocs::DOCUMENTS,
+        ]);
 
         // Domain-Wide Delegation: el SA actúa como el admin de Workspace
         // para usar su cuota de Drive. Requiere DWD autorizado en Workspace Admin.

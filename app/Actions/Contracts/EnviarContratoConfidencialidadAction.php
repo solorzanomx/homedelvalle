@@ -4,66 +4,54 @@ namespace App\Actions\Contracts;
 
 use App\Models\Client;
 use App\Models\GoogleSignatureRequest;
-use App\Services\GoogleDriveService;
+use App\Services\GoogleDocsService;
 use App\Services\GoogleESignatureService;
 use App\Services\WhatsAppService;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class EnviarContratoConfidencialidadAction
 {
     public function __construct(
-        private GoogleDriveService      $drive,
+        private GoogleDocsService       $docs,
         private GoogleESignatureService $eSignature,
         private WhatsAppService         $whatsapp,
     ) {}
 
     public function execute(Client $client): GoogleSignatureRequest
     {
-        $fecha        = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
-        $empresa      = config('app.name', 'Home del Valle');
+        $templateId   = config('services.google_drive.template_confidencialidad');
+        $folderId     = config('services.google_drive.folder_id');
         $documentName = 'Confidencialidad — ' . $client->name . ' — ' . now()->format('d/m/Y');
 
-        // 1. Generar PDF con DomPDF desde blade template
-        $html = view('contratos.confidencialidad', compact('client', 'fecha', 'empresa'))->render();
+        // 1. Copiar template en Drive y reemplazar placeholders
+        $fileId = $this->docs->createFromTemplate(
+            templateId:   $templateId,
+            documentName: $documentName,
+            replacements: [
+                '{{NOMBRE_CLIENTE}}' => $client->name,
+                '{{EMAIL_CLIENTE}}'  => $client->email ?? '',
+                '{{TELEFONO}}'       => $client->phone ?? '',
+                '{{FECHA}}'          => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
+                '{{EMPRESA}}'        => config('app.name', 'Home del Valle'),
+            ],
+            folderId: $folderId,
+        );
 
-        $options = new Options();
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('defaultFont', 'DejaVu Sans');
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('letter', 'portrait');
-        $dompdf->render();
-
-        // 2. Guardar PDF temporalmente
-        $tmpPath = storage_path('app/private/contratos/confidencialidad-' . $client->id . '-' . time() . '.pdf');
-        @mkdir(dirname($tmpPath), 0755, true);
-        file_put_contents($tmpPath, $dompdf->output());
-
-        // 3. Subir a Google Drive
-        $fileName = 'Confidencialidad-' . Str::slug($client->name) . '-' . now()->format('Ymd') . '.pdf';
-        $fileId   = $this->drive->uploadPdf($tmpPath, $fileName);
-
-        @unlink($tmpPath);
-
-        // 4. Crear registro en BD
+        // 2. Crear registro en BD
         $record = GoogleSignatureRequest::create([
-            'file_id'         => $fileId,
-            'token'           => Str::uuid()->toString(),
-            'tipo'            => 'confidencialidad',
-            'contacto_id'     => $client->id,
-            'status'          => 'pending',
-            'document_name'   => $documentName,
-            'local_pdf_path'  => null,
-            'signers'         => [
+            'file_id'       => $fileId,
+            'token'         => Str::uuid()->toString(),
+            'tipo'          => 'confidencialidad',
+            'contacto_id'   => $client->id,
+            'status'        => 'pending',
+            'document_name' => $documentName,
+            'signers'       => [
                 ['name' => $client->name, 'email' => $client->email, 'role' => 'signer'],
             ],
         ]);
 
-        // 5. Enviar solicitud de firma electrónica
+        // 3. Enviar solicitud de firma electrónica
         try {
             $result = $this->eSignature->requestSignature($fileId, $record->signers);
 
@@ -77,10 +65,9 @@ class EnviarContratoConfidencialidadAction
                 'file_id'   => $fileId,
                 'error'     => $e->getMessage(),
             ]);
-            // No lanzamos excepción — el PDF ya está en Drive, puede reenviarse
         }
 
-        // 6. Notificar al cliente por WhatsApp
+        // 4. Notificar al cliente por WhatsApp
         $phone = $client->whatsapp ?? $client->phone ?? null;
         if ($phone) {
             try {

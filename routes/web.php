@@ -540,46 +540,28 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
 Route::get('/firma/{token}', [\App\Http\Controllers\ContratoPublicoController::class, 'show'])
     ->name('firma.show');
 
-// ── Test contrato de confidencialidad — DomPDF + Drive upload ────────────────
+// ── Test contrato de confidencialidad — Google Docs template ─────────────────
 Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
     try {
-        $fakeClient = new \App\Models\Client([
-            'name'  => 'Juan Pérez García',
-            'email' => 'juan@ejemplo.com',
-            'phone' => '+52 55 1234 5678',
-        ]);
-        $fakeClient->id = 0;
+        $templateId = config('services.google_drive.template_confidencialidad');
+        $docs       = app(\App\Services\GoogleDocsService::class);
 
-        $fecha   = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
-        $empresa = config('app.name', 'Home del Valle');
-
-        // Generar HTML del contrato
-        $html = view('contratos.confidencialidad', compact('fakeClient', 'fecha', 'empresa'))
-            ->with('client', $fakeClient)
-            ->render();
-
-        // Generar PDF
-        $options = new \Dompdf\Options();
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('defaultFont', 'DejaVu Sans');
-        $dompdf = new \Dompdf\Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('letter', 'portrait');
-        $dompdf->render();
-
-        // Guardar temporalmente y subir a Drive
-        $tmpPath = storage_path('app/private/contratos/test-' . time() . '.pdf');
-        @mkdir(dirname($tmpPath), 0755, true);
-        file_put_contents($tmpPath, $dompdf->output());
-
-        $drive    = app(\App\Services\GoogleDriveService::class);
-        $fileId   = $drive->uploadPdf($tmpPath, 'Contrato-Test-' . now()->format('Ymd-His') . '.pdf');
-        @unlink($tmpPath);
+        $fileId = $docs->createFromTemplate(
+            templateId:   $templateId,
+            documentName: 'Contrato Prueba — ' . now()->format('d/m/Y H:i'),
+            replacements: [
+                '{{NOMBRE_CLIENTE}}' => 'Juan Pérez García',
+                '{{EMAIL_CLIENTE}}'  => 'juan@ejemplo.com',
+                '{{TELEFONO}}'       => '+52 55 1234 5678',
+                '{{FECHA}}'          => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
+                '{{EMPRESA}}'        => config('app.name', 'Home del Valle'),
+            ],
+        );
 
         return response()->json([
             'ok'       => true,
             'file_id'  => $fileId,
-            'drive_url' => "https://drive.google.com/file/d/{$fileId}/view",
+            'view_url' => $docs->viewUrl($fileId),
         ], 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
     } catch (\Throwable $e) {
