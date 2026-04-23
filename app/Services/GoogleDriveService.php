@@ -36,12 +36,8 @@ class GoogleDriveService
         $client->setAuthConfig($credentialsPath);
         $client->setScopes([GoogleDrive::DRIVE]);
 
-        // Domain-wide delegation: el SA sube archivos como el admin de Workspace
-        // para usar su cuota de Drive en lugar de la del SA (que es inexistente).
-        $adminEmail = config('services.google_drive.admin_email');
-        if ($adminEmail) {
-            $client->setSubject($adminEmail);
-        }
+        // Sin setSubject() — el SA accede directamente a la Unidad Compartida
+        // (requiere que Workspace Admin permita miembros externos en Shared Drives)
 
         return $client;
     }
