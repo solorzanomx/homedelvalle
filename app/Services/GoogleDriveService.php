@@ -39,12 +39,10 @@ class GoogleDriveService
             GoogleDrive::DRIVE_FILE,
         ]);
 
-        // Domain-wide delegation: impersonar al admin de Workspace
-        // (requerido para que el SA pueda operar en nombre de un usuario real)
-        $adminEmail = config('services.google_drive.admin_email');
-        if ($adminEmail) {
-            $client->setSubject($adminEmail);
-        }
+        // Nota: setSubject() (domain-wide delegation) NO se usa aquí.
+        // El SA accede a Drive directamente con sus propios permisos.
+        // Solo necesitas compartir la carpeta de Drive con:
+        //   home-del-valle@tokyo-silicon-360922.iam.gserviceaccount.com
 
         return $client;
     }
