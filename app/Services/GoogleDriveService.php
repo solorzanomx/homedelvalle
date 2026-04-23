@@ -36,8 +36,12 @@ class GoogleDriveService
         $client->setAuthConfig($credentialsPath);
         $client->setScopes([GoogleDrive::DRIVE]);
 
-        // Sin setSubject() — el SA accede directamente a la Unidad Compartida
-        // (requiere que Workspace Admin permita miembros externos en Shared Drives)
+        // Domain-Wide Delegation: el SA actúa como el admin de Workspace
+        // para usar su cuota de Drive. Requiere DWD autorizado en Workspace Admin.
+        $adminEmail = config('services.google_drive.admin_email');
+        if ($adminEmail) {
+            $client->setSubject($adminEmail);
+        }
 
         return $client;
     }
