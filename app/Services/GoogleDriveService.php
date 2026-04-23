@@ -34,10 +34,7 @@ class GoogleDriveService
 
         $client = new GoogleClient();
         $client->setAuthConfig($credentialsPath);
-        $client->setScopes([
-            GoogleDrive::DRIVE,
-            GoogleDrive::DRIVE_FILE,
-        ]);
+        $client->setScopes([GoogleDrive::DRIVE]);
 
         // Domain-wide delegation: el SA sube archivos como el admin de Workspace
         // para usar su cuota de Drive en lugar de la del SA (que es inexistente).
