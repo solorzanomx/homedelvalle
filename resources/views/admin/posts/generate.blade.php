@@ -186,6 +186,16 @@
                         </div>
                     </div>
 
+                    <div style="margin-bottom:1rem;">
+                        <label class="form-label">Categoría <span style="color:#ef4444;">*</span></label>
+                        <select name="category_id" class="form-input" required>
+                            <option value="">— Selecciona una categoría —</option>
+                            @foreach($categories as $cat)
+                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;padding:.7rem;" id="generateBtn">
                         <span id="generateLabel">&#9889; Generar artículo completo</span>
                     </button>
