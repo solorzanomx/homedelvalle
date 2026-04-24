@@ -7,8 +7,6 @@ $today    = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 $validity = now()->addDays(90)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
-// logoSrc      = white logo (for dark bg box in header)
-// logoSrcLight = dark logo (for light bg) — uses logo_path_dark if uploaded
 $siteSetting  = \App\Models\SiteSetting::first();
 $logoSrc      = null;
 $logoSrcLight = null;
@@ -27,14 +25,10 @@ if ($logoDarkPath && file_exists($logoDarkPath)) {
     $logoSrcLight = 'data:' . $mime2 . ';base64,' . base64_encode(file_get_contents($logoDarkPath));
 }
 
-// ─── Fonts (embebidas como base64 para funcionar sin internet) ────────────────
-$fontsDir  = resource_path('fonts');
-$fontInter   = $fontsDir . '/inter-latin.woff2';
-$fontPlay4   = $fontsDir . '/playfair-latin.woff2';
-$fontPlay7   = $fontsDir . '/playfair-700-latin.woff2';
-$b64Inter  = file_exists($fontInter) ? base64_encode(file_get_contents($fontInter)) : null;
-$b64Play4  = file_exists($fontPlay4) ? base64_encode(file_get_contents($fontPlay4)) : null;
-$b64Play7  = file_exists($fontPlay7) ? base64_encode(file_get_contents($fontPlay7)) : null;
+// ─── Fonts ────────────────────────────────────────────────────────────────────
+$fontsDir = resource_path('fonts');
+$fontInter  = $fontsDir . '/inter-latin.woff2';
+$b64Inter = file_exists($fontInter) ? base64_encode(file_get_contents($fontInter)) : null;
 
 // ─── Contact ──────────────────────────────────────────────────────────────────
 $contactPhone = $siteSetting?->contact_phone ?? $siteSetting?->whatsapp_number ?? '';
@@ -45,9 +39,9 @@ $colonia    = $valuation->colonia?->name ?? $valuation->input_colonia_raw ?? '�
 $zone       = $valuation->colonia?->zone?->name ?? 'Benito Juárez';
 $typeLabel  = $valuation->type_label;
 $ageLabel   = match($valuation->age_category) {
-    'new'  => 'Nuevo  ·  0 – 10 años',
-    'mid'  => 'Seminuevo  ·  10 – 30 años',
-    'old'  => 'Antiguo  ·  más de 30 años',
+    'new'  => 'Nuevo · 0–10 años',
+    'mid'  => 'Seminuevo · 10–30 años',
+    'old'  => 'Antiguo · +30 años',
     default => $valuation->age_category ?? '—',
 };
 
@@ -69,21 +63,52 @@ $mid  = (float)($valuation->total_value_mid  ?? 0);
 $high = (float)($valuation->total_value_high ?? 0);
 $sug  = (float)($valuation->suggested_list_price ?? 0);
 
-// Range bar percentages (30–100 scale so low never looks empty)
-$rangeMin = $low  * 0.97;
-$rangeMax = $high * 1.03;
+$rangeMin  = $low  * 0.97;
+$rangeMax  = $high * 1.03;
 $rangeSpan = $rangeMax - $rangeMin;
-$pLow  = $rangeSpan > 0 ? round(($low - $rangeMin) / $rangeSpan * 100) : 30;
-$pMid  = $rangeSpan > 0 ? round(($mid - $rangeMin) / $rangeSpan * 100) : 60;
-$pHigh = 100;
-$pSug  = $rangeSpan > 0 ? min(100, round(($sug  - $rangeMin) / $rangeSpan * 100)) : 75;
+$pLow  = $rangeSpan > 0 ? round(($low - $rangeMin) / $rangeSpan * 100) : 25;
+$pMid  = $rangeSpan > 0 ? round(($mid - $rangeMin) / $rangeSpan * 100) : 55;
+$pHigh = 96; // leave 4% margin so the last dot isn't clipped
+$pSug  = $rangeSpan > 0 ? min(94, round(($sug - $rangeMin) / $rangeSpan * 100)) : 72;
 
-$adjTotal = $valuation->adjustments->isNotEmpty()
+$adjTotal  = $valuation->adjustments->isNotEmpty()
     ? round((($valuation->adjusted_price_m2 - $valuation->base_price_m2) / $valuation->base_price_m2) * 100, 1)
     : 0;
-
 $condLabel   = $valuation->condition_label;
 $confidLabel = ['high'=>'Alta','medium'=>'Media','low'=>'Baja'][$valuation->confidence] ?? '—';
+
+// ─── Mapa estático ────────────────────────────────────────────────────────────
+$mapKey    = config('services.google_maps.key');
+$mapCenter = urlencode($colonia . ', Benito Juárez, Ciudad de México, Mexico');
+$mapUrl    = $mapKey
+    ? "https://maps.googleapis.com/maps/api/staticmap?center={$mapCenter}&zoom=15&size=560x260&scale=2&maptype=roadmap"
+      . "&style=feature:all|element:geometry|color:0xf2f2f2"
+      . "&style=feature:road|element:geometry|color:0xffffff"
+      . "&style=feature:road.arterial|element:geometry|color:0xe8e8e8"
+      . "&style=feature:poi|visibility:off"
+      . "&style=feature:transit|visibility:off"
+      . "&style=feature:water|element:geometry|color:0xd0e4f7"
+      . "&markers=color:0x2563A0|size:mid|{$mapCenter}"
+      . "&key={$mapKey}"
+    : null;
+
+// ─── Consideraciones clave ────────────────────────────────────────────────────
+$considerations = [];
+$diagTexts = [
+    'on_market'    => 'Precio alineado con el mercado de ' . $colonia . '. Alta competitividad desde el primer día de oferta.',
+    'above_market' => 'El inmueble supera el promedio de zona. Considerar un margen de negociación del 3–5%.',
+    'opportunity'  => 'Ventaja de precio frente al mercado activo. Alta probabilidad de cierre en el corto plazo.',
+];
+if (isset($diagTexts[$valuation->diagnosis])) $considerations[] = $diagTexts[$valuation->diagnosis];
+if ($valuation->confidence === 'low')
+    $considerations[] = 'Confianza estadística baja. Se recomienda validar con recorridos comparativos en la zona.';
+elseif ($valuation->confidence === 'high')
+    $considerations[] = 'Alta confianza en la muestra de mercado. Estimación sólida y respaldada.';
+if ($adjTotal < -15)
+    $considerations[] = 'Los ajustes negativos son significativos. El estado de conservación es el principal factor de descuento.';
+elseif ($adjTotal > 10)
+    $considerations[] = 'Atributos diferenciales elevan el valor por encima del precio base de la zona.';
+$considerations[] = 'Vigencia 90 días — vence el ' . $validity . '. No sustituye avalúo formal (INDAABIN / SHF).';
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -91,11 +116,7 @@ $confidLabel = ['high'=>'Alta','medium'=>'Media','low'=>'Baja'][$valuation->conf
 <meta charset="UTF-8">
 <title>{{ $folio }} — Opinión de Valor — {{ $colonia }}</title>
 <style>
-/* ═══ FONTS ═══════════════════════════════════════════════════════════════════
-   Inter      — sans-serif moderna (TODO: cuerpo, tablas, labels y números)
-   Playfair Display — cargada pero no usada (reservada para uso futuro)
-   Embebidas como base64 para funcionar sin conexión a internet
-══════════════════════════════════════════════════════════════════════════════ */
+/* ── FONT ─────────────────────────────────────────────────────────────────── */
 @if($b64Inter)
 @font-face {
     font-family: 'Inter';
@@ -106,653 +127,1073 @@ $confidLabel = ['high'=>'Alta','medium'=>'Media','low'=>'Baja'][$valuation->conf
 }
 @endif
 
-/* ═══ RESET ══════════════════════════════════════════════════════════════════ */
-* { margin:0; padding:0; box-sizing:border-box; }
-
-/* ═══ PAGE ═══════════════════════════════════════════════════════════════════ */
+/* ── RESET ────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 @page { size: A4 portrait; margin: 0; }
-html, body { font-family: 'Inter', Arial, Helvetica, sans-serif; font-size: 14px; color: #1A1A1A; background: #fff; }
-
-/* ═══ PALETA ══════════════════════════════════════════════════════════════════
-   #0C1A2E  navy (header bg, footer bg, price bar)
-   #1A3560  medium navy (identity bg)
-   #2563A0  brand blue (accents, bars, section headings)
-   #F4F6F8  cell bg      #E8ECF2  dividers      #5A6A7A  muted
-══════════════════════════════════════════════════════════════════════════════ */
-
-/* ═══ PAGE 1 ══════════════════════════════════════════════════════════════════ */
-.pg1 { width:100%; height:297mm; position:relative; overflow:hidden; page-break-after:always; }
-
-/* ── CABECERA ──────────────────────────────────────────────────────────────── */
-.header {
+html, body {
+    font-family: 'Inter', -apple-system, Arial, sans-serif;
+    font-size: 13px;
+    color: #111827;
     background: #fff;
-    padding: 8mm 14mm 6mm;
-    border-bottom: 3px solid #2563A0;
-    position: relative;
-}
-.header-inner { display:flex; justify-content:space-between; align-items:center; gap:8mm; }
-
-/* Logo side — dark box contains the white logo */
-.header-brand  { flex-shrink:0; }
-.logo-box {
-    background: #0C1A2E;
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 7px 10px; border-radius: 3px;
-}
-.header-logo      { height:30px; width:auto; display:block; }
-.header-tagline {
-    font-size:8.5px; color:#5A6A7A; text-transform:uppercase;
-    letter-spacing:1.2px; line-height:1.7; margin-top:6px; font-weight:500;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Center — document identity */
-.header-center  { flex:1; text-align:center; }
-.header-doc-type { font-size:9px; text-transform:uppercase; letter-spacing:3.5px; color:#9CA3AF; margin-bottom:4px; font-weight:500; }
-.header-title    { font-size:21px; font-weight:700; color:#0C1A2E; letter-spacing:-0.3px; line-height:1.2; }
-.header-subtitle { font-size:11px; color:#6B7280; margin-top:5px; line-height:1.5; }
+/* ── PALETA ──────────────────────────────────────────────────────────────────
+   #0C1A2E  navy — footer bg, títulos primarios
+   #1D4ED8  azul vibrante — acento primario, precio sugerido
+   #2563A0  azul medio — labels, barras, borders
+   #3B82F6  azul claro — fills secundarios
+   #EFF6FF  azul 50 — fondos de sección acento
+   #F9FAFB  gris 50 — fondos alternos
+   #E5E7EB  gris 200 — divisores
+   #6B7280  gris 500 — texto secundario
+   #111827  gris 900 — texto principal
+────────────────────────────────────────────────────────────────────────────── */
 
-/* Right — folio */
-.header-meta         { text-align:right; flex-shrink:0; }
-.header-folio-label  { font-size:8.5px; color:#9CA3AF; text-transform:uppercase; letter-spacing:1.5px; }
-.header-folio        { font-size:15px; font-weight:700; color:#0C1A2E; margin-top:2px; }
-.header-date         { font-size:10px; color:#6B7280; margin-top:3px; }
+/* ── LAYOUT DE PÁGINA (CSS Grid) ─────────────────────────────────────────── */
+.page {
+    width: 100%;
+    height: 297mm;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    background: #fff;
+    overflow: hidden;
+}
+.page-break { break-after: page; page-break-after: always; }
 
-/* ── HERO PRECIO ───────────────────────────────────────────────────────────── */
-.price-hero {
-    background: linear-gradient(135deg, #0F2341 0%, #1A3560 60%, #1E4080 100%);
-    padding: 9mm 14mm 8mm;
-    display:flex; align-items:center; justify-content:space-between; gap:8mm;
-    border-top: 1px solid rgba(255,255,255,.06);
+/* ── HEADER PRINCIPAL ─────────────────────────────────────────────────────── */
+.hd {
+    padding: 18px 48px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    border-bottom: 2px solid #1D4ED8;
 }
-.price-eyebrow { font-size:9.5px; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:2.5px; margin-bottom:8px; font-weight:500; }
-.price-amount  {
-    font-family: 'Inter', Arial, sans-serif;
-    font-size:38px; font-weight:500; color:#fff;
-    line-height:1; letter-spacing:-1px;
+.hd-logo { flex-shrink: 0; }
+.hd-logo img { height: 34px; width: auto; display: block; }
+.hd-logo-txt { font-size: 14px; font-weight: 800; color: #0C1A2E; letter-spacing: -0.3px; }
+.hd-logo-sub { font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF; margin-top: 4px; }
+.hd-center { flex: 1; text-align: center; }
+.hd-eyebrow { font-size: 8px; text-transform: uppercase; letter-spacing: 4.5px; color: #9CA3AF; font-weight: 600; margin-bottom: 3px; }
+.hd-title { font-size: 17px; font-weight: 800; color: #0C1A2E; letter-spacing: -0.4px; line-height: 1.2; }
+.hd-right { text-align: right; flex-shrink: 0; }
+.hd-folio-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF; }
+.hd-folio { font-size: 14px; font-weight: 800; color: #0C1A2E; margin-top: 1px; font-feature-settings: "tnum"; }
+.hd-date { font-size: 10px; color: #6B7280; margin-top: 3px; }
+
+/* ── MINI HEADER (págs 2 y 3) ────────────────────────────────────────────── */
+.mhd {
+    padding: 12px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #1D4ED8;
+    background: #F9FAFB;
 }
-.price-currency { font-size:17px; font-weight:400; color:rgba(255,255,255,.5); vertical-align:top; line-height:38px; margin-right:1px; }
-.price-sub { font-size:12px; color:rgba(255,255,255,.45); margin-top:8px; font-weight:400; letter-spacing:0.1px; }
-.price-right { text-align:right; flex-shrink:0; }
+.mhd-logo img { height: 22px; width: auto; display: block; }
+.mhd-logo-txt { font-size: 12px; font-weight: 800; color: #0C1A2E; }
+.mhd-right { text-align: right; }
+.mhd-folio { font-size: 8px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.5px; }
+.mhd-section { font-size: 10px; font-weight: 700; color: #1D4ED8; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+
+/* ── BODY WRAPPER ─────────────────────────────────────────────────────────── */
+.body { overflow: hidden; }
+
+/* ── PROPERTY BAND ────────────────────────────────────────────────────────── */
+.prop-band {
+    background: #F9FAFB;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 14px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+.prop-address {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0C1A2E;
+    letter-spacing: -0.3px;
+    margin-bottom: 7px;
+    line-height: 1.25;
+}
+.prop-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.prop-chip {
+    font-size: 10px;
+    font-weight: 600;
+    color: #374151;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 2px;
+    padding: 2px 8px;
+    white-space: nowrap;
+}
+.prop-chip-light { color: #6B7280; background: transparent; border-color: transparent; padding-left: 0; }
 .diag-badge {
-    display:inline-block; padding:5px 16px; border-radius:2px;
-    font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px;
-    background:{{ $diagBg }}; color:{{ $diagColor }}; margin-bottom:14px;
+    display: inline-block;
+    padding: 5px 14px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: 1px solid {{ $diagBorder }};
+    background: {{ $diagBg }};
+    color: {{ $diagColor }};
+    border-radius: 2px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
-.price-m2-val { font-size:21px; font-weight:600; color:#fff; font-family:'Inter',Arial,sans-serif; letter-spacing:-0.3px; }
-.price-m2-lbl { font-size:9.5px; color:rgba(255,255,255,.4); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
 
-/* ── STATS BAR ────────────────────────────────────────────────────────────── */
-.stats-bar { display:flex; background:#fff; border-bottom:1px solid #E8ECF2; }
-.stat-cell {
-    flex:1; text-align:center; padding:10px 6px 9px;
-    border-right:1px solid #E8ECF2; border-top:3px solid #2563A0;
+/* ── PRICE HERO ───────────────────────────────────────────────────────────── */
+.price-section {
+    padding: 22px 48px 18px;
+    border-bottom: 1px solid #E5E7EB;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
 }
-.stat-cell:last-child { border-right:none; }
-.stat-v {
-    display:block;
-    font-family:'Inter', Arial, sans-serif;
-    font-size:17px; font-weight:600; color:#0C1A2E; line-height:1; letter-spacing:-0.3px;
+.price-left { flex: 1; min-width: 0; }
+.price-eyebrow {
+    font-size: 8.5px;
+    text-transform: uppercase;
+    letter-spacing: 3.5px;
+    color: #1D4ED8;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
-.stat-v-sm { font-size:13px; }
-.stat-l { display:block; font-size:8.5px; color:#9CA3AF; text-transform:uppercase; letter-spacing:.8px; margin-top:5px; font-weight:600; }
-
-/* ── RANGO DE VALOR ────────────────────────────────────────────────────────── */
-.range-section { padding:7mm 14mm 6mm; background:#fff; border-bottom:1px solid #E8ECF2; }
-.range-title { font-size:11px; font-weight:700; color:#2563A0; text-transform:uppercase; letter-spacing:2px; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid #E8ECF2; }
-.range-row   { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
-.range-row:last-child { margin-bottom:0; }
-.range-lbl   { font-size:11px; color:#5A6A7A; font-weight:600; width:90px; flex-shrink:0; }
-.range-track { flex:1; height:7px; background:#EFF3F8; border-radius:1px; }
-.range-fill  { height:7px; border-radius:1px; background:#2563A0; }
-.range-fill-dark { background:#0C1A2E; }
-.range-val   { font-size:12px; font-weight:600; color:#0C1A2E; width:95px; text-align:right; flex-shrink:0; }
-.range-val-accent { color:#2563A0; font-size:13px; font-weight:700; }
-.range-divider { border:none; border-top:1px dashed #CBD5E1; margin:6px 0; }
-
-/* ── DOS COLUMNAS: INMUEBLE + AJUSTES ──────────────────────────────────────── */
-.two-col { display:flex; background:#fff; }
-.col-left  { flex:1; padding:7mm 7mm 7mm 14mm; border-right:1px solid #E8ECF2; }
-.col-right { width:90mm; padding:7mm 14mm 7mm 7mm; }
-
-.sec-label { font-size:11px; font-weight:700; color:#2563A0; text-transform:uppercase; letter-spacing:2px; padding-bottom:5px; border-bottom:1px solid #E8ECF2; margin-bottom:9px; }
-
-/* Specs grid */
-.spec-grid { width:100%; border-collapse:collapse; }
-.spec-grid td { padding:4px 0; border-bottom:1px solid #F4F6F8; vertical-align:middle; font-size:12px; }
-.spec-grid td:first-child { color:#5A6A7A; font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; width:50%; }
-.spec-grid td:last-child  { font-weight:700; color:#0C1A2E; text-align:right; }
-
-/* Compact waterfall */
-.wf-compact { width:100%; border-collapse:collapse; }
-.wf-compact td { padding:4px 0; border-bottom:1px solid #F4F6F8; vertical-align:middle; font-size:12px; }
-.wf-compact td:first-child { color:#5A6A7A; font-size:11px; width:55%; }
-.wf-compact td:last-child  { font-weight:700; color:#0C1A2E; text-align:right; }
-.wf-base-row td { font-weight:700; background:#F4F6F8; padding:4px 5px; }
-.wf-total-row td { font-weight:700; background:#EFF6FF; padding:5px 5px; color:#1E3A8A; border-top:1.5px solid #BFDBFE; border-bottom:none; }
-.pct-pos { color:#15803D; }
-.pct-neg { color:#DC2626; }
-
-/* ── FOOTER STRIP PG1 ──────────────────────────────────────────────────────── */
-.pg1-footer {
-    position:absolute; bottom:0; left:0; right:0;
-    background:#0C1A2E; padding:5px 14mm;
-    display:flex; justify-content:space-between; align-items:center;
+.price-num {
+    font-size: 56px;
+    font-weight: 900;
+    color: #0C1A2E;
+    letter-spacing: -3.5px;
+    line-height: 1;
+    font-feature-settings: "tnum";
+    white-space: nowrap;
 }
-.pg1-footer-left  { font-size:9px; color:rgba(255,255,255,.35); text-transform:uppercase; letter-spacing:2px; }
-.pg1-footer-right { font-size:9px; color:rgba(255,255,255,.35); }
-
-/* ═══ PAGE 2 ══════════════════════════════════════════════════════════════════ */
-.pg2 { width:100%; height:297mm; position:relative; overflow:hidden; }
-.pg2-body { padding:10mm 14mm 0; }
-
-/* ── MINI HEADER PG2 ───────────────────────────────────────────────────────── */
-.mini-header {
-    display:flex; justify-content:space-between; align-items:center;
-    padding-bottom:7px; border-bottom:2px solid #2563A0; margin-bottom:10px;
+.price-cur {
+    font-size: 22px;
+    font-weight: 400;
+    color: #9CA3AF;
+    vertical-align: top;
+    line-height: 56px;
+    margin-right: 2px;
 }
-.mini-logo-box { background:#0C1A2E; padding:4px 7px; border-radius:2px; display:inline-flex; align-items:center; }
-.mini-logo { height:18px; width:auto; display:block; }
-.mini-brand { display:flex; align-items:center; gap:8px; }
-.mini-brand-name { font-size:11px; font-weight:700; color:#0C1A2E; }
-.mini-brand-sub  { font-size:8.5px; color:#9CA3AF; text-transform:uppercase; letter-spacing:1px; }
-.mini-right { text-align:right; }
-.mini-folio   { font-size:9px; color:#9CA3AF; text-transform:uppercase; letter-spacing:.8px; }
-.mini-section { font-size:10px; color:#2563A0; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
-
-/* ── WATERFALL DETALLADO ───────────────────────────────────────────────────── */
-.wf-table { width:100%; border-collapse:collapse; font-size:12px; }
-.wf-table th {
-    background:#F4F6F8; padding:5px 8px;
-    font-size:9px; text-transform:uppercase; letter-spacing:1px; color:#9CA3AF;
-    border-bottom:1px solid #E8ECF2; font-weight:700; text-align:left;
+.price-mxn {
+    font-size: 11px;
+    font-weight: 500;
+    color: #9CA3AF;
+    letter-spacing: 1px;
+    margin-left: 8px;
+    vertical-align: middle;
 }
-.wf-table th:nth-child(3),.wf-table th:nth-child(4),.wf-table th:nth-child(5) { text-align:right; }
-.wf-table td { padding:5px 8px; border-bottom:1px solid #F4F6F8; vertical-align:middle; }
-.wf-table td:nth-child(3),.wf-table td:nth-child(4),.wf-table td:nth-child(5) { text-align:right; font-weight:700; }
-.wf-table .row-base  td { background:#F8FAFC; font-weight:700; }
-.wf-table .row-total td { background:#EFF6FF; font-weight:700; border-top:1.5px solid #BFDBFE; }
-.wf-bar-wrap { width:70px; }
-.wf-bar { height:5px; border-radius:2px; }
-.wf-bar-pos  { background:#10B981; }
-.wf-bar-neg  { background:#EF4444; }
-.wf-bar-zero { background:#E5E7EB; width:100%!important; }
-.wf-sub { font-size:10px; color:#9CA3AF; margin-top:2px; }
-
-/* ── AI NARRATIVE ──────────────────────────────────────────────────────────── */
-.narr-body { font-size:13px; color:#374151; line-height:1.75; }
-.narr-two  { display:flex; gap:8px; margin-top:9px; }
-.narr-box  { flex:1; padding:10px 12px; font-size:12px; line-height:1.7; }
-.narr-box-green { background:#F0FDF4; border:1px solid #BBF7D0; color:#14532D; }
-.narr-box-red   { background:#FEF2F2; border:1px solid #FECACA; color:#7F1D1D; }
-.narr-box-blue  { background:#EFF6FF; border:1px solid #BFDBFE; color:#1E3A8A; font-size:12.5px; margin-top:9px; padding:11px 13px; }
-.narr-eyebrow { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
-.narr-eyebrow-green { color:#15803D; }
-.narr-eyebrow-red   { color:#DC2626; }
-.narr-eyebrow-blue  { color:#2563A0; }
-
-/* ── FACTORES CLAVE ────────────────────────────────────────────────────────── */
-.pill { display:inline-block; background:#EFF6FF; border:1px solid #BFDBFE; padding:3px 11px; font-size:10px; color:#1E3A8A; font-weight:600; margin:2px 3px 2px 0; border-radius:2px; }
-
-/* ── CARACTERÍSTICAS ───────────────────────────────────────────────────────── */
-.char-row { padding:4.5px 0; border-bottom:1px solid #F4F6F8; display:flex; justify-content:space-between; align-items:center; font-size:12px; }
-.char-row:last-child { border-bottom:none; }
-.char-k { color:#9CA3AF; font-size:10px; text-transform:uppercase; letter-spacing:.4px; font-weight:700; }
-.char-v { font-weight:700; color:#0C1A2E; }
-
-/* ── CONTACTO ──────────────────────────────────────────────────────────────── */
-.contact-row { display:flex; gap:8mm; margin-top:10px; padding-top:10px; border-top:1px solid #E8ECF2; }
-.contact-item { display:flex; flex-direction:column; gap:2px; }
-.contact-k { font-size:9px; color:#9CA3AF; text-transform:uppercase; letter-spacing:.8px; font-weight:700; }
-.contact-v { font-size:12px; color:#0C1A2E; font-weight:600; }
-
-/* ── FOOTER PG2 ────────────────────────────────────────────────────────────── */
-.pg2-footer {
-    position:absolute; bottom:0; left:0; right:0;
-    background:#0C1A2E; border-top:3px solid #2563A0;
-    padding:7px 14mm;
+.price-sub {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6B7280;
+    line-height: 1.4;
 }
-.footer-brand { font-size:9.5px; color:rgba(255,255,255,.75); font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:3px; }
-.footer-text  { font-size:8.5px; color:rgba(255,255,255,.35); line-height:1.65; }
-.footer-copy  { font-size:8px; color:rgba(255,255,255,.22); margin-top:4px; text-align:center; }
 
-/* ── RULE ───────────────────────────────────────────────────────────────────── */
-.rule { border:none; border-top:1px solid #E8ECF2; margin:9px 0; }
+/* ── KPI CARDS ────────────────────────────────────────────────────────────── */
+.kpi-row {
+    display: flex;
+    gap: 0;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.kpi {
+    padding: 10px 16px;
+    border-right: 1px solid #E5E7EB;
+    text-align: center;
+    min-width: 88px;
+}
+.kpi:last-child { border-right: none; }
+.kpi:first-child { border-left: 3px solid #1D4ED8; }
+.kpi-v {
+    display: block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0C1A2E;
+    letter-spacing: -0.5px;
+    font-feature-settings: "tnum";
+    line-height: 1.1;
+}
+.kpi-v-pos { color: #15803D; }
+.kpi-v-neg { color: #DC2626; }
+.kpi-l {
+    display: block;
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9CA3AF;
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* ── RANGE VISUALIZATION ──────────────────────────────────────────────────── */
+.range-section {
+    padding: 20px 48px 16px;
+    border-bottom: 1px solid #E5E7EB;
+}
+.range-eyebrow {
+    font-size: 8.5px;
+    text-transform: uppercase;
+    letter-spacing: 3.5px;
+    color: #1D4ED8;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+.rv {
+    position: relative;
+    margin: 0 8px;
+}
+.rv-track {
+    position: relative;
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 3px;
+    margin: 28px 0 32px;
+}
+.rv-fill {
+    position: absolute;
+    top: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #BFDBFE, #1D4ED8);
+    border-radius: 3px;
+    opacity: 0.5;
+}
+/* dots on track */
+.rv-dot {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #9CA3AF;
+    z-index: 2;
+}
+.rv-dot-accent {
+    width: 16px;
+    height: 16px;
+    background: #1D4ED8;
+    border: 3px solid #fff;
+    box-shadow: 0 0 0 2px #1D4ED8;
+}
+/* labels above track */
+.rv-lbl-top {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9CA3AF;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.rv-lbl-top-accent {
+    color: #1D4ED8;
+    font-weight: 700;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+}
+/* prices below track */
+.rv-price-bot {
+    position: absolute;
+    top: calc(100% + 10px);
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 700;
+    color: #374151;
+    white-space: nowrap;
+    font-feature-settings: "tnum";
+}
+.rv-price-bot-accent {
+    font-size: 13px;
+    font-weight: 800;
+    color: #1D4ED8;
+}
+
+/* ── ZONA / MAPA + CONSIDERACIONES ───────────────────────────────────────── */
+.zone-split {
+    display: flex;
+    gap: 0;
+    margin: 0;
+    flex: 1;
+    min-height: 0;
+}
+.zone-map-wrap {
+    flex: 1;
+    border-right: 1px solid #E5E7EB;
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+}
+.zone-map-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.zone-placeholder {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #F9FAFB;
+    background-image:
+        linear-gradient(rgba(29,78,216,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29,78,216,.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    padding: 20px;
+    text-align: center;
+}
+.zone-placeholder-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #1D4ED8;
+    margin: 0 auto 10px;
+    box-shadow: 0 0 0 5px rgba(29,78,216,0.12);
+}
+.zone-placeholder-name { font-size: 15px; font-weight: 800; color: #0C1A2E; margin-bottom: 4px; }
+.zone-placeholder-sub  { font-size: 9px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.2px; }
+
+.zone-notes {
+    width: 42%;
+    padding: 18px 24px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.zone-notes-title {
+    font-size: 8.5px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #1D4ED8;
+    font-weight: 700;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E5E7EB;
+    margin-bottom: 12px;
+}
+.zone-note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+.zone-note:last-child { margin-bottom: 0; }
+.zone-note-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #1D4ED8;
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+.zone-note-txt { font-size: 11.5px; color: #374151; line-height: 1.6; }
+
+/* ── FOOTER PÁGINA 1 ─────────────────────────────────────────────────────── */
+.ft {
+    background: #0C1A2E;
+    padding: 8px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid #1D4ED8;
+}
+.ft-l { font-size: 8.5px; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: 2px; }
+.ft-c { font-size: 8.5px; color: rgba(255,255,255,.55); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
+.ft-r { font-size: 8.5px; color: rgba(255,255,255,.3); text-align: right; }
+
+/* ── FOOTER PÁGS 2 y 3 ───────────────────────────────────────────────────── */
+.ft2 {
+    background: #0C1A2E;
+    padding: 7px 48px;
+    border-top: 2px solid #1D4ED8;
+}
+.ft2-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.ft2-brand { font-size: 8.5px; color: rgba(255,255,255,.55); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+.ft2-page  { font-size: 8px; color: rgba(255,255,255,.3); }
+.ft2-legal { font-size: 7.5px; color: rgba(255,255,255,.22); line-height: 1.6; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PÁGINA 2 — Análisis técnico
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.p2-body { padding: 18px 48px 14px; overflow: hidden; }
+
+/* sección label genérico */
+.sec-lbl {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 3.5px;
+    color: #1D4ED8;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* dos columnas */
+.two-col { display: flex; gap: 28px; margin-bottom: 16px; }
+.col-left  { flex: 1; min-width: 0; }
+.col-right { width: 38%; flex-shrink: 0; }
+.col-hd {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #1D4ED8;
+    font-weight: 700;
+    padding-bottom: 7px;
+    border-bottom: 2px solid #1D4ED8;
+    margin-bottom: 8px;
+}
+
+/* tabla de especificaciones */
+.spec-tbl { width: 100%; border-collapse: collapse; }
+.spec-tbl td {
+    padding: 4px 0;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 11.5px;
+    vertical-align: middle;
+}
+.spec-tbl td:first-child {
+    color: #6B7280;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-weight: 600;
+    width: 46%;
+}
+.spec-tbl td:last-child { font-weight: 700; color: #0C1A2E; text-align: right; }
+
+/* waterfall compacto (col derecha) */
+.wfc { width: 100%; border-collapse: collapse; }
+.wfc td {
+    padding: 4px 0;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 11.5px;
+    vertical-align: middle;
+}
+.wfc td:first-child { color: #6B7280; width: 56%; font-size: 10.5px; }
+.wfc td:last-child  { font-weight: 700; color: #0C1A2E; text-align: right; }
+.wfc .r-base td { background: #F9FAFB; font-weight: 700; padding: 4px 6px; }
+.wfc .r-total td { background: #EFF6FF; font-weight: 800; padding: 5px 6px; color: #1D4ED8; border-top: 1.5px solid #BFDBFE; border-bottom: none; }
+
+/* total box */
+.total-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid #E5E7EB;
+    border-left: 3px solid #1D4ED8;
+    background: #F9FAFB;
+    border-radius: 0 2px 2px 0;
+}
+.total-box-lbl  { font-size: 7.5px; color: #6B7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
+.total-box-amt  { font-size: 22px; font-weight: 900; color: #0C1A2E; letter-spacing: -1px; font-feature-settings: "tnum"; line-height: 1.1; }
+.total-box-rng  { font-size: 10px; color: #6B7280; margin-top: 3px; }
+
+/* nota validez */
+.valid-note {
+    margin-top: 10px;
+    padding: 7px 10px;
+    background: #FFFBEB;
+    border-left: 2px solid #F59E0B;
+    font-size: 9.5px;
+    color: #78350F;
+    line-height: 1.6;
+}
+
+/* waterfall detallado */
+.wf { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.wf th {
+    background: #0C1A2E;
+    color: rgba(255,255,255,.6);
+    padding: 6px 8px;
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700;
+    text-align: left;
+}
+.wf th:nth-child(n+3) { text-align: right; }
+.wf td {
+    padding: 4px 8px;
+    border-bottom: 1px solid #F3F4F6;
+    vertical-align: middle;
+}
+.wf td:nth-child(n+3) { text-align: right; font-weight: 700; }
+.wf .r-base td { background: #F9FAFB; font-weight: 700; }
+.wf .r-total td { background: #EFF6FF; font-weight: 800; border-top: 1.5px solid #BFDBFE; color: #0C1A2E; }
+.wf-bar-wrap { width: 66px; }
+.wf-bar { height: 5px; border-radius: 2px; }
+.wf-bar-pos { background: #15803D; }
+.wf-bar-neg { background: #DC2626; }
+.wf-bar-neu { background: #E5E7EB; width: 100% !important; }
+.wf-sub { font-size: 9px; color: #9CA3AF; margin-top: 1px; }
+.pct-pos { color: #15803D; }
+.pct-neg { color: #DC2626; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PÁGINA 3 — Análisis de mercado
+   ══════════════════════════════════════════════════════════════════════════ */
+.p3-body { padding: 18px 48px 16px; overflow: hidden; }
+
+.narr-lead { font-size: 13px; color: #374151; line-height: 1.8; margin-bottom: 14px; }
+
+.str-risk { display: flex; gap: 12px; margin-bottom: 14px; }
+.sr-card {
+    flex: 1;
+    padding: 12px 14px;
+    background: #F9FAFB;
+    border-top: 3px solid;
+    border-radius: 0 0 2px 2px;
+}
+.sr-card-pos { border-top-color: #1D4ED8; }
+.sr-card-neg { border-top-color: #6B7280; }
+.sr-eyebrow {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 7px;
+}
+.sr-eyebrow-pos { color: #1D4ED8; }
+.sr-eyebrow-neg { color: #6B7280; }
+.sr-txt { font-size: 12px; color: #374151; line-height: 1.75; }
+
+.rec-box {
+    padding: 14px 18px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-left: 4px solid #1D4ED8;
+    margin-bottom: 14px;
+    border-radius: 0 2px 2px 0;
+}
+.rec-eyebrow { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1D4ED8; margin-bottom: 6px; }
+.rec-txt { font-size: 13px; color: #1E3A8A; line-height: 1.8; font-weight: 500; }
+
+.pills-wrap { margin-bottom: 14px; }
+.pills-lbl { font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF; margin-bottom: 6px; }
+.pill {
+    display: inline-block;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    padding: 3px 11px;
+    font-size: 10px;
+    color: #1D4ED8;
+    font-weight: 600;
+    margin: 0 4px 4px 0;
+    border-radius: 20px;
+}
+
+/* contact strip */
+.contact-strip {
+    display: flex;
+    gap: 0;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 14px;
+}
+.contact-item {
+    flex: 1;
+    padding: 10px 14px;
+    border-right: 1px solid #E5E7EB;
+}
+.contact-item:last-child { border-right: none; }
+.contact-lbl { font-size: 7.5px; text-transform: uppercase; letter-spacing: 1.2px; color: #9CA3AF; font-weight: 700; margin-bottom: 3px; }
+.contact-val { font-size: 12px; font-weight: 700; color: #0C1A2E; }
+
+.rule { border: none; border-top: 1px solid #E5E7EB; margin: 12px 0; }
 
 @media print {
-    * { -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
 </style>
 </head>
 <body>
 
 {{-- ═══════════════════════════════════════════════════════════════════════════
-     PÁGINA 1  ·  PORTADA
+     PÁGINA 1 — Portada ejecutiva
      ═══════════════════════════════════════════════════════════════════════════ --}}
-<div class="pg1">
+<div class="page page-break">
 
-    {{-- ── CABECERA ─────────────────────────────────────────────────────────── --}}
-    <div class="header">
-        <div class="header-inner">
-            <div class="header-brand">
-                @if($logoSrcLight)
-                    {{-- Dark logo available — show directly on white bg --}}
-                    <img src="{{ $logoSrcLight }}" class="header-logo" style="height:32px;width:auto;display:block;" alt="{{ $siteName }}">
-                @elseif($logoSrc)
-                    {{-- White logo — wrap in navy box so it's visible --}}
-                    <div class="logo-box">
-                        <img src="{{ $logoSrc }}" class="header-logo" alt="{{ $siteName }}">
-                    </div>
-                @else
-                    <div class="logo-box" style="padding:8px 12px;">
-                        <span style="font-size:16px;font-weight:800;color:#fff;letter-spacing:0.5px;">HOME DEL VALLE</span>
-                    </div>
-                @endif
-                <div class="header-tagline">Inmobiliaria Boutique<br>Benito Juárez, CDMX</div>
-            </div>
-            <div class="header-center">
-                <div class="header-doc-type">Documento Técnico</div>
-                <div class="header-title">Opinión de Valor Inmobiliario</div>
-                <div class="header-subtitle">{{ $address }}</div>
-            </div>
-            <div class="header-meta">
-                <div class="header-folio-label">Folio</div>
-                <div class="header-folio">{{ $folio }}</div>
-                <div class="header-date">{{ $today }}</div>
-            </div>
+    {{-- HEADER --}}
+    <div class="hd">
+        <div class="hd-logo">
+            @if($logoSrcLight)
+                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
+            @elseif($logoSrc)
+                <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
+            @else
+                <div class="hd-logo-txt">HOME DEL VALLE</div>
+            @endif
+            <div class="hd-logo-sub">Inmobiliaria Boutique</div>
+        </div>
+        <div class="hd-center">
+            <div class="hd-eyebrow">Documento Técnico</div>
+            <div class="hd-title">Opinión de Valor Inmobiliario</div>
+        </div>
+        <div class="hd-right">
+            <div class="hd-folio-lbl">Folio</div>
+            <div class="hd-folio">{{ $folio }}</div>
+            <div class="hd-date">{{ $today }}</div>
         </div>
     </div>
 
-    {{-- ── HERO PRECIO ───────────────────────────────────────────────────────── --}}
-    @if($sug)
-    <div class="price-hero">
-        <div class="price-left">
-            <div class="price-eyebrow">Precio sugerido de salida</div>
-            <div class="price-amount">
-                <span class="price-currency">$</span>{{ number_format($sug) }}
-                <span style="font-size:10px;color:rgba(255,255,255,.3);font-family:'Inter',sans-serif;font-weight:400;letter-spacing:1px;margin-left:4px;vertical-align:middle;"> MXN</span>
-            </div>
-            <div class="price-sub">
-                ${{ number_format($valuation->adjusted_price_m2) }}/m²&nbsp;·&nbsp;{{ number_format($valuation->effective_m2, 0) }} m² efectivos
-                &nbsp;·&nbsp; {{ $colonia }}, {{ $zone }}
-            </div>
-        </div>
-        <div class="price-right">
-            <div class="diag-badge">{{ $diagLabel }}</div>
-            <div class="price-m2-box">
-                <div class="price-m2-val">${{ number_format($valuation->adjusted_price_m2) }}/m²</div>
-                <div class="price-m2-lbl">Precio ajustado por m²</div>
-            </div>
-        </div>
-    </div>
-    @endif
+    <div class="body">
 
-    {{-- ── STATS BAR ─────────────────────────────────────────────────────────── --}}
-    <div class="stats-bar">
-        <div class="stat-cell">
-            <span class="stat-v stat-v-sm">${{ number_format($valuation->base_price_m2) }}</span>
-            <span class="stat-l">Base m² · {{ $colonia }}</span>
-        </div>
-        <div class="stat-cell">
-            <span class="stat-v stat-v-sm">
-                {{ ($adjTotal >= 0 ? '+' : '') . $adjTotal }}%
-            </span>
-            <span class="stat-l">Ajuste total aplicado</span>
-        </div>
-        <div class="stat-cell">
-            <span class="stat-v">{{ number_format($valuation->effective_m2, 0) }}</span>
-            <span class="stat-l">m² efectivos</span>
-        </div>
-        <div class="stat-cell">
-            <span class="stat-v stat-v-sm">{{ $typeLabel }}</span>
-            <span class="stat-l">Tipo de inmueble</span>
-        </div>
-        <div class="stat-cell">
-            <span class="stat-v stat-v-sm">{{ $confidLabel }}</span>
-            <span class="stat-l">Confianza del modelo</span>
-        </div>
-    </div>
-
-    {{-- ── RANGO DE VALOR ────────────────────────────────────────────────────── --}}
-    @if($low && $high)
-    <div class="range-section">
-        <div class="range-title">Rango de Valor Estimado</div>
-        <div class="range-row">
-            <div class="range-lbl">Valor mínimo</div>
-            <div class="range-track">
-                <div class="range-fill" style="width:{{ $pLow }}%;opacity:.5;"></div>
-            </div>
-            <div class="range-val">${{ number_format($low) }}</div>
-        </div>
-        <div class="range-row">
-            <div class="range-lbl">Valor medio</div>
-            <div class="range-track">
-                <div class="range-fill" style="width:{{ $pMid }}%;opacity:.75;"></div>
-            </div>
-            <div class="range-val">${{ number_format($mid) }}</div>
-        </div>
-        <div class="range-row">
-            <div class="range-lbl">Valor máximo</div>
-            <div class="range-track">
-                <div class="range-fill" style="width:{{ $pHigh }}%;"></div>
-            </div>
-            <div class="range-val">${{ number_format($high) }}</div>
-        </div>
-        <hr class="range-divider">
-        <div class="range-row">
-            <div class="range-lbl" style="color:#0C1A2E;font-weight:700;">Precio sugerido</div>
-            <div class="range-track">
-                <div class="range-fill range-fill-dark" style="width:{{ $pSug }}%;"></div>
-            </div>
-            <div class="range-val range-val-accent">${{ number_format($sug) }}</div>
-        </div>
-    </div>
-    @endif
-
-    {{-- ── DOS COLUMNAS ─────────────────────────────────────────────────────── --}}
-    <div class="two-col">
-
-        {{-- Columna izquierda: características --}}
-        <div class="col-left">
-            <div class="sec-label">Características del Inmueble</div>
-            <table class="spec-grid">
-                <tr><td>Colonia</td><td>{{ $colonia }}</td></tr>
-                <tr><td>Zona estratégica</td><td>{{ $zone }}, Benito Juárez</td></tr>
-                <tr><td>Tipo</td><td>{{ $typeLabel }}</td></tr>
-                <tr><td>Antigüedad</td><td>{{ $valuation->input_age_years }} años &nbsp;·&nbsp; {{ $ageLabel }}</td></tr>
-                <tr><td>Estado conservación</td><td>{{ $condLabel }}</td></tr>
-                @if($valuation->input_m2_total)
-                <tr><td>m² totales</td><td>{{ number_format($valuation->input_m2_total, 1) }} m²</td></tr>
-                @endif
-                @if($valuation->input_m2_const)
-                <tr><td>m² construcción</td><td>{{ number_format($valuation->input_m2_const, 1) }} m²</td></tr>
-                @endif
-                <tr><td>Recámaras</td><td>{{ $valuation->input_bedrooms ?? '—' }}</td></tr>
-                <tr><td>Baños</td><td>{{ $valuation->input_bathrooms ?? '—' }}</td></tr>
-                <tr><td>Estacionamientos</td><td>{{ $valuation->input_parking ?? 0 }} cajón(es)</td></tr>
-                @if($valuation->input_floor)
-                <tr><td>Piso</td><td>Piso {{ $valuation->input_floor }}</td></tr>
-                @endif
-                <tr><td>Elevador</td><td>{{ $valuation->input_has_elevator ? 'Sí' : 'No' }}</td></tr>
-                @php
-                $amenList = implode(', ', array_filter([
-                    $valuation->input_has_rooftop      ? 'Rooftop'         : null,
-                    $valuation->input_has_balcony       ? 'Balcón'          : null,
-                    $valuation->input_has_service_room  ? 'Cuarto servicio' : null,
-                    $valuation->input_has_storage       ? 'Bodega'          : null,
-                ]));
-                @endphp
-                @if($amenList)
-                <tr><td>Amenidades</td><td>{{ $amenList }}</td></tr>
-                @endif
-                @if($valuation->input_type === 'apartment')
-                @if($valuation->input_unit_position)
-                <tr><td>Posición</td><td>{{ $valuation->input_unit_position === 'exterior' ? 'Exterior' : 'Interior' }}</td></tr>
-                @endif
-                @if($valuation->input_orientation)
-                <tr><td>Orientación</td><td>{{ ucfirst($valuation->input_orientation) }}</td></tr>
-                @endif
-                @if($valuation->input_seismic_status && $valuation->input_seismic_status !== 'none')
-                <tr>
-                    <td>Historial sísmico</td>
-                    <td>{{ match($valuation->input_seismic_status) {
-                        'damaged_repaired'   => 'Edificio con daño sísmico — reparado',
-                        'damaged_reinforced' => 'Edificio con daño sísmico — reforzado estructuralmente',
-                        'unknown'            => 'Historial sísmico desconocido',
-                        default              => '—',
-                    } }}</td>
-                </tr>
-                @endif
-                @endif
-            </table>
-        </div>
-
-        {{-- Columna derecha: resumen de ajustes --}}
-        <div class="col-right">
-            <div class="sec-label">Resumen de Ajustes</div>
-            <table class="wf-compact">
-                <tr class="wf-base-row">
-                    <td>Precio base de zona</td>
-                    <td>${{ number_format($valuation->base_price_m2) }}/m²</td>
-                </tr>
-                @foreach($valuation->adjustments as $adj)
-                @php $v = (float)$adj->adjustment_value; @endphp
-                <tr>
-                    <td style="color:#374151;">{{ $adj->factor_label }}</td>
-                    <td class="{{ $v > 0 ? 'pct-pos' : ($v < 0 ? 'pct-neg' : '') }}">
-                        {{ $adj->formatted_value }}
-                    </td>
-                </tr>
-                @endforeach
-                <tr class="wf-total-row">
-                    <td>Precio ajustado m²</td>
-                    <td>${{ number_format($valuation->adjusted_price_m2) }}/m²</td>
-                </tr>
-            </table>
-
-            @if($sug)
-            <div style="background:#F0F4F8;border:1px solid #CBD5E1;padding:8px 10px;margin-top:10px;">
-                <div style="font-size:9px;color:#5A6A7A;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px;">Valor total estimado</div>
-                <div style="font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700;color:#0C1A2E;">${{ number_format($sug) }}</div>
-                <div style="font-size:10px;color:#5A6A7A;margin-top:2px;">
-                    Rango: ${{ number_format($low) }} — ${{ number_format($high) }}
+        {{-- PROPERTY BAND --}}
+        <div class="prop-band">
+            <div>
+                <div class="prop-address">{{ $address }}</div>
+                <div class="prop-meta">
+                    <span class="prop-chip">{{ $typeLabel }}</span>
+                    <span class="prop-chip">{{ $colonia }} · {{ $zone }}</span>
+                    <span class="prop-chip">{{ $ageLabel }}</span>
+                    <span class="prop-chip">Conservación: {{ $condLabel }}</span>
+                    <span class="prop-chip-light prop-chip">Confianza {{ $confidLabel }}</span>
                 </div>
             </div>
-            @endif
+            <div class="diag-badge">{{ $diagLabel }}</div>
+        </div>
 
-            <div style="margin-top:10px;padding:7px 9px;background:#FFFBEB;border:1px solid #FDE68A;font-size:9px;color:#78350F;line-height:1.6;">
-                <strong>Validez:</strong> 90 días · Vence {{ $validity }}<br>
-                <strong>Nota:</strong> No constituye avalúo formal con efectos fiscales o notariales (INDAABIN/AMPI).
+        {{-- PRICE HERO --}}
+        @if($sug)
+        <div class="price-section">
+            <div class="price-left">
+                <div class="price-eyebrow">Precio de Salida Recomendado</div>
+                <div class="price-num">
+                    <span class="price-cur">$</span>{{ number_format($sug) }}<span class="price-mxn">MXN</span>
+                </div>
+                <div class="price-sub">
+                    ${{ number_format($valuation->adjusted_price_m2) }}/m² ajustado
+                    &nbsp;·&nbsp; {{ number_format($valuation->effective_m2, 0) }} m² efectivos
+                    &nbsp;·&nbsp; {{ $colonia }}
+                </div>
+            </div>
+            <div class="kpi-row">
+                <div class="kpi">
+                    <span class="kpi-v">${{ number_format($valuation->adjusted_price_m2) }}</span>
+                    <span class="kpi-l">Precio /m²</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-v">${{ number_format($valuation->base_price_m2) }}</span>
+                    <span class="kpi-l">Base zona</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-v {{ $adjTotal >= 0 ? 'kpi-v-pos' : 'kpi-v-neg' }}">{{ ($adjTotal >= 0 ? '+' : '') . $adjTotal }}%</span>
+                    <span class="kpi-l">Ajuste total</span>
+                </div>
+                <div class="kpi">
+                    <span class="kpi-v">{{ number_format($valuation->effective_m2, 0) }} m²</span>
+                    <span class="kpi-l">m² efectivos</span>
+                </div>
             </div>
         </div>
+        @endif
+
+        {{-- RANGE VISUALIZATION --}}
+        @if($low && $high)
+        <div class="range-section">
+            <div class="range-eyebrow">Rango de Valor Estimado</div>
+            <div class="rv">
+                <div class="rv-track">
+                    {{-- fill between low and high --}}
+                    <div class="rv-fill" style="left:{{ $pLow }}%;width:{{ $pHigh - $pLow }}%;"></div>
+
+                    {{-- dot MIN --}}
+                    <div class="rv-dot" style="left:{{ $pLow }}%;">
+                        <span class="rv-lbl-top">Mínimo</span>
+                        <span class="rv-price-bot">${{ number_format($low) }}</span>
+                    </div>
+
+                    {{-- dot MEDIO --}}
+                    <div class="rv-dot" style="left:{{ $pMid }}%;">
+                        <span class="rv-lbl-top">Medio</span>
+                        <span class="rv-price-bot">${{ number_format($mid) }}</span>
+                    </div>
+
+                    {{-- dot MÁXIMO --}}
+                    <div class="rv-dot" style="left:{{ $pHigh }}%;">
+                        <span class="rv-lbl-top">Máximo</span>
+                        <span class="rv-price-bot">${{ number_format($high) }}</span>
+                    </div>
+
+                    {{-- dot SUGERIDO (accent) --}}
+                    <div class="rv-dot rv-dot-accent" style="left:{{ $pSug }}%;">
+                        <span class="rv-lbl-top rv-lbl-top-accent">▲ Sugerido</span>
+                        <span class="rv-price-bot rv-price-bot-accent">${{ number_format($sug) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- ZONA + CONSIDERACIONES --}}
+        <div class="zone-split">
+            <div class="zone-map-wrap">
+                @if($mapUrl)
+                    <img src="{{ $mapUrl }}" alt="Zona {{ $colonia }}">
+                @else
+                    <div class="zone-placeholder">
+                        <div class="zone-placeholder-dot"></div>
+                        <div class="zone-placeholder-name">{{ $colonia }}</div>
+                        <div class="zone-placeholder-sub">{{ $zone }} · Benito Juárez · CDMX</div>
+                    </div>
+                @endif
+            </div>
+            <div class="zone-notes">
+                <div class="zone-notes-title">A considerar en esta valuación</div>
+                @foreach($considerations as $note)
+                <div class="zone-note">
+                    <div class="zone-note-dot"></div>
+                    <div class="zone-note-txt">{{ $note }}</div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
+    </div>{{-- /body --}}
+
+    <div class="ft">
+        <div class="ft-l">{{ $siteUrl }}</div>
+        <div class="ft-c">Home del Valle · Opinión de Valor</div>
+        <div class="ft-r">{{ $folio }} · Página 1 de 3 · Confidencial</div>
     </div>
 
-    {{-- ── FOOTER STRIP ─────────────────────────────────────────────────────── --}}
-    <div class="pg1-footer">
-        <div class="pg1-footer-left">{{ $siteUrl }}</div>
-        <div class="pg1-footer-right">{{ $folio }} · {{ $today }}</div>
-    </div>
-
-</div>{{-- /pg1 --}}
+</div>{{-- /page-1 --}}
 
 
 {{-- ═══════════════════════════════════════════════════════════════════════════
-     PÁGINA 2  ·  ANÁLISIS DETALLADO
+     PÁGINA 2 — Análisis técnico: características + waterfall
      ═══════════════════════════════════════════════════════════════════════════ --}}
-<div class="pg2">
-<div class="pg2-body">
+<div class="page page-break">
 
-    {{-- ── MINI HEADER ──────────────────────────────────────────────────────── --}}
-    <div class="mini-header">
-        <div class="mini-brand">
+    <div class="mhd">
+        <div class="mhd-logo">
             @if($logoSrcLight)
-                <img src="{{ $logoSrcLight }}" class="mini-logo" style="height:18px;width:auto;" alt="{{ $siteName }}">
+                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
             @elseif($logoSrc)
-                <div class="mini-logo-box">
-                    <img src="{{ $logoSrc }}" class="mini-logo" alt="{{ $siteName }}">
-                </div>
+                <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
+            @else
+                <div class="mhd-logo-txt">HOME DEL VALLE</div>
             @endif
-            <div>
-                <div class="mini-brand-name">HOME DEL VALLE</div>
-                <div class="mini-brand-sub">Opinión de Valor Inmobiliario</div>
+        </div>
+        <div class="mhd-right">
+            <div class="mhd-folio">{{ $folio }}</div>
+            <div class="mhd-section">Análisis Técnico</div>
+        </div>
+    </div>
+
+    <div class="p2-body">
+
+        {{-- DOS COLUMNAS --}}
+        <div class="two-col">
+            <div class="col-left">
+                <div class="col-hd">Características del Inmueble</div>
+                <table class="spec-tbl">
+                    <tr><td>Colonia</td><td>{{ $colonia }}</td></tr>
+                    <tr><td>Zona</td><td>{{ $zone }}, Benito Juárez</td></tr>
+                    <tr><td>Tipo</td><td>{{ $typeLabel }}</td></tr>
+                    <tr><td>Antigüedad</td><td>{{ $valuation->input_age_years }} años · {{ $ageLabel }}</td></tr>
+                    <tr><td>Conservación</td><td>{{ $condLabel }}</td></tr>
+                    @if($valuation->input_m2_total)
+                    <tr><td>m² totales</td><td>{{ number_format($valuation->input_m2_total, 1) }} m²</td></tr>
+                    @endif
+                    @if($valuation->input_m2_const)
+                    <tr><td>m² construcción</td><td>{{ number_format($valuation->input_m2_const, 1) }} m²</td></tr>
+                    @endif
+                    <tr><td>Recámaras</td><td>{{ $valuation->input_bedrooms ?? '—' }}</td></tr>
+                    <tr><td>Baños</td><td>{{ $valuation->input_bathrooms ?? '—' }}</td></tr>
+                    <tr><td>Estacionamientos</td><td>{{ $valuation->input_parking ?? 0 }} cajón(es)</td></tr>
+                    @if($valuation->input_floor)
+                    <tr><td>Piso</td><td>Piso {{ $valuation->input_floor }}</td></tr>
+                    @endif
+                    <tr><td>Elevador</td><td>{{ $valuation->input_has_elevator ? 'Sí' : 'No' }}</td></tr>
+                    @php
+                    $amenList = implode(', ', array_filter([
+                        $valuation->input_has_rooftop     ? 'Rooftop'          : null,
+                        $valuation->input_has_balcony      ? 'Balcón'           : null,
+                        $valuation->input_has_service_room ? 'Cuarto servicio'  : null,
+                        $valuation->input_has_storage      ? 'Bodega'           : null,
+                    ]));
+                    @endphp
+                    @if($amenList)
+                    <tr><td>Amenidades</td><td>{{ $amenList }}</td></tr>
+                    @endif
+                    @if($valuation->input_type === 'apartment')
+                        @if($valuation->input_unit_position)
+                        <tr><td>Posición</td><td>{{ $valuation->input_unit_position === 'exterior' ? 'Exterior' : 'Interior' }}</td></tr>
+                        @endif
+                        @if($valuation->input_orientation)
+                        <tr><td>Orientación</td><td>{{ ucfirst($valuation->input_orientation) }}</td></tr>
+                        @endif
+                        @if($valuation->input_seismic_status && $valuation->input_seismic_status !== 'none')
+                        <tr><td>Historial sísmico</td><td>{{ match($valuation->input_seismic_status) {
+                            'damaged_repaired'   => 'Daño reparado',
+                            'damaged_reinforced' => 'Daño reforzado',
+                            'unknown'            => 'Desconocido',
+                            default              => '—',
+                        } }}</td></tr>
+                        @endif
+                    @endif
+                </table>
+            </div>
+
+            <div class="col-right">
+                <div class="col-hd">Resumen de Ajustes</div>
+                <table class="wfc">
+                    <tr class="r-base">
+                        <td>Precio base de zona</td>
+                        <td>${{ number_format($valuation->base_price_m2) }}/m²</td>
+                    </tr>
+                    @foreach($valuation->adjustments as $adj)
+                    @php $v = (float)$adj->adjustment_value; @endphp
+                    <tr>
+                        <td>{{ $adj->factor_label }}</td>
+                        <td class="{{ $v > 0 ? 'pct-pos' : ($v < 0 ? 'pct-neg' : '') }}">{{ $adj->formatted_value }}</td>
+                    </tr>
+                    @endforeach
+                    <tr class="r-total">
+                        <td>Precio ajustado /m²</td>
+                        <td>${{ number_format($valuation->adjusted_price_m2) }}/m²</td>
+                    </tr>
+                </table>
+
+                @if($sug)
+                <div class="total-box">
+                    <div class="total-box-lbl">Valor total estimado</div>
+                    <div class="total-box-amt">${{ number_format($sug) }}</div>
+                    <div class="total-box-rng">Rango: ${{ number_format($low) }} — ${{ number_format($high) }}</div>
+                </div>
+                @endif
+
+                <div class="valid-note">
+                    <strong>Vigencia:</strong> 90 días — vence {{ $validity }}<br>
+                    No constituye avalúo formal (INDAABIN / SHF / AMPI).
+                </div>
             </div>
         </div>
-        <div class="mini-right">
-            <div class="mini-folio">{{ $folio }}</div>
-            <div class="mini-section">Análisis Detallado de Ajustes</div>
+
+        {{-- WATERFALL DETALLADO --}}
+        @if($valuation->adjustments->isNotEmpty())
+        <div class="sec-lbl">Factores de Ajuste — Metodología Waterfall</div>
+        <table class="wf">
+            <thead>
+                <tr>
+                    <th style="width:33%;">Factor</th>
+                    <th>Impacto</th>
+                    <th style="width:58px;">Ajuste</th>
+                    <th style="width:90px;">Antes</th>
+                    <th style="width:90px;">Después</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="r-base">
+                    <td>
+                        Precio base · {{ $colonia }}
+                        @if($valuation->snapshot)
+                        <div class="wf-sub">{{ $valuation->snapshot->age_label }} · Confianza {{ $confidLabel }}</div>
+                        @endif
+                    </td>
+                    <td><div class="wf-bar wf-bar-neu"></div></td>
+                    <td style="color:#9CA3AF;">—</td>
+                    <td style="color:#9CA3AF;">—</td>
+                    <td>${{ number_format($valuation->base_price_m2) }}/m²</td>
+                </tr>
+                @php $maxAbs = $valuation->adjustments->max(fn($a) => abs($a->adjustment_value)) ?: 1; @endphp
+                @foreach($valuation->adjustments as $adj)
+                @php
+                    $v    = (float)$adj->adjustment_value;
+                    $isN  = $adj->is_neutral;
+                    $isP  = $adj->is_positive;
+                    $bw   = $isN ? 100 : min(100, round(abs($v) / $maxAbs * 100));
+                    $bCls = $isN ? 'wf-bar-neu' : ($isP ? 'wf-bar-pos' : 'wf-bar-neg');
+                    $tCls = $isN ? '' : ($isP ? 'pct-pos' : 'pct-neg');
+                @endphp
+                <tr>
+                    <td>
+                        {{ $adj->factor_label }}
+                        @if($adj->explanation)
+                        <div class="wf-sub">{{ $adj->explanation }}</div>
+                        @endif
+                    </td>
+                    <td class="wf-bar-wrap"><div class="wf-bar {{ $bCls }}" style="width:{{ $bw }}%;"></div></td>
+                    <td class="{{ $tCls }}">{{ $adj->formatted_value }}</td>
+                    <td style="color:#9CA3AF;font-size:10px;">${{ number_format($adj->price_before) }}/m²</td>
+                    <td>${{ number_format($adj->price_after) }}/m²</td>
+                </tr>
+                @endforeach
+                @php $tPct = round((($valuation->adjusted_price_m2 - $valuation->base_price_m2) / $valuation->base_price_m2) * 100, 1); @endphp
+                <tr class="r-total">
+                    <td>Precio ajustado final</td>
+                    <td></td>
+                    <td class="{{ $tPct >= 0 ? 'pct-pos' : 'pct-neg' }}">{{ ($tPct >= 0 ? '+' : '') . $tPct }}%</td>
+                    <td></td>
+                    <td>${{ number_format($valuation->adjusted_price_m2) }}/m²</td>
+                </tr>
+            </tbody>
+        </table>
+        @endif
+
+    </div>{{-- /p2-body --}}
+
+    <div class="ft2">
+        <div class="ft2-top">
+            <div class="ft2-brand">{{ $siteName }} — {{ $siteUrl }}</div>
+            <div class="ft2-page">{{ $folio }} &nbsp;|&nbsp; Página 2 de 3 &nbsp;|&nbsp; Confidencial</div>
         </div>
     </div>
 
-    {{-- ── WATERFALL DETALLADO ──────────────────────────────────────────────── --}}
-    @if($valuation->adjustments->isNotEmpty())
-    <div class="sec-label">Factores de Ajuste Aplicados · Metodología Waterfall</div>
-    <table class="wf-table">
-        <thead>
-            <tr>
-                <th style="width:35%;">Factor</th>
-                <th>Impacto visual</th>
-                <th style="width:60px;">Ajuste</th>
-                <th style="width:85px;">Antes</th>
-                <th style="width:85px;">Después</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="row-base">
-                <td>
-                    Precio base de zona · {{ $colonia }}
-                    @if($valuation->snapshot)
-                    <div class="wf-sub">{{ $valuation->snapshot->age_label }} · Confianza {{ $confidLabel }}</div>
-                    @endif
-                </td>
-                <td><div class="wf-bar wf-bar-zero"></div></td>
-                <td class="pct-zero" style="color:#9CA3AF;">—</td>
-                <td style="color:#9CA3AF;">—</td>
-                <td>${{ number_format($valuation->base_price_m2) }}/m²</td>
-            </tr>
-            @php $maxAbs = $valuation->adjustments->max(fn($a) => abs($a->adjustment_value)) ?: 1; @endphp
-            @foreach($valuation->adjustments as $adj)
-            @php
-                $v      = (float)$adj->adjustment_value;
-                $isNeu  = $adj->is_neutral;
-                $isPos  = $adj->is_positive;
-                $bw     = $isNeu ? 100 : min(100, round(abs($v) / $maxAbs * 100));
-                $bCls   = $isNeu ? 'wf-bar-zero' : ($isPos ? 'wf-bar-pos' : 'wf-bar-neg');
-                $tCls   = $isNeu ? 'pct-zero' : ($isPos ? 'pct-pos' : 'pct-neg');
-            @endphp
-            <tr>
-                <td>
-                    {{ $adj->factor_label }}
-                    @if($adj->explanation)
-                    <div class="wf-sub">{{ $adj->explanation }}</div>
-                    @endif
-                </td>
-                <td class="wf-bar-wrap">
-                    <div class="wf-bar {{ $bCls }}" style="width:{{ $bw }}%;"></div>
-                </td>
-                <td class="{{ $tCls }}">{{ $adj->formatted_value }}</td>
-                <td style="color:#9CA3AF;font-size:10px;">${{ number_format($adj->price_before) }}/m²</td>
-                <td>${{ number_format($adj->price_after) }}/m²</td>
-            </tr>
+</div>{{-- /page-2 --}}
+
+
+{{-- ═══════════════════════════════════════════════════════════════════════════
+     PÁGINA 3 — Análisis de mercado
+     ═══════════════════════════════════════════════════════════════════════════ --}}
+<div class="page">
+
+    <div class="mhd">
+        <div class="mhd-logo">
+            @if($logoSrcLight)
+                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
+            @elseif($logoSrc)
+                <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
+            @else
+                <div class="mhd-logo-txt">HOME DEL VALLE</div>
+            @endif
+        </div>
+        <div class="mhd-right">
+            <div class="mhd-folio">{{ $folio }}</div>
+            <div class="mhd-section">Análisis de Mercado</div>
+        </div>
+    </div>
+
+    <div class="p3-body">
+
+        @if(!empty($n['market_context']) || !empty($n['recommendation']))
+
+        <div class="sec-lbl">Análisis Profesional de Mercado · IA</div>
+
+        @if(!empty($n['market_context']))
+        <p class="narr-lead">{{ $n['market_context'] }}</p>
+        @endif
+
+        @if(!empty($n['property_strengths']) || !empty($n['property_risks']))
+        <div class="str-risk">
+            @if(!empty($n['property_strengths']))
+            <div class="sr-card sr-card-pos">
+                <div class="sr-eyebrow sr-eyebrow-pos">Fortalezas del inmueble</div>
+                <div class="sr-txt">{{ $n['property_strengths'] }}</div>
+            </div>
+            @endif
+            @if(!empty($n['property_risks']))
+            <div class="sr-card sr-card-neg">
+                <div class="sr-eyebrow sr-eyebrow-neg">Riesgo principal</div>
+                <div class="sr-txt">{{ $n['property_risks'] }}</div>
+            </div>
+            @endif
+        </div>
+        @endif
+
+        @if(!empty($n['recommendation']))
+        <div class="rec-box">
+            <div class="rec-eyebrow">Recomendación Comercial</div>
+            <div class="rec-txt">{{ $n['recommendation'] }}</div>
+        </div>
+        @endif
+
+        @if(!empty($n['key_factors']) && is_array($n['key_factors']))
+        <div class="pills-wrap">
+            <div class="pills-lbl">Factores clave identificados</div>
+            @foreach($n['key_factors'] as $f)
+                <span class="pill">{{ $f }}</span>
             @endforeach
-            @php $tPct = round((($valuation->adjusted_price_m2 - $valuation->base_price_m2) / $valuation->base_price_m2) * 100, 1); @endphp
-            <tr class="row-total">
-                <td style="font-weight:700;color:#1E3A8A;">Precio m² ajustado final</td>
-                <td></td>
-                <td class="{{ $tPct >= 0 ? 'pct-pos' : 'pct-neg' }}" style="font-size:12px;">{{ ($tPct >= 0 ? '+' : '') . $tPct }}%</td>
-                <td></td>
-                <td style="font-size:13px;color:#1E3A8A;">${{ number_format($valuation->adjusted_price_m2) }}/m²</td>
-            </tr>
-        </tbody>
-    </table>
-    <hr class="rule">
-    @endif
-
-    {{-- ── ANÁLISIS DE MERCADO IA ────────────────────────────────────────────── --}}
-    @if(!empty($n['market_context']) || !empty($n['recommendation']))
-    <div class="sec-label">Análisis Profesional de Mercado · Generado por IA</div>
-    @if(!empty($n['market_context']))
-    <p class="narr-body">{{ $n['market_context'] }}</p>
-    @endif
-
-    @if(!empty($n['property_strengths']) || !empty($n['property_risks']))
-    <div class="narr-two">
-        @if(!empty($n['property_strengths']))
-        <div class="narr-box narr-box-green">
-            <div class="narr-eyebrow narr-eyebrow-green">Fortalezas del inmueble</div>
-            {{ $n['property_strengths'] }}
         </div>
         @endif
-        @if(!empty($n['property_risks']))
-        <div class="narr-box narr-box-red">
-            <div class="narr-eyebrow narr-eyebrow-red">Riesgo principal</div>
-            {{ $n['property_risks'] }}
+
+        <hr class="rule">
+
+        @else
+
+        {{-- FALLBACK sin IA --}}
+        <div class="sec-lbl">Recomendación Comercial</div>
+        <div class="rec-box">
+            <div class="rec-eyebrow">Estrategia de salida al mercado</div>
+            <div class="rec-txt">
+                @switch($valuation->diagnosis)
+                @case('on_market')
+                    El inmueble está en línea con el mercado de {{ $colonia }}. El precio de salida de ${{ number_format($sug) }} maximiza el equilibrio entre rapidez de colocación y valor obtenido. Se recomienda iniciar con este precio y evaluar la respuesta del mercado en las primeras tres semanas.
+                    @break
+                @case('opportunity')
+                    El inmueble presenta características de oportunidad frente al mercado activo. Con un precio de ${{ number_format($sug) }} se puede capturar el diferencial de mercado manteniendo alta probabilidad de cierre en el corto plazo.
+                    @break
+                @case('above_market')
+                    El inmueble se posiciona por encima del promedio de zona. Se recomienda iniciar en ${{ number_format($sug) }} con un margen de negociación del 3–5% y ajustar estrategia a partir de la respuesta recibida en las primeras tres semanas.
+                    @break
+                @default
+                    Se recomienda complementar este análisis con recorridos comparativos en {{ $colonia }} para afinar el precio de salida al mercado.
+                @endswitch
+            </div>
         </div>
+        <hr class="rule">
+
         @endif
-    </div>
-    @endif
 
-    @if(!empty($n['recommendation']))
-    <div class="narr-box narr-box-blue">
-        <div class="narr-eyebrow narr-eyebrow-blue">Recomendación Comercial</div>
-        {{ $n['recommendation'] }}
-    </div>
-    @endif
+        {{-- CONTACTO --}}
+        <div class="sec-lbl">Contacto</div>
+        <div class="contact-strip">
+            <div class="contact-item">
+                <div class="contact-lbl">Inmobiliaria</div>
+                <div class="contact-val">{{ $siteName }}</div>
+            </div>
+            @if($contactPhone)
+            <div class="contact-item">
+                <div class="contact-lbl">Teléfono / WhatsApp</div>
+                <div class="contact-val">{{ $contactPhone }}</div>
+            </div>
+            @endif
+            @if($contactEmail)
+            <div class="contact-item">
+                <div class="contact-lbl">Correo electrónico</div>
+                <div class="contact-val">{{ $contactEmail }}</div>
+            </div>
+            @endif
+            <div class="contact-item">
+                <div class="contact-lbl">Sitio web</div>
+                <div class="contact-val">{{ $siteUrl }}</div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-lbl">Vigencia</div>
+                <div class="contact-val">Vence {{ $validity }}</div>
+            </div>
+        </div>
 
-    @if(!empty($n['key_factors']) && is_array($n['key_factors']))
-    <div style="margin-top:8px;">
-        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#9CA3AF;margin-bottom:5px;">Factores clave identificados</div>
-        @foreach($n['key_factors'] as $f)
-            <span class="pill">{{ $f }}</span>
-        @endforeach
-    </div>
-    @endif
-    <hr class="rule">
-    @endif
+    </div>{{-- /p3-body --}}
 
-    {{-- ── RECOMENDACIÓN FALLBACK ────────────────────────────────────────────── --}}
-    @if(empty($n['recommendation']) && $sug)
-    <div class="sec-label">Recomendación Comercial</div>
-    <div class="narr-box narr-box-blue">
-        <div class="narr-eyebrow narr-eyebrow-blue">Estrategia de salida al mercado</div>
-        @switch($valuation->diagnosis)
-        @case('on_market')
-            El inmueble está en línea con el mercado de {{ $colonia }}. El precio sugerido de ${{ number_format($sug) }} maximiza el balance entre rapidez de colocación y valor obtenido. Se recomienda iniciar con este precio y evaluar respuesta del mercado en las primeras tres semanas.
-            @break
-        @case('opportunity')
-            El inmueble presenta características de oportunidad frente al mercado. Con un precio de salida de ${{ number_format($sug) }} se puede capturar el diferencial de mercado manteniendo alta probabilidad de cierre en el corto plazo.
-            @break
-        @case('above_market')
-            El inmueble se posiciona por encima del promedio de mercado. Se recomienda iniciar en ${{ number_format($sug) }} con margen de negociación del 3–5% y ajustar estrategia a partir de la respuesta recibida en las primeras tres semanas.
-            @break
-        @default
-            Se recomienda complementar este análisis con visitas comparativas en {{ $colonia }} para afinar el precio de salida al mercado.
-        @endswitch
-    </div>
-    <hr class="rule">
-    @endif
-
-    {{-- ── CONTACTO ──────────────────────────────────────────────────────────── --}}
-    <div class="contact-row">
-        <div class="contact-item">
-            <span class="contact-k">Inmobiliaria</span>
-            <span class="contact-v">{{ $siteName }}</span>
+    <div class="ft2">
+        <div class="ft2-top">
+            <div class="ft2-brand">{{ $siteName }} — {{ $siteUrl }}</div>
+            <div class="ft2-page">{{ $folio }} &nbsp;|&nbsp; Página 3 de 3 &nbsp;|&nbsp; Confidencial</div>
         </div>
-        @if($contactPhone)
-        <div class="contact-item">
-            <span class="contact-k">Teléfono</span>
-            <span class="contact-v">{{ $contactPhone }}</span>
-        </div>
-        @endif
-        @if($contactEmail)
-        <div class="contact-item">
-            <span class="contact-k">Correo</span>
-            <span class="contact-v">{{ $contactEmail }}</span>
-        </div>
-        @endif
-        <div class="contact-item">
-            <span class="contact-k">Web</span>
-            <span class="contact-v">{{ $siteUrl }}</span>
-        </div>
-        <div class="contact-item">
-            <span class="contact-k">Validez</span>
-            <span class="contact-v">90 días · Vence {{ $validity }}</span>
+        <div class="ft2-legal">
+            Esta Opinión de Valor es elaborada por {{ $siteName }} con base en datos de oferta publicada en portales inmobiliarios y ajustes estadísticos descritos en este documento.
+            <strong style="color:rgba(255,255,255,.4);">No constituye un avalúo formal</strong> con efectos fiscales, notariales o de crédito hipotecario.
+            Para dichos efectos se requiere valuador certificado (INDAABIN / SHF / AMPI). El valor de cierre depende de las condiciones de cada negociación.
+            &nbsp;·&nbsp; &copy; {{ now()->year }} {{ $siteName }} · Todos los derechos reservados.
         </div>
     </div>
 
-</div>{{-- /pg2-body --}}
-
-{{-- ── FOOTER LEGAL ──────────────────────────────────────────────────────────── --}}
-<div class="pg2-footer">
-    <div class="footer-brand">{{ $siteName }} &mdash; {{ $siteUrl }}</div>
-    <div class="footer-text">
-        Esta Opinión de Valor es elaborada por {{ $siteName }} con base en datos de oferta publicada en portales inmobiliarios, referencias
-        de mercado y los ajustes estadísticos descritos en este documento. <strong style="color:rgba(255,255,255,.5);">No constituye un avalúo
-        formal</strong> con efectos fiscales, notariales o de crédito hipotecario; para dichos efectos se requiere la intervención de un
-        valuador certificado (INDAABIN / SHF / AMPI). El valor real de cierre depende de las condiciones específicas de cada negociación.
-    </div>
-    <div class="footer-copy">&copy; {{ now()->year }} {{ $siteName }} · Todos los derechos reservados &nbsp;|&nbsp; {{ $siteUrl }} &nbsp;|&nbsp; {{ $folio }}</div>
-</div>
-
-</div>{{-- /pg2 --}}
+</div>{{-- /page-3 --}}
 
 </body>
 </html>

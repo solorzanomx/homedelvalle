@@ -11,21 +11,23 @@ class MarketZoneSeeder extends Seeder
 {
     public function run(): void
     {
-        $period = now()->startOfMonth()->toDateString(); // 2026-04-01
+        $period = now()->startOfMonth()->toDateString();
 
-        // ── Zonas ─────────────────────────────────────────────────────────
+        // ── Zonas y colonias de Benito Juárez ────────────────────────────────
+        // is_published = true  → existentes con datos
+        // is_published = false → nuevas, activar desde el admin cuando tengan precios reales
         $zones = [
             [
                 'slug'              => 'narvarte-piedad',
-                'name'              => 'Narvarte & Piedad',
+                'name'              => 'Narvarte & Vértiz',
                 'short_description' => 'Zona premium consolidada, alta demanda de profesionistas',
                 'sort_order'        => 1,
-                'colonias'          => [
-                    ['name' => 'Narvarte Poniente', 'slug' => 'narvarte-poniente', 'cp' => '03020'],
-                    ['name' => 'Narvarte Oriente',  'slug' => 'narvarte-oriente',  'cp' => '03023'],
-                    ['name' => 'Piedad Narvarte',   'slug' => 'piedad-narvarte',   'cp' => '03000'],
+                'colonias' => [
+                    ['name' => 'Narvarte Poniente',  'slug' => 'narvarte-poniente',  'cp' => '03020', 'published' => true],
+                    ['name' => 'Narvarte Oriente',   'slug' => 'narvarte-oriente',   'cp' => '03023', 'published' => true],
+                    ['name' => 'Piedad Narvarte',    'slug' => 'piedad-narvarte',    'cp' => '03000', 'published' => true],
+                    ['name' => 'Vértiz Narvarte',    'slug' => 'vertiz-narvarte',    'cp' => '03600', 'published' => false],
                 ],
-                // Precio m² departamento: [new_low, new_avg, new_high, mid_low, mid_avg, mid_high, old_low, old_avg, old_high]
                 'apt_prices' => [
                     'new' => [82000, 90000, 98000],
                     'mid' => [62000, 70000, 78000],
@@ -42,10 +44,12 @@ class MarketZoneSeeder extends Seeder
                 'name'              => 'Del Valle',
                 'short_description' => 'Una de las zonas más cotizadas de BJ, oferta limitada',
                 'sort_order'        => 2,
-                'colonias'          => [
-                    ['name' => 'Del Valle Norte',  'slug' => 'del-valle-norte',  'cp' => '03100'],
-                    ['name' => 'Del Valle Centro', 'slug' => 'del-valle-centro', 'cp' => '03100'],
-                    ['name' => 'Del Valle Sur',    'slug' => 'del-valle-sur',    'cp' => '03104'],
+                'colonias' => [
+                    ['name' => 'Del Valle Norte',          'slug' => 'del-valle-norte',          'cp' => '03100', 'published' => true],
+                    ['name' => 'Del Valle Centro',         'slug' => 'del-valle-centro',         'cp' => '03100', 'published' => true],
+                    ['name' => 'Del Valle Sur',            'slug' => 'del-valle-sur',            'cp' => '03104', 'published' => true],
+                    ['name' => 'Tlacoquemécatl del Valle', 'slug' => 'tlacoquemecatl-del-valle', 'cp' => '03200', 'published' => false],
+                    ['name' => 'Adolfo López Mateos',      'slug' => 'adolfo-lopez-mateos',      'cp' => '03650', 'published' => false],
                 ],
                 'apt_prices' => [
                     'new' => [88000, 97000, 106000],
@@ -63,10 +67,13 @@ class MarketZoneSeeder extends Seeder
                 'name'              => 'Portales',
                 'short_description' => 'Zona familiar consolidada, excelente relación precio/m²',
                 'sort_order'        => 3,
-                'colonias'          => [
-                    ['name' => 'Portales Norte',   'slug' => 'portales-norte',   'cp' => '03300'],
-                    ['name' => 'Portales Sur',     'slug' => 'portales-sur',     'cp' => '03300'],
-                    ['name' => 'Portales Oriente', 'slug' => 'portales-oriente', 'cp' => '03570'],
+                'colonias' => [
+                    ['name' => 'Portales Norte',   'slug' => 'portales-norte',   'cp' => '03300', 'published' => true],
+                    ['name' => 'Portales Sur',     'slug' => 'portales-sur',     'cp' => '03300', 'published' => true],
+                    ['name' => 'Portales Oriente', 'slug' => 'portales-oriente', 'cp' => '03570', 'published' => true],
+                    ['name' => 'Ermita',           'slug' => 'ermita',           'cp' => '03560', 'published' => false],
+                    ['name' => 'Parque San Andrés','slug' => 'parque-san-andres','cp' => '03040', 'published' => false],
+                    ['name' => 'Rosedal',          'slug' => 'rosedal',          'cp' => '03100', 'published' => false],
                 ],
                 'apt_prices' => [
                     'new' => [62000, 70000, 78000],
@@ -84,10 +91,12 @@ class MarketZoneSeeder extends Seeder
                 'name'              => 'Álamos & Xoco',
                 'short_description' => 'Zona emergente con creciente demanda de nuevos desarrollos',
                 'sort_order'        => 4,
-                'colonias'          => [
-                    ['name' => 'Álamos',     'slug' => 'alamos',     'cp' => '03400'],
-                    ['name' => 'Xoco',       'slug' => 'xoco',       'cp' => '03330'],
-                    ['name' => 'Niño Jesús', 'slug' => 'nino-jesus', 'cp' => '03820'],
+                'colonias' => [
+                    ['name' => 'Álamos',           'slug' => 'alamos',           'cp' => '03400', 'published' => true],
+                    ['name' => 'Xoco',             'slug' => 'xoco',             'cp' => '03330', 'published' => true],
+                    ['name' => 'Niño Jesús',       'slug' => 'nino-jesus',       'cp' => '03820', 'published' => true],
+                    ['name' => 'Santa Cruz Atoyac','slug' => 'santa-cruz-atoyac','cp' => '03310', 'published' => false],
+                    ['name' => 'General Anaya',    'slug' => 'general-anaya',    'cp' => '03340', 'published' => false],
                 ],
                 'apt_prices' => [
                     'new' => [58000, 66000, 74000],
@@ -105,11 +114,13 @@ class MarketZoneSeeder extends Seeder
                 'name'              => 'Roma Sur & Doctores',
                 'short_description' => 'Zona en transición, alta demanda de uso mixto y renta',
                 'sort_order'        => 5,
-                'colonias'          => [
-                    ['name' => 'Roma Sur',     'slug' => 'roma-sur',     'cp' => '06760'],
-                    ['name' => 'Doctores',     'slug' => 'doctores',     'cp' => '06720'],
-                    ['name' => 'Obrera',       'slug' => 'obrera',       'cp' => '06800'],
-                    ['name' => 'Buenos Aires', 'slug' => 'buenos-aires', 'cp' => '06780'],
+                'colonias' => [
+                    ['name' => 'Roma Sur',      'slug' => 'roma-sur',      'cp' => '06760', 'published' => true],
+                    ['name' => 'Doctores',      'slug' => 'doctores',      'cp' => '06720', 'published' => true],
+                    ['name' => 'Obrera',        'slug' => 'obrera',        'cp' => '06800', 'published' => true],
+                    ['name' => 'Buenos Aires',  'slug' => 'buenos-aires',  'cp' => '06780', 'published' => true],
+                    ['name' => 'Asturias',      'slug' => 'asturias',      'cp' => '06850', 'published' => false],
+                    ['name' => 'Independencia', 'slug' => 'independencia', 'cp' => '03630', 'published' => false],
                 ],
                 'apt_prices' => [
                     'new' => [68000, 76000, 85000],
@@ -120,6 +131,72 @@ class MarketZoneSeeder extends Seeder
                     'new' => [60000, 68000, 78000],
                     'mid' => [46000, 54000, 62000],
                     'old' => [36000, 44000, 52000],
+                ],
+            ],
+            [
+                'slug'              => 'napoles-florida',
+                'name'              => 'Nápoles & Florida',
+                'short_description' => 'Corredor Insurgentes, alta plusvalía y desarrollo vertical',
+                'sort_order'        => 6,
+                'colonias' => [
+                    ['name' => 'Nápoles',                 'slug' => 'napoles',                  'cp' => '03810', 'published' => false],
+                    ['name' => 'Florida',                  'slug' => 'florida',                  'cp' => '01030', 'published' => false],
+                    ['name' => 'Noche Buena',              'slug' => 'noche-buena',              'cp' => '03720', 'published' => false],
+                    ['name' => 'Extremadura Insurgentes',  'slug' => 'extremadura-insurgentes',  'cp' => '03740', 'published' => false],
+                ],
+                'apt_prices' => [
+                    'new' => [80000, 89000, 98000],
+                    'mid' => [60000, 68000, 77000],
+                    'old' => [46000, 54000, 62000],
+                ],
+                'house_prices' => [
+                    'new' => [72000, 82000, 92000],
+                    'mid' => [55000, 63000, 71000],
+                    'old' => [42000, 49000, 56000],
+                ],
+            ],
+            [
+                'slug'              => 'ciudad-deportes-san-pedro',
+                'name'              => 'Ciudad de los Deportes & San Pedro',
+                'short_description' => 'Zona consolidada al poniente de BJ, tranquila y familiar',
+                'sort_order'        => 7,
+                'colonias' => [
+                    ['name' => 'Ciudad de los Deportes', 'slug' => 'ciudad-de-los-deportes', 'cp' => '03710', 'published' => false],
+                    ['name' => 'San Pedro de los Pinos', 'slug' => 'san-pedro-de-los-pinos', 'cp' => '03800', 'published' => false],
+                    ['name' => 'Crédito Constructor',    'slug' => 'credito-constructor',    'cp' => '03940', 'published' => false],
+                    ['name' => 'Nonoalco',               'slug' => 'nonoalco',               'cp' => '03700', 'published' => false],
+                ],
+                'apt_prices' => [
+                    'new' => [60000, 68000, 76000],
+                    'mid' => [48000, 55000, 62000],
+                    'old' => [37000, 44000, 51000],
+                ],
+                'house_prices' => [
+                    'new' => [54000, 62000, 70000],
+                    'mid' => [42000, 49000, 56000],
+                    'old' => [33000, 40000, 47000],
+                ],
+            ],
+            [
+                'slug'              => 'moderna-letran',
+                'name'              => 'Moderna & Letrán Valle',
+                'short_description' => 'Sur oriente de BJ, zona mixta en proceso de densificación',
+                'sort_order'        => 8,
+                'colonias' => [
+                    ['name' => 'Moderna',                  'slug' => 'moderna',                  'cp' => '03510', 'published' => false],
+                    ['name' => 'Letrán Valle',             'slug' => 'letran-valle',             'cp' => '03650', 'published' => false],
+                    ['name' => 'Amores',                   'slug' => 'amores',                   'cp' => '03960', 'published' => false],
+                    ['name' => 'Nueva Diagonal Insurgentes','slug' => 'nueva-diagonal-insurgentes','cp' => '03600', 'published' => false],
+                ],
+                'apt_prices' => [
+                    'new' => [55000, 63000, 71000],
+                    'mid' => [44000, 51000, 58000],
+                    'old' => [35000, 42000, 49000],
+                ],
+                'house_prices' => [
+                    'new' => [49000, 57000, 65000],
+                    'mid' => [39000, 46000, 53000],
+                    'old' => [31000, 38000, 45000],
                 ],
             ],
         ];
@@ -146,13 +223,11 @@ class MarketZoneSeeder extends Seeder
                         'name'           => $colData['name'],
                         'cp'             => $colData['cp'],
                         'alcaldia'       => 'Benito Juárez',
-                        'is_published'   => true,
+                        'is_published'   => $colData['published'],
                     ]
                 );
 
-                // Snapshots por tipo e categoría de antigüedad
                 foreach (['new', 'mid', 'old'] as $ageCategory) {
-                    // Departamentos
                     [$low, $avg, $high] = $aptPrices[$ageCategory];
                     MarketPriceSnapshot::updateOrCreate(
                         [
@@ -172,7 +247,6 @@ class MarketZoneSeeder extends Seeder
                         ]
                     );
 
-                    // Casas
                     [$low, $avg, $high] = $housePrices[$ageCategory];
                     MarketPriceSnapshot::updateOrCreate(
                         [
@@ -195,6 +269,8 @@ class MarketZoneSeeder extends Seeder
             }
         }
 
-        $this->command->info('✓ Zonas: 5 | Colonias: ' . MarketColonia::count() . ' | Snapshots: ' . MarketPriceSnapshot::count());
+        $total     = MarketColonia::count();
+        $published = MarketColonia::where('is_published', true)->count();
+        $this->command->info("✓ Zonas: " . MarketZone::count() . " | Colonias: {$total} ({$published} activas) | Snapshots: " . MarketPriceSnapshot::count());
     }
 }

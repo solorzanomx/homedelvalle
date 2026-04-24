@@ -255,8 +255,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::patch('/ai-config/{agent}', [\App\Http\Controllers\Admin\AiConfigController::class, 'update'])->name('ai-config.update');
 
         // Precios de Mercado (admin — actualización manual)
-        Route::get('/market/prices',     [\App\Http\Controllers\Admin\MarketPricesController::class, 'index'])->name('market.prices');
-        Route::post('/market/prices/run',[\App\Http\Controllers\Admin\MarketPricesController::class, 'run'])->name('market.prices.run');
+        Route::get('/market/prices',                        [\App\Http\Controllers\Admin\MarketPricesController::class, 'index'])->name('market.prices');
+        Route::post('/market/prices/run',                   [\App\Http\Controllers\Admin\MarketPricesController::class, 'run'])->name('market.prices.run');
+        Route::post('/market/colonias/{colonia}/toggle',    [\App\Http\Controllers\Admin\MarketPricesController::class, 'toggle'])->name('market.colonias.toggle');
 
         // Homepage CMS
         Route::get('/homepage', [HomepageController::class, 'index'])->name('homepage');
