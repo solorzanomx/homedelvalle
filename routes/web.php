@@ -529,14 +529,21 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
 
 // ===== PORTAL DE CLIENTE =====
 Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(function () {
-    Route::get('/', [PortalDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/rentals', [PortalRentalController::class, 'index'])->name('rentals.index');
-    Route::get('/rentals/{id}', [PortalRentalController::class, 'show'])->name('rentals.show');
-    Route::get('/documents', [PortalDocumentController::class, 'index'])->name('documents.index');
-    Route::get('/documents/{id}/download', [PortalDocumentController::class, 'download'])->name('documents.download');
-    Route::post('/documents/upload', [PortalDocumentController::class, 'upload'])->name('documents.upload');
-    Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
-    Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
+    // Aceptación de términos — sin gate de legal
+    Route::get('/terminos', [\App\Http\Controllers\Portal\PortalLegalController::class, 'show'])->name('terminos');
+    Route::post('/terminos/aceptar', [\App\Http\Controllers\Portal\PortalLegalController::class, 'aceptar'])->name('terminos.aceptar');
+
+    // Rutas protegidas — requieren haber aceptado el aviso de privacidad
+    Route::middleware('portal.legal')->group(function () {
+        Route::get('/', [PortalDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/rentals', [PortalRentalController::class, 'index'])->name('rentals.index');
+        Route::get('/rentals/{id}', [PortalRentalController::class, 'show'])->name('rentals.show');
+        Route::get('/documents', [PortalDocumentController::class, 'index'])->name('documents.index');
+        Route::get('/documents/{id}/download', [PortalDocumentController::class, 'download'])->name('documents.download');
+        Route::post('/documents/upload', [PortalDocumentController::class, 'upload'])->name('documents.upload');
+        Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
+        Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
+    });
 });
 
 // ── Firma pública — estado del proceso de firma ──────────────────────────────

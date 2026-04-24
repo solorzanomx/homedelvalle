@@ -13,12 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'admin' => \App\Http\Middleware\CheckAdminRole::class,
-            'broker' => \App\Http\Middleware\CheckBrokerRole::class,
-            'editor' => \App\Http\Middleware\CheckEditorRole::class,
-            'viewer' => \App\Http\Middleware\CheckViewerRole::class,
-            'client' => \App\Http\Middleware\CheckClientRole::class,
-            'permission' => \App\Http\Middleware\CheckPermission::class,
+            'admin'        => \App\Http\Middleware\CheckAdminRole::class,
+            'broker'       => \App\Http\Middleware\CheckBrokerRole::class,
+            'editor'       => \App\Http\Middleware\CheckEditorRole::class,
+            'viewer'       => \App\Http\Middleware\CheckViewerRole::class,
+            'client'       => \App\Http\Middleware\CheckClientRole::class,
+            'permission'   => \App\Http\Middleware\CheckPermission::class,
+            'portal.legal' => \App\Http\Middleware\EnsurePortalLegalAcceptance::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

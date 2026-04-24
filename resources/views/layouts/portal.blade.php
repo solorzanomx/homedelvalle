@@ -163,7 +163,10 @@
 
         <div class="portal-nav">
             <a href="{{ route('portal.dashboard') }}" class="{{ request()->routeIs('portal.dashboard') ? 'active' : '' }}">Inicio</a>
+            @php $interests = $portalClient->interest_types ?? []; @endphp
+            @if(array_intersect(['renta_propietario', 'renta_inquilino'], $interests))
             <a href="{{ route('portal.rentals.index') }}" class="{{ request()->routeIs('portal.rentals.*') ? 'active' : '' }}">Mis Rentas</a>
+            @endif
             <a href="{{ route('portal.documents.index') }}" class="{{ request()->routeIs('portal.documents.*') ? 'active' : '' }}">Documentos</a>
             <a href="{{ route('portal.account') }}" class="{{ request()->routeIs('portal.account') ? 'active' : '' }}">Mi Cuenta</a>
         </div>
