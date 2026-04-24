@@ -12,6 +12,7 @@
         <a href="{{ route('admin.content-calendar') }}" class="btn btn-outline"><x-icon name="calendar" class="w-4 h-4" style="margin-right:0.3rem;vertical-align:-2px;" /> Calendario</a>
         @endif
         <a href="{{ route('admin.posts.create') }}" class="btn btn-primary">+ Nuevo Post</a>
+        <a href="{{ route('admin.blog.generator') }}" class="btn btn-outline" style="background:linear-gradient(90deg,#6366f1,#8b5cf6);color:#fff;border:none;">&#9997; Generar con IA</a>
     </div>
 </div>
 

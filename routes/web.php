@@ -332,6 +332,15 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // CMS: Posts y Paginas
         Route::post('cms/upload-image', [PostController::class, 'uploadImage'])->name('cms.upload-image');
         Route::resource('posts', PostController::class)->names('posts');
+
+        // Blog AI Generator
+        Route::prefix('blog')->name('blog.')->group(function () {
+            Route::get('/generar',              [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'index'])->name('generator');
+            Route::post('/descubrir',           [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'discover'])->name('discover');
+            Route::post('/generar',             [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'generate'])->name('generate');
+            Route::post('/generar-sync',        [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'generateSync'])->name('generate-sync');
+            Route::get('/status/{post}',        [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'status'])->name('status');
+        });
         Route::get('content-calendar', [ContentCalendarController::class, 'index'])->name('content-calendar');
         Route::get('content-calendar/events', [ContentCalendarController::class, 'events'])->name('content-calendar.events');
         Route::patch('content-calendar/{post}/date', [ContentCalendarController::class, 'updateDate'])->name('content-calendar.update-date');

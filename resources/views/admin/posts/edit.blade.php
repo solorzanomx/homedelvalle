@@ -173,14 +173,92 @@
                                placeholder="Titulo para buscadores">
                         <p class="form-hint">Dejar vacio para usar el titulo del post.</p>
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group">
                         <label class="form-label">Meta Descripcion</label>
                         <textarea name="meta_description" class="form-textarea" rows="3"
                                   placeholder="Descripcion para buscadores">{{ old('meta_description', $post->meta_description) }}</textarea>
                         <p class="form-hint">Recomendado: 150-160 caracteres.</p>
                     </div>
+                    @if($post->focus_keyword)
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Keyword principal</label>
+                        <input type="text" name="focus_keyword" class="form-input" value="{{ old('focus_keyword', $post->focus_keyword) }}">
+                    </div>
+                    @endif
                 </div>
             </div>
+
+            {{-- AI SEO Data --}}
+            @if($post->ai_generated)
+            <div class="card">
+                <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+                    <h3 style="margin:0;">&#9997; Datos SEO generados por IA</h3>
+                    @if($post->seo_score)
+                    @php $sc = $post->seo_score; $scColor = $sc >= 80 ? '#10b981' : ($sc >= 60 ? '#f59e0b' : '#ef4444'); @endphp
+                    <span style="background:{{ $scColor }}20;color:{{ $scColor }};font-size:.78rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;">SEO {{ $sc }}/100</span>
+                    @endif
+                </div>
+                <div class="card-body" style="font-size:.82rem;">
+
+                    @if($post->reading_time || $post->schema_type)
+                    <div style="display:flex;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap;">
+                        @if($post->reading_time)
+                        <span style="background:#f1f5f9;padding:.2rem .6rem;border-radius:6px;color:#64748b;">&#8987; {{ $post->reading_time }} min lectura</span>
+                        @endif
+                        @if($post->schema_type)
+                        <span style="background:#eff6ff;padding:.2rem .6rem;border-radius:6px;color:#1d4ed8;">Schema: {{ $post->schema_type }}</span>
+                        @endif
+                        @if($post->ai_generation_status === 'done')
+                        <span style="background:#f0fdf4;padding:.2rem .6rem;border-radius:6px;color:#15803d;">&#10003; Generado con IA</span>
+                        @endif
+                    </div>
+                    @endif
+
+                    @if($post->secondary_keywords)
+                    <div style="margin-bottom:.75rem;">
+                        <div style="font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.3rem;">Keywords secundarias</div>
+                        <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
+                            @foreach($post->secondary_keywords as $kw)
+                            <span style="background:#eff6ff;color:#1d4ed8;padding:.15rem .5rem;border-radius:999px;font-size:.75rem;">{{ $kw }}</span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($post->internal_links)
+                    <div style="margin-bottom:.75rem;">
+                        <div style="font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.3rem;">Interlinking sugerido</div>
+                        @foreach($post->internal_links as $link)
+                        <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem;">
+                            <code style="font-size:.75rem;background:#f8fafc;padding:.1rem .4rem;border-radius:4px;">{{ $link['url'] ?? '' }}</code>
+                            <span style="color:var(--text-muted);">→</span>
+                            <span style="font-style:italic;">"{{ $link['anchor'] ?? '' }}"</span>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @if($post->image_prompts)
+                    <div>
+                        <div style="font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.5rem;">Prompts DALL-E para imágenes</div>
+                        @php
+                            $promptLabels = ['featured' => '&#127968; Imagen principal', 'interior_1' => '&#128444; Interior 1', 'interior_2' => '&#128444; Interior 2', 'interior_3' => '&#128444; Interior 3'];
+                        @endphp
+                        @foreach($promptLabels as $key => $label)
+                        @if(!empty($post->image_prompts[$key]))
+                        <div style="margin-bottom:.6rem;">
+                            <div style="font-size:.75rem;font-weight:600;margin-bottom:.2rem;">{!! $label !!}</div>
+                            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:6px;padding:.5rem .65rem;font-size:.75rem;color:#374151;line-height:1.5;cursor:pointer;" onclick="copyPrompt(this)" title="Clic para copiar">{{ $post->image_prompts[$key] }}</div>
+                        </div>
+                        @endif
+                        @endforeach
+                        <p style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">Clic en cada prompt para copiarlo → úsalo en DALL-E 3 o Midjourney</p>
+                    </div>
+                    @endif
+
+                </div>
+            </div>
+            @endif
 
             {{-- Preview --}}
             <div class="card">
@@ -207,6 +285,14 @@
 @section('scripts')
 <script src="/vendor/tinymce/tinymce.min.js"></script>
 <script>
+function copyPrompt(el) {
+    navigator.clipboard.writeText(el.textContent.trim()).then(function() {
+        var orig = el.style.background;
+        el.style.background = '#d1fae5';
+        setTimeout(function() { el.style.background = orig; }, 800);
+    });
+}
+
 function generateSlug(text) {
     var slug = text.toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
