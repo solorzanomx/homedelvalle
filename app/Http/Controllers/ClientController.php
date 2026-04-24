@@ -202,20 +202,31 @@ class ClientController extends Controller
             ->first();
 
         // Documents: direct + captacion + rental
-        $rentalIds   = \App\Models\RentalProcess::where('owner_client_id', $client->id)
+        $rentalIds = \App\Models\RentalProcess::where('owner_client_id', $client->id)
             ->orWhere('tenant_client_id', $client->id)
             ->pluck('id');
-        $captacion   = \App\Models\Captacion::where('client_id', $client->id)
-            ->where('status', 'activo')
-            ->with('documents.uploader')
-            ->latest()
-            ->first();
-        $clientDocs  = \App\Models\Document::where('client_id', $client->id)
-            ->whereNull('captacion_id')
-            ->orWhereIn('rental_process_id', $rentalIds)
-            ->with('uploader')
-            ->latest()
-            ->get();
+
+        try {
+            $captacion = \App\Models\Captacion::where('client_id', $client->id)
+                ->where('status', 'activo')
+                ->with('documents.uploader')
+                ->latest()
+                ->first();
+        } catch (\Throwable $e) {
+            $captacion = null;
+        }
+
+        try {
+            $hasCaptacionCol = \Illuminate\Support\Facades\Schema::hasColumn('documents', 'captacion_id');
+            $clientDocsQuery = \App\Models\Document::where('client_id', $client->id);
+            if ($hasCaptacionCol) {
+                $clientDocsQuery->whereNull('captacion_id');
+            }
+            $clientDocs = $clientDocsQuery->with('uploader')->latest()->get();
+        } catch (\Throwable $e) {
+            $clientDocs = collect();
+        }
+
         $allDocCategories = \App\Models\Document::CATEGORIES;
 
         return view('clients.show', compact(
