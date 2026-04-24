@@ -198,41 +198,66 @@ class EasyBrokerService
 
     private function mapPropertyToPayload(Property $property): array
     {
+        $config = $this->getConfig();
+
+        $lat = $property->latitude ?? $config?->default_latitude;
+        $lng = $property->longitude ?? $config?->default_longitude;
+        $cityId = $config?->default_city_id;
+        $adminDivisionId = $config?->default_admin_division_id;
+
+        $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
+
         $payload = [
-            'title' => $property->title,
-            'description' => $property->description ?? '',
-            'property_type' => $property->property_type ?? 'House',
-            'status' => 'published',
-            'location' => [
-                'name' => implode(', ', array_filter([
-                    $property->colony,
-                    $property->city,
-                ])),
-                'street' => $property->address,
-                'postal_code' => $property->zipcode,
-            ],
-            'operations' => [
+            'title'          => $property->title,
+            'description'    => $property->description ?: $property->title,
+            'property_type'  => $property->property_type ?? $config?->default_property_type ?? 'House',
+            'operation_type' => $opType,
+            'status'         => 'published',
+            'operations'     => [
                 [
-                    'type' => $property->operation_type ?? 'sale',
-                    'amount' => (float) $property->price,
-                    'currency' => $property->currency ?? 'MXN',
+                    'type'     => $opType,
+                    'amount'   => (float) $property->price,
+                    'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
                 ],
             ],
+            'location' => array_filter([
+                'name'                       => implode(', ', array_filter([$property->colony, $property->city])) ?: null,
+                'street'                     => $property->address ?: null,
+                'postal_code'                => $property->zipcode ?: null,
+                'city_id'                    => $cityId ?: null,
+                'administrative_division_id' => $adminDivisionId ?: null,
+                'latitude'                   => $lat ? (float) $lat : null,
+                'longitude'                  => $lng ? (float) $lng : null,
+            ]),
         ];
 
-        if ($property->bedrooms !== null) {
-            $payload['bedrooms'] = $property->bedrooms;
-        }
-        if ($property->bathrooms !== null) {
-            $payload['bathrooms'] = $property->bathrooms;
-        }
-        if ($property->parking !== null) {
-            $payload['parking_spaces'] = $property->parking;
-        }
-        if ($property->area !== null) {
-            $payload['construction_size'] = (float) $property->area;
-        }
+        if ($property->bedrooms !== null)  $payload['bedrooms']          = $property->bedrooms;
+        if ($property->bathrooms !== null) $payload['bathrooms']         = $property->bathrooms;
+        if ($property->parking !== null)   $payload['parking_spaces']    = $property->parking;
+        if ($property->area !== null)      $payload['construction_size'] = (float) $property->area;
+        if ($property->lot_area !== null)  $payload['lot_size']          = (float) $property->lot_area;
 
         return $payload;
+    }
+
+    public function searchLocations(string $query): array
+    {
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'data' => []];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-Authorization' => $this->getApiKey(),
+            ])->get($this->getBaseUrl() . '/locations', ['q' => $query, 'limit' => 20]);
+
+            if ($response->successful()) {
+                return ['success' => true, 'data' => $response->json('content') ?? $response->json() ?? []];
+            }
+
+            return ['success' => false, 'data' => []];
+        } catch (\Exception $e) {
+            return ['success' => false, 'data' => []];
+        }
     }
 }

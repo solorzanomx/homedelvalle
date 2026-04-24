@@ -305,6 +305,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/easybroker/settings', [EasyBrokerSettingsController::class, 'index'])->name('easybroker.settings');
         Route::post('/easybroker/settings', [EasyBrokerSettingsController::class, 'update'])->name('easybroker.settings.update');
         Route::post('/easybroker/settings/test', [EasyBrokerSettingsController::class, 'test'])->name('easybroker.settings.test');
+        Route::get('/easybroker/locations', [EasyBrokerSettingsController::class, 'searchLocations'])->name('easybroker.locations');
 
         // Integraciones (tracking codes, APIs)
         Route::get('/integrations', [IntegrationSettingsController::class, 'index'])->name('integrations.index');

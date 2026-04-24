@@ -30,12 +30,16 @@ class EasyBrokerSettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'api_key' => 'nullable|string|max:500',
-            'base_url' => 'required|url|max:255',
-            'auto_publish' => 'boolean',
-            'default_property_type' => 'required|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
-            'default_operation_type' => 'required|string|in:sale,rental,temporary_rental',
-            'default_currency' => 'required|string|in:MXN,USD',
+            'api_key'                  => 'nullable|string|max:500',
+            'base_url'                 => 'required|url|max:255',
+            'auto_publish'             => 'boolean',
+            'default_property_type'    => 'required|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
+            'default_operation_type'   => 'required|string|in:sale,rental,temporary_rental',
+            'default_currency'         => 'required|string|in:MXN,USD',
+            'default_city_id'          => 'nullable|string|max:100',
+            'default_admin_division_id'=> 'nullable|string|max:100',
+            'default_latitude'         => 'nullable|numeric|between:-90,90',
+            'default_longitude'        => 'nullable|numeric|between:-180,180',
         ]);
 
         $validated['auto_publish'] = $request->boolean('auto_publish');
@@ -63,5 +67,16 @@ class EasyBrokerSettingsController extends Controller
         }
 
         return back()->with('error', $result['message']);
+    }
+
+    public function searchLocations(Request $request, EasyBrokerService $ebService)
+    {
+        $q = $request->input('q', '');
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $result = $ebService->searchLocations($q);
+        return response()->json($result['data'] ?? []);
     }
 }

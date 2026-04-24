@@ -55,6 +55,54 @@
                             @endforeach
                         </select>
                     </div>
+
+                    {{-- Location defaults --}}
+                    <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+                        <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:1rem;">
+                            Ubicacion por defecto (requerida por EasyBroker)
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
+                            Busca tu ciudad y colonia en el campo de abajo para obtener los IDs que EasyBroker requiere.
+                        </div>
+
+                        {{-- Location search --}}
+                        <div class="form-group">
+                            <label class="form-label">Buscar ubicacion</label>
+                            <div style="display:flex; gap:0.5rem;">
+                                <input type="text" id="eb-location-search" class="form-input" placeholder="Ej: Benito Juarez, Ciudad de Mexico..." style="flex:1;">
+                                <button type="button" class="btn btn-outline" onclick="ebSearchLocations()">Buscar</button>
+                            </div>
+                            <div id="eb-location-results" style="display:none; margin-top:0.5rem; border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; background:#fff;"></div>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                            <div class="form-group">
+                                <label class="form-label">City ID</label>
+                                <input type="text" name="default_city_id" id="eb-city-id" class="form-input"
+                                    value="{{ old('default_city_id', $ebSettings->default_city_id ?? '') }}"
+                                    placeholder="Ej: 153">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Administrative Division ID</label>
+                                <input type="text" name="default_admin_division_id" id="eb-admin-div-id" class="form-input"
+                                    value="{{ old('default_admin_division_id', $ebSettings->default_admin_division_id ?? '') }}"
+                                    placeholder="Ej: 14">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Latitud por defecto</label>
+                                <input type="number" name="default_latitude" class="form-input" step="0.0000001"
+                                    value="{{ old('default_latitude', $ebSettings->default_latitude ?? '') }}"
+                                    placeholder="Ej: 19.3993552">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Longitud por defecto</label>
+                                <input type="number" name="default_longitude" class="form-input" step="0.0000001"
+                                    value="{{ old('default_longitude', $ebSettings->default_longitude ?? '') }}"
+                                    placeholder="Ej: -99.1703795">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding-top:1.5rem;">
                             <input type="hidden" name="auto_publish" value="0">
@@ -131,4 +179,48 @@
         </div>
     </div>
 </div>
+
+<script>
+function ebSearchLocations() {
+    const q = document.getElementById('eb-location-search').value.trim();
+    if (q.length < 2) return;
+
+    const resultsDiv = document.getElementById('eb-location-results');
+    resultsDiv.style.display = 'block';
+    resultsDiv.innerHTML = '<div style="padding:0.75rem; color:var(--text-muted); font-size:0.85rem;">Buscando...</div>';
+
+    fetch('{{ route('easybroker.locations') }}?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+            if (!data.length) {
+                resultsDiv.innerHTML = '<div style="padding:0.75rem; color:var(--text-muted); font-size:0.85rem;">Sin resultados</div>';
+                return;
+            }
+            resultsDiv.innerHTML = data.map(loc => `
+                <div style="padding:0.6rem 0.75rem; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.85rem;"
+                    onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"
+                    onclick="ebSelectLocation(${JSON.stringify(loc)})">
+                    <span style="font-weight:500;">${loc.name ?? loc.title ?? ''}</span>
+                    <span style="color:var(--text-muted); margin-left:0.5rem; font-size:0.78rem;">
+                        ID ciudad: ${loc.city_id ?? loc.id ?? '?'} | Div: ${loc.administrative_division_id ?? '?'}
+                    </span>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            resultsDiv.innerHTML = '<div style="padding:0.75rem; color:#dc2626; font-size:0.85rem;">Error al buscar</div>';
+        });
+}
+
+function ebSelectLocation(loc) {
+    if (loc.city_id)                    document.getElementById('eb-city-id').value = loc.city_id;
+    if (loc.administrative_division_id) document.getElementById('eb-admin-div-id').value = loc.administrative_division_id;
+    document.getElementById('eb-location-results').style.display = 'none';
+    document.getElementById('eb-location-search').value = loc.name ?? loc.title ?? '';
+}
+
+document.getElementById('eb-location-search')?.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); ebSearchLocations(); }
+});
+</script>
 @endsection
