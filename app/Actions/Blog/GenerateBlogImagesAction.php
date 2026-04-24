@@ -157,12 +157,11 @@ class GenerateBlogImagesAction
         $response = Http::withToken(config('services.openai.api_key'))
             ->timeout(120)
             ->post('https://api.openai.com/v1/images/generations', [
-                'model'           => self::DALLE_MODEL,
-                'prompt'          => $prompt,
-                'n'               => 1,
-                'size'            => self::DALLE_SIZE,
-                'quality'         => 'high',
-                'response_format' => 'b64_json',
+                'model'   => self::DALLE_MODEL,
+                'prompt'  => $prompt,
+                'n'       => 1,
+                'size'    => self::DALLE_SIZE,
+                'quality' => 'high',
             ]);
 
         if (!$response->successful()) {
