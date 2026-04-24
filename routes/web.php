@@ -341,6 +341,11 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::post('/generar-sync',        [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'generateSync'])->name('generate-sync');
             Route::get('/generar-sync',         fn() => redirect()->route('admin.blog.generator'));
             Route::get('/status/{post}',        [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'status'])->name('status');
+            // Step 2 — images
+            Route::get('/{post}/imagenes',            [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'images'])->name('images');
+            Route::post('/{post}/generar-imagenes',   [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'generateAllImages'])->name('generate-all-images');
+            Route::post('/{post}/re-imagen',          [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'regenerateImage'])->name('regenerate-image');
+            Route::post('/{post}/finalizar-imagenes', [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'finalizeImages'])->name('finalize-images');
         });
         Route::get('content-calendar', [ContentCalendarController::class, 'index'])->name('content-calendar');
         Route::get('content-calendar/events', [ContentCalendarController::class, 'events'])->name('content-calendar.events');

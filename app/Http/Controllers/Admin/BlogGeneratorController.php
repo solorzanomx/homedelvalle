@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Blog\GenerateBlogImagesAction;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateBlogPostJob;
 use App\Models\BlogTopicSuggestion;
@@ -9,15 +10,19 @@ use App\Models\Post;
 use App\Services\BlogAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BlogGeneratorController extends Controller
 {
-    public function __construct(private readonly BlogAIService $blogAI) {}
+    public function __construct(
+        private readonly BlogAIService $blogAI,
+        private readonly GenerateBlogImagesAction $imageAction,
+    ) {}
 
-    /**
-     * GET /admin/blog/generar — Show the generator UI
-     */
+    // ── STEP 1 ────────────────────────────────────────────────────────
+
+    /** GET /admin/blog/generar */
     public function index(Request $request)
     {
         $sessionId   = $request->get('session', null);
@@ -33,9 +38,7 @@ class BlogGeneratorController extends Controller
         return view('admin.posts.generate', compact('suggestions', 'sessionId', 'recentPosts'));
     }
 
-    /**
-     * POST /admin/blog/descubrir — Run Perplexity + Claude topic discovery
-     */
+    /** POST /admin/blog/descubrir */
     public function discover(Request $request)
     {
         $request->validate(['topic' => 'nullable|string|max:200']);
@@ -49,7 +52,6 @@ class BlogGeneratorController extends Controller
             return back()->with('error', 'Error en la búsqueda de temas: ' . $e->getMessage());
         }
 
-        // Persist suggestions for this session
         foreach ($topics as $topic) {
             BlogTopicSuggestion::create([
                 'session_id'         => $sessionId,
@@ -65,53 +67,41 @@ class BlogGeneratorController extends Controller
         return redirect()->route('admin.blog.generator', ['session' => $sessionId]);
     }
 
-    /**
-     * POST /admin/blog/generar — Create a Post placeholder and dispatch generation job
-     */
+    /** POST /admin/blog/generar — async job */
     public function generate(Request $request)
     {
         $request->validate([
-            'title'      => 'required|string|max:200',
-            'keywords'   => 'required|string|max:500',
+            'title'         => 'required|string|max:200',
+            'keywords'      => 'required|string|max:500',
             'suggestion_id' => 'nullable|exists:blog_topic_suggestions,id',
             'market_data'   => 'nullable|string|max:5000',
         ]);
 
-        $title       = $request->input('title');
-        $keywords    = array_values(array_filter(array_map('trim', explode(',', $request->input('keywords')))));
-        $marketData  = (string) $request->input('market_data', '');
-        $suggestionId = $request->input('suggestion_id');
+        $post = $this->createPlaceholder($request);
 
-        // Create a draft Post placeholder
-        $post = Post::create([
-            'title'                => $title,
-            'slug'                 => Str::slug($title) . '-' . substr((string) Str::uuid(), 0, 8),
-            'body'                 => '',
-            'status'               => 'draft',
-            'user_id'              => Auth::id(),
-            'ai_generated'         => true,
-            'ai_generation_status' => 'pending',
-        ]);
-
-        if ($suggestionId) {
-            BlogTopicSuggestion::find($suggestionId)?->update(['status' => 'selected']);
+        if ($sid = $request->input('suggestion_id')) {
+            BlogTopicSuggestion::find($sid)?->update(['status' => 'selected']);
         }
 
-        GenerateBlogPostJob::dispatch($post, $title, $keywords, $marketData, $suggestionId);
+        GenerateBlogPostJob::dispatch(
+            $post,
+            $request->input('title'),
+            array_values(array_filter(array_map('trim', explode(',', $request->input('keywords'))))),
+            (string) $request->input('market_data', ''),
+            $request->input('suggestion_id'),
+        );
 
         return redirect()
             ->route('admin.posts.show', $post)
             ->with('info', 'Generación iniciada. El artículo estará listo en 1-2 minutos.');
     }
 
-    /**
-     * POST /admin/blog/generar-sync — Synchronous generation (for small queues / local)
-     */
+    /** POST /admin/blog/generar-sync — synchronous, then go to Step 2 */
     public function generateSync(Request $request)
     {
         $request->validate([
-            'title'    => 'required|string|max:200',
-            'keywords' => 'required|string|max:500',
+            'title'         => 'required|string|max:200',
+            'keywords'      => 'required|string|max:500',
             'market_data'   => 'nullable|string|max:5000',
             'suggestion_id' => 'nullable|exists:blog_topic_suggestions,id',
         ]);
@@ -121,15 +111,7 @@ class BlogGeneratorController extends Controller
         $marketData  = (string) $request->input('market_data', '');
         $suggestionId = $request->input('suggestion_id');
 
-        $post = Post::create([
-            'title'                => $title,
-            'slug'                 => Str::slug($title) . '-' . substr((string) Str::uuid(), 0, 8),
-            'body'                 => '',
-            'status'               => 'draft',
-            'user_id'              => Auth::id(),
-            'ai_generated'         => true,
-            'ai_generation_status' => 'pending',
-        ]);
+        $post = $this->createPlaceholder($request);
 
         if ($suggestionId) {
             BlogTopicSuggestion::find($suggestionId)?->update(['status' => 'selected']);
@@ -151,21 +133,104 @@ class BlogGeneratorController extends Controller
                 ->with('error', 'Error al generar el artículo: ' . $e->getMessage());
         }
 
+        // Go to Step 2 — image generation
         return redirect()
-            ->route('admin.posts.edit', $post)
-            ->with('success', 'Artículo generado y listo para editar.');
+            ->route('admin.blog.images', $post)
+            ->with('success', 'Contenido generado. Ahora genera las imágenes.');
     }
 
-    /**
-     * GET /admin/blog/status/{post} — JSON status for polling
-     */
+    // ── STEP 2 ────────────────────────────────────────────────────────
+
+    /** GET /admin/blog/{post}/imagenes */
+    public function images(Post $post)
+    {
+        $prompts  = $post->image_prompts ?? [];
+        $imageData = [];
+
+        foreach (GenerateBlogImagesAction::KEYS as $key) {
+            $storedPath = $prompts["path_{$key}"] ?? null;
+            $imageData[$key] = [
+                'label'  => GenerateBlogImagesAction::LABELS[$key],
+                'prompt' => $prompts[$key] ?? null,
+                'url'    => $storedPath ? Storage::disk('public')->url($storedPath) : null,
+            ];
+        }
+
+        return view('admin.posts.images', compact('post', 'imageData'));
+    }
+
+    /** POST /admin/blog/{post}/generar-imagenes — AJAX: generate all */
+    public function generateAllImages(Post $post)
+    {
+        try {
+            $this->imageAction->generateAll($post);
+
+            $post->refresh();
+            $prompts = $post->image_prompts ?? [];
+            $urls = [];
+
+            foreach (GenerateBlogImagesAction::KEYS as $key) {
+                $path      = $prompts["path_{$key}"] ?? null;
+                $urls[$key] = $path
+                    ? Storage::disk('public')->url($path) . '?t=' . time()
+                    : null;
+            }
+
+            return response()->json(['success' => true, 'urls' => $urls]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /** POST /admin/blog/{post}/re-imagen — AJAX: regenerate single */
+    public function regenerateImage(Request $request, Post $post)
+    {
+        $request->validate(['key' => 'required|in:featured,interior_1,interior_2,interior_3']);
+
+        try {
+            $url = $this->imageAction->generateSingle($post, $request->input('key'));
+            return response()->json(['success' => true, 'url' => $url]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /** POST /admin/blog/{post}/finalizar — inject images into body, go to Step 3 */
+    public function finalizeImages(Post $post)
+    {
+        $this->imageAction->injectIntoBody($post);
+
+        return redirect()
+            ->route('admin.posts.edit', $post)
+            ->with('success', 'Imágenes insertadas. Revisa y publica el artículo.');
+    }
+
+    // ── POLLING ───────────────────────────────────────────────────────
+
+    /** GET /admin/blog/status/{post} */
     public function status(Post $post)
     {
         return response()->json([
-            'status'     => $post->ai_generation_status,
-            'done'       => $post->ai_generation_status === 'done',
-            'failed'     => $post->ai_generation_status === 'failed',
-            'edit_url'   => route('admin.posts.edit', $post),
+            'status'      => $post->ai_generation_status,
+            'done'        => $post->ai_generation_status === 'done',
+            'failed'      => $post->ai_generation_status === 'failed',
+            'images_url'  => route('admin.blog.images', $post),
+            'edit_url'    => route('admin.posts.edit', $post),
+        ]);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────
+
+    private function createPlaceholder(Request $request): Post
+    {
+        return Post::create([
+            'title'                => $request->input('title'),
+            'slug'                 => Str::slug($request->input('title')) . '-' . substr((string) Str::uuid(), 0, 8),
+            'body'                 => '',
+            'status'               => 'draft',
+            'user_id'              => Auth::id(),
+            'ai_generated'         => true,
+            'ai_generation_status' => 'pending',
         ]);
     }
 }

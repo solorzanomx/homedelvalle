@@ -3,6 +3,31 @@
 
 @section('content')
 <style>
+.step-bar { display:flex; align-items:center; gap:0; margin-bottom:2rem; }
+.step      { display:flex; align-items:center; gap:.5rem; font-size:.82rem; font-weight:600; color:#94a3b8; }
+.step.active{ color:var(--primary); }
+.step-num  { width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.75rem; font-weight:700; background:#e2e8f0; color:#64748b; flex-shrink:0; }
+.step.active .step-num { background:var(--primary); color:#fff; }
+.step-line  { flex:1; height:2px; background:#e2e8f0; min-width:32px; }
+</style>
+
+<div class="step-bar">
+    <div class="step active">
+        <div class="step-num">1</div>
+        <span>Contenido</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+        <div class="step-num">2</div>
+        <span>Imágenes</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+        <div class="step-num">3</div>
+        <span>Editar y publicar</span>
+    </div>
+</div>
+<style>
 .gen-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; }
 .gen-grid   { display:grid; grid-template-columns:1fr 380px; gap:1.5rem; align-items:start; }
 .card       { background:#fff; border-radius:12px; border:1px solid var(--border); }
@@ -156,7 +181,7 @@
                             <div>&#10003; Links internos en texto</div>
                             <div>&#10003; Schema markup (Article/HowTo/FAQ)</div>
                             <div>&#10003; Score SEO estimado</div>
-                            <div>&#10003; 4 prompts DALL-E para imágenes</div>
+                            <div>&#10003; Prompts DALL-E (se usan en paso 2)</div>
                             <div>&#10003; ~1200-1800 palabras</div>
                         </div>
                     </div>
@@ -164,7 +189,7 @@
                     <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;padding:.7rem;" id="generateBtn">
                         <span id="generateLabel">&#9889; Generar artículo completo</span>
                     </button>
-                    <div class="form-hint" style="text-align:center;margin-top:.4rem;">Proceso sincrónico ~60-90 segundos. No cierres esta ventana.</div>
+                    <div class="form-hint" style="text-align:center;margin-top:.4rem;">Proceso sincrónico ~30-50 segundos. Después podrás generar y revisar las imágenes.</div>
                 </form>
             </div>
         </div>

@@ -2,9 +2,7 @@
 
 namespace App\Actions\Blog;
 
-use App\Models\BlogTopicSuggestion;
 use App\Models\Post;
-use App\Models\PostCategory;
 use App\Services\BlogAIService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -12,24 +10,20 @@ use Illuminate\Support\Str;
 
 class GenerateBlogPostAction
 {
-    public function __construct(
-        private readonly BlogAIService $blogAI,
-        private readonly GenerateBlogImagesAction $imageAction,
-    ) {}
+    public function __construct(private readonly BlogAIService $blogAI) {}
 
     /**
-     * Generate a complete blog post from a topic suggestion (or free title + keywords).
-     * Updates the Post record with generated content and sets status='draft'.
+     * Generate blog post content (text + SEO fields + image prompts).
+     * Does NOT generate images — caller decides whether to do that.
      */
     public function execute(Post $post, string $title, array $keywords, string $marketData = ''): Post
     {
-        set_time_limit(300); // 5 min — long-form generation
+        set_time_limit(300);
         $post->update(['ai_generation_status' => 'generating']);
 
         try {
             $generated = $this->blogAI->generate($title, $keywords, $marketData);
 
-            // Ensure slug is unique
             $slug = $generated['slug'] ?: Str::slug($generated['title']);
             $slug = $this->uniqueSlug($slug, $post->id);
 
@@ -54,16 +48,6 @@ class GenerateBlogPostAction
                 'user_id'              => $post->user_id ?? Auth::id() ?? 1,
             ]);
 
-            // Generate DALL-E images and replace {{IMG1}} {{IMG2}} {{IMG3}} placeholders
-            try {
-                $this->imageAction->execute($post->fresh());
-            } catch (\Throwable $e) {
-                Log::warning('GenerateBlogPostAction: image generation failed (non-fatal)', [
-                    'post_id' => $post->id,
-                    'error'   => $e->getMessage(),
-                ]);
-            }
-
             return $post->fresh();
 
         } catch (\Throwable $e) {
@@ -71,9 +55,7 @@ class GenerateBlogPostAction
                 'post_id' => $post->id,
                 'error'   => $e->getMessage(),
             ]);
-
             $post->update(['ai_generation_status' => 'failed']);
-
             throw $e;
         }
     }

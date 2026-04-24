@@ -27,9 +27,21 @@ class GenerateBlogPostJob implements ShouldQueue
         public readonly ?int    $suggestionId      = null,
     ) {}
 
-    public function handle(GenerateBlogPostAction $action): void
-    {
-        $action->execute($this->post, $this->title, $this->keywords, $this->marketData);
+    public function handle(
+        GenerateBlogPostAction $action,
+        \App\Actions\Blog\GenerateBlogImagesAction $imageAction,
+    ): void {
+        $post = $action->execute($this->post, $this->title, $this->keywords, $this->marketData);
+
+        // For async jobs, do the full pipeline automatically
+        try {
+            $imageAction->execute($post);
+        } catch (\Throwable $e) {
+            Log::warning('GenerateBlogPostJob: image generation failed (non-fatal)', [
+                'post_id' => $post->id,
+                'error'   => $e->getMessage(),
+            ]);
+        }
 
         if ($this->suggestionId) {
             BlogTopicSuggestion::find($this->suggestionId)?->update([
