@@ -133,7 +133,7 @@
             $icon = in_array($ext, ['jpg','jpeg','png','gif','webp']) ? '&#128247;' : ($ext === 'pdf' ? '&#128196;' : '&#128462;');
         @endphp
         <div class="doc-row">
-            <div class="doc-icon">{{ $icon }}</div>
+            <div class="doc-icon">{!! $icon !!}</div>
             <div class="doc-info">
                 <div class="doc-name">{{ $doc->label ?? $doc->file_name }}</div>
                 <div class="doc-meta">
@@ -182,7 +182,7 @@
             $icon = in_array($ext, ['jpg','jpeg','png','gif','webp']) ? '&#128247;' : ($ext === 'pdf' ? '&#128196;' : '&#128462;');
         @endphp
         <div class="doc-row">
-            <div class="doc-icon">{{ $icon }}</div>
+            <div class="doc-icon">{!! $icon !!}</div>
             <div class="doc-info">
                 <div class="doc-name">{{ $doc->label ?? $doc->file_name }}</div>
                 <div class="doc-meta">

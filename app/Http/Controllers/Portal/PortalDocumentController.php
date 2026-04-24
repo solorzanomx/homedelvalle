@@ -29,17 +29,20 @@ class PortalDocumentController extends Controller
             ]);
         }
 
-        // General documents (rental processes, etc.)
-        $documents = $this->portalService->getDocumentsForClient($client);
-
-        // Captacion documents
+        // Captacion activa y sus documentos
         $captacion = Captacion::where('client_id', $client->id)
             ->where('status', 'activo')
             ->with('documents')
             ->latest()
             ->first();
 
-        $captacionDocuments = $captacion ? $captacion->documents->sortBy('category') : collect();
+        $captacionDocuments   = $captacion ? $captacion->documents->sortBy('category') : collect();
+        $captacionDocumentIds = $captacionDocuments->pluck('id')->all();
+
+        // General documents (rental, general) — excluir los de captación para evitar duplicados
+        $documents = $this->portalService->getDocumentsForClient($client)
+            ->filter(fn($d) => !in_array($d->id, $captacionDocumentIds))
+            ->values();
 
         return view('portal.documents.index', compact(
             'documents', 'captacionDocuments', 'captacion', 'client'
