@@ -303,9 +303,11 @@
                             <div class="form-group">
                                 <label class="form-label">Estado</label>
                                 <select name="status" class="form-select">
+                                    <option value="captacion" {{ old('status', $property->status) === 'captacion' ? 'selected' : '' }}>En Captación</option>
                                     <option value="available" {{ old('status', $property->status) === 'available' ? 'selected' : '' }}>Disponible</option>
-                                    <option value="sold" {{ old('status', $property->status) === 'sold' ? 'selected' : '' }}>Vendido</option>
-                                    <option value="rented" {{ old('status', $property->status) === 'rented' ? 'selected' : '' }}>Rentado</option>
+                                    <option value="reserved" {{ old('status', $property->status) === 'reserved' ? 'selected' : '' }}>Reservada</option>
+                                    <option value="sold" {{ old('status', $property->status) === 'sold' ? 'selected' : '' }}>Vendida</option>
+                                    <option value="rented" {{ old('status', $property->status) === 'rented' ? 'selected' : '' }}>Rentada</option>
                                 </select>
                             </div>
                             <div class="form-group">

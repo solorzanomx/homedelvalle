@@ -300,7 +300,11 @@
     <div class="prop-badges-row">
         <span class="badge badge-blue">{{ $types[$property->property_type] ?? $property->property_type }}</span>
         @if($property->operation_type)<span class="badge badge-purple">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>@endif
-        @if($property->status === 'sold')<span class="badge badge-red">Vendido</span>@elseif($property->status === 'rented')<span class="badge badge-yellow">Rentado</span>@else<span class="badge badge-green">Disponible</span>@endif
+        @if($property->status === 'sold')<span class="badge badge-red">Vendida</span>
+        @elseif($property->status === 'rented')<span class="badge badge-yellow">Rentada</span>
+        @elseif($property->status === 'reserved')<span class="badge badge-blue">Reservada</span>
+        @elseif($property->status === 'captacion')<span class="badge" style="background:#ede9fe;color:#5b21b6;">En Captación</span>
+        @else<span class="badge badge-green">Disponible</span>@endif
         @if($property->isPublishedToEasyBroker())<span class="badge" style="background:#ecfdf5; color:#065f46;">EasyBroker</span>@endif
     </div>
 

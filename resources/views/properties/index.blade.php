@@ -91,6 +91,8 @@
     font-size: 0.66rem; font-weight: 600; border-radius: 4px; backdrop-filter: blur(8px);
 }
 .p-status-available { background: rgba(16,185,129,0.9); color: #fff; }
+.p-status-captacion { background: rgba(99,102,241,0.9); color: #fff; }
+.p-status-reserved { background: rgba(59,130,246,0.9); color: #fff; }
 .p-status-sold { background: rgba(239,68,68,0.9); color: #fff; }
 .p-status-rented { background: rgba(245,158,11,0.9); color: #fff; }
 .p-card-price {
@@ -201,7 +203,9 @@
     </div>
     <div class="p-tabs" id="statusTabs">
         <button class="p-tab {{ !request('status') ? 'active' : '' }}" data-status="">Todas <span class="p-tab-count">{{ $stats['total'] }}</span></button>
+        <button class="p-tab {{ request('status') === 'captacion' ? 'active' : '' }}" data-status="captacion">En Captación <span class="p-tab-count">{{ $stats['captacion'] }}</span></button>
         <button class="p-tab {{ request('status') === 'available' ? 'active' : '' }}" data-status="available">Disponibles <span class="p-tab-count">{{ $stats['available'] }}</span></button>
+        <button class="p-tab {{ request('status') === 'reserved' ? 'active' : '' }}" data-status="reserved">Reservadas <span class="p-tab-count">{{ $stats['reserved'] }}</span></button>
         <button class="p-tab {{ request('status') === 'sold' ? 'active' : '' }}" data-status="sold">Vendidas <span class="p-tab-count">{{ $stats['sold'] }}</span></button>
         <button class="p-tab {{ request('status') === 'rented' ? 'active' : '' }}" data-status="rented">Rentadas <span class="p-tab-count">{{ $stats['rented'] }}</span></button>
     </div>

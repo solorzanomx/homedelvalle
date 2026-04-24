@@ -453,9 +453,11 @@
                     <div class="form-group">
                         <label class="form-label">Estado</label>
                         <select name="status" class="form-select">
-                            <option value="available" {{ old('status', 'available') === 'available' ? 'selected' : '' }}>Disponible</option>
-                            <option value="sold" {{ old('status') === 'sold' ? 'selected' : '' }}>Vendido</option>
-                            <option value="rented" {{ old('status') === 'rented' ? 'selected' : '' }}>Rentado</option>
+                            <option value="captacion" {{ old('status', 'captacion') === 'captacion' ? 'selected' : '' }}>En Captación</option>
+                            <option value="available" {{ old('status') === 'available' ? 'selected' : '' }}>Disponible</option>
+                            <option value="reserved" {{ old('status') === 'reserved' ? 'selected' : '' }}>Reservada</option>
+                            <option value="sold" {{ old('status') === 'sold' ? 'selected' : '' }}>Vendida</option>
+                            <option value="rented" {{ old('status') === 'rented' ? 'selected' : '' }}>Rentada</option>
                         </select>
                     </div>
                     <div class="form-group">

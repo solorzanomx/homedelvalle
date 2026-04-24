@@ -22,8 +22,15 @@
                     <span class="p-badge" style="background:rgba(245,158,11,0.9); color:#fff;">&#9733; Destacada</span>
                 @endif
             </div>
-            <div class="p-card-status p-status-{{ $property->status ?? 'available' }}">
-                {{ $property->status === 'sold' ? 'Vendido' : ($property->status === 'rented' ? 'Rentado' : 'Disponible') }}
+            <div class="p-card-status p-status-{{ $property->status ?? 'captacion' }}">
+                {{ match($property->status) {
+                    'available'  => 'Disponible',
+                    'captacion'  => 'En Captación',
+                    'reserved'   => 'Reservada',
+                    'sold'       => 'Vendida',
+                    'rented'     => 'Rentada',
+                    default      => 'En Captación',
+                } }}
             </div>
             <div class="p-card-price">${{ number_format($property->price, 0) }} {{ $property->currency ?? 'MXN' }}</div>
         </a>

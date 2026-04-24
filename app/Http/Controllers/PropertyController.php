@@ -49,7 +49,9 @@ class PropertyController extends Controller
 
         $stats = [
             'total'     => Property::count(),
+            'captacion' => Property::where('status', 'captacion')->count(),
             'available' => Property::where('status', 'available')->count(),
+            'reserved'  => Property::where('status', 'reserved')->count(),
             'sold'      => Property::where('status', 'sold')->count(),
             'rented'    => Property::where('status', 'rented')->count(),
         ];
@@ -130,7 +132,7 @@ class PropertyController extends Controller
             'furnished' => 'nullable|string|in:sin_amueblar,semi_amueblado,amueblado',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
-            'status' => 'nullable|in:available,sold,rented',
+            'status' => 'nullable|in:captacion,available,reserved,sold,rented',
             'property_type' => 'nullable|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
             'operation_type' => 'nullable|string|in:sale,rental,temporary_rental',
             'currency' => 'nullable|string|in:MXN,USD',
@@ -147,6 +149,8 @@ class PropertyController extends Controller
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('properties', 'public');
         }
+
+        $validated['status'] = $validated['status'] ?? 'captacion';
 
         unset($validated['photos']);
         $property = Property::create($validated);
@@ -205,7 +209,7 @@ class PropertyController extends Controller
             'furnished' => 'nullable|string|in:sin_amueblar,semi_amueblado,amueblado',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
-            'status' => 'nullable|in:available,sold,rented',
+            'status' => 'nullable|in:captacion,available,reserved,sold,rented',
             'property_type' => 'nullable|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
             'operation_type' => 'nullable|string|in:sale,rental,temporary_rental',
             'currency' => 'nullable|string|in:MXN,USD',
