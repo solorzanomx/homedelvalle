@@ -171,6 +171,47 @@
                         <div class="form-hint">Primera keyword = la principal (aparece en H1, meta title, primer párrafo)</div>
                     </div>
 
+                    <div style="margin-bottom:1rem;">
+                        <label class="form-label">Audiencia objetivo</label>
+                        <input type="text" name="audience" class="form-input" placeholder="Ej: Propietarios que quieren vender en Benito Juárez por primera vez">
+                        <div class="form-hint">Opcional — ayuda a Claude a calibrar el nivel de detalle y el tono</div>
+                    </div>
+
+                    <div style="margin-bottom:1rem;">
+                        <label class="form-label">Puntos clave a cubrir</label>
+                        <textarea name="key_points" class="form-textarea" rows="4" placeholder="Ej:&#10;- Cómo fijar el precio de salida correcto&#10;- Cuándo aceptar una contraoferta&#10;- Errores más caros al negociar&#10;- Señales de comprador serio vs. explorador"></textarea>
+                        <div class="form-hint">Opcional — uno por línea. Claude los integra como secciones o puntos del artículo</div>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label class="form-label">Tono</label>
+                            <select name="tone" class="form-input">
+                                <option value="">— Default del sistema —</option>
+                                <option value="práctico y directo, con ejemplos reales">Práctico y directo</option>
+                                <option value="profesional y confiable, sin tecnicismos innecesarios">Profesional y confiable</option>
+                                <option value="técnico y detallado, para lectores con experiencia inmobiliaria">Técnico y detallado</option>
+                                <option value="conversacional y cercano, como si lo explicara un amigo experto">Conversacional y cercano</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Longitud objetivo</label>
+                            <select name="length" class="form-input">
+                                <option value="">— Default (1200-1800 palabras) —</option>
+                                <option value="artículo estándar (1200-1500 palabras)">Estándar (1200-1500 palabras)</option>
+                                <option value="artículo largo (2000+ palabras), cobertura exhaustiva del tema">Largo (2000+ palabras)</option>
+                                <option value="guía completa (3000+ palabras), la más completa sobre el tema en BJ">Guía completa (3000+ palabras)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom:1.25rem;">
+                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;font-weight:600;">
+                            <input type="checkbox" name="include_faq" value="1" style="width:16px;height:16px;accent-color:var(--primary);">
+                            Incluir sección FAQ al final (4 preguntas) — activa FAQPage schema para Rich Results
+                        </label>
+                    </div>
+
                     <div style="background:#fafafa;border:1px solid var(--border);border-radius:8px;padding:.75rem;margin-bottom:1.25rem;">
                         <div style="font-size:.8rem;font-weight:600;margin-bottom:.5rem;">El artículo incluirá automáticamente:</div>
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.25rem;font-size:.78rem;color:var(--text-muted);">

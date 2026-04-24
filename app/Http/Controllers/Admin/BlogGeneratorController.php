@@ -112,12 +112,24 @@ class BlogGeneratorController extends Controller
             'category_id'   => 'nullable|exists:post_categories,id',
             'tags'          => 'nullable|array',
             'tags.*'        => 'exists:tags,id',
+            'audience'      => 'nullable|string|max:500',
+            'key_points'    => 'nullable|string|max:2000',
+            'tone'          => 'nullable|string|max:100',
+            'length'        => 'nullable|string|max:100',
+            'include_faq'   => 'nullable|boolean',
         ]);
 
-        $title       = $request->input('title');
-        $keywords    = array_values(array_filter(array_map('trim', explode(',', $request->input('keywords')))));
-        $marketData  = (string) $request->input('market_data', '');
+        $title        = $request->input('title');
+        $keywords     = array_values(array_filter(array_map('trim', explode(',', $request->input('keywords')))));
+        $marketData   = (string) $request->input('market_data', '');
         $suggestionId = $request->input('suggestion_id');
+        $brief        = array_filter([
+            'audience'    => $request->input('audience', ''),
+            'key_points'  => $request->input('key_points', ''),
+            'tone'        => $request->input('tone', ''),
+            'length'      => $request->input('length', ''),
+            'include_faq' => $request->boolean('include_faq'),
+        ]);
 
         $post = $this->createPlaceholder($request);
         $post->tags()->sync($request->input('tags', []));
@@ -128,7 +140,7 @@ class BlogGeneratorController extends Controller
 
         try {
             $action = app(\App\Actions\Blog\GenerateBlogPostAction::class);
-            $action->execute($post, $title, $keywords, $marketData);
+            $action->execute($post, $title, $keywords, $marketData, $brief);
 
             if ($suggestionId) {
                 BlogTopicSuggestion::find($suggestionId)?->update([

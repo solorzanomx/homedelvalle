@@ -84,14 +84,14 @@ PROMPT;
     // BLOG POST GENERATION
     // ──────────────────────────────────────────────────────────────────────────
 
-    public function generate(string $title, array $keywords, string $marketData = ''): array
+    public function generate(string $title, array $keywords, string $marketData = '', array $brief = []): array
     {
         // If no market data, run a focused Perplexity search for this specific topic
         if (!$marketData) {
             $focusKw = $keywords[0] ?? $title;
             try {
                 $marketData = $this->ai->search(
-                    "{$focusKw} Benito Juárez CDMX 2025: precios, tendencias, regulaciones, datos actuales."
+                    "{$focusKw} Benito Juárez CDMX 2026: precios, tendencias, regulaciones, datos actuales."
                 );
             } catch (\Throwable $e) {
                 Log::warning('BlogAIService: pre-generation search failed', ['error' => $e->getMessage()]);
@@ -99,7 +99,7 @@ PROMPT;
         }
 
         $system = $this->buildSystemPrompt();
-        $prompt = $this->buildGenerationPrompt($title, $keywords, $marketData);
+        $prompt = $this->buildGenerationPrompt($title, $keywords, $marketData, $brief);
 
         $raw    = $this->ai->complete($prompt, $system, ['temperature' => 0.70, 'max_tokens' => 8192]);
         $parsed = $this->parseJsonBlock($raw);
@@ -143,7 +143,7 @@ Formato de respuesta: JSON válido, sin markdown, sin texto fuera del JSON.
 SYSTEM;
     }
 
-    private function buildGenerationPrompt(string $title, array $keywords, string $marketData): string
+    private function buildGenerationPrompt(string $title, array $keywords, string $marketData, array $brief = []): string
     {
         $keywordList  = implode(', ', $keywords);
         $focusKeyword = $keywords[0] ?? $title;
@@ -155,6 +155,16 @@ SYSTEM;
             ->map(fn($url, $key) => "  - {$key}: {$url}")
             ->implode("\n");
 
+        $audienceBlock   = !empty($brief['audience'])    ? "Audiencia objetivo: {$brief['audience']}"      : '';
+        $keyPointsBlock  = !empty($brief['key_points'])  ? "Puntos clave a cubrir:\n{$brief['key_points']}" : '';
+        $toneBlock       = !empty($brief['tone'])        ? "Tono: {$brief['tone']}"                         : '';
+        $lengthBlock     = !empty($brief['length'])      ? "Longitud objetivo: {$brief['length']}"          : '';
+        $faqBlock        = !empty($brief['include_faq']) ? "Incluir sección FAQ al final con 4 preguntas frecuentes. Usar schema_type = FAQPage." : '';
+
+        $briefSection = implode("\n", array_filter([
+            $audienceBlock, $keyPointsBlock, $toneBlock, $lengthBlock, $faqBlock,
+        ]));
+
         return <<<PROMPT
 Genera un artículo de blog SEO completo para Home del Valle sobre:
 
@@ -162,6 +172,7 @@ Título propuesto: "{$title}"
 Keyword principal: {$focusKeyword}
 Keywords secundarias: {$keywordList}
 Zona geográfica: Benito Juárez, CDMX
+{$briefSection}
 {$marketBlock}
 
 URLs internas para interlinking:

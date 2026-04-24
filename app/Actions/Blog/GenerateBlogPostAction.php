@@ -16,13 +16,13 @@ class GenerateBlogPostAction
      * Generate blog post content (text + SEO fields + image prompts).
      * Does NOT generate images — caller decides whether to do that.
      */
-    public function execute(Post $post, string $title, array $keywords, string $marketData = ''): Post
+    public function execute(Post $post, string $title, array $keywords, string $marketData = '', array $brief = []): Post
     {
         set_time_limit(300);
         $post->update(['ai_generation_status' => 'generating']);
 
         try {
-            $generated = $this->blogAI->generate($title, $keywords, $marketData);
+            $generated = $this->blogAI->generate($title, $keywords, $marketData, $brief);
 
             $slug = $generated['slug'] ?: Str::slug($generated['title']);
             $slug = $this->uniqueSlug($slug, $post->id);
