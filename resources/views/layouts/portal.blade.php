@@ -209,7 +209,7 @@
                 </div>
             </div>
             <iframe
-                src="{{ url('/legal/aviso-de-privacidad') }}"
+                src="{{ url('/legal/aviso-de-privacidad?embed=1') }}"
                 style="flex:1;border:none;width:100%;"
                 title="Aviso de Privacidad"
                 loading="eager"

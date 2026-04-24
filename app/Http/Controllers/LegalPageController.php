@@ -17,6 +17,12 @@ class LegalPageController extends Controller
             ->with('currentVersion')
             ->firstOrFail();
 
+        // ?embed=1 → bare HTML for iframe use (no layout, no header/footer)
+        if (request()->boolean('embed')) {
+            return response()->view('public.legal-embed', compact('document'))
+                ->header('X-Frame-Options', 'SAMEORIGIN');
+        }
+
         return view('public.legal', compact('document'));
     }
 }
