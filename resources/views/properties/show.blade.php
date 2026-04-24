@@ -757,19 +757,39 @@
             </div>
         </div>
 
-        @if($property->isPublishedToEasyBroker())
+        {{-- EasyBroker toggle --}}
         <div class="side-card">
             <div class="side-card-body">
-                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.5rem;">
-                    <span style="width:8px; height:8px; border-radius:50%; background:var(--success); display:inline-block;"></span>
-                    <span style="font-size:0.85rem; font-weight:500; color:var(--success);">EasyBroker</span>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span style="font-size:0.85rem; font-weight:600;">EasyBroker</span>
+                    @if($property->isPublishedToEasyBroker())
+                        <span style="font-size:0.75rem; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:20px; font-weight:500;">Publicada</span>
+                    @else
+                        <span style="font-size:0.75rem; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:20px; font-weight:500;">No publicada</span>
+                    @endif
                 </div>
-                @if($property->easybroker_public_url)
-                    <a href="{{ $property->easybroker_public_url }}" target="_blank" style="font-size:0.82rem; color:var(--primary);">Ver publicacion &rarr;</a>
+
+                @if($property->isPublishedToEasyBroker())
+                    @if($property->easybroker_public_url)
+                    <a href="{{ $property->easybroker_public_url }}" target="_blank" style="font-size:0.8rem; color:var(--primary); display:block; margin-bottom:0.6rem;">Ver en EasyBroker &rarr;</a>
+                    @endif
+                    <form method="POST" action="{{ route('properties.unpublish-easybroker', $property) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline" style="width:100%; color:#dc2626; border-color:#dc2626;"
+                            onclick="return confirm('Despublicar esta propiedad de EasyBroker?')">
+                            &#9744; Despublicar
+                        </button>
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('properties.publish-easybroker', $property) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-primary" style="width:100%;">
+                            &#9745; Publicar en EasyBroker
+                        </button>
+                    </form>
                 @endif
             </div>
         </div>
-        @endif
 
         {{-- QR Code --}}
         @include('admin.properties.partials.qr-card', ['property' => $property])
