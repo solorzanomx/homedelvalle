@@ -34,7 +34,7 @@ class ValuationController extends Controller
     public function create(Request $request): View
     {
         $property = $request->filled('property')
-            ? Property::findOrFail($request->property)
+            ? Property::with('marketColonia')->findOrFail($request->property)
             : null;
 
         $colonias = MarketColonia::with('zone')
@@ -43,7 +43,28 @@ class ValuationController extends Controller
             ->get()
             ->groupBy('zone.name');
 
-        return view('admin.valuations.form', compact('property', 'colonias'));
+        // Pre-fill values from property if provided
+        $prefill = [];
+        if ($property) {
+            $prefill = [
+                'input_colonia_id'    => $property->market_colonia_id,
+                'input_bedrooms'      => $property->bedrooms,
+                'input_bathrooms'     => $property->bathrooms,
+                'input_parking'       => $property->parking,
+                'input_area_total'    => $property->area,
+                'input_area_privada'  => $property->construction_area,
+                'input_type'          => match($property->property_type) {
+                    'Apartment' => 'apartment',
+                    'House'     => 'house',
+                    'Land'      => 'land',
+                    'Office'    => 'office',
+                    default     => null,
+                },
+                'input_age'           => $property->year_built ? (date('Y') - $property->year_built) : null,
+            ];
+        }
+
+        return view('admin.valuations.form', compact('property', 'colonias', 'prefill'));
     }
 
     public function store(Request $request): RedirectResponse

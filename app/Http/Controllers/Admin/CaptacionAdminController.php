@@ -55,6 +55,12 @@ class CaptacionAdminController extends Controller
         $propertyIds = \App\Models\Property::where('client_id', $captacion->client_id)->pluck('id');
         $valuations  = PropertyValuation::whereIn('property_id', $propertyIds)->latest()->get();
 
+        // Propiedad del cliente para pre-llenar valuacion
+        $clientProperty = \App\Models\Property::where('client_id', $captacion->client_id)
+            ->with('marketColonia.zone')
+            ->latest()
+            ->first();
+
         // Timeline: interactions del cliente
         $interactions = \App\Models\Interaction::where('client_id', $captacion->client_id)
             ->with('user')
@@ -67,7 +73,8 @@ class CaptacionAdminController extends Controller
 
         return view('admin.captaciones.show', compact(
             'captacion', 'allCategories', 'requiredCats', 'optionalCats',
-            'docsByCategory', 'valuations', 'interactions', 'etapaLabels', 'etapaColors'
+            'docsByCategory', 'valuations', 'interactions', 'etapaLabels', 'etapaColors',
+            'clientProperty'
         ));
     }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Models\Captacion;
 use App\Models\Document;
 use App\Models\RentalProcess;
 use App\Services\ClientPortalService;
@@ -19,24 +20,46 @@ class PortalDocumentController extends Controller
         $client = $this->portalService->getClientForUser(Auth::user());
 
         if (!$client) {
-            return view('portal.documents.index', ['documents' => collect(), 'client' => null]);
+            return view('portal.documents.index', [
+                'documents'          => collect(),
+                'captacionDocuments' => collect(),
+                'captacion'          => null,
+                'client'             => null,
+                'allCategories'      => Document::CATEGORIES,
+            ]);
         }
 
+        // General documents (rental processes, etc.)
         $documents = $this->portalService->getDocumentsForClient($client);
 
-        return view('portal.documents.index', compact('documents', 'client'));
+        // Captacion documents
+        $captacion = Captacion::where('client_id', $client->id)
+            ->where('status', 'activo')
+            ->with('documents')
+            ->latest()
+            ->first();
+
+        $captacionDocuments = $captacion ? $captacion->documents->sortBy('category') : collect();
+
+        return view('portal.documents.index', compact(
+            'documents', 'captacionDocuments', 'captacion', 'client'
+        ) + ['allCategories' => Document::CATEGORIES]);
     }
 
     public function download(string $id)
     {
-        $client = $this->portalService->getClientForUser(Auth::user());
+        $client   = $this->portalService->getClientForUser(Auth::user());
         $document = Document::findOrFail($id);
 
-        // Verify access: document belongs to client or their rental
         $hasAccess = false;
         if ($client) {
             if ($document->client_id === $client->id) {
                 $hasAccess = true;
+            } elseif ($document->captacion_id) {
+                $cap = Captacion::find($document->captacion_id);
+                if ($cap && $cap->client_id === $client->id) {
+                    $hasAccess = true;
+                }
             } elseif ($document->rental_process_id) {
                 $rental = RentalProcess::find($document->rental_process_id);
                 if ($rental && ($rental->owner_client_id === $client->id || $rental->tenant_client_id === $client->id)) {
@@ -59,40 +82,28 @@ class PortalDocumentController extends Controller
     public function upload(Request $request)
     {
         $client = $this->portalService->getClientForUser(Auth::user());
-
-        if (!$client) {
-            abort(403);
-        }
+        if (!$client) abort(403);
 
         $validated = $request->validate([
-            'rental_process_id' => 'required|exists:rental_processes,id',
             'category' => 'required|string',
-            'label' => 'required|string|max:255',
-            'file' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
+            'file'     => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
         ]);
-
-        // Verify client has access to this rental
-        $rental = RentalProcess::findOrFail($validated['rental_process_id']);
-        if ($rental->owner_client_id !== $client->id && $rental->tenant_client_id !== $client->id) {
-            abort(403);
-        }
 
         $file = $request->file('file');
-        $path = $file->store('documents/rental-' . $rental->id, 'public');
+        $path = $file->store('documents/client-' . $client->id, 'public');
 
         Document::create([
-            'rental_process_id' => $rental->id,
-            'client_id' => $client->id,
+            'client_id'   => $client->id,
             'uploaded_by' => Auth::id(),
-            'category' => $validated['category'],
-            'label' => $validated['label'],
-            'file_path' => $path,
-            'file_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
-            'file_size' => $file->getSize(),
-            'status' => 'received',
+            'category'    => $validated['category'],
+            'label'       => $file->getClientOriginalName(),
+            'file_path'   => $path,
+            'file_name'   => $file->getClientOriginalName(),
+            'mime_type'   => $file->getMimeType(),
+            'file_size'   => $file->getSize(),
+            'status'      => 'received',
         ]);
 
-        return back()->with('success', 'Documento subido exitosamente.');
+        return back()->with('success', 'Documento subido correctamente.');
     }
 }

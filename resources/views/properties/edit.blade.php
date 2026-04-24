@@ -356,6 +356,20 @@
                                 <input type="text" name="colony" class="form-input" value="{{ old('colony', $property->colony) }}">
                             </div>
                             <div class="form-group">
+                                <label class="form-label">Colonia (catalogo valuacion)</label>
+                                <select name="market_colonia_id" class="form-input">
+                                    <option value="">-- Sin vincular --</option>
+                                    @foreach($colonias ?? [] as $zona => $cols)
+                                        <optgroup label="{{ $zona }}">
+                                            @foreach($cols as $col)
+                                                <option value="{{ $col->id }}" {{ old('market_colonia_id', $property->market_colonia_id) == $col->id ? 'selected' : '' }}>{{ $col->name }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endforeach
+                                </select>
+                                <small style="color:var(--text-muted)">Vincular con el catalogo de colonias del sistema de valuacion</small>
+                            </div>
+                            <div class="form-group">
                                 <label class="form-label">Codigo Postal</label>
                                 <input type="text" name="zipcode" class="form-input" value="{{ old('zipcode', $property->zipcode) }}" maxlength="10">
                             </div>

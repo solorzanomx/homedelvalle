@@ -2,7 +2,19 @@
 @section('title', isset($valuation) ? 'Editar valuación' : 'Nueva valuación')
 
 @section('content')
-@php $editing = isset($valuation) && $valuation->exists; @endphp
+@php
+    $editing = isset($valuation) && $valuation->exists;
+    $prefill = $prefill ?? [];
+    // When creating new, use prefill values as defaults (unless old() is present)
+    $pColoniaId   = $prefill['input_colonia_id'] ?? null;
+    $pType        = $prefill['input_type'] ?? null;
+    $pBedrooms    = $prefill['input_bedrooms'] ?? null;
+    $pBathrooms   = $prefill['input_bathrooms'] ?? null;
+    $pParking     = $prefill['input_parking'] ?? null;
+    $pAreaTotal   = $prefill['input_area_total'] ?? null;
+    $pAreaPrivada = $prefill['input_area_privada'] ?? null;
+    $pAge         = $prefill['input_age'] ?? null;
+@endphp
 
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -22,7 +34,7 @@
 
 <form method="POST"
       action="{{ $editing ? route('admin.valuations.update', $valuation) : route('admin.valuations.store') }}"
-      x-data="{ propType: '{{ old('input_type', $valuation->input_type ?? 'apartment') }}', submitting: false }"
+      x-data="{ propType: '{{ old('input_type', $valuation->input_type ?? $pType ?? 'apartment') }}', submitting: false }"
       @submit="submitting = true">
     @csrf
     @if($editing) @method('PUT') @endif
@@ -50,7 +62,7 @@
                                 <optgroup label="{{ $zoneName }}">
                                     @foreach($cols as $col)
                                     <option value="{{ $col->id }}"
-                                        {{ old('input_colonia_id', $valuation->input_colonia_id ?? '') == $col->id ? 'selected' : '' }}>
+                                        {{ old('input_colonia_id', $valuation->input_colonia_id ?? $pColoniaId ?? '') == $col->id ? 'selected' : '' }}>
                                         {{ $col->name }}
                                     </option>
                                     @endforeach
@@ -73,7 +85,7 @@
                             <select name="input_type" class="form-select" x-model="propType">
                                 @foreach(['apartment'=>'Departamento','house'=>'Casa','land'=>'Terreno','office'=>'Oficina'] as $val => $lbl)
                                 <option value="{{ $val }}"
-                                    {{ old('input_type', $valuation->input_type ?? 'apartment') === $val ? 'selected' : '' }}>
+                                    {{ old('input_type', $valuation->input_type ?? $pType ?? 'apartment') === $val ? 'selected' : '' }}>
                                     {{ $lbl }}
                                 </option>
                                 @endforeach
@@ -104,14 +116,14 @@
                             <label class="form-label">m² totales (terreno) <span class="required">*</span></label>
                             <input type="number" name="input_m2_total" class="form-input"
                                    min="10" max="5000" step="0.5"
-                                   value="{{ old('input_m2_total', $valuation->input_m2_total ?? '') }}"
+                                   value="{{ old('input_m2_total', $valuation->input_m2_total ?? $pAreaTotal ?? '') }}"
                                    placeholder="Ej. 80">
                         </div>
                         <div class="form-group">
                             <label class="form-label">m² de construcción</label>
                             <input type="number" name="input_m2_const" class="form-input"
                                    min="10" max="5000" step="0.5"
-                                   value="{{ old('input_m2_const', $valuation->input_m2_const ?? '') }}"
+                                   value="{{ old('input_m2_const', $valuation->input_m2_const ?? $pAreaPrivada ?? '') }}"
                                    placeholder="Dejar vacío si igual que total">
                             <div class="form-hint">Se usará para el cálculo si se especifica</div>
                         </div>
@@ -119,7 +131,7 @@
                             <label class="form-label">Antigüedad (años) <span class="required">*</span></label>
                             <input type="number" name="input_age_years" class="form-input"
                                    min="0" max="150"
-                                   value="{{ old('input_age_years', $valuation->input_age_years ?? '') }}"
+                                   value="{{ old('input_age_years', $valuation->input_age_years ?? $pAge ?? '') }}"
                                    placeholder="Ej. 25">
                         </div>
                     </div>
@@ -135,19 +147,19 @@
                             <label class="form-label">Recámaras <span class="required">*</span></label>
                             <input type="number" name="input_bedrooms" class="form-input"
                                    min="0" max="20"
-                                   value="{{ old('input_bedrooms', $valuation->input_bedrooms ?? 2) }}">
+                                   value="{{ old('input_bedrooms', $valuation->input_bedrooms ?? $pBedrooms ?? 2) }}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Baños <span class="required">*</span></label>
                             <input type="number" name="input_bathrooms" class="form-input"
                                    min="0" max="20"
-                                   value="{{ old('input_bathrooms', $valuation->input_bathrooms ?? 1) }}">
+                                   value="{{ old('input_bathrooms', $valuation->input_bathrooms ?? $pBathrooms ?? 1) }}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Cajones de estacionamiento <span class="required">*</span></label>
                             <input type="number" name="input_parking" class="form-input"
                                    min="0" max="10"
-                                   value="{{ old('input_parking', $valuation->input_parking ?? 0) }}">
+                                   value="{{ old('input_parking', $valuation->input_parking ?? $pParking ?? 0) }}">
                         </div>
                         <div class="form-group">
                             <label class="form-label">Piso del inmueble</label>

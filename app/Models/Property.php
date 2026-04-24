@@ -11,7 +11,13 @@ use Illuminate\Support\Collection;
 
 class Property extends Model
 {
-    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url'];
+    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'market_colonia_id', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url'];
+
+    public function marketColonia(): BelongsTo
+    {
+        return $this->belongsTo(MarketColonia::class, 'market_colonia_id');
+    }
+
     public function broker(): BelongsTo
     {
         return $this->belongsTo(Broker::class);

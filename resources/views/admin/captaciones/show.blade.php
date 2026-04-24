@@ -489,7 +489,12 @@
                     <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Vincular valuación</button>
                 </form>
                 @else
-                <a href="{{ route('admin.valuations.create', ['client_id' => $captacion->client_id]) }}" class="btn btn-sm btn-outline" style="width:100%;text-align:center;display:block;">+ Crear Opinión de Valor</a>
+                <a href="{{ route('admin.valuations.create', array_filter(['property' => $clientProperty?->id, 'client_id' => $captacion->client_id])) }}" class="btn btn-sm btn-outline" style="width:100%;text-align:center;display:block;">+ Crear Opinión de Valor</a>
+                @if($clientProperty)
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;">Propiedad: {{ $clientProperty->title }}{{ $clientProperty->marketColonia ? ' — '.$clientProperty->marketColonia->name : '' }}</div>
+                @else
+                <div style="font-size:.72rem;color:#f59e0b;margin-top:.4rem;">Sin propiedad vinculada al cliente. <a href="{{ route('properties.create') }}" style="color:var(--primary);">Crear propiedad</a></div>
+                @endif
                 @endif
                 @endif
                 @endif

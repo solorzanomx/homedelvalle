@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Broker;
 use App\Models\Client;
 use App\Models\ClientEmail;
+use App\Models\MarketColonia;
 use App\Models\Property;
 use App\Services\EasyBrokerService;
 use Illuminate\Http\Request;
@@ -64,7 +65,8 @@ class PropertyController extends Controller
     {
         $brokers = Broker::where('status', 'active')->orderBy('name')->get();
         $clients = Client::orderBy('name')->select('id', 'name', 'email')->get();
-        return view('properties.create', compact('brokers', 'clients'));
+        $colonias = MarketColonia::with('zone')->published()->orderBy('name')->get()->groupBy('zone.name');
+        return view('properties.create', compact('brokers', 'clients', 'colonias'));
     }
 
     public function show(Property $property)
@@ -135,6 +137,7 @@ class PropertyController extends Controller
             'description' => 'nullable|string',
             'broker_id' => 'nullable|exists:brokers,id',
             'client_id' => 'nullable|exists:clients,id',
+            'market_colonia_id' => 'nullable|exists:market_colonias,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'photos' => 'nullable|array|max:20',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
@@ -170,8 +173,9 @@ class PropertyController extends Controller
     {
         $brokers = Broker::where('status', 'active')->orderBy('name')->get();
         $clients = Client::orderBy('name')->select('id', 'name', 'email')->get();
+        $colonias = MarketColonia::with('zone')->published()->orderBy('name')->get()->groupBy('zone.name');
         $property->load('photos', 'owner');
-        return view('properties.edit', compact('property', 'brokers', 'clients'));
+        return view('properties.edit', compact('property', 'brokers', 'clients', 'colonias'));
     }
 
     public function update(Request $request, Property $property)
@@ -208,6 +212,7 @@ class PropertyController extends Controller
             'description' => 'nullable|string',
             'broker_id' => 'nullable|exists:brokers,id',
             'client_id' => 'nullable|exists:clients,id',
+            'market_colonia_id' => 'nullable|exists:market_colonias,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'youtube_url' => 'nullable|url|max:500',
         ]);
