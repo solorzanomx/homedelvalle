@@ -339,6 +339,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::post('/descubrir',           [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'discover'])->name('discover');
             Route::post('/generar',             [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'generate'])->name('generate');
             Route::post('/generar-sync',        [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'generateSync'])->name('generate-sync');
+            Route::get('/generar-sync',         fn() => redirect()->route('admin.blog.generator'));
             Route::get('/status/{post}',        [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'status'])->name('status');
         });
         Route::get('content-calendar', [ContentCalendarController::class, 'index'])->name('content-calendar');
