@@ -48,15 +48,27 @@ class CaptacionAdminController extends Controller
 
         $allCategories  = Document::CATEGORIES;
         $requiredCats   = Captacion::REQUIRED_DOCS_ETAPA1;
+        $optionalCats   = Captacion::OPTIONAL_DOCS_ETAPA1;
         $docsByCategory = $captacion->documents->groupBy('category');
 
-        // Valuaciones vinculadas a propiedades del cliente (si tiene propiedades)
+        // Valuaciones vinculadas a propiedades del cliente
         $propertyIds = \App\Models\Property::where('client_id', $captacion->client_id)->pluck('id');
-        $valuations  = PropertyValuation::whereIn('property_id', $propertyIds)
+        $valuations  = PropertyValuation::whereIn('property_id', $propertyIds)->latest()->get();
+
+        // Timeline: interactions del cliente
+        $interactions = \App\Models\Interaction::where('client_id', $captacion->client_id)
+            ->with('user')
             ->latest()
+            ->take(30)
             ->get();
 
-        return view('admin.captaciones.show', compact('captacion', 'allCategories', 'requiredCats', 'docsByCategory', 'valuations'));
+        $etapaLabels = [1 => 'Documentación', 2 => 'Valuación', 3 => 'Precio', 4 => 'Exclusiva'];
+        $etapaColors = [1 => '#f59e0b', 2 => '#3b82f6', 3 => '#8b5cf6', 4 => '#10b981'];
+
+        return view('admin.captaciones.show', compact(
+            'captacion', 'allCategories', 'requiredCats', 'optionalCats',
+            'docsByCategory', 'valuations', 'interactions', 'etapaLabels', 'etapaColors'
+        ));
     }
 
     public function updateDocStatus(Request $request, Captacion $captacion, Document $document)
