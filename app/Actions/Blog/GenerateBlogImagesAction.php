@@ -11,9 +11,8 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class GenerateBlogImagesAction
 {
-    private const IMAGE_MODEL   = 'imagen-4.0-fast-generate-001';
-    private const IMAGE_SIZE    = '16:9';          // aspect ratio for Imagen API
-    private const OUTPUT_WIDTH  = 720;             // px after resize
+    private const IMAGE_MODEL   = 'gemini-3.1-flash-image-preview';
+    private const OUTPUT_WIDTH  = 720;
     private const PROMPT_SUFFIX = 'Hyperrealistic, photorealistic, 8K ultra-HD, cinematic lighting, shot on Sony A7R V, professional commercial photography, sharp focus, no text, no watermarks, no logos, no people unless specified.';
 
     public const KEYS = ['featured', 'interior_1', 'interior_2', 'interior_3'];
@@ -165,13 +164,13 @@ class GenerateBlogImagesAction
 
         $response = Http::withHeaders(['x-goog-api-key' => $apiKey])
             ->timeout(120)
-            ->post("https://generativelanguage.googleapis.com/v1beta/models/" . self::IMAGE_MODEL . ":predict", [
-                'instances'  => [['prompt' => $prompt]],
-                'parameters' => [
-                    'sampleCount'        => 1,
-                    'aspectRatio'        => self::IMAGE_SIZE,
-                    'safetyFilterLevel'  => 'BLOCK_SOME',
-                    'personGeneration'   => 'DONT_ALLOW',
+            ->post("https://generativelanguage.googleapis.com/v1beta/models/" . self::IMAGE_MODEL . ":generateContent", [
+                'contents' => [[
+                    'role'  => 'user',
+                    'parts' => [['text' => $prompt]],
+                ]],
+                'generationConfig' => [
+                    'responseModalities' => ['image', 'text'],
                 ],
             ]);
 
@@ -180,7 +179,14 @@ class GenerateBlogImagesAction
             throw new \RuntimeException(self::IMAGE_MODEL . " error ({$response->status()}): {$error}");
         }
 
-        $b64 = $response->json('predictions.0.bytesBase64Encoded');
+        $b64 = null;
+        foreach ($response->json('candidates.0.content.parts', []) as $part) {
+            if (!empty($part['inlineData']['data'])) {
+                $b64 = $part['inlineData']['data'];
+                break;
+            }
+        }
+
         if (!$b64) {
             throw new \RuntimeException(self::IMAGE_MODEL . ' did not return image data. Body: ' . substr($response->body(), 0, 400));
         }
