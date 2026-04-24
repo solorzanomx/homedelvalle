@@ -17,7 +17,7 @@ class EasyBrokerSettingsController extends Controller
         if ($ebSettings) {
             try {
                 $ebSettings->api_key;
-            } catch (\Illuminate\Contracts\Encryption\DecryptionException $e) {
+            } catch (\Illuminate\Contracts\Encryption\DecryptException|\Illuminate\Contracts\Encryption\DecryptionException|\RuntimeException $e) {
                 $ebSettings->update(['api_key' => null]);
                 $ebSettings->refresh();
                 session()->flash('warning', 'La API Key de EasyBroker se invalido por un cambio de clave del sistema. Por favor ingresala de nuevo.');
