@@ -34,14 +34,16 @@ Genera el siguiente JSON:
   "subheadline": "Complementa el headline (máximo 12 palabras)",
   "body_text": "1-2 oraciones de apoyo para la imagen (máximo 30 palabras)",
   "caption": "Texto completo del post de Facebook (máximo 280 caracteres, tono conversacional, termina con CTA implícito, sin hashtags aquí)",
-  "hashtags": ["InmueblesDF", "BienesRaicesMexico", "HomedelValle", "CDMX", "BieneRaices"]
+  "hashtags": ["InmueblesDF", "BienesRaicesMexico", "HomedelValle", "CDMX", "BieneRaices"],
+  "bg_prompt": "Descripción en inglés para generar la imagen de fondo con IA (escena fotorrealista que complementa el tema, sin texto, sin personas salvo que sea esencial, iluminación natural, interior/exterior inmobiliario CDMX)"
 }
 
 Reglas:
 - headline y subheadline van dentro de la IMAGEN (breves, impacto visual)
 - caption es el texto del POST de Facebook (no aparece en la imagen)
 - hashtags: array de 5-8 strings sin el símbolo #
-- Todo en español, tono premium pero accesible
+- bg_prompt: en inglés, descriptivo, orientado a fotografía inmobiliaria premium CDMX
+- Todo lo demás en español, tono premium pero accesible
 USER;
 
         $response = Http::withHeaders([
@@ -83,5 +85,7 @@ USER;
         ]);
 
         Log::info('GenerateFacebookPostAction: generated', ['post_id' => $post->id]);
+
+        return $data['bg_prompt'] ?? null;
     }
 }

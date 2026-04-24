@@ -330,6 +330,12 @@ async function generateCopy() {
         const tags = data.hashtags || [];
         document.getElementById('fldHashtags').value = tags.join(', ');
         document.getElementById('hashtagChips').innerHTML = tags.map(t => `<span class="tag-chip">#${t}</span>`).join('');
+
+        if (data.bg_prompt) {
+            document.getElementById('bgPrompt').value = data.bg_prompt;
+            document.getElementById('bgPrompt').style.borderColor = 'var(--primary)';
+            setTimeout(() => document.getElementById('bgPrompt').style.borderColor = '', 2000);
+        }
     } catch (e) {
         errEl.textContent = e.message;
         errEl.style.display = 'block';

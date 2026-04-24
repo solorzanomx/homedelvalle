@@ -121,7 +121,7 @@ class FacebookPostController extends Controller
         $request->validate(['content' => 'required|string|max:10000']);
 
         try {
-            $this->generateAction->execute($post, $request->input('content'));
+            $bgPrompt = $this->generateAction->execute($post, $request->input('content'));
             $post->refresh();
 
             return response()->json([
@@ -131,6 +131,7 @@ class FacebookPostController extends Controller
                 'body_text'   => $post->body_text,
                 'caption'     => $post->caption,
                 'hashtags'    => $post->hashtags ?? [],
+                'bg_prompt'   => $bgPrompt,
             ]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
