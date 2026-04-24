@@ -13,7 +13,7 @@ class GenerateBlogImagesAction
 {
     private const IMAGE_MODEL   = 'gemini-3.1-flash-image-preview';
     private const OUTPUT_WIDTH  = 720;
-    private const PROMPT_SUFFIX = 'Hyperrealistic, photorealistic, 8K ultra-HD, cinematic lighting, shot on Sony A7R V, professional commercial photography, sharp focus, no text, no watermarks, no logos, no people unless specified.';
+    private const PROMPT_SUFFIX = 'Ultra photorealistic, shot on full-frame DSLR, natural lighting, sharp focus, high detail, 4K resolution, aspect ratio 16:9, no text, no logos, no watermarks, no overlays, no UI elements, no borders, no artificial filters — if any signage, street signs, real estate signs or commercial text appears in the scene, render it exclusively in Spanish, Mexico City context.';
 
     public const KEYS = ['featured', 'interior_1', 'interior_2', 'interior_3'];
 
