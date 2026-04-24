@@ -78,6 +78,38 @@ class GoogleDriveService
     // ── Upload ────────────────────────────────────────────────────────────────
 
     /**
+     * Crea un Google Doc a partir de contenido HTML.
+     * Drive convierte automáticamente el HTML al formato Google Docs.
+     * Retorna el fileId del documento creado.
+     */
+    public function createDocFromHtml(string $documentName, string $htmlContent, string $folderId): string
+    {
+        $fileMetadata = new DriveFile([
+            'name'     => $documentName,
+            'mimeType' => 'application/vnd.google-apps.document',
+            'parents'  => [$folderId],
+        ]);
+
+        $file = $this->drive->files->create(
+            $fileMetadata,
+            [
+                'data'              => $htmlContent,
+                'mimeType'          => 'text/html',
+                'uploadType'        => 'multipart',
+                'fields'            => 'id,name',
+                'supportsAllDrives' => true,
+            ]
+        );
+
+        Log::info('GoogleDrive: Google Doc creado desde HTML', [
+            'file_id' => $file->getId(),
+            'name'    => $file->getName(),
+        ]);
+
+        return $file->getId();
+    }
+
+    /**
      * Sube un PDF local a la carpeta de Google Drive configurada.
      * Retorna el fileId asignado por Drive.
      */

@@ -4,42 +4,55 @@ namespace App\Actions\Contracts;
 
 use App\Models\Client;
 use App\Models\GoogleSignatureRequest;
-use App\Services\GoogleDocsService;
+use App\Models\LegalDocument;
 use App\Services\GoogleDriveService;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class GenerarContratoConfidencialidadAction
 {
     public function __construct(
         private GoogleDriveService $drive,
-        private GoogleDocsService  $docs,
     ) {}
 
     public function execute(Client $client): GoogleSignatureRequest
     {
-        $templateId   = config('services.google_drive.template_confidencialidad');
         $parentFolder = config('services.google_drive.folder_id');
         $documentName = 'Contrato de Confidencialidad — ' . $client->name;
 
-        // 1. Crear carpeta del cliente en Drive
-        $folderName = 'docs-' . $client->name;
-        $folderId   = $this->drive->createFolder($folderName, $parentFolder);
+        // 1. Obtener template desde Legal > Documentos
+        $template = LegalDocument::where('slug', 'contrato-confidencialidad')
+            ->with('currentVersion')
+            ->first();
 
-        // 2. Copiar template dentro de esa carpeta y reemplazar placeholders
-        $fileId = $this->docs->createFromTemplate(
-            templateId:   $templateId,
-            documentName: $documentName,
-            replacements: [
-                '{{NOMBRE_CLIENTE}}' => $client->name,
-                '{{EMAIL_CLIENTE}}'  => $client->email ?? '',
-                '{{TELEFONO}}'       => $client->phone ?? '',
-                '{{FECHA}}'          => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
-                '{{EMPRESA}}'        => config('app.name', 'Home del Valle'),
-            ],
-            folderId: $folderId,
-        );
+        if (!$template || !$template->currentVersion) {
+            throw new RuntimeException(
+                'No se encontró el template del contrato de confidencialidad. ' .
+                'Créalo en Legal > Documentos con el slug "contrato-confidencialidad".'
+            );
+        }
 
-        // 3. Guardar como borrador para revisión
+        // 2. Reemplazar variables en el contenido HTML
+        $blank = '_______________';
+        $html  = strtr($template->currentVersion->content, [
+            '{{fecha}}'              => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
+            '{{nombre}}'             => $client->name,
+            '{{curp}}'               => $client->curp    ?? $blank,
+            '{{rfc}}'                => $client->rfc     ?? $blank,
+            '{{domicilio}}'          => $client->address ?? $blank,
+            '{{telefono}}'           => $client->phone   ?? $blank,
+            '{{correo}}'             => $client->email   ?? $blank,
+            '{{direccion_inmueble}}' => $blank,
+            '{{colonia}}'            => $blank,
+        ]);
+
+        // 3. Crear carpeta del cliente en Drive
+        $folderId = $this->drive->createFolder('docs-' . $client->name, $parentFolder);
+
+        // 4. Crear Google Doc desde el HTML
+        $fileId = $this->drive->createDocFromHtml($documentName, $html, $folderId);
+
+        // 5. Guardar como borrador para revisión del admin
         return GoogleSignatureRequest::create([
             'file_id'         => $fileId,
             'drive_folder_id' => $folderId,

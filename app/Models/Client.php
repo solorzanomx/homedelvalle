@@ -10,7 +10,7 @@ class Client extends Model
 {
     protected $fillable = [
         'name', 'email', 'phone', 'whatsapp',
-        'address', 'city',
+        'address', 'city', 'curp', 'rfc',
         'interest_types', 'lead_temperature', 'priority', 'initial_notes',
         'budget_min', 'budget_max', 'property_type',
         'broker_id', 'assigned_user_id',

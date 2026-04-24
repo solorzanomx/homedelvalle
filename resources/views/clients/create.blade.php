@@ -71,6 +71,14 @@
                     <label class="form-label">Direccion</label>
                     <textarea name="address" class="form-textarea" rows="2">{{ old('address') }}</textarea>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">CURP</label>
+                    <input type="text" name="curp" class="form-input" value="{{ old('curp') }}" placeholder="XXXX000000XXXXXXXX" maxlength="18" style="text-transform:uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">RFC</label>
+                    <input type="text" name="rfc" class="form-input" value="{{ old('rfc') }}" placeholder="XXXX000000XXX" maxlength="13" style="text-transform:uppercase;">
+                </div>
             </div>
 
             <div class="section-title">Clasificacion del Lead</div>

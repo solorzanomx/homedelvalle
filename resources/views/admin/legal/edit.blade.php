@@ -73,6 +73,30 @@
             <span class="badge badge-blue" id="contentStatus">Sin cambios</span>
         </div>
         <div class="card-body">
+            @if($document->type === 'contrato')
+            <div style="margin-bottom: 1rem; padding: 0.75rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);">
+                <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">Variables disponibles — clic para copiar</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                    @foreach([
+                        '{{fecha}}'              => 'Fecha del contrato',
+                        '{{nombre}}'             => 'Nombre del cliente',
+                        '{{curp}}'               => 'CURP',
+                        '{{rfc}}'                => 'RFC',
+                        '{{domicilio}}'          => 'Domicilio del cliente',
+                        '{{telefono}}'           => 'Teléfono',
+                        '{{correo}}'             => 'Correo electrónico',
+                        '{{direccion_inmueble}}' => 'Dirección del inmueble',
+                        '{{colonia}}'            => 'Colonia del inmueble',
+                    ] as $var => $label)
+                    <button type="button"
+                        onclick="copyVar('{{ $var }}')"
+                        title="{{ $label }}"
+                        style="font-size: 0.78rem; font-family: monospace; padding: 0.2rem 0.55rem; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); cursor: pointer;">{{ $var }}</button>
+                    @endforeach
+                </div>
+                <div id="copyFeedback" style="font-size: 0.75rem; color: var(--success); margin-top: 0.4rem; min-height: 1em;"></div>
+            </div>
+            @endif
             <textarea name="content" id="wysiwygEditor" class="form-textarea" rows="20">{{ old('content', $document->currentVersion?->content) }}</textarea>
         </div>
     </div>
@@ -156,6 +180,13 @@
 @section('scripts')
 <script src="/vendor/tinymce/tinymce.min.js"></script>
 <script>
+    function copyVar(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            var fb = document.getElementById('copyFeedback');
+            if (fb) { fb.textContent = text + ' copiado'; setTimeout(function(){ fb.textContent = ''; }, 1500); }
+        });
+    }
+
     var originalContent = @json($document->currentVersion?->content ?? '');
     var contentChanged = false;
 
