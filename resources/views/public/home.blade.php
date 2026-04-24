@@ -6,24 +6,56 @@
         description="¿Quieres vender tu propiedad en la Benito Juárez? Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa. Firma inmobiliaria boutique en CDMX."
         :canonical="url('/')"
     />
-    <x-public.json-ld type="RealEstateAgent" :data="[
-        'name' => $siteSettings?->site_name ?? 'Home del Valle',
-        'description' => $siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precisión',
-        'url' => url('/'),
-        'telephone' => $siteSettings?->contact_phone,
-        'email' => $siteSettings?->contact_email,
+    <x-public.json-ld type="RealEstateAgent" :data="array_filter([
+        'name'        => $siteSettings?->site_name ?? 'Home del Valle Bienes Raíces',
+        'description' => $siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precisión en Benito Juárez, CDMX.',
+        'url'         => url('/'),
+        'telephone'   => $siteSettings?->contact_phone,
+        'email'       => $siteSettings?->contact_email,
+        'logo'        => $siteSettings?->logo_path
+                            ? ['@type' => 'ImageObject', 'url' => asset('storage/' . $siteSettings->logo_path)]
+                            : null,
+        'image'       => $siteSettings?->hero_image_path
+                            ? asset('storage/' . $siteSettings->hero_image_path)
+                            : null,
         'address' => [
-            '@type' => 'PostalAddress',
+            '@type'           => 'PostalAddress',
+            'streetAddress'   => $siteSettings?->address ?? '',
             'addressLocality' => 'Ciudad de México',
-            'addressRegion' => 'Benito Juárez',
-            'addressCountry' => 'MX',
-            'streetAddress' => $siteSettings?->address ?? '',
+            'addressRegion'   => 'Alcaldía Benito Juárez',
+            'postalCode'      => '03100',
+            'addressCountry'  => 'MX',
+        ],
+        'geo' => [
+            '@type'     => 'GeoCoordinates',
+            'latitude'  => 19.3910,
+            'longitude' => -99.1677,
         ],
         'areaServed' => [
             '@type' => 'City',
-            'name' => 'Ciudad de México',
+            'name'  => 'Ciudad de México',
         ],
-    ]" />
+        'openingHoursSpecification' => [
+            [
+                '@type'     => 'OpeningHoursSpecification',
+                'dayOfWeek' => ['Monday','Tuesday','Wednesday','Thursday','Friday'],
+                'opens'     => '09:00',
+                'closes'    => '18:00',
+            ],
+            [
+                '@type'     => 'OpeningHoursSpecification',
+                'dayOfWeek' => ['Saturday'],
+                'opens'     => '10:00',
+                'closes'    => '14:00',
+            ],
+        ],
+        'sameAs' => array_values(array_filter([
+            $siteSettings?->facebook_url,
+            $siteSettings?->instagram_url,
+            $siteSettings?->tiktok_url,
+        ])),
+        'priceRange' => '$$',
+    ])" />
 @endsection
 
 @section('content')
