@@ -321,18 +321,15 @@ function previewImage(input) {
 
 @php
 $aiImagePrompts = $post->image_prompts ?? [];
-$aiImages = [
-    ['label' => 'Imagen destacada', 'path' => $aiImagePrompts['path_featured']   ?? null],
-    ['label' => 'Interior 1',       'path' => $aiImagePrompts['path_interior_1'] ?? null],
-    ['label' => 'Interior 2',       'path' => $aiImagePrompts['path_interior_2'] ?? null],
-    ['label' => 'Interior 3',       'path' => $aiImagePrompts['path_interior_3'] ?? null],
+$aiImagesJs = [
+    ['label' => 'Imagen destacada', 'url' => isset($aiImagePrompts['path_featured'])   ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_featured'])   : null],
+    ['label' => 'Interior 1',       'url' => isset($aiImagePrompts['path_interior_1']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_1']) : null],
+    ['label' => 'Interior 2',       'url' => isset($aiImagePrompts['path_interior_2']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_2']) : null],
+    ['label' => 'Interior 3',       'url' => isset($aiImagePrompts['path_interior_3']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_3']) : null],
 ];
 @endphp
 <script>
-const AI_IMAGES = @json(array_map(fn($img) => [
-    'label' => $img['label'],
-    'url'   => $img['path'] ? \Illuminate\Support\Facades\Storage::disk('public')->url($img['path']) : null,
-], $aiImages));
+const AI_IMAGES = @json($aiImagesJs);
 </script>
 
 tinymce.init({
