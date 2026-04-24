@@ -11,9 +11,9 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class GenerateBlogImagesAction
 {
-    private const DALLE_SIZE    = '1792x1024';
+    private const DALLE_SIZE    = '1536x1024'; // landscape — gpt-image-1
     private const OUTPUT_WIDTH  = 720;
-    private const DALLE_MODEL   = 'dall-e-3';
+    private const DALLE_MODEL   = 'gpt-image-1';
     private const PROMPT_SUFFIX = 'Hyperrealistic, photorealistic, 8K ultra-HD, cinematic lighting, shot on Sony A7R V, professional commercial photography, sharp focus, no text, no watermarks, no logos, no people unless specified.';
 
     public const KEYS = ['featured', 'interior_1', 'interior_2', 'interior_3'];
@@ -148,34 +148,34 @@ class GenerateBlogImagesAction
     {
         $prompt = rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
 
-        Log::info('GenerateBlogImagesAction: calling DALL-E', [
+        Log::info('GenerateBlogImagesAction: calling ' . self::DALLE_MODEL, [
             'post_id' => $postId,
             'path'    => $storagePath,
             'prompt'  => substr($prompt, 0, 150),
         ]);
 
         $response = Http::withToken(config('services.openai.api_key'))
-            ->timeout(90)
+            ->timeout(120)
             ->post('https://api.openai.com/v1/images/generations', [
                 'model'           => self::DALLE_MODEL,
                 'prompt'          => $prompt,
                 'n'               => 1,
                 'size'            => self::DALLE_SIZE,
-                'quality'         => 'standard',
-                'response_format' => 'url',
+                'quality'         => 'high',
+                'response_format' => 'b64_json',
             ]);
 
         if (!$response->successful()) {
             $error = $response->json('error.message') ?? $response->body();
-            throw new \RuntimeException("DALL-E error ({$response->status()}): {$error}");
+            throw new \RuntimeException(self::DALLE_MODEL . " error ({$response->status()}): {$error}");
         }
 
-        $imageUrl = $response->json('data.0.url');
-        if (!$imageUrl) {
-            throw new \RuntimeException('DALL-E did not return an image URL');
+        $b64 = $response->json('data.0.b64_json');
+        if (!$b64) {
+            throw new \RuntimeException(self::DALLE_MODEL . ' did not return image data');
         }
 
-        $imageData = Http::timeout(60)->get($imageUrl)->body();
+        $imageData = base64_decode($b64);
 
         $manager = new ImageManager(new Driver());
         $resized  = $manager->read($imageData)
