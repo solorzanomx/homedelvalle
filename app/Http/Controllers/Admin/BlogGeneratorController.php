@@ -160,9 +160,22 @@ class BlogGeneratorController extends Controller
     }
 
     /** POST /admin/blog/{post}/generar-imagenes — AJAX: generate all */
-    public function generateAllImages(Post $post)
+    public function generateAllImages(Request $request, Post $post)
     {
         try {
+            // Apply any custom prompts sent from the UI before generating
+            $customPrompts = $request->input('prompts', []);
+            if (!empty($customPrompts)) {
+                $prompts = $post->image_prompts ?? [];
+                foreach (GenerateBlogImagesAction::KEYS as $key) {
+                    if (!empty($customPrompts[$key])) {
+                        $prompts[$key] = $customPrompts[$key];
+                    }
+                }
+                $post->update(['image_prompts' => $prompts]);
+                $post->refresh();
+            }
+
             $this->imageAction->generateAll($post);
 
             $post->refresh();
@@ -186,6 +199,15 @@ class BlogGeneratorController extends Controller
     public function regenerateImage(Request $request, Post $post)
     {
         $request->validate(['key' => 'required|in:featured,interior_1,interior_2,interior_3']);
+
+        // Save custom prompt if provided
+        $customPrompt = $request->input('prompt');
+        if ($customPrompt) {
+            $prompts = $post->image_prompts ?? [];
+            $prompts[$request->input('key')] = $customPrompt;
+            $post->update(['image_prompts' => $prompts]);
+            $post->refresh();
+        }
 
         try {
             $url = $this->imageAction->generateSingle($post, $request->input('key'));

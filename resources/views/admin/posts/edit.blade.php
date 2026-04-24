@@ -30,6 +30,9 @@
         </div>
     </div>
     <a href="{{ route('admin.posts.index') }}" class="btn btn-outline">&#8592; Volver</a>
+    @if($post->ai_generated)
+    <a href="{{ route('admin.blog.images', $post) }}" class="btn btn-outline" style="font-size:.82rem;">&#128444; Re-generar imágenes</a>
+    @endif
 </div>
 
 @if($errors->any())

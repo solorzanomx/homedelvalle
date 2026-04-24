@@ -46,13 +46,14 @@
 .spinner { display:inline-block; width:32px; height:32px; border:3px solid #e2e8f0; border-top-color:var(--primary); border-radius:50%; animation:spin .7s linear infinite; }
 @keyframes spin { to { transform:rotate(360deg); } }
 
-/* ── Prompt ───────────────────────────────────────────────────────── */
-.prompt-box {
-    background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;
-    padding:.5rem .75rem; font-size:.73rem; line-height:1.6; color:#475569;
-    font-family:'JetBrains Mono','Fira Code',monospace; max-height:80px;
-    overflow-y:auto; word-break:break-word;
+/* ── Prompt textarea ──────────────────────────────────────────────── */
+.prompt-ta {
+    width:100%; border:1px solid #e2e8f0; border-radius:6px;
+    padding:.5rem .75rem; font-size:.73rem; line-height:1.6; color:#374151;
+    font-family:'JetBrains Mono','Fira Code',monospace; min-height:72px;
+    resize:vertical; background:#f8fafc; transition:border-color .15s;
 }
+.prompt-ta:focus { outline:none; border-color:#3b82f6; background:#fff; }
 
 /* ── Buttons ──────────────────────────────────────────────────────── */
 .btn        { display:inline-flex; align-items:center; gap:.4rem; padding:.5rem 1rem; border-radius:8px; font-size:.84rem; font-weight:600; cursor:pointer; border:none; text-decoration:none; }
@@ -152,13 +153,11 @@ $keys = ['featured', 'interior_1', 'interior_2', 'interior_3'];
         {{-- Error --}}
         <div class="img-error" id="error-{{ $key }}"></div>
 
-        {{-- Prompt --}}
-        @if($img['prompt'])
+        {{-- Prompt editable --}}
         <div>
-            <div style="font-size:.67rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Prompt DALL-E</div>
-            <div class="prompt-box">{{ $img['prompt'] }}</div>
+            <div style="font-size:.67rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Prompt DALL-E <span style="font-weight:400;text-transform:none;">(editable)</span></div>
+            <textarea class="prompt-ta" id="prompt-{{ $key }}" rows="3">{{ $img['prompt'] ?? '' }}</textarea>
         </div>
-        @endif
 
         {{-- Actions --}}
         <div style="display:flex;gap:.5rem;">
@@ -236,11 +235,13 @@ async function generateSingle(key) {
     setLoading(key, true);
     showError(key, '');
 
+    const customPrompt = document.getElementById(`prompt-${key}`)?.value?.trim() || null;
+
     try {
         const r = await fetch(URL_SINGLE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-            body: JSON.stringify({ key }),
+            body: JSON.stringify({ key, prompt: customPrompt }),
         });
         const d = await r.json();
         if (d.success) {
@@ -263,11 +264,18 @@ async function generateAll() {
     btnAll.disabled = true;
     btnAll.textContent = 'Generando…';
 
+    // Collect any edited prompts
+    const prompts = {};
+    keys.forEach(k => {
+        const val = document.getElementById(`prompt-${k}`)?.value?.trim();
+        if (val) prompts[k] = val;
+    });
+
     try {
         const r = await fetch(URL_ALL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-            body: JSON.stringify({}),
+            body: JSON.stringify({ prompts }),
         });
         const d = await r.json();
         if (d.success && d.urls) {
