@@ -319,12 +319,27 @@ function previewImage(input) {
     }
 }
 
+@php
+$aiImagePrompts = $post->image_prompts ?? [];
+$aiImages = [
+    ['label' => 'Imagen destacada', 'path' => $aiImagePrompts['path_featured']   ?? null],
+    ['label' => 'Interior 1',       'path' => $aiImagePrompts['path_interior_1'] ?? null],
+    ['label' => 'Interior 2',       'path' => $aiImagePrompts['path_interior_2'] ?? null],
+    ['label' => 'Interior 3',       'path' => $aiImagePrompts['path_interior_3'] ?? null],
+];
+@endphp
+<script>
+const AI_IMAGES = @json(array_map(fn($img) => [
+    'label' => $img['label'],
+    'url'   => $img['path'] ? \Illuminate\Support\Facades\Storage::disk('public')->url($img['path']) : null,
+], $aiImages));
+</script>
+
 tinymce.init({
-    selector: '#wysiwygEditor',
     height: 500,
     menubar: 'edit insert format table',
     plugins: 'lists link image table code fullscreen preview autolink',
-    toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link image imagegallery | insertcta | table | code fullscreen',
+    toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link image imagegallery | insertcta insertaiimg | table | code fullscreen',
     content_style: 'body { font-family: Inter, Arial, sans-serif; font-size: 14px; padding: 8px; }',
     branding: false,
     license_key: 'gpl',
@@ -355,6 +370,28 @@ tinymce.init({
                     { type: 'menuitem', text: 'CTA 2', onAction: function() { editor.insertContent('@{{CTA2}}'); } },
                     { type: 'menuitem', text: 'CTA 3', onAction: function() { editor.insertContent('@{{CTA3}}'); } }
                 ]);
+            }
+        });
+        editor.ui.registry.addMenuButton('insertaiimg', {
+            text: 'Imágenes IA',
+            tooltip: 'Insertar imagen generada por IA',
+            fetch: function(callback) {
+                var items = AI_IMAGES.map(function(img) {
+                    return {
+                        type: 'menuitem',
+                        text: img.label + (img.url ? '' : ' (sin generar)'),
+                        enabled: !!img.url,
+                        onAction: function() {
+                            editor.insertContent(
+                                '<figure class="blog-img">' +
+                                '<img src="' + img.url + '" alt="" width="720" ' +
+                                'style="width:720px;max-width:100%;height:auto;" loading="lazy">' +
+                                '</figure>'
+                            );
+                        }
+                    };
+                });
+                callback(items);
             }
         });
         editor.ui.registry.addButton('imagegallery', {
