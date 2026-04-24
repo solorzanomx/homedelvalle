@@ -134,4 +134,47 @@ class CaptacionAdminController extends Controller
 
         return back()->with('success', 'Contrato marcado como firmado. Proceso completado.');
     }
+
+    public function uploadDocument(Request $request, Captacion $captacion)
+    {
+        $request->validate([
+            'category' => 'required|string',
+            'file'     => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('documents/captacion-' . $captacion->id, 'public');
+
+        Document::create([
+            'captacion_id'     => $captacion->id,
+            'client_id'        => $captacion->client_id,
+            'uploaded_by'      => \Illuminate\Support\Facades\Auth::id(),
+            'category'         => $request->category,
+            'label'            => $file->getClientOriginalName(),
+            'file_path'        => $path,
+            'file_name'        => $file->getClientOriginalName(),
+            'mime_type'        => $file->getMimeType(),
+            'file_size'        => $file->getSize(),
+            'captacion_status' => 'pendiente',
+            'status'           => 'received',
+        ]);
+
+        $this->service->recalculateStage($captacion);
+
+        return back()->with('success', 'Documento subido correctamente.');
+    }
+
+    public function deleteDocument(Captacion $captacion, Document $document)
+    {
+        if ($document->captacion_id !== $captacion->id) abort(403);
+
+        if ($document->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
+        }
+
+        $document->delete();
+        $this->service->recalculateStage($captacion);
+
+        return back()->with('success', 'Documento eliminado.');
+    }
 }

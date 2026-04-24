@@ -278,8 +278,24 @@
                     <div class="doc-meta" style="color:#ef4444;">Pendiente de carga</div>
                     @endif
                 </div>
-                @if($latest)
                 <div class="doc-actions">
+                    {{-- Upload / Replace --}}
+                    <form method="POST" action="{{ route('admin.captaciones.upload', $captacion) }}" enctype="multipart/form-data" style="display:inline;">
+                        @csrf
+                        <input type="hidden" name="category" value="{{ $cat }}">
+                        <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;" title="{{ $latest ? 'Reemplazar' : 'Subir archivo' }}">
+                            {{ $latest ? '&#8635;' : '&#8679;' }} {{ $latest ? 'Reemplazar' : 'Subir' }}
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="this.form.submit()">
+                        </label>
+                    </form>
+                    @if($latest)
+                    {{-- Delete --}}
+                    <form method="POST" action="{{ route('admin.captaciones.document.delete', [$captacion, $latest]) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este documento?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;" title="Eliminar">&#128465;</button>
+                    </form>
+                    {{-- Approve / Reject --}}
                     @if($status !== 'aprobado')
                     <form method="POST" action="{{ route('admin.captaciones.doc-status', [$captacion, $latest]) }}">
                         @csrf
@@ -295,8 +311,8 @@
                         Rechazar
                     </button>
                     @endif
+                    @endif
                 </div>
-                @endif
             </div>
             @endforeach
 
@@ -325,17 +341,32 @@
                     <div class="doc-meta">No cargado</div>
                     @endif
                 </div>
-                @if($latest && $status !== 'aprobado')
                 <div class="doc-actions">
+                    <form method="POST" action="{{ route('admin.captaciones.upload', $captacion) }}" enctype="multipart/form-data" style="display:inline;">
+                        @csrf
+                        <input type="hidden" name="category" value="{{ $cat }}">
+                        <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
+                            {{ $latest ? '&#8635; Reemplazar' : '&#8679; Subir' }}
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="this.form.submit()">
+                        </label>
+                    </form>
+                    @if($latest)
+                    <form method="POST" action="{{ route('admin.captaciones.document.delete', [$captacion, $latest]) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">&#128465;</button>
+                    </form>
+                    @if($status !== 'aprobado')
                     <form method="POST" action="{{ route('admin.captaciones.doc-status', [$captacion, $latest]) }}">
                         @csrf
                         <input type="hidden" name="captacion_status" value="aprobado">
                         <button type="submit" class="btn btn-sm" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">Aprobar</button>
                     </form>
+                    @else
+                    <span class="badge badge-green">Aprobado</span>
+                    @endif
+                    @endif
                 </div>
-                @elseif($latest)
-                <span class="badge badge-green">Aprobado</span>
-                @endif
             </div>
             @endforeach
         </div>
