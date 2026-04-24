@@ -159,13 +159,12 @@
 @endsection
 
 @section('scripts')
+@php
+$_promptsData = $byType->map(fn($p) => ['key' => $p->key, 'label' => $p->label, 'prompt' => $p->prompt])->values();
+@endphp
 <script>
 const INITIAL_GLOBAL  = @json($global?->prompt ?? '');
-const INITIAL_PROMPTS = @json($byType->map(fn($p) => [
-    'key'    => $p->key,
-    'label'  => $p->label,
-    'prompt' => $p->prompt,
-]));
+const INITIAL_PROMPTS = @json($_promptsData);
 const CSRF = '{{ csrf_token() }}';
 const SAVE_URL = '{{ route('admin.carousels.prompts.update') }}';
 
