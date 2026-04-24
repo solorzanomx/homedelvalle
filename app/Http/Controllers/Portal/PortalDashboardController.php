@@ -44,7 +44,23 @@ class PortalDashboardController extends Controller
             ? Property::where('client_id', $client->id)->latest()->get()
             : collect();
 
-        return view('portal.dashboard', compact('client', 'rentals', 'documents', 'contracts', 'properties', 'isRental', 'isVenta'));
+        // Captacion activa + stats de documentos
+        $captacion = $isVenta
+            ? \App\Models\Captacion::where('client_id', $client->id)
+                ->where('status', 'activo')
+                ->with(['valuation', 'signatureRequest', 'documents'])
+                ->latest()
+                ->first()
+            : null;
+
+        $docsApproved = $captacion?->documents->where('captacion_status', 'aprobado')->count() ?? 0;
+        $docsPending  = $captacion?->documents->where('captacion_status', 'pendiente')->count() ?? 0;
+        $docsTotal    = $captacion?->documents->count() ?? 0;
+
+        return view('portal.dashboard', compact(
+            'client', 'rentals', 'documents', 'contracts', 'properties',
+            'isRental', 'isVenta', 'captacion', 'docsApproved', 'docsPending', 'docsTotal'
+        ));
     }
 
     public function account()
