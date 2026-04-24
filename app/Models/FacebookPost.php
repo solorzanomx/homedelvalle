@@ -34,10 +34,11 @@ class FacebookPost extends Model
     ];
 
     public const TEMPLATES = [
-        'fb-dark'     => 'Oscuro — navy elegante',
-        'fb-light'    => 'Claro — blanco limpio',
-        'fb-foto'     => 'Foto — imagen completa',
-        'fb-gradient' => 'Degradado — azul HDV',
+        'fb-dark'       => 'Oscuro — navy elegante',
+        'fb-light'      => 'Claro — blanco limpio',
+        'fb-foto'       => 'Foto — imagen completa',
+        'fb-gradient'   => 'Degradado — azul HDV',
+        'fb-split-dark' => 'Split — foto izq, texto oscuro der',
     ];
 
     public function user(): BelongsTo

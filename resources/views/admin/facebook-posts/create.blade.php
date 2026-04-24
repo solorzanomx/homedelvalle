@@ -44,7 +44,8 @@
                             'fb-dark'     => 'background:#0C1A2E;',
                             'fb-light'    => 'background:#ffffff;border:1px solid #e2e8f0;',
                             'fb-foto'     => 'background:linear-gradient(135deg,#0C1A2E,#1d4ed8);',
-                            'fb-gradient' => 'background:linear-gradient(135deg,#1e3a8a,#3b82f6);',
+                            'fb-gradient'   => 'background:linear-gradient(135deg,#1e3a8a,#3b82f6);',
+                            'fb-split-dark' => 'background:linear-gradient(to right,#4a7ab5 0%,#4a7ab5 50%,#0C1A2E 50%,#0C1A2E 100%);',
                         ];
                     @endphp
                     <label class="tpl-card">
