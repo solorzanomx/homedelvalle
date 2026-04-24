@@ -563,6 +563,10 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
         Route::post('/captacion/documentos', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'uploadDocument'])->name('captacion.upload');
         Route::delete('/captacion/documentos/{document}', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'deleteDocument'])->name('captacion.document.delete');
         Route::post('/captacion/confirmar-precio', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'confirmPriceAgreement'])->name('captacion.confirm-price');
+
+        // Mi Valuación — vista completa del análisis + acuerdo de precio
+        Route::get('/valuacion', [\App\Http\Controllers\Portal\PortalValuacionController::class, 'show'])->name('valuacion');
+        Route::post('/valuacion/confirmar-precio', [\App\Http\Controllers\Portal\PortalValuacionController::class, 'confirmPrice'])->name('valuacion.confirm-price');
     });
 });
 

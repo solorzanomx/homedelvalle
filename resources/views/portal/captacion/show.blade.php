@@ -166,13 +166,18 @@
         @if($etapa < 2)
             <p>Esta etapa se habilitará cuando tus documentos estén aprobados.</p>
         @elseif($captacion->valuation)
-            <div class="detail-row">
-                <span class="label">Opinión de valor</span>
-                <span class="value" style="color:var(--text);">${{ number_format($captacion->valuation->total_value_mid ?? 0, 0) }}</span>
-            </div>
-            <div class="detail-row">
-                <span class="label">Fecha</span>
-                <span class="value">{{ $captacion->valuation->created_at ? $captacion->valuation->created_at->format('d/m/Y') : '—' }}</span>
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+                <div>
+                    <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;font-weight:600;color:var(--text-muted);margin-bottom:.2rem;">Precio sugerido</div>
+                    <div style="font-size:1.35rem;font-weight:800;color:var(--text);letter-spacing:-1px;">${{ number_format($captacion->valuation->suggested_list_price ?? $captacion->valuation->total_value_mid ?? 0) }}</div>
+                    <div style="font-size:.75rem;color:var(--text-muted);margin-top:.2rem;">
+                        ${{ number_format($captacion->valuation->adjusted_price_m2 ?? 0) }}/m²
+                        · {{ $captacion->valuation->created_at?->format('d/m/Y') }}
+                    </div>
+                </div>
+                <a href="{{ route('portal.valuacion') }}" style="display:inline-flex;align-items:center;gap:.4rem;background:#1D4ED8;color:#fff;font-size:.8rem;font-weight:600;padding:8px 16px;border-radius:8px;text-decoration:none;">
+                    Ver análisis completo →
+                </a>
             </div>
         @else
             <p>Tu asesor está preparando la valuación de tu inmueble. Te notificaremos cuando esté lista.</p>
