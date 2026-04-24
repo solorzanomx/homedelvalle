@@ -50,7 +50,7 @@ class AnthropicProvider implements AIProviderContract
             'x-api-key'         => $this->apiKey,
             'anthropic-version' => '2023-06-01',
             'content-type'      => 'application/json',
-        ])->timeout(60)->post('https://api.anthropic.com/v1/messages', $payload);
+        ])->timeout(180)->post('https://api.anthropic.com/v1/messages', $payload);
 
         if ($response->failed()) {
             throw new RuntimeException('Anthropic API error: ' . $response->body());

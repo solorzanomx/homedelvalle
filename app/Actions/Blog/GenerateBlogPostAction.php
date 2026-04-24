@@ -20,6 +20,7 @@ class GenerateBlogPostAction
      */
     public function execute(Post $post, string $title, array $keywords, string $marketData = ''): Post
     {
+        set_time_limit(300); // 5 min — long-form generation
         $post->update(['ai_generation_status' => 'generating']);
 
         try {
