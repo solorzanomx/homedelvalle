@@ -53,7 +53,7 @@ class CaptacionAdminController extends Controller
 
         // Valuaciones vinculadas a propiedades del cliente
         $propertyIds = \App\Models\Property::where('client_id', $captacion->client_id)->pluck('id');
-        $valuations  = PropertyValuation::whereIn('property_id', $propertyIds)->latest()->get();
+        $valuations  = PropertyValuation::whereIn('property_id', $propertyIds)->with('colonia')->latest()->get();
 
         // Propiedad del cliente para pre-llenar valuacion
         $clientProperty = \App\Models\Property::where('client_id', $captacion->client_id)
@@ -102,6 +102,19 @@ class CaptacionAdminController extends Controller
         $this->service->linkValuation($captacion, $request->input('valuation_id'));
 
         return back()->with('success', 'Valuación vinculada. El cliente avanza a la etapa de precio.');
+    }
+
+    public function unlinkValuation(Captacion $captacion)
+    {
+        $captacion->update([
+            'etapa3_valuation_id'  => null,
+            'etapa2_completed_at'  => null,
+            'portal_etapa'         => 2,
+        ]);
+
+        $this->service->recalculateStage($captacion);
+
+        return back()->with('success', 'Valuación desvinculada.');
     }
 
     public function setPrice(Request $request, Captacion $captacion)

@@ -473,28 +473,33 @@
                 @if($captacion->valuation)
                 <div class="info-row"><span class="lbl">Valor estimado</span><span class="val" style="color:var(--text);font-weight:700;">${{ number_format($captacion->valuation->estimated_value ?? 0, 0) }}</span></div>
                 <div class="info-row"><span class="lbl">Fecha</span><span class="val">{{ $captacion->valuation->created_at->format('d/m/Y') }}</span></div>
+                <div class="info-row"><span class="lbl">Colonia</span><span class="val" style="font-size:.78rem;">{{ $captacion->valuation->colonia?->name ?? $captacion->valuation->input_colonia_raw ?? '—' }}</span></div>
+                <a href="{{ route('admin.valuations.show', $captacion->valuation) }}" class="btn btn-sm btn-outline" style="width:100%;text-align:center;display:block;margin-top:.5rem;">Ver valuación</a>
+                <form method="POST" action="{{ route('admin.captaciones.unlink-valuation', $captacion) }}" style="margin-top:.4rem;" onsubmit="return confirm('¿Desvincular esta valuación?')">
+                    @csrf
+                    <button type="submit" class="btn btn-sm" style="width:100%;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;">Desvincular</button>
+                </form>
                 @else
                 @if($etapa < 2)
                 <p style="font-size:.8rem;color:var(--text-muted);">Disponible cuando se completen los documentos.</p>
                 @else
-                <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Vincula una opinión de valor existente.</p>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Vincula una opinión de valor existente o crea una nueva.</p>
                 @if($valuations->isNotEmpty())
-                <form method="POST" action="{{ route('admin.captaciones.link-valuation', $captacion) }}">
+                <form method="POST" action="{{ route('admin.captaciones.link-valuation', $captacion) }}" style="margin-bottom:.5rem;">
                     @csrf
                     <select name="valuation_id" class="form-select" style="margin-bottom:.5rem;font-size:.82rem;">
                         @foreach($valuations as $val)
-                        <option value="{{ $val->id }}">#{{ $val->id }} &mdash; ${{ number_format($val->estimated_value ?? 0,0) }} ({{ $val->created_at->format('d/m/Y') }})</option>
+                        <option value="{{ $val->id }}">#{{ $val->id }} — ${{ number_format($val->estimated_value ?? 0,0) }} ({{ $val->created_at->format('d/m/Y') }}){{ $val->colonia ? ' · '.$val->colonia->name : '' }}</option>
                         @endforeach
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Vincular valuación</button>
                 </form>
-                @else
+                @endif
                 <a href="{{ route('admin.valuations.create', array_filter(['property' => $clientProperty?->id, 'client_id' => $captacion->client_id])) }}" class="btn btn-sm btn-outline" style="width:100%;text-align:center;display:block;">+ Crear Opinión de Valor</a>
                 @if($clientProperty)
                 <div style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;">Propiedad: {{ $clientProperty->title }}{{ $clientProperty->marketColonia ? ' — '.$clientProperty->marketColonia->name : '' }}</div>
                 @else
                 <div style="font-size:.72rem;color:#f59e0b;margin-top:.4rem;">Sin propiedad vinculada al cliente. <a href="{{ route('properties.create') }}" style="color:var(--primary);">Crear propiedad</a></div>
-                @endif
                 @endif
                 @endif
                 @endif
