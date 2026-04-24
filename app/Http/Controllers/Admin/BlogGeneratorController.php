@@ -40,7 +40,7 @@ class BlogGeneratorController extends Controller
     {
         $request->validate(['topic' => 'nullable|string|max:200']);
 
-        $freeText  = $request->input('topic', '');
+        $freeText  = (string) $request->input('topic', '');
         $sessionId = (string) Str::uuid();
 
         try {
