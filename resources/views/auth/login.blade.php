@@ -223,6 +223,13 @@
             </div>
         @endif
 
+        @if (session('info'))
+            <div class="alert alert-success">
+                <x-icon name="info" class="alert-icon" />
+                {{ session('info') }}
+            </div>
+        @endif
+
         @if (session('error'))
             <div class="alert alert-error">
                 <x-icon name="info" class="alert-icon" />
