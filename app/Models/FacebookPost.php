@@ -19,6 +19,7 @@ class FacebookPost extends Model
         'caption',
         'hashtags',
         'background_image_path',
+        'bg_overlay_opacity',
         'rendered_image_path',
         'render_status',
         'render_error',
@@ -27,8 +28,9 @@ class FacebookPost extends Model
     ];
 
     protected $casts = [
-        'hashtags'     => 'array',
-        'published_at' => 'datetime',
+        'hashtags'           => 'array',
+        'published_at'       => 'datetime',
+        'bg_overlay_opacity' => 'float',
     ];
 
     public const TEMPLATES = [

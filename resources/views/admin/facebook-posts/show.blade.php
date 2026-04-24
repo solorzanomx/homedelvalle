@@ -205,6 +205,21 @@
                         <input type="file" id="bgUpload" accept="image/*" style="display:none;" onchange="uploadBackground(this)">
                     </label>
                 </div>
+
+                <div style="margin-top:.85rem;">
+                    <label class="form-label" style="display:flex;justify-content:space-between;">
+                        <span>Opacidad del overlay</span>
+                        <span id="opacityVal" style="font-weight:700;color:var(--primary);">{{ round(($post->bg_overlay_opacity ?? 0.5) * 100) }}%</span>
+                    </label>
+                    <input type="range" id="opacitySlider" min="0" max="100" value="{{ round(($post->bg_overlay_opacity ?? 0.5) * 100) }}"
+                        style="width:100%;accent-color:var(--primary);"
+                        oninput="document.getElementById('opacityVal').textContent=this.value+'%'"
+                        onchange="saveField('bg_overlay_opacity', (this.value/100).toFixed(2))">
+                    <div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--text-muted);margin-top:.2rem;">
+                        <span>0% — imagen visible</span>
+                        <span>100% — fondo sólido</span>
+                    </div>
+                </div>
                 <div id="bgError" class="error-box"></div>
             </div>
         </div>

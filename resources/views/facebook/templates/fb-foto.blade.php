@@ -93,7 +93,7 @@ html, body {
     <div class="bg-fallback"></div>
     @endif
 
-    <div class="bg-overlay"></div>
+    <div class="bg-overlay" style="opacity:{{ $post->bg_overlay_opacity ?? 0.5 }};"></div>
 
     <div class="content">
         <div class="accent-line"></div>

@@ -93,22 +93,35 @@ html, body {
 </head>
 <body>
 <div class="canvas">
-    <div class="dots"></div>
+    @php $opacity = $post->bg_overlay_opacity ?? 0.5; @endphp
+    @if($post->background_image_path)
+    @php
+        $bgPath = \Illuminate\Support\Facades\Storage::disk('public')->path($post->background_image_path);
+        $bgSrc  = file_exists($bgPath) ? 'data:'.(mime_content_type($bgPath) ?: 'image/png').';base64,'.base64_encode(file_get_contents($bgPath)) : '';
+    @endphp
+    @if($bgSrc)
+    <img style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;" src="{{ $bgSrc }}" alt="">
+    @endif
+    @endif
+    {{-- Gradient overlay — controls how much the bg image shows through --}}
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1e3a8a,#1d4ed8,#2563eb,#3b82f6);opacity:{{ $opacity }};z-index:1;"></div>
 
-    <div class="tag">Home del Valle · CDMX</div>
+    <div class="dots" style="z-index:2;"></div>
+
+    <div class="tag" style="position:relative;z-index:3;">Home del Valle · CDMX</div>
 
     @if($post->headline)
-    <div class="headline">{{ $post->headline }}</div>
+    <div class="headline" style="position:relative;z-index:3;">{{ $post->headline }}</div>
     @endif
 
-    <div class="accent-line"></div>
+    <div class="accent-line" style="position:relative;z-index:3;"></div>
 
     @if($post->subheadline)
-    <div class="subheadline">{{ $post->subheadline }}</div>
+    <div class="subheadline" style="position:relative;z-index:3;">{{ $post->subheadline }}</div>
     @endif
 
     @if($post->body_text)
-    <div class="body-text">{{ $post->body_text }}</div>
+    <div class="body-text" style="position:relative;z-index:3;">{{ $post->body_text }}</div>
     @endif
 
     @if($logoSrc ?? null)

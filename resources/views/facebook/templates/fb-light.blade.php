@@ -81,7 +81,20 @@ html, body {
 </head>
 <body>
 <div class="canvas">
-    <div class="top-bar"></div>
+    @php $opacity = $post->bg_overlay_opacity ?? 0.5; @endphp
+    @if($post->background_image_path)
+    @php
+        $bgPath = \Illuminate\Support\Facades\Storage::disk('public')->path($post->background_image_path);
+        $bgSrc  = file_exists($bgPath) ? 'data:'.(mime_content_type($bgPath) ?: 'image/png').';base64,'.base64_encode(file_get_contents($bgPath)) : '';
+    @endphp
+    @if($bgSrc)
+    <img style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;" src="{{ $bgSrc }}" alt="">
+    @endif
+    @endif
+    {{-- White overlay — high opacity keeps text readable on light template --}}
+    <div style="position:absolute;inset:0;background:#ffffff;opacity:{{ $opacity }};z-index:1;"></div>
+
+    <div class="top-bar" style="z-index:3;"></div>
 
     <div class="eyebrow">Bienes Raíces · CDMX</div>
 

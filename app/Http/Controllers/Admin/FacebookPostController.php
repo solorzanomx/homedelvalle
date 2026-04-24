@@ -81,13 +81,15 @@ class FacebookPostController extends Controller
             'subheadline' => 'nullable|string|max:300',
             'body_text'   => 'nullable|string|max:500',
             'caption'     => 'nullable|string|max:2000',
-            'hashtags'    => 'nullable|array',
-            'hashtags.*'  => 'string|max:50',
+            'hashtags'            => 'nullable|array',
+            'hashtags.*'          => 'string|max:50',
+            'bg_overlay_opacity'  => 'nullable|numeric|min:0|max:1',
         ]);
 
         $post->update($request->only([
             'title', 'source_type', 'source_id', 'template',
             'headline', 'subheadline', 'body_text', 'caption', 'hashtags',
+            'bg_overlay_opacity',
         ]));
 
         // If template changed and image was already rendered, mark as stale
