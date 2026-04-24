@@ -286,8 +286,19 @@
 @endsection
 
 @section('scripts')
+@php
+$aiImagePrompts = $post->image_prompts ?? [];
+$aiImagesJs = [
+    ['label' => 'Imagen destacada', 'url' => isset($aiImagePrompts['path_featured'])   ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_featured'])   : null],
+    ['label' => 'Interior 1',       'url' => isset($aiImagePrompts['path_interior_1']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_1']) : null],
+    ['label' => 'Interior 2',       'url' => isset($aiImagePrompts['path_interior_2']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_2']) : null],
+    ['label' => 'Interior 3',       'url' => isset($aiImagePrompts['path_interior_3']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_3']) : null],
+];
+@endphp
 <script src="/vendor/tinymce/tinymce.min.js"></script>
 <script>
+const AI_IMAGES = @json($aiImagesJs);
+
 function copyPrompt(el) {
     navigator.clipboard.writeText(el.textContent.trim()).then(function() {
         var orig = el.style.background;
@@ -318,19 +329,6 @@ function previewImage(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
-
-@php
-$aiImagePrompts = $post->image_prompts ?? [];
-$aiImagesJs = [
-    ['label' => 'Imagen destacada', 'url' => isset($aiImagePrompts['path_featured'])   ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_featured'])   : null],
-    ['label' => 'Interior 1',       'url' => isset($aiImagePrompts['path_interior_1']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_1']) : null],
-    ['label' => 'Interior 2',       'url' => isset($aiImagePrompts['path_interior_2']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_2']) : null],
-    ['label' => 'Interior 3',       'url' => isset($aiImagePrompts['path_interior_3']) ? \Illuminate\Support\Facades\Storage::disk('public')->url($aiImagePrompts['path_interior_3']) : null],
-];
-@endphp
-<script>
-const AI_IMAGES = @json($aiImagesJs);
-</script>
 
 tinymce.init({
     height: 500,
