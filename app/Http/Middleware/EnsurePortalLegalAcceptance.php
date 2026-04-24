@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Captacion;
 use App\Models\Client;
 use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
@@ -20,6 +21,16 @@ class EnsurePortalLegalAcceptance
         // Share the linked client with all portal views
         $portalClient = Client::where('user_id', $user->id)->first();
         View::share('portalClient', $portalClient);
+
+        // Share active captacion for sidebar stage indicators
+        $portalCaptacion = $portalClient
+            ? Captacion::where('client_id', $portalClient->id)
+                ->where('status', 'activo')
+                ->with('signatureRequest')
+                ->latest()
+                ->first()
+            : null;
+        View::share('portalCaptacion', $portalCaptacion);
 
         // Find published aviso de privacidad
         $aviso = LegalDocument::where('type', 'aviso_privacidad')

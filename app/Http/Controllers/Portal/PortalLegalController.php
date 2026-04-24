@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Models\Captacion;
 use App\Models\Client;
 use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
@@ -15,7 +16,14 @@ class PortalLegalController extends Controller
     public function show(Request $request)
     {
         // Share portalClient so layout renders correctly (middleware skips this route)
-        View::share('portalClient', Client::where('user_id', Auth::id())->first());
+        $portalClient = Client::where('user_id', Auth::id())->first();
+        View::share('portalClient', $portalClient);
+        $portalCaptacion = $portalClient
+            ? Captacion::where('client_id', $portalClient->id)->where('status', 'activo')
+                ->with('signatureRequest')
+                ->latest()->first()
+            : null;
+        View::share('portalCaptacion', $portalCaptacion);
 
         $aviso = LegalDocument::where('type', 'aviso_privacidad')
             ->where('status', 'published')
