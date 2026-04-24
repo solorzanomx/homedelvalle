@@ -441,7 +441,16 @@
                     <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">Sin acceso al portal</div>
 
                     {{-- Contrato de confidencialidad --}}
-                    @if($confidencialidadRequest)
+                    @if($confidencialidadRequest && $confidencialidadRequest->status === 'draft')
+                        <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">
+                            Contrato generado —
+                            <a href="https://docs.google.com/document/d/{{ $confidencialidadRequest->file_id }}/edit" target="_blank" style="color:var(--primary);">Revisar en Drive</a>
+                        </div>
+                        <form method="POST" action="{{ route('admin.contrato.enviar', $confidencialidadRequest) }}" style="margin-bottom:0.5rem;">
+                            @csrf
+                            <button class="btn btn-sm btn-primary" style="width:100%;">Enviar a cliente para firma</button>
+                        </form>
+                    @elseif($confidencialidadRequest)
                         @php
                             $badgeColor = match($confidencialidadRequest->status) {
                                 'completed' => 'var(--success)',
@@ -459,9 +468,9 @@
                             <span style="font-size:0.78rem; color:var(--text-muted);">Confidencialidad: {{ $badgeLabel }}</span>
                         </div>
                     @else
-                        <form method="POST" action="{{ route('admin.clients.contrato-confidencialidad', $client) }}" style="margin-bottom:0.5rem;">
+                        <form method="POST" action="{{ route('admin.clients.contrato-generar', $client) }}" style="margin-bottom:0.5rem;">
                             @csrf
-                            <button class="btn btn-sm btn-outline" style="width:100%;">Enviar Contrato de Confidencialidad</button>
+                            <button class="btn btn-sm btn-outline" style="width:100%;">Generar Contrato de Confidencialidad</button>
                         </form>
                     @endif
 

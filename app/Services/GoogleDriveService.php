@@ -50,6 +50,31 @@ class GoogleDriveService
         return $client;
     }
 
+    // ── Folders ───────────────────────────────────────────────────────────────
+
+    /**
+     * Crea una carpeta en Drive y retorna su fileId.
+     */
+    public function createFolder(string $name, ?string $parentId = null): string
+    {
+        $parentId = $parentId ?? config('services.google_drive.folder_id');
+
+        $metadata = new DriveFile([
+            'name'     => $name,
+            'mimeType' => 'application/vnd.google-apps.folder',
+            'parents'  => $parentId ? [$parentId] : [],
+        ]);
+
+        $folder = $this->drive->files->create($metadata, [
+            'supportsAllDrives' => true,
+            'fields'            => 'id,name',
+        ]);
+
+        Log::info('GoogleDrive: carpeta creada', ['id' => $folder->getId(), 'name' => $name]);
+
+        return $folder->getId();
+    }
+
     // ── Upload ────────────────────────────────────────────────────────────────
 
     /**
