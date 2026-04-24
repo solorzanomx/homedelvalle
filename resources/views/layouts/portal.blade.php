@@ -199,20 +199,26 @@
     @yield('scripts')
 
     @if($showLegalModal ?? false)
-    <div id="legal-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;">
-        <div style="background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">
-            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);flex-shrink:0;">
-                <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:.25rem;">Antes de continuar</div>
-                <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Aviso de Privacidad</h2>
+    <div id="legal-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;">
+        <div style="background:#fff;border-radius:16px;max-width:680px;width:100%;height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden;">
+            <div style="padding:1.1rem 1.5rem;border-bottom:1px solid #e5e7eb;flex-shrink:0;display:flex;align-items:center;gap:.75rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <div>
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;">Antes de continuar</div>
+                    <div style="font-size:1rem;font-weight:700;color:#1e293b;line-height:1.2;">Aviso de Privacidad</div>
+                </div>
             </div>
-            <div style="padding:1.25rem 1.5rem;overflow-y:auto;flex:1;font-size:0.85rem;line-height:1.6;color:var(--text);">
-                {!! $legalAviso?->currentVersion?->content ?? '<p>Por favor, lee y acepta nuestro aviso de privacidad para continuar.</p>' !!}
-            </div>
-            <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);flex-shrink:0;">
+            <iframe
+                src="{{ url('/legal/aviso-de-privacidad') }}"
+                style="flex:1;border:none;width:100%;"
+                title="Aviso de Privacidad"
+                loading="eager"
+            ></iframe>
+            <div style="padding:1rem 1.5rem;border-top:1px solid #e5e7eb;flex-shrink:0;background:#f8fafc;">
                 <form method="POST" action="{{ route('portal.terminos.aceptar') }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary" style="width:100%;padding:.75rem;font-size:.95rem;justify-content:center;">
-                        He leído y acepto — Continuar
+                    <button type="submit" style="width:100%;padding:.8rem 1.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.2px;">
+                        He leído y acepto el Aviso de Privacidad &mdash; Continuar &rarr;
                     </button>
                 </form>
             </div>
