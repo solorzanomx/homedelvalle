@@ -13,6 +13,7 @@ class GenerateBlogImagesAction
     private const DALLE_SIZE   = '1792x1024'; // landscape 16:9 — source
     private const OUTPUT_WIDTH  = 720;         // px — stored/inserted width
     private const DALLE_MODEL  = 'dall-e-3';
+    private const PROMPT_SUFFIX = 'Hyperrealistic, photorealistic, 8K ultra-HD, cinematic lighting, shot on Sony A7R V, professional commercial photography, sharp focus, no text, no watermarks, no logos, no people unless specified.';
 
     /**
      * Generate all 4 blog images (featured + 3 interior), store them,
@@ -81,11 +82,17 @@ class GenerateBlogImagesAction
         $post->update(['body' => $body]);
     }
 
+    private function appendSuffix(string $prompt): string
+    {
+        return rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
+    }
+
     /**
      * Call DALL-E, download the image, store it, and return the storage path.
      */
     private function generate(int $postId, string $prompt, string $storagePath): string
     {
+        $prompt = $this->appendSuffix($prompt);
         Log::info('GenerateBlogImagesAction: calling DALL-E', [
             'post_id' => $postId,
             'path'    => $storagePath,
