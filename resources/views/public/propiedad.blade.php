@@ -8,15 +8,45 @@
         :og-image="$property->photo_url"
         og-type="product"
     />
-    <x-public.json-ld type="Product" :data="[
-        'name' => $property->title,
+
+    {{-- RealEstateListing schema --}}
+    <x-public.json-ld type="RealEstateListing" :data="array_filter([
+        'name'        => $property->title,
         'description' => strip_tags($property->description ?? ''),
-        'image' => $property->photo_url,
+        'url'         => route('propiedades.show', ['id' => $property->id, 'slug' => $property->slug]),
+        'image'       => $property->photo_url,
+        'datePosted'  => $property->created_at?->toIso8601String(),
+        'address' => [
+            '@type'           => 'PostalAddress',
+            'streetAddress'   => $property->address ?? '',
+            'addressLocality' => $property->city ?? 'Ciudad de México',
+            'addressRegion'   => $property->colony ?? 'Benito Juárez',
+            'postalCode'      => $property->zipcode ?? '',
+            'addressCountry'  => 'MX',
+        ],
+        'floorSize' => $property->area ? [
+            '@type' => 'QuantitativeValue',
+            'value' => $property->area,
+            'unitCode' => 'MTK',
+        ] : null,
+        'numberOfRooms'      => $property->bedrooms ?: null,
+        'numberOfBathroomsTotal' => $property->bathrooms ?: null,
+        'numberOfParkingSpaces'  => $property->parking ?: null,
         'offers' => [
-            '@type' => 'Offer',
-            'price' => $property->price,
+            '@type'         => 'Offer',
+            'price'         => $property->price,
             'priceCurrency' => $property->currency ?? 'MXN',
-            'availability' => 'https://schema.org/InStock',
+            'availability'  => 'https://schema.org/InStock',
+            'url'           => route('propiedades.show', ['id' => $property->id, 'slug' => $property->slug]),
+        ],
+    ])" />
+
+    {{-- BreadcrumbList schema --}}
+    <x-public.json-ld type="BreadcrumbList" :data="[
+        'itemListElement' => [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Inicio',       'item' => url('/')],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Propiedades',  'item' => url('/propiedades')],
+            ['@type' => 'ListItem', 'position' => 3, 'name' => $property->title, 'item' => route('propiedades.show', ['id' => $property->id, 'slug' => $property->slug])],
         ],
     ]" />
 @endsection
