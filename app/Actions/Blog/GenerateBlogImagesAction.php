@@ -11,9 +11,9 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class GenerateBlogImagesAction
 {
-    private const DALLE_SIZE    = '1536x1024'; // landscape — gpt-image-1
-    private const OUTPUT_WIDTH  = 720;
-    private const DALLE_MODEL   = 'gpt-image-1';
+    private const IMAGE_MODEL   = 'imagen-4.0-fast-generate-001';
+    private const IMAGE_SIZE    = '16:9';          // aspect ratio for Imagen API
+    private const OUTPUT_WIDTH  = 720;             // px after resize
     private const PROMPT_SUFFIX = 'Hyperrealistic, photorealistic, 8K ultra-HD, cinematic lighting, shot on Sony A7R V, professional commercial photography, sharp focus, no text, no watermarks, no logos, no people unless specified.';
 
     public const KEYS = ['featured', 'interior_1', 'interior_2', 'interior_3'];
@@ -144,34 +144,45 @@ class GenerateBlogImagesAction
     // Helpers
     // ──────────────────────────────────────────────────────────────────
 
+    private function ensureApiKey(): void
+    {
+        if (!config('services.google_ai.api_key')) {
+            throw new \RuntimeException('GOOGLE_AI_STUDIO_KEY no configurada en .env');
+        }
+    }
+
     private function callDalle(int $postId, string $prompt, string $storagePath): string
     {
         $prompt = rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
 
-        Log::info('GenerateBlogImagesAction: calling ' . self::DALLE_MODEL, [
+        Log::info('GenerateBlogImagesAction: calling ' . self::IMAGE_MODEL, [
             'post_id' => $postId,
             'path'    => $storagePath,
             'prompt'  => substr($prompt, 0, 150),
         ]);
 
-        $response = Http::withToken(config('services.openai.api_key'))
+        $apiKey = config('services.google_ai.api_key');
+
+        $response = Http::withHeaders(['x-goog-api-key' => $apiKey])
             ->timeout(120)
-            ->post('https://api.openai.com/v1/images/generations', [
-                'model'   => self::DALLE_MODEL,
-                'prompt'  => $prompt,
-                'n'       => 1,
-                'size'    => self::DALLE_SIZE,
-                'quality' => 'high',
+            ->post("https://generativelanguage.googleapis.com/v1beta/models/" . self::IMAGE_MODEL . ":predict", [
+                'instances'  => [['prompt' => $prompt]],
+                'parameters' => [
+                    'sampleCount'        => 1,
+                    'aspectRatio'        => self::IMAGE_SIZE,
+                    'safetyFilterLevel'  => 'BLOCK_SOME',
+                    'personGeneration'   => 'DONT_ALLOW',
+                ],
             ]);
 
         if (!$response->successful()) {
             $error = $response->json('error.message') ?? $response->body();
-            throw new \RuntimeException(self::DALLE_MODEL . " error ({$response->status()}): {$error}");
+            throw new \RuntimeException(self::IMAGE_MODEL . " error ({$response->status()}): {$error}");
         }
 
-        $b64 = $response->json('data.0.b64_json');
+        $b64 = $response->json('predictions.0.bytesBase64Encoded');
         if (!$b64) {
-            throw new \RuntimeException(self::DALLE_MODEL . ' did not return image data');
+            throw new \RuntimeException(self::IMAGE_MODEL . ' did not return image data. Body: ' . substr($response->body(), 0, 400));
         }
 
         $imageData = base64_decode($b64);
@@ -191,12 +202,5 @@ class GenerateBlogImagesAction
         $prompts = $post->image_prompts ?? [];
         $prompts["path_{$key}"] = $path;
         $post->update(['image_prompts' => $prompts]);
-    }
-
-    private function ensureApiKey(): void
-    {
-        if (!config('services.openai.api_key')) {
-            throw new \RuntimeException('OPENAI_API_KEY no configurada en .env');
-        }
     }
 }

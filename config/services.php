@@ -64,6 +64,10 @@ return [
         'api_key' => env('OPENAI_API_KEY'),
     ],
 
+    'google_ai' => [
+        'api_key' => env('GOOGLE_AI_STUDIO_KEY'),
+    ],
+
     'n8n' => [
         'carousel_webhook_url' => env('N8N_CAROUSEL_WEBHOOK_URL'),
     ],
