@@ -375,10 +375,9 @@
             </div>
             @endif
         </div>
-    </div>
 
-    {{-- Documents Tab --}}
-    <div class="tab-panel" id="tab-documents">
+        {{-- Documents Tab --}}
+        <div class="tab-panel" id="tab-documents">
         @php
             $captacionDocs = $captacion ? $captacion->documents->sortBy('category') : collect();
         @endphp
@@ -437,8 +436,9 @@
 
         @endif
     </div>
+    </div>
 
-
+    {{-- RIGHT: Sidebar --}}
     <div>
         {{-- Stats --}}
         <div class="side-card">
