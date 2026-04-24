@@ -50,20 +50,29 @@ class GenerateBlogImagesAction
         $dir     = "blog/{$post->id}";
         Storage::disk('public')->makeDirectory($dir);
 
+        // Generate a single seed for all 4 images so they share the same palette/feel
+        $seed = $prompts['seed'] ?? random_int(1, 2_147_483_647);
+
+        // Persist seed immediately so single-image regenerations can reuse it
+        $prompts['seed'] = $seed;
+        $post->update(['image_prompts' => $prompts]);
+        $post->refresh();
+        $prompts = $post->image_prompts;
+
         foreach (self::KEYS as $key) {
             if (empty($prompts[$key])) {
                 continue;
             }
 
             try {
-                $path = $this->callDalle($post->id, $prompts[$key], "{$dir}/{$key}.png");
+                $path = $this->callDalle($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
                 $this->storePath($post, $key, $path);
 
                 if ($key === 'featured') {
                     $post->update(['featured_image' => $path]);
                 }
 
-                Log::info("GenerateBlogImagesAction: {$key} stored", ['path' => $path]);
+                Log::info("GenerateBlogImagesAction: {$key} stored", ['path' => $path, 'seed' => $seed]);
             } catch (\Throwable $e) {
                 Log::error("GenerateBlogImagesAction: {$key} failed", [
                     'post_id' => $post->id,
@@ -93,14 +102,17 @@ class GenerateBlogImagesAction
         $dir  = "blog/{$post->id}";
         Storage::disk('public')->makeDirectory($dir);
 
-        $path = $this->callDalle($post->id, $prompts[$key], "{$dir}/{$key}.png");
+        // Reuse the post's stored seed for visual consistency across all images
+        $seed = $prompts['seed'] ?? null;
+
+        $path = $this->callDalle($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
         $this->storePath($post, $key, $path);
 
         if ($key === 'featured') {
             $post->update(['featured_image' => $path]);
         }
 
-        Log::info("GenerateBlogImagesAction: single {$key} stored", ['path' => $path]);
+        Log::info("GenerateBlogImagesAction: single {$key} stored", ['path' => $path, 'seed' => $seed]);
 
         return Storage::disk('public')->url($path) . '?t=' . time();
     }
@@ -150,7 +162,7 @@ class GenerateBlogImagesAction
         }
     }
 
-    private function callDalle(int $postId, string $prompt, string $storagePath): string
+    private function callDalle(int $postId, string $prompt, string $storagePath, ?int $seed = null): string
     {
         $prompt = rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
 
@@ -158,9 +170,18 @@ class GenerateBlogImagesAction
             'post_id' => $postId,
             'path'    => $storagePath,
             'prompt'  => substr($prompt, 0, 150),
+            'seed'    => $seed,
         ]);
 
         $apiKey = config('services.google_ai.api_key');
+
+        $generationConfig = [
+            'responseModalities' => ['image', 'text'],
+        ];
+
+        if ($seed !== null) {
+            $generationConfig['seed'] = $seed;
+        }
 
         $response = Http::withHeaders(['x-goog-api-key' => $apiKey])
             ->timeout(120)
@@ -169,9 +190,7 @@ class GenerateBlogImagesAction
                     'role'  => 'user',
                     'parts' => [['text' => $prompt]],
                 ]],
-                'generationConfig' => [
-                    'responseModalities' => ['image', 'text'],
-                ],
+                'generationConfig' => $generationConfig,
             ]);
 
         if (!$response->successful()) {
