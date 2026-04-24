@@ -11,6 +11,7 @@ use App\Models\Testimonial;
 use App\Models\User;
 use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
+use App\Services\AILeadClassifierService;
 use Illuminate\Http\Request;
 
 class PublicController extends Controller
@@ -96,13 +97,13 @@ class PublicController extends Controller
         return view('public.testimonios', compact('testimonials', 'featured'));
     }
 
-    public function contactoStore(ContactFormRequest $request, SpamProtectionService $spam, AutomationEngine $engine)
+    public function contactoStore(ContactFormRequest $request, SpamProtectionService $spam, AutomationEngine $engine, AILeadClassifierService $classifier)
     {
         $validated = $request->validated();
 
         // Honeypot check — bots fill hidden fields
         if ($request->filled('website_url')) {
-            return redirect()->back()->with('success', 'Mensaje enviado correctamente.');
+            return redirect()->route('contacto.gracias');
         }
 
         // Spam protection (reCAPTCHA + content analysis + IP rate)
@@ -114,11 +115,23 @@ class PublicController extends Controller
         );
 
         if (! $spamCheck['pass']) {
-            // Return fake success so bots don't know they were blocked
-            return redirect()->back()->with('success', '¡Gracias por tu mensaje! Te contactaremos pronto.');
+            return redirect()->route('contacto.gracias');
         }
 
-        ContactSubmission::create($validated);
+        // AI classification — detect human spam and categorize lead
+        $ai = $classifier->classify($validated);
+
+        if ($ai['is_spam']) {
+            return redirect()->route('contacto.gracias');
+        }
+
+        ContactSubmission::create(array_merge($validated, [
+            'ai_is_spam'    => false,
+            'ai_category'   => $ai['category'],
+            'ai_urgency'    => $ai['urgency'],
+            'ai_summary'    => $ai['summary'],
+            'ai_spam_reason'=> null,
+        ]));
 
         // Trigger automation engine — enroll lead
         $source = $request->input('form_source', 'contact');
