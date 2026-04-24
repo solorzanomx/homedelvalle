@@ -6,7 +6,8 @@ use App\Models\Post;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class GenerateBlogImagesAction
 {
@@ -176,7 +177,8 @@ class GenerateBlogImagesAction
 
         $imageData = Http::timeout(60)->get($imageUrl)->body();
 
-        $resized = Image::read($imageData)
+        $manager = new ImageManager(new Driver());
+        $resized  = $manager->read($imageData)
             ->scaleDown(width: self::OUTPUT_WIDTH)
             ->toPng();
 
