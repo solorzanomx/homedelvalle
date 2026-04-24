@@ -27,11 +27,13 @@ class CaptacionAdminController extends Controller
     {
         $captacion->load(['client', 'documents.uploader', 'valuation', 'signatureRequest']);
 
-        $allCategories = Document::CATEGORIES;
-        $requiredCats  = Captacion::REQUIRED_DOCS_ETAPA1;
+        $allCategories  = Document::CATEGORIES;
+        $requiredCats   = Captacion::REQUIRED_DOCS_ETAPA1;
         $docsByCategory = $captacion->documents->groupBy('category');
 
-        $valuations = PropertyValuation::where('client_id', $captacion->client_id)
+        // Valuaciones vinculadas a propiedades del cliente (si tiene propiedades)
+        $propertyIds = \App\Models\Property::where('client_id', $captacion->client_id)->pluck('id');
+        $valuations  = PropertyValuation::whereIn('property_id', $propertyIds)
             ->latest()
             ->get();
 
