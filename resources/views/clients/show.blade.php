@@ -232,7 +232,7 @@
             <button class="cli-tab active" onclick="switchTab('timeline')">Actividad <span class="cli-tab-count">{{ $timeline->count() }}</span></button>
             <button class="cli-tab" onclick="switchTab('properties')">Propiedades <span class="cli-tab-count">{{ $ownedProperties->count() + $dealProperties->count() }}</span></button>
             <button class="cli-tab" onclick="switchTab('emails')">Emails <span class="cli-tab-count">{{ $emails->count() }}</span></button>
-            @php $totalDocCount = $clientDocs->count() + ($captacion ? $captacion->documents->count() : 0); @endphp
+            @php $totalDocCount = isset($clientDocs) ? $clientDocs->count() + ($captacion ? $captacion->documents->count() : 0) : 0; @endphp
             <button class="cli-tab" onclick="switchTab('documents')">Documentos <span class="cli-tab-count">{{ $totalDocCount }}</span></button>
         </div>
 
@@ -379,10 +379,11 @@
         {{-- Documents Tab --}}
         <div class="tab-panel" id="tab-documents">
         @php
-            $captacionDocs = $captacion ? $captacion->documents->sortBy('category') : collect();
+            $captacionDocs = (isset($captacion) && $captacion) ? $captacion->documents->sortBy('category') : collect();
+            $clientDocsAll = isset($clientDocs) ? $clientDocs : collect();
         @endphp
 
-        @if($captacionDocs->isEmpty() && $clientDocs->isEmpty())
+        @if($captacionDocs->isEmpty() && $clientDocsAll->isEmpty())
         <div style="text-align:center;padding:3rem;color:var(--text-muted);">
             <div style="font-size:2rem;opacity:.4;margin-bottom:.5rem;">&#128196;</div>
             Sin documentos cargados aún.
@@ -414,10 +415,10 @@
         @endif
 
         {{-- General docs --}}
-        @if($clientDocs->isNotEmpty())
+        @if($clientDocsAll->isNotEmpty())
         <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;">Otros documentos</div>
         <div style="display:flex;flex-direction:column;gap:.4rem;">
-            @foreach($clientDocs as $doc)
+            @foreach($clientDocsAll as $doc)
             @php
                 $sc = match($doc->status ?? 'pending') { 'verified' => '#10b981', 'rejected' => '#ef4444', 'received' => '#3b82f6', default => '#f59e0b' };
                 $sl = match($doc->status ?? 'pending') { 'verified' => 'Verificado', 'rejected' => 'Rechazado', 'received' => 'Recibido', default => 'Pendiente' };
