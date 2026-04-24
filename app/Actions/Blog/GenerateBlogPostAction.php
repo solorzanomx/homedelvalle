@@ -12,7 +12,10 @@ use Illuminate\Support\Str;
 
 class GenerateBlogPostAction
 {
-    public function __construct(private readonly BlogAIService $blogAI) {}
+    public function __construct(
+        private readonly BlogAIService $blogAI,
+        private readonly GenerateBlogImagesAction $imageAction,
+    ) {}
 
     /**
      * Generate a complete blog post from a topic suggestion (or free title + keywords).
@@ -50,6 +53,16 @@ class GenerateBlogPostAction
                 'status'               => 'draft',
                 'user_id'              => $post->user_id ?? Auth::id() ?? 1,
             ]);
+
+            // Generate DALL-E images and replace {{IMG1}} {{IMG2}} {{IMG3}} placeholders
+            try {
+                $this->imageAction->execute($post->fresh());
+            } catch (\Throwable $e) {
+                Log::warning('GenerateBlogPostAction: image generation failed (non-fatal)', [
+                    'post_id' => $post->id,
+                    'error'   => $e->getMessage(),
+                ]);
+            }
 
             return $post->fresh();
 
