@@ -141,6 +141,38 @@
                 {!! $post->rendered_body !!}
             </article>
 
+            {{-- Auto CTA by category --}}
+            @php
+                $slug = $post->category?->slug ?? '';
+                $ctaMap = [
+                    'vender'    => ['icon' => 'home',         'title' => '¿Quieres vender tu propiedad?',             'desc' => 'Valuación gratuita en 24 horas, venta en 45 días promedio y seguridad jurídica completa.',              'btn' => 'Solicitar valuación gratuita',   'url' => route('landing.vende')],
+                    'comprar'   => ['icon' => 'search',       'title' => '¿Buscas propiedad en la Benito Juárez?',    'desc' => 'Propiedades seleccionadas con asesoría personalizada y acompañamiento legal de inicio a fin.',        'btn' => 'Ver propiedades disponibles',   'url' => route('propiedades.index')],
+                    'inversion' => ['icon' => 'trending-up',  'title' => '¿Te interesa invertir en bienes raíces?',   'desc' => 'Conoce las mejores oportunidades de inversión en Colonia del Valle y Benito Juárez.',              'btn' => 'Hablar con un asesor',          'url' => route('contacto')],
+                    'legal'     => ['icon' => 'shield-check', 'title' => '¿Tienes dudas legales sobre tu propiedad?', 'desc' => 'Nuestro equipo legal te acompaña en compraventas, escrituración y gestoría notarial.',               'btn' => 'Consulta gratuita',             'url' => route('contacto')],
+                    'mercado'   => ['icon' => 'bar-chart-2',  'title' => '¿Cuánto vale tu propiedad hoy?',            'desc' => 'Obtén un precio de mercado actualizado con nuestra valuación profesional sin costo.',               'btn' => 'Valúa tu propiedad',            'url' => route('landing.vende')],
+                ];
+                $cta = $ctaMap[$slug] ?? ['icon' => 'message-circle', 'title' => '¿Tienes una propiedad en la Benito Juárez?', 'desc' => 'Platícanos tu caso. Asesoría personalizada, sin costo y sin compromiso.', 'btn' => 'Contactar a un asesor', 'url' => route('contacto')];
+            @endphp
+            <div class="mt-10 not-prose" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+                <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-brand-50 to-white border border-brand-100">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-l-2xl"></div>
+                    <div class="p-8 sm:p-10 pl-10 sm:pl-12 flex flex-col sm:flex-row sm:items-center gap-6">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-500 shrink-0">
+                            <x-icon name="{{ $cta['icon'] }}" class="w-6 h-6 text-white" />
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl font-extrabold text-gray-900">{{ $cta['title'] }}</h3>
+                            <p class="mt-1 text-sm text-gray-500 leading-relaxed">{{ $cta['desc'] }}</p>
+                        </div>
+                        <a href="{{ $cta['url'] }}"
+                           class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 shrink-0 shadow-brand">
+                            {{ $cta['btn'] }}
+                            <x-icon name="arrow-right" class="w-4 h-4" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             {{-- Share buttons --}}
             <div class="mt-12 pt-8 border-t border-gray-100" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-gray-900 mb-4">Compartir este artículo</p>
