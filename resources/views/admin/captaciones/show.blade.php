@@ -471,7 +471,7 @@
             </div>
             <div class="side-card-body">
                 @if($captacion->valuation)
-                <div class="info-row"><span class="lbl">Valor estimado</span><span class="val" style="color:var(--text);font-weight:700;">${{ number_format($captacion->valuation->estimated_value ?? 0, 0) }}</span></div>
+                <div class="info-row"><span class="lbl">Valor estimado</span><span class="val" style="color:var(--text);font-weight:700;">${{ number_format($captacion->valuation->total_value_mid ?? 0, 0) }}</span></div>
                 <div class="info-row"><span class="lbl">Fecha</span><span class="val">{{ $captacion->valuation->created_at->format('d/m/Y') }}</span></div>
                 <div class="info-row"><span class="lbl">Colonia</span><span class="val" style="font-size:.78rem;">{{ $captacion->valuation->colonia?->name ?? $captacion->valuation->input_colonia_raw ?? '—' }}</span></div>
                 <a href="{{ route('admin.valuations.show', $captacion->valuation) }}" class="btn btn-sm btn-outline" style="width:100%;text-align:center;display:block;margin-top:.5rem;">Ver valuación</a>
@@ -489,7 +489,7 @@
                     @csrf
                     <select name="valuation_id" class="form-select" style="margin-bottom:.5rem;font-size:.82rem;">
                         @foreach($valuations as $val)
-                        <option value="{{ $val->id }}">#{{ $val->id }} — ${{ number_format($val->estimated_value ?? 0,0) }} ({{ $val->created_at->format('d/m/Y') }}){{ $val->colonia ? ' · '.$val->colonia->name : '' }}</option>
+                        <option value="{{ $val->id }}">#{{ $val->id }} — ${{ number_format($val->total_value_mid ?? 0,0) }} ({{ $val->created_at->format('d/m/Y') }}){{ $val->colonia ? ' · '.$val->colonia->name : '' }}</option>
                         @endforeach
                     </select>
                     <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Vincular valuación</button>

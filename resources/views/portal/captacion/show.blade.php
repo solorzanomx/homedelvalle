@@ -168,7 +168,7 @@
         @elseif($captacion->valuation)
             <div class="detail-row">
                 <span class="label">Opinión de valor</span>
-                <span class="value" style="color:var(--text);">${{ number_format($captacion->valuation->estimated_value ?? 0, 0) }}</span>
+                <span class="value" style="color:var(--text);">${{ number_format($captacion->valuation->total_value_mid ?? 0, 0) }}</span>
             </div>
             <div class="detail-row">
                 <span class="label">Fecha</span>
