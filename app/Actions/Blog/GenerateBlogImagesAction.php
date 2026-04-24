@@ -6,11 +6,13 @@ use App\Models\Post;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
 
 class GenerateBlogImagesAction
 {
-    private const DALLE_SIZE  = '1792x1024'; // landscape 16:9
-    private const DALLE_MODEL = 'dall-e-3';
+    private const DALLE_SIZE   = '1792x1024'; // landscape 16:9 — source
+    private const OUTPUT_WIDTH  = 720;         // px — stored/inserted width
+    private const DALLE_MODEL  = 'dall-e-3';
 
     /**
      * Generate all 4 blog images (featured + 3 interior), store them,
@@ -59,7 +61,7 @@ class GenerateBlogImagesAction
             try {
                 $path    = $this->generate($post->id, $prompts[$key], "{$dir}/interior_{$num}.png");
                 $imgUrl  = Storage::disk('public')->url($path);
-                $imgHtml = "<figure class=\"blog-img\"><img src=\"{$imgUrl}\" alt=\"\" loading=\"lazy\"></figure>";
+                $imgHtml = "<figure class=\"blog-img\"><img src=\"{$imgUrl}\" alt=\"\" width=\"720\" loading=\"lazy\" style=\"width:720px;max-width:100%;height:auto;\"></figure>";
                 $body    = str_replace("{{IMG{$num}}}", $imgHtml, $body);
 
                 Log::info("GenerateBlogImagesAction: interior_{$num} stored", ['path' => $path]);
@@ -112,7 +114,13 @@ class GenerateBlogImagesAction
         }
 
         $imageData = Http::timeout(60)->get($imageUrl)->body();
-        Storage::disk('public')->put($storagePath, $imageData);
+
+        // Resize to OUTPUT_WIDTH px wide, preserve aspect ratio
+        $resized = Image::read($imageData)
+            ->scaleDown(width: self::OUTPUT_WIDTH)
+            ->toPng();
+
+        Storage::disk('public')->put($storagePath, (string) $resized);
 
         return $storagePath;
     }
