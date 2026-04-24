@@ -15,12 +15,31 @@ class CaptacionAdminController extends Controller
 
     public function index()
     {
-        $captaciones = Captacion::with(['client', 'documents', 'valuation', 'signatureRequest'])
+        $etapaLabels = [1 => 'Documentación', 2 => 'Valuación', 3 => 'Precio', 4 => 'Exclusiva'];
+        $etapaColors = [1 => '#f59e0b', 2 => '#3b82f6', 3 => '#8b5cf6', 4 => '#10b981'];
+
+        $all = Captacion::with(['client', 'documents'])
+            ->where('status', 'activo')
+            ->latest()
+            ->get();
+
+        $byEtapa = $all->groupBy('portal_etapa');
+
+        $stats = [
+            'total'          => $all->count(),
+            'pipeline_value' => $all->whereNotNull('precio_acordado')->sum('precio_acordado'),
+            'docs_pending'   => \App\Models\Document::where('captacion_status', 'pendiente')->whereNotNull('captacion_id')->count(),
+        ];
+
+        // For table view paginated
+        $captaciones = Captacion::with(['client', 'documents'])
             ->where('status', 'activo')
             ->latest()
             ->paginate(20);
 
-        return view('admin.captaciones.index', compact('captaciones'));
+        return view('admin.captaciones.index', compact(
+            'captaciones', 'byEtapa', 'etapaLabels', 'etapaColors', 'stats'
+        ));
     }
 
     public function show(Captacion $captacion)
