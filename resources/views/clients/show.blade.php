@@ -448,25 +448,32 @@
                         </div>
                         <form method="POST" action="{{ route('admin.contrato.enviar', $confidencialidadRequest) }}" style="margin-bottom:0.5rem;">
                             @csrf
-                            <button class="btn btn-sm btn-primary" style="width:100%;">Enviar a cliente para firma</button>
+                            <button class="btn btn-sm btn-outline" style="width:100%;">Marcar como enviado al cliente</button>
                         </form>
-                    @elseif($confidencialidadRequest)
+
+                    @elseif($confidencialidadRequest && $confidencialidadRequest->status === 'pending')
+                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem;">
+                            <span style="width:8px; height:8px; border-radius:50%; background:var(--warning);"></span>
+                            <span style="font-size:0.78rem; color:var(--text-muted);">
+                                Confidencialidad: Pendiente de firma —
+                                <a href="https://docs.google.com/document/d/{{ $confidencialidadRequest->file_id }}/edit" target="_blank" style="color:var(--primary);">Ver doc</a>
+                            </span>
+                        </div>
+                        <form method="POST" action="{{ route('admin.contrato.confirmar', $confidencialidadRequest) }}" onsubmit="return confirm('¿Confirmar que el cliente ya firmó el contrato? Esto creará su acceso al portal.')">
+                            @csrf
+                            <button class="btn btn-sm btn-primary" style="width:100%;">Confirmar firma recibida</button>
+                        </form>
+
+                    @elseif($confidencialidadRequest && in_array($confidencialidadRequest->status, ['completed', 'declined']))
                         @php
-                            $badgeColor = match($confidencialidadRequest->status) {
-                                'completed' => 'var(--success)',
-                                'declined'  => 'var(--danger)',
-                                default     => 'var(--warning)',
-                            };
-                            $badgeLabel = match($confidencialidadRequest->status) {
-                                'completed' => 'Firmado',
-                                'declined'  => 'Rechazado',
-                                default     => 'Pendiente de firma',
-                            };
+                            $badgeColor = $confidencialidadRequest->status === 'completed' ? 'var(--success)' : 'var(--danger)';
+                            $badgeLabel = $confidencialidadRequest->status === 'completed' ? 'Firmado' : 'Rechazado';
                         @endphp
                         <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem;">
                             <span style="width:8px; height:8px; border-radius:50%; background:{{ $badgeColor }};"></span>
                             <span style="font-size:0.78rem; color:var(--text-muted);">Confidencialidad: {{ $badgeLabel }}</span>
                         </div>
+
                     @else
                         <form method="POST" action="{{ route('admin.clients.contrato-generar', $client) }}" style="margin-bottom:0.5rem;">
                             @csrf

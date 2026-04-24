@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Contracts\GenerarContratoConfidencialidadAction;
+use App\Actions\Contracts\ConfirmarFirmaManualAction;
 use App\Actions\Contracts\EnviarContratoConfidencialidadAction;
+use App\Actions\Contracts\GenerarContratoConfidencialidadAction;
 use App\Models\Client;
 use App\Models\GoogleSignatureRequest;
 use Illuminate\Http\RedirectResponse;
@@ -14,7 +15,6 @@ class ClientContratoController extends Controller
     {
         $this->authorize('view', $client);
 
-        // Solo generar si no hay ningún borrador/pendiente activo
         $existing = GoogleSignatureRequest::where('contacto_id', $client->id)
             ->where('tipo', 'confidencialidad')
             ->whereIn('status', ['draft', 'pending'])
@@ -25,9 +25,7 @@ class ClientContratoController extends Controller
         }
 
         try {
-            $action = app(GenerarContratoConfidencialidadAction::class);
-            $action->execute($client);
-
+            app(GenerarContratoConfidencialidadAction::class)->execute($client);
             return redirect()->back()->with('success', 'Contrato generado. Revísalo en Drive antes de enviarlo al cliente.');
         } catch (\Throwable $e) {
             return redirect()->back()->with('error', 'Error al generar contrato: ' . $e->getMessage());
@@ -36,20 +34,33 @@ class ClientContratoController extends Controller
 
     public function enviar(GoogleSignatureRequest $signatureRequest): RedirectResponse
     {
-        $client = $signatureRequest->contacto;
-        $this->authorize('view', $client);
+        $this->authorize('view', $signatureRequest->contacto);
 
         if ($signatureRequest->status !== 'draft') {
-            return redirect()->back()->with('error', 'Este contrato ya fue enviado o no está en borrador.');
+            return redirect()->back()->with('error', 'Este contrato no está en borrador.');
         }
 
         try {
-            $action = app(EnviarContratoConfidencialidadAction::class);
-            $action->execute($signatureRequest);
-
-            return redirect()->back()->with('success', 'Contrato enviado. El cliente recibirá un correo para firmarlo.');
+            app(EnviarContratoConfidencialidadAction::class)->execute($signatureRequest);
+            return redirect()->back()->with('success', 'Cliente notificado. Cuando confirmes la firma, haz clic en "Confirmar firma recibida".');
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Error al enviar contrato: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    public function confirmar(GoogleSignatureRequest $signatureRequest): RedirectResponse
+    {
+        $this->authorize('view', $signatureRequest->contacto);
+
+        if ($signatureRequest->status !== 'pending') {
+            return redirect()->back()->with('error', 'El contrato no está en estado pendiente.');
+        }
+
+        try {
+            app(ConfirmarFirmaManualAction::class)->execute($signatureRequest);
+            return redirect()->back()->with('success', 'Firma confirmada. Se ha creado el acceso al portal y notificado al cliente.');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', 'Error al confirmar firma: ' . $e->getMessage());
         }
     }
 }
