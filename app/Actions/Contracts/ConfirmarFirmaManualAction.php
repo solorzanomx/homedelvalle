@@ -3,21 +3,18 @@
 namespace App\Actions\Contracts;
 
 use App\Models\GoogleSignatureRequest;
+use App\Models\Interaction;
+use App\Services\EmailService;
 use App\Services\ClientPortalService;
-use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 
 class ConfirmarFirmaManualAction
 {
     public function __construct(
         private ClientPortalService $portal,
-        private WhatsAppService     $whatsapp,
+        private EmailService        $email,
     ) {}
 
-    /**
-     * El admin confirma manualmente que el cliente firmó el contrato.
-     * Marca como completado, crea acceso al portal y notifica al cliente.
-     */
     public function execute(GoogleSignatureRequest $record): GoogleSignatureRequest
     {
         $client = $record->contacto;
@@ -28,28 +25,27 @@ class ConfirmarFirmaManualAction
         ]);
 
         // Crear acceso al portal si no tiene uno
-        if (!$client->user_id) {
-            try {
-                $result = $this->portal->createPortalAccount($client);
+        $result = $this->portal->createPortalAccount($client);
 
-                $phone = $client->whatsapp ?? $client->phone ?? null;
-                if ($phone) {
-                    $this->whatsapp->send(
-                        $phone,
-                        "¡Hola {$client->name}! Hemos recibido tu contrato firmado. " .
-                        'Ya tienes acceso a tu portal en ' . url('/portal') . ' — ' .
-                        "usuario: {$client->email}, contraseña: {$result['password']}"
-                    );
-                }
+        // Enviar correo de bienvenida con credenciales del portal
+        if ($result['password']) {
+            try {
+                $this->email->sendPortalWelcome($client->name, $client->email, $result['password']);
             } catch (\Throwable $e) {
-                Log::error('ConfirmarFirmaManual: error creando portal', [
-                    'record_id' => $record->id,
+                Log::warning('ConfirmarFirmaManual: no se pudo enviar correo de bienvenida', [
                     'client_id' => $client->id,
                     'error'     => $e->getMessage(),
                 ]);
-                throw $e;
             }
         }
+
+        // Registrar en el timeline del cliente
+        Interaction::create([
+            'client_id'   => $client->id,
+            'user_id'     => auth()->id(),
+            'type'        => 'note',
+            'description' => 'Contrato de Confidencialidad firmado. Se activó el acceso al portal del cliente y se enviaron las credenciales por correo.',
+        ]);
 
         return $record->fresh();
     }
