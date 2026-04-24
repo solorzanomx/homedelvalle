@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 
 class GenerateFacebookPostAction
 {
-    public function execute(FacebookPost $post, string $rawContent): void
+    public function execute(FacebookPost $post, string $rawContent): ?string
     {
         $apiKey = config('services.anthropic.api_key');
 
