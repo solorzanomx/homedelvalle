@@ -10,19 +10,21 @@
     />
 
     {{-- Article schema --}}
-    <x-public.json-ld type="Article" :data="[
+    <x-public.json-ld type="Article" :data="array_filter([
         'headline'      => $post->meta_title ?: $post->title,
         'datePublished' => $post->published_at?->toIso8601String(),
         'dateModified'  => $post->updated_at?->toIso8601String(),
-        'author'        => ['@type' => 'Organization', 'name' => 'Home del Valle Bienes Raíces'],
+        'author'        => ['@type' => 'Organization', 'name' => 'Home del Valle Bienes Raíces', 'url' => url('/')],
         'publisher'     => [
             '@type' => 'Organization',
             'name'  => 'Home del Valle Bienes Raíces',
+            'url'   => url('/'),
             'logo'  => ['@type' => 'ImageObject', 'url' => asset('images/logo.png')],
         ],
         'url'           => url('/blog/' . $post->slug),
         'description'   => $post->meta_description ?: $post->excerpt,
-    ]" />
+        'image'         => $post->featured_image ? Storage::url($post->featured_image) : null,
+    ])" />
 
     {{-- FAQPage schema — solo cuando el post tiene preguntas frecuentes configuradas --}}
     @if($post->faq_schema && count($post->faq_schema))
