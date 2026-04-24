@@ -462,6 +462,21 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/brokers-mgmt/{user}/revoke', [BrokerManagementController::class, 'revokeBroker'])->name('brokers.revoke');
     Route::post('/brokers-mgmt/{user}/make-admin', [BrokerManagementController::class, 'makeAdmin'])->name('brokers.makeAdmin');
 
+    // ===== FACEBOOK POSTS =====
+    Route::prefix('facebook-posts')->name('facebook.')->group(function () {
+        Route::get('/',                         [\App\Http\Controllers\Admin\FacebookPostController::class, 'index'])->name('index');
+        Route::get('/create',                   [\App\Http\Controllers\Admin\FacebookPostController::class, 'create'])->name('create');
+        Route::post('/',                        [\App\Http\Controllers\Admin\FacebookPostController::class, 'store'])->name('store');
+        Route::get('/{post}',                   [\App\Http\Controllers\Admin\FacebookPostController::class, 'show'])->name('show');
+        Route::patch('/{post}',                 [\App\Http\Controllers\Admin\FacebookPostController::class, 'update'])->name('update');
+        Route::delete('/{post}',                [\App\Http\Controllers\Admin\FacebookPostController::class, 'destroy'])->name('destroy');
+        Route::post('/{post}/generate',         [\App\Http\Controllers\Admin\FacebookPostController::class, 'generateContent'])->name('generate');
+        Route::post('/{post}/generate-bg',      [\App\Http\Controllers\Admin\FacebookPostController::class, 'generateBackground'])->name('background.generate');
+        Route::post('/{post}/upload-bg',        [\App\Http\Controllers\Admin\FacebookPostController::class, 'uploadBackground'])->name('background.upload');
+        Route::post('/{post}/render',           [\App\Http\Controllers\Admin\FacebookPostController::class, 'renderImage'])->name('render');
+        Route::get('/{post}/download',          [\App\Http\Controllers\Admin\FacebookPostController::class, 'download'])->name('download');
+    });
+
     // ===== CARRUSELES IG =====
     Route::prefix('carousels')->name('carousels.')->group(function () {
         // Templates (admin only)

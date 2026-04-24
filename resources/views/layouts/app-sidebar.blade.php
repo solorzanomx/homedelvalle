@@ -557,6 +557,11 @@
                             <span class="nav-icon"><x-icon name="settings" class="w-3.5 h-3.5" /></span> Prompts IA
                         </a>
                         @endif
+                        @if(Route::has('admin.facebook.index'))
+                        <a href="{{ route('admin.facebook.index') }}" class="nav-item {{ request()->routeIs('admin.facebook.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="facebook" class="w-4 h-4" /></span> Posts Facebook
+                        </a>
+                        @endif
                         @if(Route::has('admin.content-calendar'))
                         <a href="{{ route('admin.content-calendar') }}" class="nav-item {{ request()->routeIs('admin.content-calendar*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
                             <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario
