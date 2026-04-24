@@ -500,6 +500,39 @@
             </div>
         </div>
 
+        {{-- CAPTACIONES EN PROGRESO --}}
+        <div class="card" style="margin-top:0.75rem;">
+            <div class="card-body">
+                <div class="section-head" style="margin-bottom:0.75rem;">
+                    <h3>Captaciones en Progreso</h3>
+                    <a href="{{ route('admin.captaciones.index') }}">Ver todas &rarr;</a>
+                </div>
+
+                @if($captacionesPipeline->count() > 0)
+                <div style="display:flex;flex-direction:column;gap:.4rem;">
+                    @foreach($captacionesPipeline as $cap)
+                    @php
+                        $etapaLabels = [1=>'Documentación',2=>'Valuación',3=>'Precio',4=>'Exclusiva'];
+                        $etapaColors = [1=>'#f59e0b',2=>'#3b82f6',3=>'#8b5cf6',4=>'#10b981'];
+                        $ec = $etapaColors[$cap->portal_etapa] ?? '#94a3b8';
+                        $el = $etapaLabels[$cap->portal_etapa] ?? 'Etapa '.$cap->portal_etapa;
+                    @endphp
+                    <a href="{{ route('admin.captaciones.show', $cap) }}" style="display:flex;align-items:center;gap:.6rem;padding:.55rem .6rem;border-radius:8px;text-decoration:none;background:var(--bg);transition:background .15s;" onmouseover="this.style.background='rgba(102,126,234,.07)'" onmouseout="this.style.background='var(--bg)'">
+                        <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ $ec }};"></span>
+                        <span style="flex:1;font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $cap->client->name ?? '—' }}</span>
+                        <span style="font-size:.72rem;font-weight:600;padding:.2rem .5rem;border-radius:20px;background:{{ $ec }}1a;color:{{ $ec }};flex-shrink:0;">{{ $el }}</span>
+                    </a>
+                    @endforeach
+                </div>
+                @else
+                <div class="empty-state-sm">
+                    <div class="icon">&#127968;</div>
+                    <p>Sin captaciones activas</p>
+                </div>
+                @endif
+            </div>
+        </div>
+
         {{-- RECENT ACTIVITY --}}
         <div class="card" style="margin-top:0.75rem;">
             <div class="card-body">

@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\User;
 use App\Models\Property;
 use App\Models\Task;
+use App\Models\Captacion;
 use App\Models\Operation;
 use App\Models\Interaction;
 use Illuminate\Http\Request;
@@ -78,6 +79,13 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
+        // ── CAPTACIONES EN PROGRESO ──
+        $captacionesPipeline = Captacion::with(['client'])
+            ->where('status', 'activo')
+            ->latest()
+            ->take(8)
+            ->get();
+
         // ── LEGACY COUNTS (kept for compatibility) ──
         $propertiesCount = Property::count();
         $clientsCount = Client::count();
@@ -96,6 +104,7 @@ class DashboardController extends Controller
             'operationsClosedMonth',
             'pipelineSummary',
             'recentInteractions',
+            'captacionesPipeline',
             'propertiesCount',
             'clientsCount',
             'brokersCount',
