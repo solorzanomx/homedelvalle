@@ -255,6 +255,11 @@
                 $docs = $docsByCategory[$cat] ?? collect();
                 $latest = $docs->sortByDesc('created_at')->first();
                 $status = $latest ? $latest->captacion_status : null;
+                $ext = $latest ? strtolower(pathinfo($latest->file_name, PATHINFO_EXTENSION)) : '';
+                $isImg = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                $isPdf = $ext === 'pdf';
+                $previewUrl = $latest ? asset('storage/' . $latest->file_path) : '';
+                $docTitle = $allCategories[$cat] ?? $cat;
             @endphp
             <div class="doc-row">
                 <span class="doc-icon">
@@ -265,11 +270,13 @@
                     @endif
                 </span>
                 <div class="doc-info">
-                    <div class="doc-name">{{ $allCategories[$cat] ?? $cat }}</div>
+                    <div class="doc-name">{{ $docTitle }}</div>
                     @if($latest)
                     <div class="doc-meta">
-                        <a href="{{ asset('storage/' . $latest->file_path) }}" target="_blank" style="color:var(--primary);">{{ $latest->file_name }}</a>
-                        &middot; {{ $latest->file_size_formatted ?? '' }}
+                        <span style="color:var(--text-muted);">{{ $latest->file_name }}</span>
+                        @if($latest->file_size_formatted ?? '')
+                        &middot; {{ $latest->file_size_formatted }}
+                        @endif
                         @if($latest->rejection_reason)
                         &middot; <span style="color:#ef4444;">{{ $latest->rejection_reason }}</span>
                         @endif
@@ -279,12 +286,21 @@
                     @endif
                 </div>
                 <div class="doc-actions">
+                    {{-- Preview / Ver --}}
+                    @if($latest)
+                        @if($isImg || $isPdf)
+                        <button type="button" class="btn btn-sm btn-outline"
+                            onclick="openPreview('{{ $previewUrl }}', '{{ $isImg ? 'img' : 'pdf' }}', '{{ addslashes($docTitle) }}')">Ver</button>
+                        @else
+                        <a href="{{ $previewUrl }}" target="_blank" class="btn btn-sm btn-outline">Ver</a>
+                        @endif
+                    @endif
                     {{-- Upload / Replace --}}
                     <form method="POST" action="{{ route('admin.captaciones.upload', $captacion) }}" enctype="multipart/form-data" style="display:inline;">
                         @csrf
                         <input type="hidden" name="category" value="{{ $cat }}">
-                        <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;" title="{{ $latest ? 'Reemplazar' : 'Subir archivo' }}">
-                            {{ $latest ? '&#8635;' : '&#8679;' }} {{ $latest ? 'Reemplazar' : 'Subir' }}
+                        <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
+                            {{ $latest ? 'Reemplazar' : 'Subir' }}
                             <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="this.form.submit()">
                         </label>
                     </form>
@@ -293,14 +309,14 @@
                     <form method="POST" action="{{ route('admin.captaciones.document.delete', [$captacion, $latest]) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este documento?')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;" title="Eliminar">&#128465;</button>
+                        <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">Eliminar</button>
                     </form>
                     {{-- Approve / Reject --}}
                     @if($status !== 'aprobado')
                     <form method="POST" action="{{ route('admin.captaciones.doc-status', [$captacion, $latest]) }}">
                         @csrf
                         <input type="hidden" name="captacion_status" value="aprobado">
-                        <button type="submit" class="btn btn-sm" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">Aprobar</button>
+                        <button type="submit" class="btn btn-sm" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">✓ OK</button>
                     </form>
                     @else
                     <span class="badge badge-green">Aprobado</span>
@@ -322,6 +338,11 @@
                 $docs = $docsByCategory[$cat] ?? collect();
                 $latest = $docs->sortByDesc('created_at')->first();
                 $status = $latest ? $latest->captacion_status : null;
+                $ext = $latest ? strtolower(pathinfo($latest->file_name, PATHINFO_EXTENSION)) : '';
+                $isImg = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+                $isPdf = $ext === 'pdf';
+                $previewUrl = $latest ? asset('storage/' . $latest->file_path) : '';
+                $docTitle = $allCategories[$cat] ?? $cat;
             @endphp
             <div class="doc-row">
                 <span class="doc-icon">
@@ -332,35 +353,47 @@
                     @endif
                 </span>
                 <div class="doc-info">
-                    <div class="doc-name">{{ $allCategories[$cat] ?? $cat }}</div>
+                    <div class="doc-name">{{ $docTitle }}</div>
                     @if($latest)
                     <div class="doc-meta">
-                        <a href="{{ asset('storage/' . $latest->file_path) }}" target="_blank" style="color:var(--primary);">{{ $latest->file_name }}</a>
+                        <span style="color:var(--text-muted);">{{ $latest->file_name }}</span>
                     </div>
                     @else
                     <div class="doc-meta">No cargado</div>
                     @endif
                 </div>
                 <div class="doc-actions">
+                    {{-- Preview / Ver --}}
+                    @if($latest)
+                        @if($isImg || $isPdf)
+                        <button type="button" class="btn btn-sm btn-outline"
+                            onclick="openPreview('{{ $previewUrl }}', '{{ $isImg ? 'img' : 'pdf' }}', '{{ addslashes($docTitle) }}')">Ver</button>
+                        @else
+                        <a href="{{ $previewUrl }}" target="_blank" class="btn btn-sm btn-outline">Ver</a>
+                        @endif
+                    @endif
+                    {{-- Upload / Replace --}}
                     <form method="POST" action="{{ route('admin.captaciones.upload', $captacion) }}" enctype="multipart/form-data" style="display:inline;">
                         @csrf
                         <input type="hidden" name="category" value="{{ $cat }}">
                         <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
-                            {{ $latest ? '&#8635; Reemplazar' : '&#8679; Subir' }}
+                            {{ $latest ? 'Reemplazar' : 'Subir' }}
                             <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="this.form.submit()">
                         </label>
                     </form>
                     @if($latest)
+                    {{-- Delete --}}
                     <form method="POST" action="{{ route('admin.captaciones.document.delete', [$captacion, $latest]) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar?')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">&#128465;</button>
+                        <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#991b1b;border-color:#fecaca;">Eliminar</button>
                     </form>
+                    {{-- Approve --}}
                     @if($status !== 'aprobado')
                     <form method="POST" action="{{ route('admin.captaciones.doc-status', [$captacion, $latest]) }}">
                         @csrf
                         <input type="hidden" name="captacion_status" value="aprobado">
-                        <button type="submit" class="btn btn-sm" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">Aprobar</button>
+                        <button type="submit" class="btn btn-sm" style="background:#dcfce7;color:#166534;border-color:#bbf7d0;">✓ OK</button>
                     </form>
                     @else
                     <span class="badge badge-green">Aprobado</span>
@@ -536,6 +569,21 @@
     </div>
 </div>
 
+{{-- Preview Modal --}}
+<div id="preview-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10000;align-items:center;justify-content:center;flex-direction:column;">
+    <div style="background:#fff;border-radius:12px;max-width:900px;width:95%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid #e5e7eb;">
+            <span id="preview-title" style="font-weight:700;font-size:.95rem;"></span>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+                <a id="preview-download" href="#" target="_blank" class="btn btn-sm btn-outline">Descargar</a>
+                <button onclick="closePreview()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b7280;">&times;</button>
+            </div>
+        </div>
+        <div id="preview-body" style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;min-height:400px;background:#f9fafb;">
+        </div>
+    </div>
+</div>
+
 {{-- Reject Modal --}}
 <div id="reject-modal">
     <div style="background:#fff;border-radius:12px;max-width:420px;width:90%;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.2);">
@@ -573,6 +621,24 @@ function closeReject() {
 }
 document.getElementById('reject-modal').addEventListener('click', function(e) {
     if (e.target === this) closeReject();
+});
+function openPreview(url, type, title) {
+    document.getElementById('preview-title').textContent = title;
+    document.getElementById('preview-download').href = url;
+    var body = document.getElementById('preview-body');
+    if (type === 'img') {
+        body.innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:80vh;object-fit:contain;">';
+    } else {
+        body.innerHTML = '<iframe src="' + url + '" style="width:100%;height:75vh;border:none;"></iframe>';
+    }
+    document.getElementById('preview-modal').style.display = 'flex';
+}
+function closePreview() {
+    document.getElementById('preview-modal').style.display = 'none';
+    document.getElementById('preview-body').innerHTML = '';
+}
+document.getElementById('preview-modal').addEventListener('click', function(e) {
+    if (e.target === this) closePreview();
 });
 </script>
 @endsection
