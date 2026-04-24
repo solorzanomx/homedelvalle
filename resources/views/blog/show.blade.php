@@ -36,6 +36,15 @@
         ])->all(),
     ]" />
     @endif
+
+    {{-- BreadcrumbList schema --}}
+    <x-public.json-ld type="BreadcrumbList" :data="[
+        'itemListElement' => [
+            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Inicio', 'item' => url('/')],
+            ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog',   'item' => url('/blog')],
+            ['@type' => 'ListItem', 'position' => 3, 'name' => $post->meta_title ?: $post->title, 'item' => url('/blog/' . $post->slug)],
+        ],
+    ]" />
 @endsection
 
 @section('content')
