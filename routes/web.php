@@ -90,6 +90,12 @@ Route::get('/newsletter/unsubscribe/{token}', [PublicController::class, 'newslet
 // SEO
 Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
 
+// Redirects 301 — slugs 2025→2026
+Route::get('/blog/invertir-en-narvarte-2025-guia-completa',                              fn() => redirect('/blog/invertir-en-narvarte-2026-guia-completa', 301));
+Route::get('/blog/invertir-inmuebles-benito-juarez-2025',                                fn() => redirect('/blog/invertir-inmuebles-benito-juarez-2026', 301));
+Route::get('/blog/invertir-en-napoles-o-acacias-benito-juarez-2025',                     fn() => redirect('/blog/invertir-en-napoles-o-acacias-benito-juarez-2026', 301));
+Route::get('/blog/como-vender-una-propiedad-heredada-en-cdmx-guia-completa-2025',        fn() => redirect('/blog/como-vender-una-propiedad-heredada-en-cdmx-guia-completa-2026', 301));
+
 // Blog público
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
