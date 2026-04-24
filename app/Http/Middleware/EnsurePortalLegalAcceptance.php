@@ -37,8 +37,8 @@ class EnsurePortalLegalAcceptance
             ->exists();
 
         if (!$accepted) {
-            return redirect()->route('portal.terminos')
-                ->with('_intended', $request->url());
+            View::share('showLegalModal', true);
+            View::share('legalAviso', $aviso);
         }
 
         return $next($request);

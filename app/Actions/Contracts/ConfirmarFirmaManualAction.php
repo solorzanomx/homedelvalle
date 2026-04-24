@@ -30,7 +30,7 @@ class ConfirmarFirmaManualAction
         // Enviar correo de bienvenida con credenciales del portal
         if ($result['password']) {
             try {
-                $this->email->sendPortalWelcome($client->name, $client->email, $result['password']);
+                $this->email->sendPortalWelcome($client->name, $client->email, $result['password'], $client->interest_types ?? []);
             } catch (\Throwable $e) {
                 Log::warning('ConfirmarFirmaManual: no se pudo enviar correo de bienvenida', [
                     'client_id' => $client->id,

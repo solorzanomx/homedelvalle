@@ -82,36 +82,33 @@
     </div>
 
     {{-- Próximos pasos captación --}}
+    @php $captacion = \App\Models\Captacion::where('client_id', $client->id)->where('status', 'activo')->latest()->first(); @endphp
     <div class="card" style="margin-bottom:1.25rem;">
-        <div class="card-header"><h3>Proceso de captación</h3></div>
+        <div class="card-header">
+            <h3>Proceso de captación</h3>
+            <a href="{{ route('portal.captacion') }}" class="btn btn-sm btn-primary">Ver mi proceso</a>
+        </div>
         <div class="card-body">
-            <div style="display:flex; flex-direction:column; gap:0.75rem;">
-                @php
-                    $hasSigned = \App\Models\GoogleSignatureRequest::where('contacto_id', $client->id)
-                        ->where('tipo', 'confidencialidad')
-                        ->where('status', 'completed')
-                        ->exists();
-                    $hasProperty = $properties->isNotEmpty();
-                    $steps = [
-                        ['label' => 'Contrato de confidencialidad firmado', 'done' => $hasSigned],
-                        ['label' => 'Inmueble registrado en el sistema',    'done' => $hasProperty],
-                        ['label' => 'Opinión de valor realizada',           'done' => false],
-                        ['label' => 'Estrategia de venta definida',         'done' => false],
-                    ];
-                @endphp
-                @foreach($steps as $step)
-                <div style="display:flex; align-items:center; gap:0.75rem; font-size:0.88rem;">
-                    <span style="width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; flex-shrink:0;
-                        background: {{ $step['done'] ? 'var(--success)' : 'var(--border)' }};
-                        color: {{ $step['done'] ? '#fff' : 'var(--text-muted)' }};">
-                        {{ $step['done'] ? '✓' : '○' }}
-                    </span>
-                    <span style="color: {{ $step['done'] ? 'var(--text)' : 'var(--text-muted)' }}; {{ $step['done'] ? '' : 'opacity:0.7;' }}">
-                        {{ $step['label'] }}
-                    </span>
-                </div>
-                @endforeach
+            @if($captacion)
+            @php $etapa = $captacion->portal_etapa; @endphp
+            <div class="stage-bar" style="height:8px; margin-bottom:1rem;">
+                @for($i = 1; $i <= 4; $i++)
+                <div class="stage-seg {{ $i < $etapa ? 'done' : ($i === $etapa ? 'now' : '') }}"></div>
+                @endfor
             </div>
+            <div style="display:flex; justify-content:space-between; font-size:.75rem; color:var(--text-muted); margin-bottom:1rem;">
+                <span>Documentación</span><span>Valuación</span><span>Precio</span><span>Exclusiva</span>
+            </div>
+            <p style="font-size:.85rem;">
+                @if($etapa === 1) Sube tus documentos para avanzar al siguiente paso.
+                @elseif($etapa === 2) Documentos aprobados. Aguardando valuación de tu inmueble.
+                @elseif($etapa === 3) Valuación lista. Revisa y confirma el precio de venta.
+                @elseif($etapa === 4) Precio acordado. Pendiente firma de contrato de exclusiva.
+                @endif
+            </p>
+            @else
+            <p style="font-size:.85rem; color:var(--text-muted);">Tu proceso de captación aún no ha iniciado. Contacta a tu asesor.</p>
+            @endif
         </div>
     </div>
     @endif

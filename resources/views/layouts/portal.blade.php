@@ -164,6 +164,9 @@
         <div class="portal-nav">
             <a href="{{ route('portal.dashboard') }}" class="{{ request()->routeIs('portal.dashboard') ? 'active' : '' }}">Inicio</a>
             @php $interests = $portalClient->interest_types ?? []; @endphp
+            @if(array_intersect(['venta', 'venta_propietario'], $interests) || in_array('venta', $interests))
+            <a href="{{ route('portal.captacion') }}" class="{{ request()->routeIs('portal.captacion*') ? 'active' : '' }}">Mi Venta</a>
+            @endif
             @if(array_intersect(['renta_propietario', 'renta_inquilino'], $interests))
             <a href="{{ route('portal.rentals.index') }}" class="{{ request()->routeIs('portal.rentals.*') ? 'active' : '' }}">Mis Rentas</a>
             @endif
@@ -194,5 +197,28 @@
     </main>
 
     @yield('scripts')
+
+    @if($showLegalModal ?? false)
+    <div id="legal-modal" style="position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;">
+        <div style="background:#fff;border-radius:14px;max-width:640px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+            <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);flex-shrink:0;">
+                <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:.25rem;">Antes de continuar</div>
+                <h2 style="font-size:1.1rem;font-weight:700;margin:0;">Aviso de Privacidad</h2>
+            </div>
+            <div style="padding:1.25rem 1.5rem;overflow-y:auto;flex:1;font-size:0.85rem;line-height:1.6;color:var(--text);">
+                {!! $legalAviso?->currentVersion?->content ?? '<p>Por favor, lee y acepta nuestro aviso de privacidad para continuar.</p>' !!}
+            </div>
+            <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);flex-shrink:0;">
+                <form method="POST" action="{{ route('portal.terminos.aceptar') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary" style="width:100%;padding:.75rem;font-size:.95rem;justify-content:center;">
+                        He leído y acepto — Continuar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>document.body.style.overflow='hidden';</script>
+    @endif
 </body>
 </html>

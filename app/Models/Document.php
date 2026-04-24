@@ -6,13 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
-    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'rejection_reason', 'verified_at', 'verified_by',];
+    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by',];
     const CATEGORIES = [
         'commission_contract' => 'Contrato de Comision',
         'escritura' => 'Escritura',
         'predial' => 'Predial',
         'owner_id' => 'INE Propietario',
         'tenant_id' => 'INE Arrendatario',
+        'identificacion' => 'Identificación Oficial',
+        'curp' => 'CURP',
+        'comprobante_domicilio' => 'Comprobante de Domicilio',
+        'acta_matrimonio' => 'Acta de Matrimonio',
+        'testamento' => 'Testamento',
+        'planos' => 'Planos del Inmueble',
+        'reglamento_condominio' => 'Reglamento de Condominio',
         'proof_of_income' => 'Comprobante de Ingresos',
         'credit_report' => 'Reporte Crediticio',
         'references' => 'Referencias',
@@ -39,6 +46,7 @@ class Document extends Model
     public function operation() { return $this->belongsTo(Operation::class); }
     public function client() { return $this->belongsTo(Client::class); }
     public function property() { return $this->belongsTo(Property::class); }
+    public function captacion() { return $this->belongsTo(Captacion::class); }
     public function uploader() { return $this->belongsTo(User::class, 'uploaded_by'); }
     public function verifier() { return $this->belongsTo(User::class, 'verified_by'); }
 

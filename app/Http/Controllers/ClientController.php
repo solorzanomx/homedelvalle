@@ -369,7 +369,7 @@ class ClientController extends Controller
         // Send welcome email
         try {
             $emailService = app(\App\Services\EmailService::class);
-            $emailService->sendPortalWelcome($client->name, $client->email, $result['password']);
+            $emailService->sendPortalWelcome($client->name, $client->email, $result['password'], $client->interest_types ?? []);
         } catch (\Exception $e) {
             // Don't fail the account creation if email fails
             \Illuminate\Support\Facades\Log::warning('Portal welcome email failed: ' . $e->getMessage());

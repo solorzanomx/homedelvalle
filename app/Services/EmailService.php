@@ -155,19 +155,41 @@ class EmailService
 
     /**
      * Send portal welcome email to a client.
+     * Picks the appropriate template based on the client's interest types.
      */
-    public function sendPortalWelcome(string $name, string $email, string $password): bool
+    public function sendPortalWelcome(string $name, string $email, string $password, array $interestTypes = []): bool
     {
-        $siteName = \App\Models\SiteSetting::first()?->site_name ?? 'Homedelvalle';
+        $settings  = \App\Models\SiteSetting::first();
+        $siteName  = $settings?->site_name ?? 'Home del Valle';
         $portalUrl = url('/portal');
+        $logoUrl   = $settings?->logo_path
+            ? url('storage/' . $settings->logo_path)
+            : null;
 
-        return $this->sendTemplate('BienvenidaPortal', $email, [
-            'Nombre' => $name,
-            'Email' => $email,
-            'Password' => $password,
+        // Pick template by dominant interest type
+        if (in_array('venta', $interestTypes)) {
+            $templateName = 'BienvenidaPortalVenta';
+        } elseif (in_array('compra', $interestTypes)) {
+            $templateName = 'BienvenidaPortalCompra';
+        } elseif (array_intersect(['renta_propietario', 'renta_inquilino'], $interestTypes)) {
+            $templateName = 'BienvenidaPortalRenta';
+        } else {
+            $templateName = 'BienvenidaPortal';
+        }
+
+        // Fall back to generic if specific template not found
+        if (!\App\Models\EmailTemplate::where('name', $templateName)->exists()) {
+            $templateName = 'BienvenidaPortal';
+        }
+
+        return $this->sendTemplate($templateName, $email, [
+            'Nombre'    => $name,
+            'Email'     => $email,
+            'Password'  => $password,
             'PortalURL' => $portalUrl,
-            'Fecha' => now()->format('d/m/Y H:i'),
-            'Sitio' => $siteName,
+            'Fecha'     => now()->format('d/m/Y'),
+            'Sitio'     => $siteName,
+            'LogoURL'   => $logoUrl ?? '',
         ], $name);
     }
 

@@ -525,6 +525,17 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/{valuation}/record-sale',  [\App\Http\Controllers\Admin\ValuationController::class, 'recordSale'])->name('record-sale');
         Route::delete('/{valuation}',                [\App\Http\Controllers\Admin\ValuationController::class, 'destroy'])->name('destroy');
     });
+
+    // ===== CAPTACIONES =====
+    Route::prefix('captaciones')->name('captaciones.')->group(function () {
+        Route::get('/',                                                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'index'])->name('index');
+        Route::get('/{captacion}',                                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
+        Route::post('/{captacion}/documentos/{document}/status',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'updateDocStatus'])->name('doc-status');
+        Route::post('/{captacion}/link-valuation',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'linkValuation'])->name('link-valuation');
+        Route::post('/{captacion}/set-price',                             [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'setPrice'])->name('set-price');
+        Route::post('/{captacion}/generar-exclusiva',                     [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'generarExclusiva'])->name('generar-exclusiva');
+        Route::post('/{captacion}/confirmar-exclusiva',                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'markExclusivaSigned'])->name('confirmar-exclusiva');
+    });
 });
 
 // ===== PORTAL DE CLIENTE =====
@@ -543,6 +554,12 @@ Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(
         Route::post('/documents/upload', [PortalDocumentController::class, 'upload'])->name('documents.upload');
         Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
         Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
+
+        // Captación — funnel de evaluación de propiedad
+        Route::get('/captacion', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'show'])->name('captacion');
+        Route::post('/captacion/documentos', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'uploadDocument'])->name('captacion.upload');
+        Route::delete('/captacion/documentos/{document}', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'deleteDocument'])->name('captacion.document.delete');
+        Route::post('/captacion/confirmar-precio', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'confirmPriceAgreement'])->name('captacion.confirm-price');
     });
 });
 
