@@ -4,18 +4,24 @@ namespace App\Services;
 
 use App\Models\Client;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class ClientPortalService
 {
+    // Interest types that trigger an automatic captación pipeline
+    private const VENTA_TYPES = ['venta', 'venta_propietario'];
+
+    public function __construct(private CaptacionService $captacion) {}
+
     /**
      * Create a portal user account for a client.
      * Returns the created User and the plain-text password (if generated).
+     * Also auto-activates the captación pipeline for venta clients.
      */
     public function createPortalAccount(Client $client, ?string $password = null): array
     {
         if ($client->user_id) {
+            $this->maybeActivateCaptacion($client);
             return ['user' => User::find($client->user_id), 'password' => null];
         }
 
@@ -30,22 +36,36 @@ class ClientPortalService
                 'role'     => 'client',
             ]);
             $client->update(['user_id' => $existing->id]);
+            $this->maybeActivateCaptacion($client);
             return ['user' => $existing, 'password' => $plain];
         }
 
         $plainPassword = $password ?: Str::random(10);
 
         $user = User::create([
-            'name' => $client->name,
-            'email' => $client->email,
+            'name'     => $client->name,
+            'email'    => $client->email,
             'password' => $plainPassword,
-            'phone' => $client->phone,
-            'role' => 'client',
+            'phone'    => $client->phone,
+            'role'     => 'client',
         ]);
 
         $client->update(['user_id' => $user->id]);
 
+        $this->maybeActivateCaptacion($client);
+
         return ['user' => $user, 'password' => $plainPassword];
+    }
+
+    /**
+     * If the client has a venta interest type, ensure a captación pipeline exists.
+     */
+    private function maybeActivateCaptacion(Client $client): void
+    {
+        $types = $client->interest_types ?? [];
+        if (array_intersect(self::VENTA_TYPES, $types)) {
+            $this->captacion->getOrCreateForClient($client);
+        }
     }
 
     /**

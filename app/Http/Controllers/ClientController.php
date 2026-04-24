@@ -363,7 +363,7 @@ class ClientController extends Controller
 
         $password = $request->input('password');
 
-        $service = new ClientPortalService();
+        $service = app(ClientPortalService::class);
         $result = $service->createPortalAccount($client, $password);
 
         // Send welcome email
