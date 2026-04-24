@@ -201,7 +201,28 @@ class ClientController extends Controller
             ->latest()
             ->first();
 
-        return view('clients.show', compact('client', 'emails', 'interactions', 'emailsSent', 'emailsOpened', 'timeline', 'ownedProperties', 'dealProperties', 'emailProperties', 'confidencialidadRequest'));
+        // Documents: direct + captacion + rental
+        $rentalIds   = \App\Models\RentalProcess::where('owner_client_id', $client->id)
+            ->orWhere('tenant_client_id', $client->id)
+            ->pluck('id');
+        $captacion   = \App\Models\Captacion::where('client_id', $client->id)
+            ->where('status', 'activo')
+            ->with('documents.uploader')
+            ->latest()
+            ->first();
+        $clientDocs  = \App\Models\Document::where('client_id', $client->id)
+            ->whereNull('captacion_id')
+            ->orWhereIn('rental_process_id', $rentalIds)
+            ->with('uploader')
+            ->latest()
+            ->get();
+        $allDocCategories = \App\Models\Document::CATEGORIES;
+
+        return view('clients.show', compact(
+            'client', 'emails', 'interactions', 'emailsSent', 'emailsOpened',
+            'timeline', 'ownedProperties', 'dealProperties', 'emailProperties',
+            'confidencialidadRequest', 'captacion', 'clientDocs', 'allDocCategories'
+        ));
     }
 
     public function edit(string $id)

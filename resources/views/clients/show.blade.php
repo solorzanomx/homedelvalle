@@ -232,6 +232,8 @@
             <button class="cli-tab active" onclick="switchTab('timeline')">Actividad <span class="cli-tab-count">{{ $timeline->count() }}</span></button>
             <button class="cli-tab" onclick="switchTab('properties')">Propiedades <span class="cli-tab-count">{{ $ownedProperties->count() + $dealProperties->count() }}</span></button>
             <button class="cli-tab" onclick="switchTab('emails')">Emails <span class="cli-tab-count">{{ $emails->count() }}</span></button>
+            @php $totalDocCount = $clientDocs->count() + ($captacion ? $captacion->documents->count() : 0); @endphp
+            <button class="cli-tab" onclick="switchTab('documents')">Documentos <span class="cli-tab-count">{{ $totalDocCount }}</span></button>
         </div>
 
         {{-- Timeline Tab --}}
@@ -375,7 +377,68 @@
         </div>
     </div>
 
-    {{-- RIGHT: Sidebar --}}
+    {{-- Documents Tab --}}
+    <div class="tab-panel" id="tab-documents">
+        @php
+            $captacionDocs = $captacion ? $captacion->documents->sortBy('category') : collect();
+        @endphp
+
+        @if($captacionDocs->isEmpty() && $clientDocs->isEmpty())
+        <div style="text-align:center;padding:3rem;color:var(--text-muted);">
+            <div style="font-size:2rem;opacity:.4;margin-bottom:.5rem;">&#128196;</div>
+            Sin documentos cargados aún.
+        </div>
+        @else
+
+        {{-- Captacion docs --}}
+        @if($captacionDocs->isNotEmpty())
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;">Evaluación de Propiedad</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;">
+            @foreach($captacionDocs as $doc)
+            @php
+                $sc = match($doc->captacion_status ?? 'pendiente') { 'aprobado' => '#10b981', 'rechazado' => '#ef4444', default => '#f59e0b' };
+                $sl = match($doc->captacion_status ?? 'pendiente') { 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', default => 'Pendiente' };
+            @endphp
+            <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .85rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $doc->label ?? $doc->file_name }}</div>
+                    <div style="font-size:.72rem;color:var(--text-muted);">{{ $allDocCategories[$doc->category] ?? $doc->category }} &middot; {{ $doc->created_at->format('d/m/Y') }}@if($doc->uploader) &middot; {{ $doc->uploader->name }}@endif</div>
+                    @if($doc->captacion_status === 'rechazado' && $doc->rejection_reason)
+                    <div style="font-size:.72rem;color:#ef4444;">&#9888; {{ $doc->rejection_reason }}</div>
+                    @endif
+                </div>
+                <span class="badge" style="background:{{ $sc }}20;color:{{ $sc }};flex-shrink:0;">{{ $sl }}</span>
+                <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" style="flex-shrink:0;">&#8615;</a>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        {{-- General docs --}}
+        @if($clientDocs->isNotEmpty())
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;">Otros documentos</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+            @foreach($clientDocs as $doc)
+            @php
+                $sc = match($doc->status ?? 'pending') { 'verified' => '#10b981', 'rejected' => '#ef4444', 'received' => '#3b82f6', default => '#f59e0b' };
+                $sl = match($doc->status ?? 'pending') { 'verified' => 'Verificado', 'rejected' => 'Rechazado', 'received' => 'Recibido', default => 'Pendiente' };
+            @endphp
+            <div style="display:flex;align-items:center;gap:.6rem;padding:.55rem .85rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $doc->label ?? $doc->file_name }}</div>
+                    <div style="font-size:.72rem;color:var(--text-muted);">{{ $allDocCategories[$doc->category] ?? $doc->category }} &middot; {{ $doc->created_at->format('d/m/Y') }}@if($doc->uploader) &middot; {{ $doc->uploader->name }}@endif</div>
+                </div>
+                <span class="badge" style="background:{{ $sc }}20;color:{{ $sc }};flex-shrink:0;">{{ $sl }}</span>
+                <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" style="flex-shrink:0;">&#8615;</a>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        @endif
+    </div>
+
+
     <div>
         {{-- Stats --}}
         <div class="side-card">
