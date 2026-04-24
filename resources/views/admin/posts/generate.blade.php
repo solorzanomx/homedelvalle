@@ -48,6 +48,7 @@
 .badge-green{ background:#f0fdf4; color:#15803d; }
 .badge-amber{ background:#fffbeb; color:#92400e; }
 .badge-gray { background:#f1f5f9; color:#64748b; }
+.tag-check-gen:has(input:checked) { background:var(--primary); color:#fff; border-color:var(--primary); }
 .topic-card { border:1px solid var(--border); border-radius:10px; padding:1rem; cursor:pointer; transition:all .15s; margin-bottom:.75rem; }
 .topic-card:hover { border-color:var(--primary); background:#f8faff; }
 .topic-card.selected { border-color:var(--primary); background:#eff6ff; }
@@ -195,6 +196,20 @@
                             @endforeach
                         </select>
                     </div>
+
+                    @if($tags->count())
+                    <div style="margin-bottom:1rem;">
+                        <label class="form-label">Etiquetas</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem 0;">
+                            @foreach($tags as $tag)
+                            <label style="display:flex;align-items:center;gap:.3rem;font-size:.82rem;cursor:pointer;padding:.2rem .55rem;border:1px solid var(--border);border-radius:20px;transition:all .15s;" class="tag-check-gen">
+                                <input type="checkbox" name="tags[]" value="{{ $tag->id }}" style="display:none;">
+                                {{ $tag->name }}
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
 
                     <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;padding:.7rem;" id="generateBtn">
                         <span id="generateLabel">&#9889; Generar artículo completo</span>

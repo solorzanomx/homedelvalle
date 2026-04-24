@@ -8,6 +8,7 @@ use App\Jobs\GenerateBlogPostJob;
 use App\Models\BlogTopicSuggestion;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\Tag;
 use App\Services\BlogAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,8 +38,9 @@ class BlogGeneratorController extends Controller
             ->get(['id','title','status','ai_generation_status','seo_score','created_at']);
 
         $categories = PostCategory::orderBy('name')->get(['id','name']);
+        $tags       = Tag::orderBy('name')->get(['id','name']);
 
-        return view('admin.posts.generate', compact('suggestions', 'sessionId', 'recentPosts', 'categories'));
+        return view('admin.posts.generate', compact('suggestions', 'sessionId', 'recentPosts', 'categories', 'tags'));
     }
 
     /** POST /admin/blog/descubrir */
@@ -108,6 +110,8 @@ class BlogGeneratorController extends Controller
             'market_data'   => 'nullable|string|max:5000',
             'suggestion_id' => 'nullable|exists:blog_topic_suggestions,id',
             'category_id'   => 'nullable|exists:post_categories,id',
+            'tags'          => 'nullable|array',
+            'tags.*'        => 'exists:tags,id',
         ]);
 
         $title       = $request->input('title');
@@ -116,6 +120,7 @@ class BlogGeneratorController extends Controller
         $suggestionId = $request->input('suggestion_id');
 
         $post = $this->createPlaceholder($request);
+        $post->tags()->sync($request->input('tags', []));
 
         if ($suggestionId) {
             BlogTopicSuggestion::find($suggestionId)?->update(['status' => 'selected']);
