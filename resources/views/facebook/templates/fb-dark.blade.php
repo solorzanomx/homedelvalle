@@ -65,12 +65,13 @@ html, body {
 }
 /* Logo bottom-right */
 .logo {
-    position: absolute; bottom: 24px; right: 32px;
-    font-size: 14px; font-weight: 700; letter-spacing: 2.5px;
-    color: rgba(255,255,255,0.7); text-transform: uppercase;
-    font-style: italic; z-index: 2;
+    position: absolute; bottom: 20px; right: 28px;
+    height: 36px; width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+    z-index: 2;
 }
-.logo span { color: #3B82F6; }
 /* Vertical blue stripe left */
 .stripe {
     position: absolute; left: 0; top: 0; bottom: 0;
@@ -96,7 +97,9 @@ html, body {
     <div class="body-text">{{ $post->body_text }}</div>
     @endif
 
-    <div class="logo">HOME<span>DELVALLE</span></div>
+    @if($logoSrc ?? null)
+    <img class="logo" src="{{ $logoSrc }}" alt="Home del Valle">
+    @endif
 </div>
 </body>
 </html>

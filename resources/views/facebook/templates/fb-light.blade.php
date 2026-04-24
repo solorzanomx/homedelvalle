@@ -71,12 +71,12 @@ html, body {
 }
 /* Logo bottom-right */
 .logo {
-    position: absolute; bottom: 22px; right: 28px;
-    font-size: 12px; font-weight: 700; letter-spacing: 2.5px;
-    color: #94a3b8; text-transform: uppercase;
-    font-style: italic; z-index: 2;
+    position: absolute; bottom: 20px; right: 28px;
+    height: 36px; width: auto;
+    object-fit: contain;
+    opacity: 0.85;
+    z-index: 2;
 }
-.logo span { color: #2563A0; }
 </style>
 </head>
 <body>
@@ -99,7 +99,9 @@ html, body {
     <div class="body-text">{{ $post->body_text }}</div>
     @endif
 
-    <div class="logo">HOME<span>DELVALLE</span></div>
+    @if($logoSrc ?? null)
+    <img class="logo" src="{{ $logoSrc }}" alt="Home del Valle">
+    @endif
 </div>
 </body>
 </html>

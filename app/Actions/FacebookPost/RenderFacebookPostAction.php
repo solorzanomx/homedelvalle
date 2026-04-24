@@ -3,6 +3,7 @@
 namespace App\Actions\FacebookPost;
 
 use App\Models\FacebookPost;
+use App\Models\SiteSetting;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Spatie\Browsershot\Browsershot;
@@ -55,6 +56,29 @@ class RenderFacebookPostAction
             $viewName = 'facebook.templates.fb-dark';
         }
 
-        return view($viewName, compact('post'))->render();
+        $logoSrc = $this->logoBase64();
+
+        return view($viewName, compact('post', 'logoSrc'))->render();
+    }
+
+    private function logoBase64(): string
+    {
+        $setting  = SiteSetting::first();
+        $logoPath = $setting?->logo_path;
+
+        if (!$logoPath) {
+            return '';
+        }
+
+        $absolutePath = Storage::disk('public')->path($logoPath);
+
+        if (!file_exists($absolutePath)) {
+            return '';
+        }
+
+        $mime = mime_content_type($absolutePath) ?: 'image/png';
+        $data = base64_encode(file_get_contents($absolutePath));
+
+        return "data:{$mime};base64,{$data}";
     }
 }
