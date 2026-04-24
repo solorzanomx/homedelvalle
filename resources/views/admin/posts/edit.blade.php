@@ -331,6 +331,7 @@ function previewImage(input) {
 }
 
 tinymce.init({
+    selector: '#wysiwygEditor',
     height: 500,
     menubar: 'edit insert format table',
     plugins: 'lists link image table code fullscreen preview autolink',
