@@ -343,32 +343,44 @@
             </div>
 
             <nav style="flex:1; padding: 0.75rem 0; overflow-y: auto;">
-                {{-- ===== OPERACIONES (todos) ===== --}}
-                <div class="nav-section" data-section="operaciones">
-                    <span class="nav-label" onclick="toggleSection(this)">Operaciones <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                {{-- ===== PRINCIPAL ===== --}}
+                <div class="nav-section" data-section="principal">
+                    <span class="nav-label" onclick="toggleSection(this)">Principal <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
                     <div class="nav-items">
                         <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Dashboard
                         </a>
-                        <a href="{{ route('properties.index') }}" class="nav-item {{ request()->routeIs('properties.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Propiedades
-                        </a>
-                        @if(Route::has('admin.valuations.index'))
-                        <a href="{{ route('admin.valuations.index') }}" class="nav-item {{ request()->routeIs('admin.valuations.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Opinión de Valor
-                        </a>
-                        @endif
                         <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="users" class="w-4 h-4" /></span> Clientes
                         </a>
+                        <a href="{{ route('properties.index') }}" class="nav-item {{ request()->routeIs('properties.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Propiedades
+                        </a>
+                        @if(Route::has('tasks.index'))
+                        <a href="{{ route('tasks.index') }}" class="nav-item {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="square-check" class="w-4 h-4" /></span> Tareas
+                        </a>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ===== PROCESOS ===== --}}
+                <div class="nav-section" data-section="procesos">
+                    <span class="nav-label" onclick="toggleSection(this)">Procesos <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
+                        @if(Route::has('admin.captaciones.index'))
+                        <a href="{{ route('admin.captaciones.index') }}" class="nav-item {{ request()->routeIs('admin.captaciones.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Evaluación de Propiedad
+                        </a>
+                        @endif
                         @if(Route::has('operations.index'))
                         <a href="{{ route('operations.index') }}" class="nav-item {{ request()->routeIs('operations.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="circle-play" class="w-4 h-4" /></span> Operaciones
                         </a>
                         @endif
-                        @if(Route::has('tasks.index'))
-                        <a href="{{ route('tasks.index') }}" class="nav-item {{ request()->routeIs('tasks.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="square-check" class="w-4 h-4" /></span> Tareas
+                        @if(Route::has('admin.valuations.index'))
+                        <a href="{{ route('admin.valuations.index') }}" class="nav-item {{ request()->routeIs('admin.valuations.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Opinión de Valor
                         </a>
                         @endif
                     </div>

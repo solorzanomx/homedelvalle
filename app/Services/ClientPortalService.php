@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class ClientPortalService
 {
     // Interest types that trigger an automatic captación pipeline
-    private const VENTA_TYPES = ['venta', 'venta_propietario'];
+    private const VENTA_TYPES = ['venta', 'venta_propietario', 'vendedor', 'propietario'];
 
     public function __construct(private CaptacionService $captacion) {}
 
@@ -63,8 +63,17 @@ class ClientPortalService
     private function maybeActivateCaptacion(Client $client): void
     {
         $types = $client->interest_types ?? [];
-        if (array_intersect(self::VENTA_TYPES, $types)) {
+        if (empty($types) || !array_intersect(self::VENTA_TYPES, $types)) {
+            return;
+        }
+
+        try {
             $this->captacion->getOrCreateForClient($client);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('ClientPortalService: no se pudo crear captación', [
+                'client_id' => $client->id,
+                'error'     => $e->getMessage(),
+            ]);
         }
     }
 
