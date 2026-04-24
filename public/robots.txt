@@ -5,4 +5,4 @@ Disallow: /login
 Disallow: /register
 Disallow: /password/
 
-Sitemap: https://homedelvalle.com.mx/sitemap.xml
+Sitemap: https://homedelvalle.mx/sitemap.xml
