@@ -12,6 +12,7 @@ use App\Models\Tag;
 use App\Services\BlogAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -149,9 +150,14 @@ class BlogGeneratorController extends Controller
                 ]);
             }
         } catch (\Throwable $e) {
+            Log::error('BlogGeneratorController: generateSync failed', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
             return redirect()
                 ->route('admin.blog.generator')
-                ->with('error', 'Error al generar el artículo: ' . $e->getMessage());
+                ->with('error', 'Error al generar: ' . $e->getMessage());
         }
 
         // Go to Step 2 — image generation
