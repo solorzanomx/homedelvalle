@@ -115,6 +115,35 @@
         </div>
     </div>
 
+    {{-- Trust badges --}}
+    <div class="border-t border-white/5">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-wrap items-center justify-center gap-4">
+
+            {{-- SSL Seguro --}}
+            <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <div class="leading-tight">
+                    <div class="text-xs font-semibold text-white">Sitio Seguro</div>
+                    <div class="text-[10px] text-gray-500">Conexión HTTPS cifrada</div>
+                </div>
+            </div>
+
+            {{-- AMPI --}}
+            <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <div class="leading-tight">
+                    <div class="text-xs font-semibold text-white">Miembro AMPI</div>
+                    <div class="text-[10px] text-gray-500">Asociación Mexicana de Profesionales Inmobiliarios</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     {{-- Bottom bar --}}
     <div class="border-t border-white/5">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs text-gray-600">

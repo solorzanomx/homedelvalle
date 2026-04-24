@@ -141,7 +141,12 @@ class PublicController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', '¡Gracias por tu mensaje! Te contactaremos pronto.');
+        return redirect()->route('contacto.gracias');
+    }
+
+    public function gracias()
+    {
+        return view('public.gracias');
     }
 
     public function newsletterSubscribe(Request $request, SpamProtectionService $spam)

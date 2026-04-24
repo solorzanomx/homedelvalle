@@ -83,6 +83,7 @@ Route::get('/nosotros', [PublicController::class, 'nosotros'])->name('nosotros')
 Route::get('/servicios', [PublicController::class, 'servicios'])->name('servicios');
 Route::get('/contacto', [PublicController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [PublicController::class, 'contactoStore'])->middleware('throttle:public-form')->name('contacto.store');
+Route::get('/gracias', [PublicController::class, 'gracias'])->name('contacto.gracias');
 Route::get('/testimonios', [PublicController::class, 'testimonios'])->name('testimonios');
 Route::post('/newsletter/subscribe', [PublicController::class, 'newsletterSubscribe'])->middleware('throttle:newsletter')->name('newsletter.subscribe');
 Route::get('/newsletter/unsubscribe/{token}', [PublicController::class, 'newsletterUnsubscribe'])->name('newsletter.unsubscribe');
