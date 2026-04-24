@@ -260,6 +260,12 @@ class ClientController extends Controller
     {
         $client = Client::findOrFail($id);
         $this->authorize('delete', $client);
+
+        // Eliminar usuario del portal vinculado
+        if ($client->user_id) {
+            \App\Models\User::where('id', $client->user_id)->delete();
+        }
+
         $client->delete();
         return redirect()->route('clients.index')->with('success', 'Cliente eliminado exitosamente');
     }

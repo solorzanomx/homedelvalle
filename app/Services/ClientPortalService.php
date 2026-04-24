@@ -19,6 +19,20 @@ class ClientPortalService
             return ['user' => User::find($client->user_id), 'password' => null];
         }
 
+        // Si ya existe un usuario con ese email (huérfano de cliente borrado), reutilizarlo
+        $existing = User::where('email', $client->email)->first();
+        if ($existing) {
+            $plain = $password ?: Str::random(10);
+            $existing->update([
+                'name'     => $client->name,
+                'password' => $plain,
+                'phone'    => $client->phone,
+                'role'     => 'client',
+            ]);
+            $client->update(['user_id' => $existing->id]);
+            return ['user' => $existing, 'password' => $plain];
+        }
+
         $plainPassword = $password ?: Str::random(10);
 
         $user = User::create([
