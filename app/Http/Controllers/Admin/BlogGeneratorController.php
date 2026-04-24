@@ -79,7 +79,7 @@ class BlogGeneratorController extends Controller
 
         $title       = $request->input('title');
         $keywords    = array_values(array_filter(array_map('trim', explode(',', $request->input('keywords')))));
-        $marketData  = $request->input('market_data', '');
+        $marketData  = (string) $request->input('market_data', '');
         $suggestionId = $request->input('suggestion_id');
 
         // Create a draft Post placeholder
@@ -118,7 +118,7 @@ class BlogGeneratorController extends Controller
 
         $title       = $request->input('title');
         $keywords    = array_values(array_filter(array_map('trim', explode(',', $request->input('keywords')))));
-        $marketData  = $request->input('market_data', '');
+        $marketData  = (string) $request->input('market_data', '');
         $suggestionId = $request->input('suggestion_id');
 
         $post = Post::create([
