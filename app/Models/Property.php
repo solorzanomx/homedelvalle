@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
 
 class Property extends Model
 {
-    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'market_colonia_id', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url'];
+    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'market_colonia_id', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'is_featured', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url'];
 
     public function marketColonia(): BelongsTo
     {
@@ -92,12 +92,18 @@ class Property extends Model
             'year_built' => 'integer',
             'amenities' => 'array',
             'easybroker_published_at' => 'datetime',
+            'is_featured' => 'boolean',
         ];
     }
 
     public function scopeAvailable($query)
     {
         return $query->where('status', 'available');
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
     }
 
     public function getFormattedPriceAttribute(): string

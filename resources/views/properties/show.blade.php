@@ -326,6 +326,14 @@
         <a href="{{ route('properties.edit', $property) }}" class="btn btn-primary">&#9998; Editar</a>
         <a href="{{ route('properties.pdf', $property) }}" target="_blank" class="btn btn-outline">&#128196; Ficha PDF</a>
         <button type="button" onclick="document.getElementById('fichaModal').style.display='flex'" class="btn btn-outline">&#9993; Enviar ficha</button>
+        {{-- Toggle Destacada --}}
+        <form method="POST" action="{{ route('properties.toggle-featured', $property) }}" style="display:contents;">
+            @csrf @method('PATCH')
+            <button type="submit" class="btn btn-outline" style="{{ $property->is_featured ? 'color:#f59e0b; border-color:#f59e0b; background:#fef3c7;' : '' }}"
+                title="{{ $property->is_featured ? 'Quitar de destacadas' : 'Marcar como destacada en el home' }}">
+                &#9733; {{ $property->is_featured ? 'Destacada' : 'Destacar' }}
+            </button>
+        </form>
         @if($property->broker && $property->broker->phone)
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $property->broker->phone) }}" target="_blank" class="btn btn-outline" style="color:#25d366; border-color:#25d366;">&#128172; Broker</a>
         @endif

@@ -18,6 +18,9 @@
                 @if($property->operation_type)
                     <span class="p-badge p-badge-op">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>
                 @endif
+                @if($property->is_featured)
+                    <span class="p-badge" style="background:rgba(245,158,11,0.9); color:#fff;">&#9733; Destacada</span>
+                @endif
             </div>
             <div class="p-card-status p-status-{{ $property->status ?? 'available' }}">
                 {{ $property->status === 'sold' ? 'Vendido' : ($property->status === 'rented' ? 'Rentado' : 'Disponible') }}
@@ -43,6 +46,10 @@
         <div class="p-card-actions" onclick="event.stopPropagation();">
             <a href="{{ route('properties.show', $property) }}" class="btn btn-sm btn-outline" style="flex:1; text-align:center;">Ver</a>
             <a href="{{ route('properties.edit', $property) }}" class="btn btn-sm btn-outline" style="flex:1; text-align:center;">Editar</a>
+            <form method="POST" action="{{ route('properties.toggle-featured', $property) }}" style="flex:1;">
+                @csrf @method('PATCH')
+                <button type="submit" class="btn btn-sm btn-outline" style="width:100%; {{ $property->is_featured ? 'color:#f59e0b; border-color:#f59e0b;' : '' }}" title="{{ $property->is_featured ? 'Quitar de destacadas' : 'Destacar en home' }}">&#9733;</button>
+            </form>
             <button type="button" class="btn btn-sm btn-outline" style="flex:1; text-align:center;" onclick="shareProperty({{ $property->id }}, '{{ addslashes($property->title) }}', '{{ route('propiedades.show', [$property->id, $property->slug]) }}')" title="Compartir">&#9993;</button>
         </div>
     </div>

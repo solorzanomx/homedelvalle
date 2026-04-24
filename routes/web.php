@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('properties', PropertyController::class);
     Route::post('properties/{property}/publish-easybroker', [PropertyController::class, 'publishToEasyBroker'])->name('properties.publish-easybroker');
     Route::post('properties/{property}/unpublish-easybroker', [PropertyController::class, 'unpublishFromEasyBroker'])->name('properties.unpublish-easybroker');
+    Route::patch('properties/{property}/toggle-featured', [PropertyController::class, 'toggleFeatured'])->name('properties.toggle-featured');
     Route::post('properties/{property}/photos', [PropertyPhotoController::class, 'store'])->name('properties.photos.store');
     Route::patch('properties/{property}/photos/{photo}/primary', [PropertyPhotoController::class, 'setPrimary'])->name('properties.photos.primary');
     Route::patch('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'update'])->name('properties.photos.update');

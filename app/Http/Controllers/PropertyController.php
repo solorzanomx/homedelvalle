@@ -265,4 +265,15 @@ class PropertyController extends Controller
 
         return back()->with('error', $result['message']);
     }
+
+    public function toggleFeatured(Property $property)
+    {
+        $property->update(['is_featured' => ! $property->is_featured]);
+
+        $msg = $property->is_featured
+            ? "✦ \"{$property->title}\" ahora es Destacada y aparece en el home."
+            : "\"{$property->title}\" ya no es Destacada.";
+
+        return back()->with('success', $msg);
+    }
 }

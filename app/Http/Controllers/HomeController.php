@@ -18,7 +18,12 @@ class HomeController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $featuredProperties = Property::available()->latest()->take(6)->get();
+        $featuredProperties = Property::available()->featured()->latest()->take(6)->get();
+
+        // Fallback: si no hay destacadas, mostrar las más recientes
+        if ($featuredProperties->isEmpty()) {
+            $featuredProperties = Property::available()->latest()->take(6)->get();
+        }
         $latestPosts = Post::published()->latest('published_at')->take(3)->get();
         $homeTestimonials = Testimonial::active()->inRandomOrder()->take(3)->get();
 
