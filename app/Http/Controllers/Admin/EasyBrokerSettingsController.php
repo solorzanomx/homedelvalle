@@ -98,4 +98,10 @@ class EasyBrokerSettingsController extends Controller
     {
         return response()->json($ebService->rawProperties($request->input('id')));
     }
+
+    public function testPatch(Request $request, EasyBrokerService $ebService)
+    {
+        $id = $request->input('id', 'EB-R7243');
+        return response()->json($ebService->testPatch($id));
+    }
 }

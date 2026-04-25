@@ -344,6 +344,43 @@ class EasyBrokerService
         }
     }
 
+    public function testPatch(string $publicId): array
+    {
+        if (!$this->isConfigured()) {
+            return ['error' => 'API Key no configurada'];
+        }
+
+        $payload = [
+            'title'         => 'Test desde HDV API - ' . now()->format('H:i:s'),
+            'status'        => 'published',
+            'property_type' => 'apartment',
+            'location'      => [
+                'street'    => 'amores',
+                'latitude'  => 19.3853297925,
+                'longitude' => -99.1660722852,
+                'postal_code' => '03100',
+            ],
+            'operations'    => [
+                ['type' => 'sale', 'amount' => 2795000, 'currency' => 'MXN'],
+            ],
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'X-Authorization' => $this->getApiKey(),
+                'Content-Type'    => 'application/json',
+            ])->patch($this->getBaseUrl() . '/properties/' . $publicId, $payload);
+
+            return [
+                'payload'     => $payload,
+                'status_code' => $response->status(),
+                'response'    => $response->json() ?? $response->body(),
+            ];
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
+        }
+    }
+
     public function rawProperties(?string $publicId = null): array
     {
         if (!$this->isConfigured()) {
