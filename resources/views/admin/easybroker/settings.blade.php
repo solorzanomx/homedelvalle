@@ -59,10 +59,10 @@
                     {{-- Location defaults --}}
                     <div style="margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--border);">
                         <div style="font-size:0.8rem; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:1rem;">
-                            Ubicacion por defecto (requerida por EasyBroker)
+                            Ubicacion por defecto (opcional)
                         </div>
                         <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
-                            Busca tu ciudad y colonia en el campo de abajo para obtener los IDs que EasyBroker requiere.
+                            Si tienes el City ID de EasyBroker puedes ingresarlo para mayor precision, pero no es obligatorio.
                         </div>
 
                         {{-- Auto-detect from existing EB properties --}}

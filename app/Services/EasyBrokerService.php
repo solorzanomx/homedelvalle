@@ -203,10 +203,6 @@ class EasyBrokerService
         if (!$this->isConfigured()) {
             $errors[] = 'Falta API Key. Configúrala en Administración → EasyBroker.';
         }
-        $config = $this->getConfig();
-        if (!$config?->default_city_id) {
-            $errors[] = 'Falta City ID por defecto. Búscalo en Configuración de EasyBroker → Ubicación.';
-        }
         return $errors;
     }
 
@@ -221,7 +217,15 @@ class EasyBrokerService
 
         $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
 
+        // Build location name from property fields
+        $nameParts = array_filter([
+            $property->colony ?? null,
+            $property->city   ?? null,
+        ]);
+        $locationName = implode(', ', $nameParts) ?: null;
+
         $location = [];
+        if ($locationName)       $location['name']        = $locationName;
         if ($property->address)  $location['street']      = $property->address;
         if ($property->zipcode)  $location['postal_code'] = $property->zipcode;
         if ($cityId)             $location['city_id']     = $cityId;
