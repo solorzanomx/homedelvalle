@@ -354,57 +354,35 @@ class EasyBrokerService
         $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
         $results = [];
 
+        // BASE that worked (gave specific field errors, not "Unpermitted")
+        $baseLocation = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
+        $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
+
         $variants = [
-            // A: city_ids inside location + operation_type alongside type + details field
-            'A_full_with_ids' => [
-                'title'         => 'TEST borrar A ' . now()->format('H:i:s'),
-                'status'        => 'not_published',
-                'property_type' => 'apartment',
-                'location'      => [
-                    'street'                  => 'Amores',
-                    'city_area'               => 'Del Valle Centro',
-                    'city_id'                 => 7542361,
-                    'administrative_division_id' => 2909,
-                    'latitude'                => 19.3853,
-                    'longitude'               => -99.166,
-                    'postal_code'             => '03100',
-                ],
-                'operations'    => [['type' => 'sale', 'operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-                'details'       => 'Propiedad de prueba',
+            // E: base + city_id inside location only
+            'E_add_city_id' => [
+                'title' => 'TEST borrar E ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => array_merge($baseLocation, ['city_id' => 7542361]),
+                'operations' => $baseOps,
             ],
-            // B: same but operation_type only (no type)
-            'B_optype_only' => [
-                'title'         => 'TEST borrar B ' . now()->format('H:i:s'),
-                'status'        => 'not_published',
-                'property_type' => 'apartment',
-                'location'      => [
-                    'street'                  => 'Amores',
-                    'city_area'               => 'Del Valle Centro',
-                    'city_id'                 => 7542361,
-                    'administrative_division_id' => 2909,
-                    'latitude'                => 19.3853,
-                    'longitude'               => -99.166,
-                    'postal_code'             => '03100',
-                ],
-                'operations'    => [['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-                'details'       => 'Propiedad de prueba',
+            // F: base + administrative_division_id inside location only
+            'F_add_admin_div' => [
+                'title' => 'TEST borrar F ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => array_merge($baseLocation, ['administrative_division_id' => 2909]),
+                'operations' => $baseOps,
             ],
-            // C: city_id as strings
-            'C_string_ids' => [
-                'title'         => 'TEST borrar C ' . now()->format('H:i:s'),
-                'status'        => 'not_published',
-                'property_type' => 'apartment',
-                'location'      => [
-                    'street'                  => 'Amores',
-                    'city_area'               => 'Del Valle Centro',
-                    'city_id'                 => '7542361',
-                    'administrative_division_id' => '2909',
-                    'latitude'                => 19.3853,
-                    'longitude'               => -99.166,
-                    'postal_code'             => '03100',
-                ],
-                'operations'    => [['type' => 'sale', 'operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-                'details'       => 'Propiedad de prueba',
+            // G: base + details field only
+            'G_add_details' => [
+                'title' => 'TEST borrar G ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => $baseLocation,
+                'operations' => $baseOps,
+                'details'    => 'Propiedad de prueba',
+            ],
+            // H: base + operation_type alongside type inside operations
+            'H_add_optype_in_ops' => [
+                'title' => 'TEST borrar H ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => $baseLocation,
+                'operations' => [['type' => 'sale', 'operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
         ];
 
