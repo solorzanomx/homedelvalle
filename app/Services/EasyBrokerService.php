@@ -49,7 +49,7 @@ class EasyBrokerService
         $payload = $this->mapPropertyToPayload($property);
 
         try {
-            Log::info('EasyBroker: POST /properties payload', [
+            Log::error('EasyBroker: POST /properties payload', [
                 'property_id' => $property->id,
                 'payload' => $payload,
             ]);
@@ -59,7 +59,7 @@ class EasyBrokerService
                 'Content-Type' => 'application/json',
             ])->post($this->getBaseUrl() . '/properties', $payload);
 
-            Log::info('EasyBroker: POST /properties response', [
+            Log::error('EasyBroker: POST /properties response', [
                 'property_id' => $property->id,
                 'status_code' => $response->status(),
                 'response' => $response->json(),
