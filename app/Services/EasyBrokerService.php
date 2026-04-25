@@ -276,17 +276,61 @@ class EasyBrokerService
         }
 
         try {
+            // EasyBroker uses 'search' not 'q'
             $response = Http::withHeaders([
                 'X-Authorization' => $this->getApiKey(),
-            ])->get($this->getBaseUrl() . '/locations', ['q' => $query, 'limit' => 20]);
+            ])->get($this->getBaseUrl() . '/locations', ['search' => $query, 'limit' => 20]);
 
             if ($response->successful()) {
-                return ['success' => true, 'data' => $response->json('content') ?? $response->json() ?? []];
+                $data = $response->json('content') ?? $response->json() ?? [];
+                return ['success' => true, 'data' => is_array($data) ? $data : []];
             }
+
+            Log::warning('EasyBroker: locations search failed', [
+                'status' => $response->status(),
+                'body'   => $response->body(),
+            ]);
 
             return ['success' => false, 'data' => [], 'message' => $this->parseApiError($response)];
         } catch (\Exception $e) {
             return ['success' => false, 'data' => [], 'message' => $e->getMessage()];
+        }
+    }
+
+    public function detectLocationFromProperties(): array
+    {
+        if (!$this->isConfigured()) {
+            return ['success' => false, 'data' => null, 'message' => 'API Key no configurada.'];
+        }
+
+        try {
+            $response = Http::withHeaders([
+                'X-Authorization' => $this->getApiKey(),
+            ])->get($this->getBaseUrl() . '/properties', ['limit' => 5, 'page' => 1]);
+
+            if (!$response->successful()) {
+                return ['success' => false, 'data' => null, 'message' => $this->parseApiError($response)];
+            }
+
+            $props = $response->json('content') ?? [];
+            foreach ($props as $prop) {
+                $loc = $prop['location'] ?? [];
+                if (!empty($loc['city_id']) || !empty($loc['administrative_division_id'])) {
+                    return [
+                        'success' => true,
+                        'data'    => [
+                            'city_id'    => $loc['city_id'] ?? null,
+                            'admin_id'   => $loc['administrative_division_id'] ?? null,
+                            'city_name'  => $loc['city'] ?? $loc['name'] ?? null,
+                            'source'     => $prop['title'] ?? $prop['public_id'] ?? 'propiedad existente',
+                        ],
+                    ];
+                }
+            }
+
+            return ['success' => false, 'data' => null, 'message' => 'No se encontraron propiedades con ubicación en EasyBroker.'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'data' => null, 'message' => $e->getMessage()];
         }
     }
 

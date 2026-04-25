@@ -77,6 +77,15 @@ class EasyBrokerSettingsController extends Controller
         }
 
         $result = $ebService->searchLocations($q);
-        return response()->json($result['data'] ?? []);
+        return response()->json([
+            'data'    => $result['data'] ?? [],
+            'message' => $result['message'] ?? null,
+        ]);
+    }
+
+    public function detectLocation(EasyBrokerService $ebService)
+    {
+        $result = $ebService->detectLocationFromProperties();
+        return response()->json($result);
     }
 }

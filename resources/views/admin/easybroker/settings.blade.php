@@ -65,9 +65,17 @@
                             Busca tu ciudad y colonia en el campo de abajo para obtener los IDs que EasyBroker requiere.
                         </div>
 
+                        {{-- Auto-detect from existing EB properties --}}
+                        <div style="margin-bottom:1rem;">
+                            <button type="button" id="eb-detect-btn" class="btn btn-outline" style="width:100%; justify-content:center;" onclick="ebDetectLocation()">
+                                &#128270; Detectar IDs desde mis propiedades en EasyBroker
+                            </button>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Si ya tienes propiedades en EasyBroker, extrae los IDs automáticamente.</p>
+                        </div>
+
                         {{-- Location search --}}
                         <div class="form-group">
-                            <label class="form-label">Buscar ubicacion</label>
+                            <label class="form-label">O buscar ubicacion manualmente</label>
                             <div style="display:flex; gap:0.5rem;">
                                 <input type="text" id="eb-location-search" class="form-input" placeholder="Ej: Benito Juarez, Ciudad de Mexico..." style="flex:1;">
                                 <button type="button" class="btn btn-outline" onclick="ebSearchLocations()">Buscar</button>
@@ -191,24 +199,56 @@ function ebSearchLocations() {
 
     fetch('{{ route('admin.easybroker.locations') }}?q=' + encodeURIComponent(q))
         .then(r => r.json())
-        .then(data => {
-            if (!data.length) {
-                resultsDiv.innerHTML = '<div style="padding:0.75rem; color:var(--text-muted); font-size:0.85rem;">Sin resultados</div>';
+        .then(resp => {
+            const data = resp.data ?? resp;
+            if (!Array.isArray(data) || !data.length) {
+                const msg = resp.message ? ' (' + resp.message + ')' : '';
+                resultsDiv.innerHTML = '<div style="padding:0.75rem; color:var(--text-muted); font-size:0.85rem;">Sin resultados' + msg + '</div>';
                 return;
             }
             resultsDiv.innerHTML = data.map(loc => `
                 <div style="padding:0.6rem 0.75rem; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.85rem;"
                     onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"
                     onclick="ebSelectLocation(${JSON.stringify(loc)})">
-                    <span style="font-weight:500;">${loc.name ?? loc.title ?? ''}</span>
+                    <span style="font-weight:500;">${loc.name ?? loc.long_name ?? loc.title ?? ''}</span>
                     <span style="color:var(--text-muted); margin-left:0.5rem; font-size:0.78rem;">
-                        ID: ${loc.id ?? '?'} &bull; Tipo: ${loc.type ?? '?'} &bull; Div: ${loc.administrative_division_id ?? '?'}
+                        ID: ${loc.id ?? '?'} &bull; Tipo: ${loc.type ?? '?'}
                     </span>
                 </div>
             `).join('');
         })
+        .catch((e) => {
+            resultsDiv.innerHTML = '<div style="padding:0.75rem; color:#dc2626; font-size:0.85rem;">Error al buscar: ' + e.message + '</div>';
+        });
+}
+
+function ebDetectLocation() {
+    const btn = document.getElementById('eb-detect-btn');
+    btn.textContent = 'Detectando...';
+    btn.disabled = true;
+
+    fetch('{{ route('admin.easybroker.detect-location') }}')
+        .then(r => r.json())
+        .then(resp => {
+            if (resp.success && resp.data) {
+                const d = resp.data;
+                if (d.city_id)  document.getElementById('eb-city-id').value = d.city_id;
+                if (d.admin_id) document.getElementById('eb-admin-div-id').value = d.admin_id;
+                btn.textContent = '✓ Detectado desde: ' + (d.source ?? 'EasyBroker');
+                btn.style.color = 'var(--success)';
+                btn.style.borderColor = 'var(--success)';
+            } else {
+                btn.textContent = resp.message ?? 'No se pudo detectar';
+                btn.style.color = 'var(--danger)';
+                setTimeout(() => { btn.textContent = 'Detectar desde mis propiedades'; btn.disabled = false; btn.style.color=''; btn.style.borderColor=''; }, 3000);
+                return;
+            }
+            btn.disabled = false;
+        })
         .catch(() => {
-            resultsDiv.innerHTML = '<div style="padding:0.75rem; color:#dc2626; font-size:0.85rem;">Error al buscar</div>';
+            btn.textContent = 'Error de conexión';
+            btn.style.color = 'var(--danger)';
+            setTimeout(() => { btn.textContent = 'Detectar desde mis propiedades'; btn.disabled = false; btn.style.color=''; btn.style.borderColor=''; }, 3000);
         });
 }
 
