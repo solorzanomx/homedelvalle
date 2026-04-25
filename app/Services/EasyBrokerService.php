@@ -350,26 +350,24 @@ class EasyBrokerService
             return ['error' => 'API Key no configurada'];
         }
 
+        $headers = ['X-Authorization' => $this->getApiKey()];
+
         try {
-            // First GET the property to see its current structure
-            $getResponse = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
-                ->get($this->getBaseUrl() . '/properties/' . $publicId);
+            // Search /locations for Del Valle to get valid city_id
+            $searches = [];
+            foreach (['Del Valle Centro', 'Del Valle', 'Benito Juárez', 'Ciudad de México'] as $q) {
+                $r = Http::withHeaders($headers)->timeout(8)
+                    ->get($this->getBaseUrl() . '/locations', ['search' => $q, 'per_page' => 20]);
+                $searches[$q] = ['status' => $r->status(), 'body' => $r->json() ?? $r->body()];
+            }
 
-            $current = $getResponse->json() ?? [];
-
-            // Extract real values from existing property
-            $loc        = $current['location'] ?? [];
-            $ops        = $current['operations'] ?? [];
-            $cityId     = $loc['city_id'] ?? null;
-            $neighborhood = $loc['neighborhood'] ?? null;
-            $opType     = $ops[0]['operation_type'] ?? null;
+            // Also try paginating without search to get all locations with their IDs
+            $allLocs = Http::withHeaders($headers)->timeout(8)
+                ->get($this->getBaseUrl() . '/locations', ['per_page' => 50, 'page' => 1]);
 
             return [
-                'get_status'   => $getResponse->status(),
-                'location'     => $loc,
-                'operations'   => $ops,
-                'extracted'    => compact('cityId', 'neighborhood', 'opType'),
-                'full_current' => $current,
+                'location_searches' => $searches,
+                'all_locations_p1'  => ['status' => $allLocs->status(), 'body' => $allLocs->json() ?? $allLocs->body()],
             ];
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
