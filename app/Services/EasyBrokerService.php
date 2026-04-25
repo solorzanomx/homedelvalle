@@ -350,34 +350,26 @@ class EasyBrokerService
             return ['error' => 'API Key no configurada'];
         }
 
-        $payload = [
-            'title'         => 'Test desde HDV API - ' . now()->format('H:i:s'),
-            'status'        => 'published',
-            'property_type' => 'apartment',
-            'location'      => [
-                'street'      => 'Amores',
-                'city_area'   => 'Del Valle Centro',
-                'city'        => 'Ciudad de Mexico',
-                'region'      => 'Ciudad de Mexico',
-                'latitude'    => 19.3853297925,
-                'longitude'   => -99.1660722852,
-                'postal_code' => '03100',
-            ],
-            'operations'    => [
-                ['type' => 'sale', 'amount' => 2795000, 'currency' => 'MXN'],
-            ],
-        ];
-
         try {
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-                'Content-Type'    => 'application/json',
-            ])->patch($this->getBaseUrl() . '/properties/' . $publicId, $payload);
+            // First GET the property to see its current structure
+            $getResponse = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
+                ->get($this->getBaseUrl() . '/properties/' . $publicId);
+
+            $current = $getResponse->json() ?? [];
+
+            // Extract real values from existing property
+            $loc        = $current['location'] ?? [];
+            $ops        = $current['operations'] ?? [];
+            $cityId     = $loc['city_id'] ?? null;
+            $neighborhood = $loc['neighborhood'] ?? null;
+            $opType     = $ops[0]['operation_type'] ?? null;
 
             return [
-                'payload'     => $payload,
-                'status_code' => $response->status(),
-                'response'    => $response->json() ?? $response->body(),
+                'get_status'   => $getResponse->status(),
+                'location'     => $loc,
+                'operations'   => $ops,
+                'extracted'    => compact('cityId', 'neighborhood', 'opType'),
+                'full_current' => $current,
             ];
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
