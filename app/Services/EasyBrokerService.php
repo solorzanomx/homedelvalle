@@ -226,9 +226,9 @@ class EasyBrokerService
 
         $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
 
-        // city_id = municipality name (e.g. "Benito Juárez"), admin = state name (e.g. "Ciudad de México")
-        $resolvedCityId  = $cityId  ?: ($property->city   ?? null);
-        $resolvedAdminId = $adminId ?: 'Ciudad de México';
+        // city_id = municipality name, administrative_division_id = state name
+        $resolvedCityId  = $cityId  ?: null;
+        $resolvedAdminId = $adminId ?: null;
 
         $location = [];
         if ($property->address)   $location['street']                   = $property->address;
