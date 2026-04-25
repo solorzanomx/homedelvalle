@@ -49,12 +49,17 @@ class EasyBrokerService
         $payload = $this->mapPropertyToPayload($property);
 
         try {
+            Log::info('EasyBroker: POST /properties payload', [
+                'property_id' => $property->id,
+                'payload' => $payload,
+            ]);
+
             $response = Http::withHeaders([
                 'X-Authorization' => $this->getApiKey(),
                 'Content-Type' => 'application/json',
             ])->post($this->getBaseUrl() . '/properties', $payload);
 
-            Log::info('EasyBroker: POST /properties', [
+            Log::info('EasyBroker: POST /properties response', [
                 'property_id' => $property->id,
                 'status_code' => $response->status(),
                 'response' => $response->json(),
@@ -217,15 +222,7 @@ class EasyBrokerService
 
         $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
 
-        // Build location name from property fields
-        $nameParts = array_filter([
-            $property->colony ?? null,
-            $property->city   ?? null,
-        ]);
-        $locationName = implode(', ', $nameParts) ?: null;
-
         $location = [];
-        if ($locationName)       $location['name']        = $locationName;
         if ($property->address)  $location['street']      = $property->address;
         if ($property->zipcode)  $location['postal_code'] = $property->zipcode;
         if ($cityId)             $location['city_id']     = $cityId;
