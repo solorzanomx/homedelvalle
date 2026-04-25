@@ -231,10 +231,8 @@ class EasyBrokerService
         $resolvedAdminId = $adminId ?: null;
 
         $location = [];
-        if ($property->address)   $location['street']                   = $property->address;
-        if ($property->zipcode)   $location['postal_code']              = $property->zipcode;
-        if ($resolvedCityId)      $location['city_id']                  = (int) $resolvedCityId;
-        if ($resolvedAdminId)     $location['administrative_division_id'] = (int) $resolvedAdminId;
+        if ($property->address)   $location['street']      = $property->address;
+        if ($property->zipcode)   $location['postal_code'] = $property->zipcode;
         if ($lat && $lng) {
             $location['latitude']  = (float) $lat;
             $location['longitude'] = (float) $lng;
@@ -257,12 +255,16 @@ class EasyBrokerService
             'status'        => 'published',
             'property_type' => $propertyType,
             'location'      => $location,
-            'operations'    => [
-                [
-                    'type'     => $opType,
-                    'amount'   => (float) $property->price,
-                    'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
-                ],
+        ];
+
+        if ($resolvedCityId)  $payload['city_id']                  = (int) $resolvedCityId;
+        if ($resolvedAdminId) $payload['administrative_division_id'] = (int) $resolvedAdminId;
+
+        $payload['operations'] = [
+            [
+                'type'     => $opType,
+                'amount'   => (float) $property->price,
+                'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
             ],
         ];
 
