@@ -355,41 +355,40 @@ class EasyBrokerService
         $results = [];
 
         $results = [];
-        $baseLoc = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
         $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
 
-        // Z1: city_id and admin_div_id as city NAME strings (inside location)
+        // AA: location with city + region (doc-mentioned fields) — no city_area
         $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST Z1 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => array_merge($baseLoc, ['city_id' => 'Benito Juárez', 'administrative_division_id' => 'Ciudad de México']),
+            'title' => 'TEST AA ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => ['street' => 'Amores', 'city' => 'Benito Juárez', 'region' => 'Ciudad de México', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
             'operations' => $baseOps,
         ]);
-        $results['Z1_string_names'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        $results['AA_city_region'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
-        // Z2: Try INEGI codes as strings ("9014" and "9")
+        // AB: city_area + city + region all together
         $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST Z2 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => array_merge($baseLoc, ['city_id' => '9014', 'administrative_division_id' => '9']),
+            'title' => 'TEST AB ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'city' => 'Benito Juárez', 'region' => 'Ciudad de México', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
             'operations' => $baseOps,
         ]);
-        $results['Z2_inegi_strings'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        $results['AB_all_location_fields'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
-        // Z3: Try small sequential IDs (1-based)
+        // AC: try listing_type instead of operation_type
         $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST Z3 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => array_merge($baseLoc, ['city_id' => 9, 'administrative_division_id' => 1]),
-            'operations' => $baseOps,
+            'title' => 'TEST AC ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'listing_type' => 'sale',
+            'location'     => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
+            'operations'   => $baseOps,
         ]);
-        $results['Z3_small_ids'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        $results['AC_listing_type'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
-        // Z4: No city_id/admin_div at all — just location with lat/lng and city_area
-        // Maybe they're only required by the wrapper (internal model), not by REST API
+        // AD: try "listing_type" inside operations
         $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST Z4 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => $baseLoc,
-            'operations' => $baseOps,
+            'title' => 'TEST AD ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
+            'operations' => [['type' => 'sale', 'listing_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
         ]);
-        $results['Z4_baseline_no_ids'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        $results['AD_listing_type_in_ops'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
         return $results;
 
