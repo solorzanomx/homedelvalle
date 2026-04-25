@@ -208,6 +208,13 @@ class EasyBrokerService
         if (!$this->isConfigured()) {
             $errors[] = 'Falta API Key. Configúrala en Administración → EasyBroker.';
         }
+        $config = $this->getConfig();
+        if (!$config?->default_city_id) {
+            $errors[] = 'Falta City ID. Configúralo en Administración → EasyBroker → Configuración.';
+        }
+        if (!$config?->default_latitude || !$config?->default_longitude) {
+            $errors[] = 'Faltan coordenadas por defecto (latitud/longitud). Configúralas en Administración → EasyBroker.';
+        }
         return $errors;
     }
 
