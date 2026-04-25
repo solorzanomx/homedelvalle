@@ -339,15 +339,20 @@ class EasyBrokerService
         }
     }
 
-    public function rawProperties(): array
+    public function rawProperties(?string $publicId = null): array
     {
         if (!$this->isConfigured()) {
             return ['error' => 'API Key no configurada'];
         }
 
         try {
-            $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
-                ->get($this->getBaseUrl() . '/properties', ['limit' => 10, 'page' => 1]);
+            if ($publicId) {
+                $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
+                    ->get($this->getBaseUrl() . '/properties/' . $publicId);
+            } else {
+                $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
+                    ->get($this->getBaseUrl() . '/properties', ['limit' => 10, 'page' => 1]);
+            }
 
             return $response->json() ?? ['error' => $response->body()];
         } catch (\Exception $e) {
