@@ -350,24 +350,37 @@ class EasyBrokerService
             return ['error' => 'API Key no configurada'];
         }
 
-        $headers = ['X-Authorization' => $this->getApiKey()];
+        // Test POST (create new property) to see if city_id is required
+        $payload = [
+            'title'         => 'TEST HDV API - borrar - ' . now()->format('H:i:s'),
+            'status'        => 'not_published',
+            'property_type' => 'apartment',
+            'location'      => [
+                'street'      => 'Amores',
+                'neighborhood'=> 'Del Valle Centro',
+                'latitude'    => 19.3853297925,
+                'longitude'   => -99.1660722852,
+                'postal_code' => '03100',
+            ],
+            'operations' => [
+                ['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN'],
+            ],
+            'bedrooms'    => 1,
+            'bathrooms'   => 1,
+            'description' => 'Propiedad de prueba - borrar',
+        ];
 
         try {
-            // Search /locations for Del Valle to get valid city_id
-            $searches = [];
-            foreach (['Del Valle Centro', 'Del Valle', 'Benito Juárez', 'Ciudad de México'] as $q) {
-                $r = Http::withHeaders($headers)->timeout(8)
-                    ->get($this->getBaseUrl() . '/locations', ['search' => $q, 'per_page' => 20]);
-                $searches[$q] = ['status' => $r->status(), 'body' => $r->json() ?? $r->body()];
-            }
-
-            // Also try paginating without search to get all locations with their IDs
-            $allLocs = Http::withHeaders($headers)->timeout(8)
-                ->get($this->getBaseUrl() . '/locations', ['per_page' => 50, 'page' => 1]);
+            $response = Http::withHeaders([
+                'X-Authorization' => $this->getApiKey(),
+                'Content-Type'    => 'application/json',
+            ])->post($this->getBaseUrl() . '/properties', $payload);
 
             return [
-                'location_searches' => $searches,
-                'all_locations_p1'  => ['status' => $allLocs->status(), 'body' => $allLocs->json() ?? $allLocs->body()],
+                'method'      => 'POST /properties',
+                'payload'     => $payload,
+                'status_code' => $response->status(),
+                'response'    => $response->json() ?? $response->body(),
             ];
         } catch (\Exception $e) {
             return ['error' => $e->getMessage()];
