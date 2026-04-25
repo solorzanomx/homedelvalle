@@ -226,7 +226,14 @@ class EasyBrokerService
 
         $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
 
-        $location = [];
+        // Build location name matching EasyBroker's format: "Colonia, Delegación, Estado"
+        $nameParts = array_filter([
+            $property->colony ?? null,
+            $property->city   ?? null,
+            'Ciudad de México',
+        ]);
+        $location = ['name' => implode(', ', $nameParts)];
+
         if ($property->address)  $location['street']      = $property->address;
         if ($property->zipcode)  $location['postal_code'] = $property->zipcode;
         if ($cityId)             $location['city_id']     = $cityId;
