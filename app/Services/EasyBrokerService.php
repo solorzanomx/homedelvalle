@@ -355,13 +355,16 @@ class EasyBrokerService
             'status'        => 'published',
             'property_type' => 'apartment',
             'location'      => [
-                'street'    => 'amores',
-                'latitude'  => 19.3853297925,
-                'longitude' => -99.1660722852,
-                'postal_code' => '03100',
+                'street'       => 'amores',
+                'neighborhood' => 'Del Valle Centro',
+                'city_id'      => 9014,
+                'administrative_division_id' => 9,
+                'latitude'     => 19.3853297925,
+                'longitude'    => -99.1660722852,
+                'postal_code'  => '03100',
             ],
             'operations'    => [
-                ['type' => 'sale', 'amount' => 2795000, 'currency' => 'MXN'],
+                ['operation_type' => 'sale', 'amount' => 2795000, 'currency' => 'MXN'],
             ],
         ];
 
