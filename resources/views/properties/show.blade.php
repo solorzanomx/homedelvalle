@@ -758,35 +758,31 @@
         </div>
 
         {{-- EasyBroker toggle --}}
-        <div class="side-card">
+        <div class="side-card" id="eb-card">
             <div class="side-card-body">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
                     <span style="font-size:0.85rem; font-weight:600;">EasyBroker</span>
-                    @if($property->isPublishedToEasyBroker())
-                        <span style="font-size:0.75rem; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:20px; font-weight:500;">Publicada</span>
-                    @else
-                        <span style="font-size:0.75rem; background:#f3f4f6; color:#6b7280; padding:2px 8px; border-radius:20px; font-weight:500;">No publicada</span>
-                    @endif
+                    <span id="eb-badge" style="font-size:0.75rem; padding:2px 8px; border-radius:20px; font-weight:500;
+                        {{ $property->isPublishedToEasyBroker() ? 'background:#dcfce7; color:#166534;' : 'background:#f3f4f6; color:#6b7280;' }}">
+                        {{ $property->isPublishedToEasyBroker() ? 'Publicada' : 'No publicada' }}
+                    </span>
+                </div>
+
+                <div id="eb-url-wrap" style="{{ $property->easybroker_public_url ? '' : 'display:none;' }} margin-bottom:0.5rem;">
+                    <a id="eb-url" href="{{ $property->easybroker_public_url }}" target="_blank"
+                       style="font-size:0.8rem; color:var(--primary);">Ver en EasyBroker &rarr;</a>
                 </div>
 
                 @if($property->isPublishedToEasyBroker())
-                    @if($property->easybroker_public_url)
-                    <a href="{{ $property->easybroker_public_url }}" target="_blank" style="font-size:0.8rem; color:var(--primary); display:block; margin-bottom:0.6rem;">Ver en EasyBroker &rarr;</a>
-                    @endif
-                    <form method="POST" action="{{ route('properties.unpublish-easybroker', $property) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-outline" style="width:100%; color:#dc2626; border-color:#dc2626;"
-                            onclick="return confirm('Despublicar esta propiedad de EasyBroker?')">
-                            &#9744; Despublicar
-                        </button>
-                    </form>
+                <button id="eb-btn" class="btn btn-sm btn-outline" style="width:100%; color:#dc2626; border-color:#dc2626;"
+                    onclick="ebAction('unpublish')">
+                    &#9744; Despublicar
+                </button>
                 @else
-                    <form method="POST" action="{{ route('properties.publish-easybroker', $property) }}">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-primary" style="width:100%;">
-                            &#9745; Publicar en EasyBroker
-                        </button>
-                    </form>
+                <button id="eb-btn" class="btn btn-sm btn-primary" style="width:100%;"
+                    onclick="ebAction('publish')">
+                    &#9745; Publicar en EasyBroker
+                </button>
                 @endif
             </div>
         </div>
@@ -942,5 +938,79 @@ function sendFicha(e) {
           btn.textContent = 'Enviar';
       });
 }
+
+// ─── EasyBroker AJAX ───────────────────────────────────────────────
+function ebAction(action) {
+    var btn   = document.getElementById('eb-btn');
+    var badge = document.getElementById('eb-badge');
+    var urlWrap = document.getElementById('eb-url-wrap');
+    var urlLink = document.getElementById('eb-url');
+    var isPublish = action === 'publish';
+
+    if (!isPublish && !confirm('¿Despublicar esta propiedad de EasyBroker?')) return;
+
+    var originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span style="display:inline-flex;align-items:center;gap:.4rem;">'
+        + '<svg style="animation:spin 1s linear infinite;width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+        + (isPublish ? ' Publicando...' : ' Despublicando...')
+        + '</span>';
+
+    var url = isPublish
+        ? '{{ route('properties.publish-easybroker', $property) }}'
+        : '{{ route('properties.unpublish-easybroker', $property) }}';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        window.toast(data.message, data.success ? 'success' : 'error');
+
+        if (data.success) {
+            if (isPublish) {
+                badge.textContent = 'Publicada';
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#166534';
+                btn.innerHTML = '&#9744; Despublicar';
+                btn.style.color = '#dc2626';
+                btn.style.borderColor = '#dc2626';
+                btn.className = 'btn btn-sm btn-outline';
+                btn.onclick = function() { ebAction('unpublish'); };
+                if (data.public_url) {
+                    urlLink.href = data.public_url;
+                    urlWrap.style.display = '';
+                }
+            } else {
+                badge.textContent = 'No publicada';
+                badge.style.background = '#f3f4f6';
+                badge.style.color = '#6b7280';
+                btn.innerHTML = '&#9745; Publicar en EasyBroker';
+                btn.style.color = '';
+                btn.style.borderColor = '';
+                btn.className = 'btn btn-sm btn-primary';
+                btn.onclick = function() { ebAction('publish'); };
+                urlWrap.style.display = 'none';
+            }
+        } else {
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(function() {
+        window.toast('Error de conexión con el servidor.', 'error');
+        btn.innerHTML = originalText;
+    })
+    .finally(function() {
+        btn.disabled = false;
+    });
+}
 </script>
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 @endsection

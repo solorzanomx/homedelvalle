@@ -252,22 +252,30 @@ class PropertyController extends Controller
     {
         $result = $ebService->publish($property);
 
-        if ($result['success']) {
-            return back()->with('success', $result['message']);
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success'    => $result['success'],
+                'message'    => $result['message'],
+                'eb_status'  => $property->fresh()->easybroker_status,
+                'public_url' => $property->fresh()->easybroker_public_url,
+            ]);
         }
 
-        return back()->with('error', $result['message']);
+        return back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     public function unpublishFromEasyBroker(Property $property, EasyBrokerService $ebService)
     {
         $result = $ebService->unpublish($property);
 
-        if ($result['success']) {
-            return back()->with('success', $result['message']);
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => $result['success'],
+                'message' => $result['message'],
+            ]);
         }
 
-        return back()->with('error', $result['message']);
+        return back()->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
     public function toggleFeatured(Property $property)

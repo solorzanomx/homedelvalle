@@ -581,10 +581,10 @@
                             @endif
                             <div class="eb-actions">
                                 @if($property->isPublishedToEasyBroker())
-                                    <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('ebPublishForm').submit()">Actualizar</button>
-                                    <button type="button" class="btn btn-sm btn-outline" style="color:#a16207; border-color:#a16207;" onclick="document.getElementById('ebUnpublishForm').submit()">Despublicar</button>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="ebAction('publish')">Actualizar</button>
+                                    <button type="button" class="btn btn-sm btn-outline" style="color:#a16207; border-color:#a16207;" onclick="ebAction('unpublish')">Despublicar</button>
                                 @else
-                                    <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('ebPublishForm').submit()">Publicar en EasyBroker</button>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="ebAction('publish')">Publicar en EasyBroker</button>
                                 @endif
                             </div>
                         </div>
@@ -930,6 +930,33 @@ if (photoList) {
             renumberPhotos();
             saveOrder();
         }
+    });
+}
+
+// ─── EasyBroker AJAX ───────────────────────────────────────────────
+function ebAction(action) {
+    var isPublish = action === 'publish';
+    if (!isPublish && !confirm('¿Despublicar esta propiedad de EasyBroker?')) return;
+
+    var url = isPublish
+        ? '{{ route('properties.publish-easybroker', $property) }}'
+        : '{{ route('properties.unpublish-easybroker', $property) }}';
+
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        window.toast(data.message, data.success ? 'success' : 'error');
+        if (data.success) setTimeout(function() { location.reload(); }, 1500);
+    })
+    .catch(function() {
+        window.toast('Error de conexión con el servidor.', 'error');
     });
 }
 </script>
