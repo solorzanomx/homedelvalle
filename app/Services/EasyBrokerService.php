@@ -259,10 +259,9 @@ class EasyBrokerService
             'location'      => $location,
             'operations'    => [
                 [
-                    'type'           => $opType,
-                    'operation_type' => $opType,
-                    'amount'         => (float) $property->price,
-                    'currency'       => $property->currency ?? $config?->default_currency ?? 'MXN',
+                    'type'     => $opType,
+                    'amount'   => (float) $property->price,
+                    'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
                 ],
             ],
         ];
