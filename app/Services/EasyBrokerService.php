@@ -226,14 +226,7 @@ class EasyBrokerService
 
         $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
 
-        // Build location name matching EasyBroker's format: "Colonia, Delegación, Estado"
-        $nameParts = array_filter([
-            $property->colony ?? null,
-            $property->city   ?? null,
-            'Ciudad de México',
-        ]);
-        $location = ['name' => implode(', ', $nameParts)];
-
+        $location = [];
         if ($property->address)  $location['street']      = $property->address;
         if ($property->zipcode)  $location['postal_code'] = $property->zipcode;
         if ($cityId)             $location['city_id']     = $cityId;
@@ -374,29 +367,35 @@ class EasyBrokerService
         }
 
         $results = [];
-        $terms = ['Mexico', 'Ciudad de Mexico', 'Benito Juarez', 'CDMX'];
+        $attempts = [
+            // Try navigating into CDMX to find municipalities with IDs
+            ['url' => '/locations', 'params' => ['search' => 'Ciudad de México']],
+            ['url' => '/locations', 'params' => ['search' => 'Benito Juárez']],
+            ['url' => '/locations', 'params' => ['search' => 'Benito Juárez', 'type' => 'municipality']],
+            ['url' => '/locations', 'params' => ['search' => 'Del Valle']],
+            // Path-based navigation attempts
+            ['url' => '/locations/Ciudad%20de%20M%C3%A9xico', 'params' => []],
+            ['url' => '/locations/M%C3%A9xico/Ciudad%20de%20M%C3%A9xico', 'params' => []],
+            ['url' => '/locations/Mexico/Benito-Juarez', 'params' => []],
+            // Try with limit to get more results
+            ['url' => '/locations', 'params' => ['limit' => 50]],
+        ];
 
-        foreach ($terms as $term) {
-            foreach (['search', 'q', 'name', 'term'] as $param) {
-                try {
-                    $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
-                        ->timeout(8)
-                        ->get($this->getBaseUrl() . '/locations', [$param => $term, 'limit' => 3]);
+        foreach ($attempts as $attempt) {
+            try {
+                $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
+                    ->timeout(8)
+                    ->get($this->getBaseUrl() . $attempt['url'], $attempt['params']);
 
-                    $results[] = [
-                        'term'   => $term,
-                        'param'  => $param,
-                        'status' => $response->status(),
-                        'body'   => $response->json() ?? $response->body(),
-                    ];
-
-                    if ($response->successful()) {
-                        $content = $response->json('content') ?? $response->json();
-                        if (!empty($content)) break; // found results with this param
-                    }
-                } catch (\Exception $e) {
-                    $results[] = ['term' => $term, 'param' => $param, 'error' => $e->getMessage()];
-                }
+                $body = $response->json() ?? $response->body();
+                $results[] = [
+                    'url'    => $attempt['url'],
+                    'params' => $attempt['params'],
+                    'status' => $response->status(),
+                    'body'   => $body,
+                ];
+            } catch (\Exception $e) {
+                $results[] = ['url' => $attempt['url'], 'error' => $e->getMessage()];
             }
         }
 
