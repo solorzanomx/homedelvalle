@@ -354,24 +354,42 @@ class EasyBrokerService
         $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
         $results = [];
 
-        $baseLocation = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
-        $basePayload  = ['title' => 'TEST borrar ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment', 'location' => $baseLocation, 'operations' => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']]];
-
         $results = [];
 
-        // U: Rails resource wrapper {"property": {...}}
-        $r = Http::withHeaders($headers)->post($base, ['property' => $basePayload]);
-        $results['U_property_wrapper'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        // X: Full property wrapper with real field names revealed by wrapper error
+        // city_id=7542361, admin_div=2909, property_type_id=29057 from DevTools
+        $r = Http::withHeaders($headers)->post($base, [
+            'property' => [
+                'title'                     => 'TEST borrar X ' . now()->format('H:i:s'),
+                'status'                    => 'not_published',
+                'property_type_id'          => 29057,
+                'address_street'            => 'Amores',
+                'city_id'                   => 7542361,
+                'administrative_division_id'=> 2909,
+                'latitude'                  => 19.3853,
+                'longitude'                 => -99.166,
+                'postal_code'               => '03100',
+                'operation_type'            => 'sale',
+                'operations'                => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+            ],
+        ]);
+        $results['X_full_wrapper'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
-        // V: PATCH existing property with only title (no required fields)
-        $r = Http::withHeaders($headers)->patch($this->getBaseUrl() . '/properties/' . $publicId, ['title' => 'Amores 849 - ' . now()->format('H:i:s')]);
-        $results['V_patch_title_only'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
-
-        // W: POST with singular "operation" instead of "operations"
-        $payload = array_merge($basePayload, ['operation' => ['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']]);
-        unset($payload['operations']);
-        $r = Http::withHeaders($headers)->post($base, $payload);
-        $results['W_singular_operation'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        // Y: Same but flat (no wrapper), using real field names
+        $r = Http::withHeaders($headers)->post($base, [
+            'title'                     => 'TEST borrar Y ' . now()->format('H:i:s'),
+            'status'                    => 'not_published',
+            'property_type_id'          => 29057,
+            'address_street'            => 'Amores',
+            'city_id'                   => 7542361,
+            'administrative_division_id'=> 2909,
+            'latitude'                  => 19.3853,
+            'longitude'                 => -99.166,
+            'postal_code'               => '03100',
+            'operation_type'            => 'sale',
+            'operations'                => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+        ]);
+        $results['Y_flat_real_fields'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
         return $results;
 
