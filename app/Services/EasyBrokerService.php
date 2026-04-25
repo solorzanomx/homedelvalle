@@ -37,8 +37,9 @@ class EasyBrokerService
 
     public function publish(Property $property): array
     {
-        if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'EasyBroker no esta configurado. Configura la API key en Administracion.'];
+        $errors = $this->validateConfig();
+        if ($errors) {
+            return ['success' => false, 'message' => implode(' ', $errors)];
         }
 
         if ($property->hasEasyBrokerId()) {
@@ -77,7 +78,7 @@ class EasyBrokerService
                 'body' => $response->body(),
             ]);
 
-            return ['success' => false, 'message' => 'Error de EasyBroker: ' . ($response->json('error') ?? $response->body())];
+            return ['success' => false, 'message' => $this->parseApiError($response)];
 
         } catch (\Exception $e) {
             Log::error('EasyBroker: Excepcion al publicar', [
@@ -121,7 +122,7 @@ class EasyBrokerService
                 return ['success' => true, 'message' => 'Propiedad actualizada en EasyBroker.'];
             }
 
-            return ['success' => false, 'message' => 'Error: ' . ($response->json('error') ?? $response->body())];
+            return ['success' => false, 'message' => $this->parseApiError($response)];
 
         } catch (\Exception $e) {
             Log::error('EasyBroker: Excepcion al actualizar', [
@@ -162,7 +163,7 @@ class EasyBrokerService
                 return ['success' => true, 'message' => 'Propiedad despublicada de EasyBroker.'];
             }
 
-            return ['success' => false, 'message' => 'Error: ' . ($response->json('error') ?? $response->body())];
+            return ['success' => false, 'message' => $this->parseApiError($response)];
 
         } catch (\Exception $e) {
             Log::error('EasyBroker: Excepcion al despublicar', [
@@ -196,25 +197,39 @@ class EasyBrokerService
         }
     }
 
+    public function validateConfig(): array
+    {
+        $errors = [];
+        if (!$this->isConfigured()) {
+            $errors[] = 'Falta API Key. Configúrala en Administración → EasyBroker.';
+        }
+        $config = $this->getConfig();
+        if (!$config?->default_city_id) {
+            $errors[] = 'Falta City ID por defecto. Búscalo en Configuración de EasyBroker → Ubicación.';
+        }
+        return $errors;
+    }
+
     private function mapPropertyToPayload(Property $property): array
     {
         $config = $this->getConfig();
 
-        $lat    = $property->latitude  ?? $config?->default_latitude;
-        $lng    = $property->longitude ?? $config?->default_longitude;
-        $cityId = $config?->default_city_id;
+        $lat     = $property->latitude  ?? $config?->default_latitude;
+        $lng     = $property->longitude ?? $config?->default_longitude;
+        $cityId  = $config?->default_city_id;
         $adminId = $config?->default_admin_division_id;
 
         $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
 
-        $location = array_filter([
-            'street'                     => $property->address  ?: null,
-            'postal_code'                => $property->zipcode  ?: null,
-            'city_id'                    => $cityId             ?: null,
-            'administrative_division_id' => $adminId            ?: null,
-            'latitude'                   => $lat  ? (float) $lat  : null,
-            'longitude'                  => $lng  ? (float) $lng  : null,
-        ]);
+        $location = [];
+        if ($property->address)  $location['street']      = $property->address;
+        if ($property->zipcode)  $location['postal_code'] = $property->zipcode;
+        if ($cityId)             $location['city_id']     = $cityId;
+        if ($adminId)            $location['administrative_division_id'] = $adminId;
+        if ($lat && $lng) {
+            $location['latitude']  = (float) $lat;
+            $location['longitude'] = (float) $lng;
+        }
 
         // EasyBroker property_type must be lowercase
         $propertyTypeMap = [
@@ -257,7 +272,7 @@ class EasyBrokerService
     public function searchLocations(string $query): array
     {
         if (!$this->isConfigured()) {
-            return ['success' => false, 'data' => []];
+            return ['success' => false, 'data' => [], 'message' => 'API Key no configurada.'];
         }
 
         try {
@@ -269,9 +284,25 @@ class EasyBrokerService
                 return ['success' => true, 'data' => $response->json('content') ?? $response->json() ?? []];
             }
 
-            return ['success' => false, 'data' => []];
+            return ['success' => false, 'data' => [], 'message' => $this->parseApiError($response)];
         } catch (\Exception $e) {
-            return ['success' => false, 'data' => []];
+            return ['success' => false, 'data' => [], 'message' => $e->getMessage()];
         }
+    }
+
+    private function parseApiError(\Illuminate\Http\Client\Response $response): string
+    {
+        $json = $response->json();
+        if (is_array($json)) {
+            if (!empty($json['errors']) && is_array($json['errors'])) {
+                return 'HTTP ' . $response->status() . ': ' . implode(', ', array_map(
+                    fn($e) => is_array($e) ? ($e['message'] ?? json_encode($e)) : $e,
+                    $json['errors']
+                ));
+            }
+            if (!empty($json['error'])) return 'HTTP ' . $response->status() . ': ' . $json['error'];
+            if (!empty($json['message'])) return 'HTTP ' . $response->status() . ': ' . $json['message'];
+        }
+        return 'HTTP ' . $response->status() . ': ' . $response->body();
     }
 }

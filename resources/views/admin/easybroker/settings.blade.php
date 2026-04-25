@@ -202,7 +202,7 @@ function ebSearchLocations() {
                     onclick="ebSelectLocation(${JSON.stringify(loc)})">
                     <span style="font-weight:500;">${loc.name ?? loc.title ?? ''}</span>
                     <span style="color:var(--text-muted); margin-left:0.5rem; font-size:0.78rem;">
-                        ID ciudad: ${loc.city_id ?? loc.id ?? '?'} | Div: ${loc.administrative_division_id ?? '?'}
+                        ID: ${loc.id ?? '?'} &bull; Tipo: ${loc.type ?? '?'} &bull; Div: ${loc.administrative_division_id ?? '?'}
                     </span>
                 </div>
             `).join('');
@@ -213,8 +213,15 @@ function ebSearchLocations() {
 }
 
 function ebSelectLocation(loc) {
-    if (loc.city_id)                    document.getElementById('eb-city-id').value = loc.city_id;
-    if (loc.administrative_division_id) document.getElementById('eb-admin-div-id').value = loc.administrative_division_id;
+    var cityTypes = ['city','municipality','neighborhood','suburb','delegation'];
+    if (loc.id && (!loc.type || cityTypes.includes(loc.type))) {
+        document.getElementById('eb-city-id').value = loc.id;
+    }
+    if (loc.administrative_division_id) {
+        document.getElementById('eb-admin-div-id').value = loc.administrative_division_id;
+    } else if (loc.type === 'state' || loc.type === 'region') {
+        document.getElementById('eb-admin-div-id').value = loc.id;
+    }
     document.getElementById('eb-location-results').style.display = 'none';
     document.getElementById('eb-location-search').value = loc.name ?? loc.title ?? '';
 }
