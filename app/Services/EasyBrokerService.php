@@ -354,36 +354,33 @@ class EasyBrokerService
         $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
         $results = [];
 
-        // BASE that gave specific field errors (permitted fields, wrong values)
+        // BASE location that gives specific field errors (confirmed permitted)
         $baseLocation = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
-        $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
 
         $variants = [
-            // M: operation_type at root level (clean — no other new fields)
-            'M_optype_root' => [
-                'title' => 'TEST borrar M ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'operation_type' => 'sale',
-                'location'       => $baseLocation,
-                'operations'     => $baseOps,
+            // Q: operations_attributes (Rails nested attributes convention)
+            'Q_ops_attributes' => [
+                'title' => 'TEST borrar Q ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'               => $baseLocation,
+                'operations_attributes'  => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
-            // N: operation_type at root = "rental"
-            'N_optype_root_rental' => [
-                'title' => 'TEST borrar N ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'operation_type' => 'rental',
-                'location'       => $baseLocation,
-                'operations'     => $baseOps,
+            // R: operations_attributes with operation_type inside
+            'R_ops_attrs_optype' => [
+                'title' => 'TEST borrar R ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'               => $baseLocation,
+                'operations_attributes'  => [['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
-            // O: no operations array at all + operation_type at root
-            'O_no_ops_optype_root' => [
-                'title' => 'TEST borrar O ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'operation_type' => 'sale',
-                'location'       => $baseLocation,
-            ],
-            // P: base only (no operation_type anywhere) — confirm the baseline still works
-            'P_baseline' => [
-                'title' => 'TEST borrar P ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            // S: operations with type + unit (unit seen in GET response)
+            'S_type_with_unit' => [
+                'title' => 'TEST borrar S ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
                 'location'   => $baseLocation,
-                'operations' => $baseOps,
+                'operations' => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN', 'unit' => 'total']],
+            ],
+            // T: operations key as numbered hash (Rails form style)
+            'T_ops_numbered' => [
+                'title' => 'TEST borrar T ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => $baseLocation,
+                'operations' => ['0' => ['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
         ];
 
