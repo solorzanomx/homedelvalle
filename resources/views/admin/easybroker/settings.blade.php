@@ -189,7 +189,7 @@ function ebSearchLocations() {
     resultsDiv.style.display = 'block';
     resultsDiv.innerHTML = '<div style="padding:0.75rem; color:var(--text-muted); font-size:0.85rem;">Buscando...</div>';
 
-    fetch('{{ route('easybroker.locations') }}?q=' + encodeURIComponent(q))
+    fetch('{{ route('admin.easybroker.locations') }}?q=' + encodeURIComponent(q))
         .then(r => r.json())
         .then(data => {
             if (!data.length) {
