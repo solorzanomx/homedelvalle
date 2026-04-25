@@ -355,37 +355,56 @@ class EasyBrokerService
         $results = [];
 
         $variants = [
-            // A: docs field names (city_area, type) with English property_type
-            'A_cityarea_type_english' => [
+            // A: city_ids inside location + operation_type alongside type + details field
+            'A_full_with_ids' => [
                 'title'         => 'TEST borrar A ' . now()->format('H:i:s'),
                 'status'        => 'not_published',
                 'property_type' => 'apartment',
-                'location'      => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
-                'operations'    => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+                'location'      => [
+                    'street'                  => 'Amores',
+                    'city_area'               => 'Del Valle Centro',
+                    'city_id'                 => 7542361,
+                    'administrative_division_id' => 2909,
+                    'latitude'                => 19.3853,
+                    'longitude'               => -99.166,
+                    'postal_code'             => '03100',
+                ],
+                'operations'    => [['type' => 'sale', 'operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+                'details'       => 'Propiedad de prueba',
             ],
-            // B: docs field names with Spanish property_type
-            'B_cityarea_type_spanish' => [
+            // B: same but operation_type only (no type)
+            'B_optype_only' => [
                 'title'         => 'TEST borrar B ' . now()->format('H:i:s'),
                 'status'        => 'not_published',
-                'property_type' => 'Departamento',
-                'location'      => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
-                'operations'    => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+                'property_type' => 'apartment',
+                'location'      => [
+                    'street'                  => 'Amores',
+                    'city_area'               => 'Del Valle Centro',
+                    'city_id'                 => 7542361,
+                    'administrative_division_id' => 2909,
+                    'latitude'                => 19.3853,
+                    'longitude'               => -99.166,
+                    'postal_code'             => '03100',
+                ],
+                'operations'    => [['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+                'details'       => 'Propiedad de prueba',
             ],
-            // C: minimal — no location at all, just coordinates at root
-            'C_no_location' => [
+            // C: city_id as strings
+            'C_string_ids' => [
                 'title'         => 'TEST borrar C ' . now()->format('H:i:s'),
                 'status'        => 'not_published',
                 'property_type' => 'apartment',
-                'latitude'      => 19.3853,
-                'longitude'     => -99.166,
-                'operations'    => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-            ],
-            // D: no operations at all
-            'D_no_operations' => [
-                'title'         => 'TEST borrar D ' . now()->format('H:i:s'),
-                'status'        => 'not_published',
-                'property_type' => 'apartment',
-                'location'      => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166],
+                'location'      => [
+                    'street'                  => 'Amores',
+                    'city_area'               => 'Del Valle Centro',
+                    'city_id'                 => '7542361',
+                    'administrative_division_id' => '2909',
+                    'latitude'                => 19.3853,
+                    'longitude'               => -99.166,
+                    'postal_code'             => '03100',
+                ],
+                'operations'    => [['type' => 'sale', 'operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+                'details'       => 'Propiedad de prueba',
             ],
         ];
 
