@@ -253,16 +253,16 @@ class EasyBrokerService
         $propertyType = $propertyTypeMap[$property->property_type ?? ''] ?? 'house';
 
         $payload = [
-            'title'          => $property->title,
-            'status'         => 'published',
-            'property_type'  => $propertyType,
-            'operation_type' => $opType,
-            'location'       => $location,
-            'operations'     => [
+            'title'         => $property->title,
+            'status'        => 'published',
+            'property_type' => $propertyType,
+            'location'      => $location,
+            'operations'    => [
                 [
-                    'type'     => $opType,
-                    'amount'   => (float) $property->price,
-                    'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
+                    'type'           => $opType,
+                    'operation_type' => $opType,
+                    'amount'         => (float) $property->price,
+                    'currency'       => $property->currency ?? $config?->default_currency ?? 'MXN',
                 ],
             ],
         ];
