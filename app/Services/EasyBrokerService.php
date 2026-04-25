@@ -249,11 +249,12 @@ class EasyBrokerService
         $propertyType = $propertyTypeMap[$property->property_type ?? ''] ?? 'house';
 
         $payload = [
-            'title'         => $property->title,
-            'status'        => 'published',
-            'property_type' => $propertyType,
-            'location'      => $location,
-            'operations'    => [
+            'title'          => $property->title,
+            'status'         => 'published',
+            'property_type'  => $propertyType,
+            'operation_type' => $opType,
+            'location'       => $location,
+            'operations'     => [
                 [
                     'type'     => $opType,
                     'amount'   => (float) $property->price,
@@ -335,6 +336,22 @@ class EasyBrokerService
             return ['success' => false, 'data' => null, 'message' => 'No se encontraron propiedades con ubicación en EasyBroker.'];
         } catch (\Exception $e) {
             return ['success' => false, 'data' => null, 'message' => $e->getMessage()];
+        }
+    }
+
+    public function rawProperties(): array
+    {
+        if (!$this->isConfigured()) {
+            return ['error' => 'API Key no configurada'];
+        }
+
+        try {
+            $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
+                ->get($this->getBaseUrl() . '/properties', ['limit' => 10, 'page' => 1]);
+
+            return $response->json() ?? ['error' => $response->body()];
+        } catch (\Exception $e) {
+            return ['error' => $e->getMessage()];
         }
     }
 
