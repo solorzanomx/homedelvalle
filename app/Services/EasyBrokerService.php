@@ -354,35 +354,26 @@ class EasyBrokerService
         $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
         $results = [];
 
-        // BASE location that gives specific field errors (confirmed permitted)
         $baseLocation = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
+        $basePayload  = ['title' => 'TEST borrar ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment', 'location' => $baseLocation, 'operations' => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']]];
 
-        $variants = [
-            // Q: operations_attributes (Rails nested attributes convention)
-            'Q_ops_attributes' => [
-                'title' => 'TEST borrar Q ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'               => $baseLocation,
-                'operations_attributes'  => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-            ],
-            // R: operations_attributes with operation_type inside
-            'R_ops_attrs_optype' => [
-                'title' => 'TEST borrar R ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'               => $baseLocation,
-                'operations_attributes'  => [['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-            ],
-            // S: operations with type + unit (unit seen in GET response)
-            'S_type_with_unit' => [
-                'title' => 'TEST borrar S ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => $baseLocation,
-                'operations' => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN', 'unit' => 'total']],
-            ],
-            // T: operations key as numbered hash (Rails form style)
-            'T_ops_numbered' => [
-                'title' => 'TEST borrar T ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => $baseLocation,
-                'operations' => ['0' => ['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-            ],
-        ];
+        $results = [];
+
+        // U: Rails resource wrapper {"property": {...}}
+        $r = Http::withHeaders($headers)->post($base, ['property' => $basePayload]);
+        $results['U_property_wrapper'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+
+        // V: PATCH existing property with only title (no required fields)
+        $r = Http::withHeaders($headers)->patch($this->getBaseUrl() . '/properties/' . $publicId, ['title' => 'Amores 849 - ' . now()->format('H:i:s')]);
+        $results['V_patch_title_only'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+
+        // W: POST with singular "operation" instead of "operations"
+        $payload = array_merge($basePayload, ['operation' => ['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']]);
+        unset($payload['operations']);
+        $r = Http::withHeaders($headers)->post($base, $payload);
+        $results['W_singular_operation'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+
+        return $results;
 
         foreach ($variants as $key => $payload) {
             try {
