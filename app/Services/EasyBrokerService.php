@@ -356,31 +356,34 @@ class EasyBrokerService
 
         // BASE that gave specific field errors (permitted fields, wrong values)
         $baseLocation = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
+        $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
 
         $variants = [
-            // I: operation_type ONLY (no type) inside operations
-            'I_optype_only_clean' => [
-                'title' => 'TEST borrar I ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => $baseLocation,
-                'operations' => [['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+            // M: operation_type at root level (clean — no other new fields)
+            'M_optype_root' => [
+                'title' => 'TEST borrar M ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'operation_type' => 'sale',
+                'location'       => $baseLocation,
+                'operations'     => $baseOps,
             ],
-            // J: type = "Venta" (Spanish)
-            'J_type_venta' => [
-                'title' => 'TEST borrar J ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => $baseLocation,
-                'operations' => [['type' => 'Venta', 'amount' => 100, 'currency' => 'MXN']],
+            // N: operation_type at root = "rental"
+            'N_optype_root_rental' => [
+                'title' => 'TEST borrar N ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'operation_type' => 'rental',
+                'location'       => $baseLocation,
+                'operations'     => $baseOps,
             ],
-            // K: type = "rental"
-            'K_type_rental' => [
-                'title' => 'TEST borrar K ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => $baseLocation,
-                'operations' => [['type' => 'rental', 'amount' => 100, 'currency' => 'MXN']],
+            // O: no operations array at all + operation_type at root
+            'O_no_ops_optype_root' => [
+                'title' => 'TEST borrar O ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'operation_type' => 'sale',
+                'location'       => $baseLocation,
             ],
-            // L: no type, no operation_type (pure amount+currency)
-            'L_no_type_field' => [
-                'title' => 'TEST borrar L ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            // P: base only (no operation_type anywhere) — confirm the baseline still works
+            'P_baseline' => [
+                'title' => 'TEST borrar P ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
                 'location'   => $baseLocation,
-                'operations' => [['amount' => 100, 'currency' => 'MXN']],
+                'operations' => $baseOps,
             ],
         ];
 
