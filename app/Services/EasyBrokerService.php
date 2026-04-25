@@ -354,35 +354,33 @@ class EasyBrokerService
         $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
         $results = [];
 
-        // BASE that worked (gave specific field errors, not "Unpermitted")
+        // BASE that gave specific field errors (permitted fields, wrong values)
         $baseLocation = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
-        $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
 
         $variants = [
-            // E: base + city_id inside location only
-            'E_add_city_id' => [
-                'title' => 'TEST borrar E ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => array_merge($baseLocation, ['city_id' => 7542361]),
-                'operations' => $baseOps,
-            ],
-            // F: base + administrative_division_id inside location only
-            'F_add_admin_div' => [
-                'title' => 'TEST borrar F ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-                'location'   => array_merge($baseLocation, ['administrative_division_id' => 2909]),
-                'operations' => $baseOps,
-            ],
-            // G: base + details field only
-            'G_add_details' => [
-                'title' => 'TEST borrar G ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            // I: operation_type ONLY (no type) inside operations
+            'I_optype_only_clean' => [
+                'title' => 'TEST borrar I ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
                 'location'   => $baseLocation,
-                'operations' => $baseOps,
-                'details'    => 'Propiedad de prueba',
+                'operations' => [['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
-            // H: base + operation_type alongside type inside operations
-            'H_add_optype_in_ops' => [
-                'title' => 'TEST borrar H ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            // J: type = "Venta" (Spanish)
+            'J_type_venta' => [
+                'title' => 'TEST borrar J ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
                 'location'   => $baseLocation,
-                'operations' => [['type' => 'sale', 'operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+                'operations' => [['type' => 'Venta', 'amount' => 100, 'currency' => 'MXN']],
+            ],
+            // K: type = "rental"
+            'K_type_rental' => [
+                'title' => 'TEST borrar K ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => $baseLocation,
+                'operations' => [['type' => 'rental', 'amount' => 100, 'currency' => 'MXN']],
+            ],
+            // L: no type, no operation_type (pure amount+currency)
+            'L_no_type_field' => [
+                'title' => 'TEST borrar L ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+                'location'   => $baseLocation,
+                'operations' => [['amount' => 100, 'currency' => 'MXN']],
             ],
         ];
 
