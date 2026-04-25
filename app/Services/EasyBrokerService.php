@@ -233,8 +233,8 @@ class EasyBrokerService
         $location = [];
         if ($property->address)   $location['street']                   = $property->address;
         if ($property->zipcode)   $location['postal_code']              = $property->zipcode;
-        if ($resolvedCityId)      $location['city_id']                  = $resolvedCityId;
-        if ($resolvedAdminId)     $location['administrative_division_id'] = $resolvedAdminId;
+        if ($resolvedCityId)      $location['city_id']                  = (int) $resolvedCityId;
+        if ($resolvedAdminId)     $location['administrative_division_id'] = (int) $resolvedAdminId;
         if ($lat && $lng) {
             $location['latitude']  = (float) $lat;
             $location['longitude'] = (float) $lng;
