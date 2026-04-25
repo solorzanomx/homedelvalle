@@ -355,41 +355,41 @@ class EasyBrokerService
         $results = [];
 
         $results = [];
+        $baseLoc = ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'];
+        $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
 
-        // X: Full property wrapper with real field names revealed by wrapper error
-        // city_id=7542361, admin_div=2909, property_type_id=29057 from DevTools
+        // Z1: city_id and admin_div_id as city NAME strings (inside location)
         $r = Http::withHeaders($headers)->post($base, [
-            'property' => [
-                'title'                     => 'TEST borrar X ' . now()->format('H:i:s'),
-                'status'                    => 'not_published',
-                'property_type_id'          => 29057,
-                'address_street'            => 'Amores',
-                'city_id'                   => 7542361,
-                'administrative_division_id'=> 2909,
-                'latitude'                  => 19.3853,
-                'longitude'                 => -99.166,
-                'postal_code'               => '03100',
-                'operation_type'            => 'sale',
-                'operations'                => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-            ],
+            'title' => 'TEST Z1 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => array_merge($baseLoc, ['city_id' => 'Benito Juárez', 'administrative_division_id' => 'Ciudad de México']),
+            'operations' => $baseOps,
         ]);
-        $results['X_full_wrapper'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        $results['Z1_string_names'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
-        // Y: Same but flat (no wrapper), using real field names
+        // Z2: Try INEGI codes as strings ("9014" and "9")
         $r = Http::withHeaders($headers)->post($base, [
-            'title'                     => 'TEST borrar Y ' . now()->format('H:i:s'),
-            'status'                    => 'not_published',
-            'property_type_id'          => 29057,
-            'address_street'            => 'Amores',
-            'city_id'                   => 7542361,
-            'administrative_division_id'=> 2909,
-            'latitude'                  => 19.3853,
-            'longitude'                 => -99.166,
-            'postal_code'               => '03100',
-            'operation_type'            => 'sale',
-            'operations'                => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+            'title' => 'TEST Z2 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => array_merge($baseLoc, ['city_id' => '9014', 'administrative_division_id' => '9']),
+            'operations' => $baseOps,
         ]);
-        $results['Y_flat_real_fields'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+        $results['Z2_inegi_strings'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+
+        // Z3: Try small sequential IDs (1-based)
+        $r = Http::withHeaders($headers)->post($base, [
+            'title' => 'TEST Z3 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => array_merge($baseLoc, ['city_id' => 9, 'administrative_division_id' => 1]),
+            'operations' => $baseOps,
+        ]);
+        $results['Z3_small_ids'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+
+        // Z4: No city_id/admin_div at all — just location with lat/lng and city_area
+        // Maybe they're only required by the wrapper (internal model), not by REST API
+        $r = Http::withHeaders($headers)->post($base, [
+            'title' => 'TEST Z4 ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
+            'location'   => $baseLoc,
+            'operations' => $baseOps,
+        ]);
+        $results['Z4_baseline_no_ids'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
 
         return $results;
 
