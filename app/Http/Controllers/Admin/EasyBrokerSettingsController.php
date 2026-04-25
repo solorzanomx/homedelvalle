@@ -88,4 +88,9 @@ class EasyBrokerSettingsController extends Controller
         $result = $ebService->detectLocationFromProperties();
         return response()->json($result);
     }
+
+    public function rawLocations(EasyBrokerService $ebService)
+    {
+        return response()->json($ebService->rawLocationSearch());
+    }
 }

@@ -334,6 +334,42 @@ class EasyBrokerService
         }
     }
 
+    public function rawLocationSearch(): array
+    {
+        if (!$this->isConfigured()) {
+            return ['error' => 'API Key no configurada'];
+        }
+
+        $results = [];
+        $terms = ['Mexico', 'Ciudad de Mexico', 'Benito Juarez', 'CDMX'];
+
+        foreach ($terms as $term) {
+            foreach (['search', 'q', 'name', 'term'] as $param) {
+                try {
+                    $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
+                        ->timeout(8)
+                        ->get($this->getBaseUrl() . '/locations', [$param => $term, 'limit' => 3]);
+
+                    $results[] = [
+                        'term'   => $term,
+                        'param'  => $param,
+                        'status' => $response->status(),
+                        'body'   => $response->json() ?? $response->body(),
+                    ];
+
+                    if ($response->successful()) {
+                        $content = $response->json('content') ?? $response->json();
+                        if (!empty($content)) break; // found results with this param
+                    }
+                } catch (\Exception $e) {
+                    $results[] = ['term' => $term, 'param' => $param, 'error' => $e->getMessage()];
+                }
+            }
+        }
+
+        return $results;
+    }
+
     private function parseApiError(\Illuminate\Http\Client\Response $response): string
     {
         $json = $response->json();
