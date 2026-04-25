@@ -244,30 +244,29 @@ class EasyBrokerService
         ];
         $propertyType = $propertyTypeMap[$property->property_type ?? ''] ?? 'house';
 
-        $details = array_filter([
-            'description'       => trim($property->description ?: $property->title),
-            'bedrooms'          => $property->bedrooms   !== null ? (int) $property->bedrooms   : null,
-            'bathrooms'         => $property->bathrooms  !== null ? (float) $property->bathrooms : null,
-            'parking_spaces'    => $property->parking    !== null ? (int) $property->parking    : null,
-            'construction_size' => $property->area       !== null ? (float) $property->area     : null,
-            'lot_size'          => $property->lot_area   !== null ? (float) $property->lot_area  : null,
-        ], fn($v) => $v !== null && $v !== '');
-
-        return [
-            'title'                   => $property->title,
-            'status'                  => 'published',
-            'property_type'           => $propertyType,
-            'show_address_on_portals' => true,
-            'location'                => $location,
-            'operations'              => [
+        $payload = [
+            'title'         => $property->title,
+            'status'        => 'published',
+            'property_type' => $propertyType,
+            'location'      => $location,
+            'operations'    => [
                 [
                     'type'     => $opType,
                     'amount'   => (float) $property->price,
                     'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
                 ],
             ],
-            'details' => $details,
         ];
+
+        $description = trim($property->description ?: $property->title);
+        if ($description)                    $payload['description']       = $description;
+        if ($property->bedrooms !== null)    $payload['bedrooms']          = (int) $property->bedrooms;
+        if ($property->bathrooms !== null)   $payload['bathrooms']         = (float) $property->bathrooms;
+        if ($property->parking !== null)     $payload['parking_spaces']    = (int) $property->parking;
+        if ($property->area !== null)        $payload['construction_size'] = (float) $property->area;
+        if ($property->lot_area !== null)    $payload['lot_size']          = (float) $property->lot_area;
+
+        return $payload;
     }
 
     public function searchLocations(string $query): array
