@@ -350,41 +350,55 @@ class EasyBrokerService
             return ['error' => 'API Key no configurada'];
         }
 
-        // Test POST (create new property) to see if city_id is required
-        $payload = [
-            'title'         => 'TEST HDV API - borrar - ' . now()->format('H:i:s'),
-            'status'        => 'not_published',
-            'property_type' => 'apartment',
-            'location'      => [
-                'street'      => 'Amores',
-                'neighborhood'=> 'Del Valle Centro',
-                'latitude'    => 19.3853297925,
-                'longitude'   => -99.1660722852,
-                'postal_code' => '03100',
+        $base = $this->getBaseUrl() . '/properties';
+        $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
+        $results = [];
+
+        $variants = [
+            // A: docs field names (city_area, type) with English property_type
+            'A_cityarea_type_english' => [
+                'title'         => 'TEST borrar A ' . now()->format('H:i:s'),
+                'status'        => 'not_published',
+                'property_type' => 'apartment',
+                'location'      => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
+                'operations'    => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
-            'operations' => [
-                ['operation_type' => 'sale', 'amount' => 100, 'currency' => 'MXN'],
+            // B: docs field names with Spanish property_type
+            'B_cityarea_type_spanish' => [
+                'title'         => 'TEST borrar B ' . now()->format('H:i:s'),
+                'status'        => 'not_published',
+                'property_type' => 'Departamento',
+                'location'      => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
+                'operations'    => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
             ],
-            'bedrooms'    => 1,
-            'bathrooms'   => 1,
-            'description' => 'Propiedad de prueba - borrar',
+            // C: minimal — no location at all, just coordinates at root
+            'C_no_location' => [
+                'title'         => 'TEST borrar C ' . now()->format('H:i:s'),
+                'status'        => 'not_published',
+                'property_type' => 'apartment',
+                'latitude'      => 19.3853,
+                'longitude'     => -99.166,
+                'operations'    => [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
+            ],
+            // D: no operations at all
+            'D_no_operations' => [
+                'title'         => 'TEST borrar D ' . now()->format('H:i:s'),
+                'status'        => 'not_published',
+                'property_type' => 'apartment',
+                'location'      => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166],
+            ],
         ];
 
-        try {
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-                'Content-Type'    => 'application/json',
-            ])->post($this->getBaseUrl() . '/properties', $payload);
-
-            return [
-                'method'      => 'POST /properties',
-                'payload'     => $payload,
-                'status_code' => $response->status(),
-                'response'    => $response->json() ?? $response->body(),
-            ];
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
+        foreach ($variants as $key => $payload) {
+            try {
+                $r = Http::withHeaders($headers)->post($base, $payload);
+                $results[$key] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
+            } catch (\Exception $e) {
+                $results[$key] = ['error' => $e->getMessage()];
+            }
         }
+
+        return $results;
     }
 
     public function rawProperties(?string $publicId = null): array
