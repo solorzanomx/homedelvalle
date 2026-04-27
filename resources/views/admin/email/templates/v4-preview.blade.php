@@ -13,13 +13,13 @@
 {{-- Success/Error Messages --}}
 @if($message = session('success'))
     <div style="background: #d1fae5; border: 1px solid #6ee7b7; color: #047857; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
-        ✓ {{ $message }}
+        {{ $message }}
     </div>
 @endif
 
 @if($message = session('error'))
     <div style="background: #fee; border: 1px solid #fca5a5; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
-        ✗ {{ $message }}
+        {{ $message }}
     </div>
 @endif
 
@@ -86,77 +86,17 @@
         {{-- Template Info --}}
         <div class="card" style="margin-top: 1rem;">
             <div class="card-header">
-                <h3 style="margin: 0;">ℹ️ Variables</h3>
+                <h3 style="margin: 0;">ℹ️ Info del Template</h3>
             </div>
             <div class="card-body" style="font-size: 0.9rem;">
-                @php
-                    $variables = match($templateId) {
-                        'lead-interno' => [
-                            'nombre' => 'Nombre del lead',
-                            'email' => 'Email del contacto',
-                            'telefono' => 'Teléfono',
-                            'origen' => 'Fuente del lead',
-                            'fecha' => 'Fecha/hora del contacto',
-                            'mensaje' => 'Mensaje del cliente',
-                        ],
-                        'acuse' => [
-                            'folio' => 'Número de folio único',
-                            'email' => 'Email del cliente',
-                        ],
-                        'cita' => [
-                            'email' => 'Email del cliente',
-                            'dia_semana' => 'Día de la semana',
-                            'dia' => 'Número del día',
-                            'mes' => 'Nombre del mes',
-                            'hora' => 'Hora de la cita',
-                            'duracion' => 'Duración en minutos',
-                            'direccion' => 'Dirección del inmueble',
-                            'colonia' => 'Colonia/zona',
-                            'asesor' => 'Nombre del asesor',
-                        ],
-                        'comprador' => [
-                            'email' => 'Email del cliente',
-                            'colonia' => 'Ubicación',
-                            'titulo' => 'Título de la propiedad',
-                            'metros' => 'Metros cuadrados',
-                            'recamaras' => 'Número de recámaras',
-                            'banos' => 'Número de baños',
-                            'estacionamientos' => 'Cajones de estacionamiento',
-                            'precio' => 'Precio en MXN',
-                            'foto_url' => 'URL de imagen (opcional)',
-                        ],
-                        'bienvenida' => [
-                            'email' => 'Email del usuario',
-                            'usuario' => 'Usuario de login',
-                            'password_temporal' => 'Contraseña temporal',
-                            'url_acceso' => 'URL del portal',
-                        ],
-                        default => [],
-                    };
-                @endphp
+                <p style="margin: 0 0 0.5rem;"><strong>Template ID:</strong></p>
+                <code style="background: #f5f5f5; padding: 0.5rem; border-radius: 3px; display: block;">{{ $templateId }}</code>
 
-                @forelse($variables as $var => $desc)
-                    <div style="margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #eee;">
-                        <code style="background: #f5f5f5; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.85rem;">{{ $var }}</code>
-                        <p style="margin: 0.25rem 0 0; color: #666; font-size: 0.85rem;">{{ $desc }}</p>
-                    </div>
-                @empty
-                    <p style="color: #999;">Sin variables requeridas</p>
-                @endforelse
-            </div>
-        </div>
-
-        {{-- View Files --}}
-        <div class="card" style="margin-top: 1rem;">
-            <div class="card-header">
-                <h3 style="margin: 0;">📁 Archivos</h3>
-            </div>
-            <div class="card-body" style="font-size: 0.85rem;">
-                <p style="margin: 0 0 0.5rem; color: #666;">Template:</p>
-                <code style="display: block; background: #f5f5f5; padding: 0.5rem; border-radius: 3px; margin-bottom: 0.75rem; word-break: break-all;">resources/views/emails/v4/{{ $templateId }}.blade.php</code>
-
-                <p style="margin: 0.75rem 0 0.5rem; color: #666;">Mailable:</p>
-                <code style="display: block; background: #f5f5f5; padding: 0.5rem; border-radius: 3px; word-break: break-all;">app/Mail/V4/Mailables/{{ ucfirst(str_replace('-', '', $templateId)) }}Mail.php</code>
+                <p style="margin: 0.75rem 0 0.5rem;"><strong>Archivos:</strong></p>
+                <div style="font-size: 0.85rem;">
+                    <p style="margin: 0.25rem 0;">📄 Template: <code>resources/views/emails/v4/{{ $templateId }}.blade.php</code></p>
+                    <p style="margin: 0.25rem 0;">📧 Mailable: <code>app/Mail/V4/Mailables/</code></p>
+                </div>
             </div>
         </div>
     </div>
