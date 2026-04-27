@@ -3,6 +3,8 @@
 
 @section('styles')
 <style>
+@import url('https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css');
+
 /* Layout */
 .edit-layout { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
 @media (max-width: 1024px) { .edit-layout { grid-template-columns: 1fr; } }
@@ -155,6 +157,97 @@
     padding: 10px; border: 1px dashed var(--primary); border-radius: 8px; background: rgba(102,126,234,0.03);
 }
 .photo-item-uploading .photo-spinner { width: 20px; height: 20px; border-width: 2px; margin: 0; }
+
+/* Photo editor modal */
+.photo-editor-modal {
+    position: fixed; inset: 0; z-index: 1400; display: none;
+    align-items: center; justify-content: center; padding: 1.25rem;
+}
+.photo-editor-modal.is-open { display: flex; }
+.photo-editor-backdrop {
+    position: absolute; inset: 0; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(4px);
+}
+.photo-editor-dialog {
+    position: relative; width: min(1120px, 100%); max-height: calc(100vh - 2.5rem);
+    background: #231d1b; color: #f5efe9; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; overflow: hidden; box-shadow: 0 28px 90px rgba(0,0,0,0.35);
+}
+.photo-editor-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; min-height: 640px; }
+.photo-editor-stage {
+    position: relative; background:
+        linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%),
+        linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%),
+        #2d2624;
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.photo-editor-stage img { display: block; max-width: 100%; }
+.photo-editor-sidebar {
+    background: #2b2422; border-left: 1px solid rgba(255,255,255,0.08);
+    display: flex; flex-direction: column; padding: 1rem;
+}
+.photo-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1rem; }
+.photo-editor-title { font-size: 1rem; font-weight: 700; letter-spacing: 0.01em; }
+.photo-editor-meta { font-size: 0.75rem; color: rgba(245,239,233,0.68); }
+.photo-editor-close {
+    width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03); color: #f5efe9; cursor: pointer; font-size: 1rem;
+}
+.photo-editor-close:hover { background: rgba(255,255,255,0.08); }
+.photo-editor-panel-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: rgba(245,239,233,0.56); margin-bottom: 0.6rem;
+}
+.photo-editor-fields { display: grid; gap: 0.65rem; margin-bottom: 1rem; }
+.photo-editor-field {
+    display: grid; grid-template-columns: 1fr auto auto; align-items: center;
+    gap: 0.5rem; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px;
+    overflow: hidden; background: rgba(255,255,255,0.02);
+}
+.photo-editor-field label { font-size: 0.78rem; color: rgba(245,239,233,0.7); padding-left: 0.8rem; }
+.photo-editor-field input {
+    width: 74px; border: none; background: transparent; color: #f5efe9;
+    font-size: 0.92rem; padding: 0.85rem 0.4rem; outline: none;
+}
+.photo-editor-field span { font-size: 0.74rem; color: rgba(245,239,233,0.6); padding-right: 0.8rem; }
+.photo-editor-tools { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 0.6rem; }
+.photo-editor-tool {
+    min-height: 38px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03); color: #f5efe9; cursor: pointer;
+    font-size: 0.88rem; display: flex; align-items: center; justify-content: center;
+}
+.photo-editor-tool:hover { background: rgba(255,255,255,0.08); }
+.photo-editor-tool.is-active {
+    background: rgba(242, 95, 76, 0.16);
+    border-color: rgba(242, 95, 76, 0.55);
+    color: #ffb4a9;
+}
+.photo-editor-hint {
+    font-size: 0.76rem; line-height: 1.5; color: rgba(245,239,233,0.58);
+    margin-top: auto; padding-top: 1rem;
+}
+.photo-editor-actions {
+    display: flex; gap: 0.75rem; justify-content: flex-end; padding-top: 1rem; margin-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+.photo-editor-btn {
+    border: none; border-radius: 12px; padding: 0.9rem 1rem; cursor: pointer;
+    font-size: 0.9rem; font-weight: 600;
+}
+.photo-editor-btn-secondary { background: rgba(255,255,255,0.06); color: #f5efe9; }
+.photo-editor-btn-secondary:hover { background: rgba(255,255,255,0.12); }
+.photo-editor-btn-primary { background: #11b981; color: #fff; }
+.photo-editor-btn-primary:hover { background: #0ea371; }
+.photo-editor-progress {
+    font-size: 0.76rem; color: rgba(245,239,233,0.65); margin-bottom: 0.85rem;
+}
+@media (max-width: 960px) {
+    .photo-editor-dialog { max-height: calc(100vh - 1rem); }
+    .photo-editor-grid { grid-template-columns: 1fr; }
+    .photo-editor-stage { min-height: 48vh; }
+    .photo-editor-sidebar { border-left: none; border-top: 1px solid rgba(255,255,255,0.08); }
+}
 
 /* Side card */
 .side-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
@@ -494,7 +587,7 @@
                         </div>
                         <div id="photoPanel">
                             <div id="photoDrop" class="photo-drop" onclick="document.getElementById('photoFiles').click()">
-                                <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="uploadPhotos(this.files)">
+                                <input type="file" id="photoFiles" name="photos[]" accept="image/*" multiple style="display:none" onchange="startPhotoEditing(this.files)">
                                 <div id="photoDropContent">
                                     <div style="font-size:1.2rem; opacity:0.4;">&#10010;</div>
                                     <p style="margin:0; font-size:0.75rem; color:var(--text-muted);">Subir fotos</p>
@@ -639,9 +732,94 @@
 
 {{-- Save toast --}}
 <div class="save-toast" id="saveToast">&#10003; Propiedad guardada</div>
+
+{{-- Photo editor modal --}}
+<div class="photo-editor-modal" id="photoEditorModal" aria-hidden="true">
+    <div class="photo-editor-backdrop" onclick="cancelPhotoEditing()"></div>
+    <div class="photo-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="photoEditorTitle">
+        <div class="photo-editor-grid">
+            <div class="photo-editor-stage">
+                <img id="photoEditorImage" alt="Editor de imagen" />
+            </div>
+            <div class="photo-editor-sidebar">
+                <div class="photo-editor-header">
+                    <div>
+                        <div class="photo-editor-title" id="photoEditorTitle">Editor de imagen</div>
+                        <div class="photo-editor-meta" id="photoEditorFileName">Ajusta la foto antes de subirla</div>
+                    </div>
+                    <button type="button" class="photo-editor-close" onclick="cancelPhotoEditing()">&#10005;</button>
+                </div>
+
+                <div class="photo-editor-progress" id="photoEditorProgress">Foto 1 de 1</div>
+
+                <div class="photo-editor-panel-label">Recorte</div>
+                <div class="photo-editor-fields">
+                    <div class="photo-editor-field">
+                        <label for="cropX">X</label>
+                        <input type="number" id="cropX" value="0" step="1" onchange="applyCropDataFromInputs()">
+                        <span>px</span>
+                    </div>
+                    <div class="photo-editor-field">
+                        <label for="cropY">Y</label>
+                        <input type="number" id="cropY" value="0" step="1" onchange="applyCropDataFromInputs()">
+                        <span>px</span>
+                    </div>
+                    <div class="photo-editor-field">
+                        <label for="cropWidth">Ancho</label>
+                        <input type="number" id="cropWidth" value="0" step="1" onchange="applyCropDataFromInputs()">
+                        <span>px</span>
+                    </div>
+                    <div class="photo-editor-field">
+                        <label for="cropHeight">Altura</label>
+                        <input type="number" id="cropHeight" value="0" step="1" onchange="applyCropDataFromInputs()">
+                        <span>px</span>
+                    </div>
+                    <div class="photo-editor-field">
+                        <label for="cropRotation">Rotacion</label>
+                        <input type="number" id="cropRotation" value="0" step="1" onchange="setCropperRotation(this.value)">
+                        <span>grados</span>
+                    </div>
+                </div>
+
+                <div class="photo-editor-panel-label">Herramientas</div>
+                <div class="photo-editor-tools">
+                    <button type="button" class="photo-editor-tool is-active" id="photoToolMove" onclick="setCropperDragMode('move')" title="Mover">&#10021;</button>
+                    <button type="button" class="photo-editor-tool" id="photoToolCrop" onclick="setCropperDragMode('crop')" title="Recortar">&#9635;</button>
+                    <button type="button" class="photo-editor-tool" onclick="zoomCropper(0.1)" title="Zoom in">&#8853;</button>
+                    <button type="button" class="photo-editor-tool" onclick="zoomCropper(-0.1)" title="Zoom out">&#8854;</button>
+                    <button type="button" class="photo-editor-tool" onclick="fitCropperToFrame()" title="Ajustar">&#9974;</button>
+                </div>
+                <div class="photo-editor-tools">
+                    <button type="button" class="photo-editor-tool" onclick="moveCropper(-20, 0)" title="Mover izquierda">&#8592;</button>
+                    <button type="button" class="photo-editor-tool" onclick="moveCropper(20, 0)" title="Mover derecha">&#8594;</button>
+                    <button type="button" class="photo-editor-tool" onclick="moveCropper(0, -20)" title="Mover arriba">&#8593;</button>
+                    <button type="button" class="photo-editor-tool" onclick="moveCropper(0, 20)" title="Mover abajo">&#8595;</button>
+                    <button type="button" class="photo-editor-tool" onclick="centerCropper()" title="Centrar">&#9675;</button>
+                </div>
+                <div class="photo-editor-tools">
+                    <button type="button" class="photo-editor-tool" onclick="rotateCropper(-90)" title="Rotar izquierda">&#8630;</button>
+                    <button type="button" class="photo-editor-tool" onclick="rotateCropper(90)" title="Rotar derecha">&#8631;</button>
+                    <button type="button" class="photo-editor-tool" onclick="scaleCropper(-1, 1)" title="Espejo horizontal">&#8646;</button>
+                    <button type="button" class="photo-editor-tool" onclick="scaleCropper(1, -1)" title="Espejo vertical">&#8645;</button>
+                    <button type="button" class="photo-editor-tool" onclick="resetCropper()" title="Reiniciar">&#8634;</button>
+                </div>
+
+                <div class="photo-editor-hint">
+                    Puedes recortar, mover, acercar y rotar antes de subir cada foto. Si seleccionas varias, se abriran una por una.
+                </div>
+
+                <div class="photo-editor-actions">
+                    <button type="button" class="photo-editor-btn photo-editor-btn-secondary" onclick="cancelPhotoEditing()">Cancelar</button>
+                    <button type="button" class="photo-editor-btn photo-editor-btn-primary" onclick="saveEditedPhoto()">Guardar y continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script>
 function switchTab(name, btn) {
     document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.toggle('active', p.dataset.tab === name); });
@@ -713,6 +891,260 @@ var csrfToken = '{{ csrf_token() }}';
 var propertyId = {{ $property->id }};
 var photoStoreUrl = '{{ route("properties.photos.store", $property) }}';
 var photoReorderUrl = '{{ route("properties.photos.reorder", $property) }}';
+var photoEditorState = {
+    queue: [],
+    processed: [],
+    index: 0,
+    cropper: null,
+    activeObjectUrl: null,
+    activeFile: null,
+    scaleX: 1,
+    scaleY: 1,
+};
+
+function startPhotoEditing(fileList) {
+    var files = Array.from(fileList || []).filter(function(file) {
+        return file && /^image\//.test(file.type || '');
+    });
+    if (!files.length) return;
+
+    if (typeof Cropper === 'undefined') {
+        uploadPhotos(files);
+        return;
+    }
+
+    photoEditorState.queue = files;
+    photoEditorState.processed = [];
+    photoEditorState.index = 0;
+    openNextPhotoEditor();
+}
+
+function openNextPhotoEditor() {
+    destroyPhotoEditorCropper();
+
+    if (photoEditorState.index >= photoEditorState.queue.length) {
+        closePhotoEditor();
+        if (photoEditorState.processed.length) {
+            uploadPhotos(photoEditorState.processed);
+        }
+        photoEditorState.queue = [];
+        photoEditorState.processed = [];
+        photoEditorState.index = 0;
+        return;
+    }
+
+    var file = photoEditorState.queue[photoEditorState.index];
+    photoEditorState.activeFile = file;
+
+    var modal = document.getElementById('photoEditorModal');
+    var image = document.getElementById('photoEditorImage');
+    var fileName = document.getElementById('photoEditorFileName');
+    var progress = document.getElementById('photoEditorProgress');
+
+    if (photoEditorState.activeObjectUrl) {
+        URL.revokeObjectURL(photoEditorState.activeObjectUrl);
+    }
+
+    photoEditorState.activeObjectUrl = URL.createObjectURL(file);
+    image.src = photoEditorState.activeObjectUrl;
+    fileName.textContent = file.name + ' · ' + formatBytes(file.size);
+    progress.textContent = 'Foto ' + (photoEditorState.index + 1) + ' de ' + photoEditorState.queue.length;
+    photoEditorState.scaleX = 1;
+    photoEditorState.scaleY = 1;
+    modal.classList.add('is-open');
+    modal.setAttribute('aria-hidden', 'false');
+    setCropperDragMode('move');
+
+    image.onload = function() {
+        photoEditorState.cropper = new Cropper(image, {
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 1,
+            background: false,
+            responsive: true,
+            rotatable: true,
+            zoomable: true,
+            scalable: false,
+            crop: syncCropInputs,
+            ready: function() {
+                syncCropInputs();
+            },
+        });
+    };
+}
+
+function closePhotoEditor() {
+    destroyPhotoEditorCropper();
+    var modal = document.getElementById('photoEditorModal');
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function destroyPhotoEditorCropper() {
+    if (photoEditorState.cropper) {
+        photoEditorState.cropper.destroy();
+        photoEditorState.cropper = null;
+    }
+    if (photoEditorState.activeObjectUrl) {
+        URL.revokeObjectURL(photoEditorState.activeObjectUrl);
+        photoEditorState.activeObjectUrl = null;
+    }
+}
+
+function cancelPhotoEditing() {
+    closePhotoEditor();
+    photoEditorState.queue = [];
+    photoEditorState.processed = [];
+    photoEditorState.index = 0;
+    photoEditorState.activeFile = null;
+    document.getElementById('photoFiles').value = '';
+}
+
+function useOriginalPhoto() {
+    if (photoEditorState.activeFile) {
+        photoEditorState.processed.push(photoEditorState.activeFile);
+    }
+    photoEditorState.index += 1;
+    openNextPhotoEditor();
+}
+
+function saveEditedPhoto() {
+    if (!photoEditorState.cropper || !photoEditorState.activeFile) return;
+
+    var originalType = photoEditorState.activeFile.type || 'image/jpeg';
+    var exportType = /image\/(png|webp|jpeg)/.test(originalType) ? originalType : 'image/jpeg';
+    var canvas = photoEditorState.cropper.getCroppedCanvas({
+        maxWidth: 2400,
+        maxHeight: 2400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+
+    if (!canvas) {
+        useOriginalPhoto();
+        return;
+    }
+
+    canvas.toBlob(function(blob) {
+        if (!blob) {
+            useOriginalPhoto();
+            return;
+        }
+
+        var editedFile = new File([blob], photoEditorState.activeFile.name, {
+            type: exportType,
+            lastModified: Date.now(),
+        });
+
+        photoEditorState.processed.push(editedFile);
+        photoEditorState.index += 1;
+        openNextPhotoEditor();
+    }, exportType, 0.92);
+}
+
+function syncCropInputs() {
+    if (!photoEditorState.cropper) return;
+    var data = photoEditorState.cropper.getData(true);
+    document.getElementById('cropX').value = Math.round(data.x || 0);
+    document.getElementById('cropY').value = Math.round(data.y || 0);
+    document.getElementById('cropWidth').value = Math.round(data.width || 0);
+    document.getElementById('cropHeight').value = Math.round(data.height || 0);
+    document.getElementById('cropRotation').value = Math.round(data.rotate || 0);
+}
+
+function applyCropDataFromInputs() {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.setData({
+        x: parseFloat(document.getElementById('cropX').value) || 0,
+        y: parseFloat(document.getElementById('cropY').value) || 0,
+        width: parseFloat(document.getElementById('cropWidth').value) || 0,
+        height: parseFloat(document.getElementById('cropHeight').value) || 0,
+    });
+}
+
+function setCropperRotation(value) {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.rotateTo(parseFloat(value) || 0);
+    syncCropInputs();
+}
+
+function setCropperDragMode(mode) {
+    if (photoEditorState.cropper) {
+        photoEditorState.cropper.setDragMode(mode);
+    }
+
+    var moveBtn = document.getElementById('photoToolMove');
+    var cropBtn = document.getElementById('photoToolCrop');
+    if (moveBtn) moveBtn.classList.toggle('is-active', mode === 'move');
+    if (cropBtn) cropBtn.classList.toggle('is-active', mode === 'crop');
+}
+
+function moveCropper(x, y) {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.move(x, y);
+    syncCropInputs();
+}
+
+function zoomCropper(amount) {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.zoom(amount);
+}
+
+function rotateCropper(amount) {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.rotate(amount);
+    syncCropInputs();
+}
+
+function scaleCropper(x, y) {
+    if (!photoEditorState.cropper) return;
+
+    if (x !== 1) {
+        photoEditorState.scaleX = photoEditorState.scaleX * -1;
+        photoEditorState.cropper.scaleX(photoEditorState.scaleX);
+    }
+
+    if (y !== 1) {
+        photoEditorState.scaleY = photoEditorState.scaleY * -1;
+        photoEditorState.cropper.scaleY(photoEditorState.scaleY);
+    }
+}
+
+function centerCropper() {
+    if (!photoEditorState.cropper) return;
+    var container = photoEditorState.cropper.getContainerData();
+    var canvas = photoEditorState.cropper.getCanvasData();
+    photoEditorState.cropper.setCanvasData({
+        left: (container.width - canvas.width) / 2,
+        top: (container.height - canvas.height) / 2,
+    });
+    syncCropInputs();
+}
+
+function fitCropperToFrame() {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.reset();
+    photoEditorState.scaleX = 1;
+    photoEditorState.scaleY = 1;
+    setCropperDragMode('move');
+    syncCropInputs();
+}
+
+function resetCropper() {
+    if (!photoEditorState.cropper) return;
+    photoEditorState.cropper.reset();
+    photoEditorState.scaleX = 1;
+    photoEditorState.scaleY = 1;
+    setCropperDragMode('move');
+    syncCropInputs();
+}
+
+function formatBytes(bytes) {
+    if (!bytes) return '0 KB';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
 
 function uploadPhotos(files) {
     if (!files || files.length === 0) return;
@@ -867,7 +1299,7 @@ function saveOrder() {
     if (!drop) return;
     ['dragenter','dragover'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.add('dragover'); }); });
     ['dragleave','drop'].forEach(function(ev) { drop.addEventListener(ev, function(e) { e.preventDefault(); drop.classList.remove('dragover'); }); });
-    drop.addEventListener('drop', function(e) { uploadPhotos(e.dataTransfer.files); });
+    drop.addEventListener('drop', function(e) { startPhotoEditing(e.dataTransfer.files); });
 })();
 updateCurrency();
 
@@ -913,6 +1345,20 @@ function clearOwner() {
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.owner-search-wrap')) {
         document.getElementById('ownerResults').classList.remove('visible');
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('photoEditorModal');
+    if (!modal || !modal.classList.contains('is-open')) return;
+
+    if (e.key === 'Escape') {
+        cancelPhotoEditing();
+    }
+
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        saveEditedPhoto();
     }
 });
 </script>
