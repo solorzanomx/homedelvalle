@@ -14,46 +14,51 @@ use App\Mail\V4\Mailables\CitaMail;
 use App\Mail\V4\Mailables\CompradorMail;
 use App\Mail\V4\Mailables\BienvenidaMail;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 
 class TransactionalEmailController extends Controller
 {
-    protected array $templates = [
-        'lead-interno' => [
-            'name' => 'Notificación de Lead',
-            'description' => 'Email interno cuando se recibe un nuevo lead',
-            'mailable' => LeadInternoMail::class,
-            'data_class' => LeadInternoData::class,
-        ],
-        'acuse' => [
-            'name' => 'Acuse de Recibido',
-            'description' => 'Confirmación enviada al cliente tras contacto',
-            'mailable' => AcuseMail::class,
-            'data_class' => AcuseData::class,
-        ],
-        'cita' => [
-            'name' => 'Confirmación de Cita',
-            'description' => 'Confirmación de cita agendada',
-            'mailable' => CitaMail::class,
-            'data_class' => CitaData::class,
-        ],
-        'comprador' => [
-            'name' => 'Listado de Propiedad',
-            'description' => 'Envío de propiedad sugerida al cliente',
-            'mailable' => CompradorMail::class,
-            'data_class' => CompradorData::class,
-        ],
-        'bienvenida' => [
-            'name' => 'Bienvenida a Área de Clientes',
-            'description' => 'Email de bienvenida con credenciales',
-            'mailable' => BienvenidaMail::class,
-            'data_class' => BienvenidaData::class,
-        ],
-    ];
+    protected function getTemplates()
+    {
+        return [
+            'lead-interno' => [
+                'name' => 'Notificación de Lead',
+                'description' => 'Email interno cuando se recibe un nuevo lead',
+                'mailable_class' => LeadInternoMail::class,
+                'data_class' => LeadInternoData::class,
+            ],
+            'acuse' => [
+                'name' => 'Acuse de Recibido',
+                'description' => 'Confirmación enviada al cliente tras contacto',
+                'mailable_class' => AcuseMail::class,
+                'data_class' => AcuseData::class,
+            ],
+            'cita' => [
+                'name' => 'Confirmación de Cita',
+                'description' => 'Confirmación de cita agendada',
+                'mailable_class' => CitaMail::class,
+                'data_class' => CitaData::class,
+            ],
+            'comprador' => [
+                'name' => 'Listado de Propiedad',
+                'description' => 'Envío de propiedad sugerida al cliente',
+                'mailable_class' => CompradorMail::class,
+                'data_class' => CompradorData::class,
+            ],
+            'bienvenida' => [
+                'name' => 'Bienvenida a Área de Clientes',
+                'description' => 'Email de bienvenida con credenciales',
+                'mailable_class' => BienvenidaMail::class,
+                'data_class' => BienvenidaData::class,
+            ],
+        ];
+    }
 
     public function index()
     {
-        $v4Templates = collect($this->templates)->map(fn($config, $key) => [
+        $templates = $this->getTemplates();
+        $v4Templates = collect($templates)->map(fn($config, $key) => [
             'id' => $key,
             'name' => $config['name'],
             'description' => $config['description'],
@@ -65,13 +70,15 @@ class TransactionalEmailController extends Controller
 
     public function preview(string $templateId)
     {
-        if (!isset($this->templates[$templateId])) {
+        $templates = $this->getTemplates();
+        if (!isset($templates[$templateId])) {
             abort(404);
         }
 
-        $template = $this->templates[$templateId];
+        $template = $templates[$templateId];
         $dummyData = $this->getDummyData($templateId);
-        $mailable = new $template['mailable']($dummyData);
+        $mailableClass = $template['mailable_class'];
+        $mailable = new $mailableClass($dummyData);
 
         return view('admin.email.templates.v4-preview', [
             'templateId' => $templateId,
@@ -84,7 +91,8 @@ class TransactionalEmailController extends Controller
 
     public function sendTest(Request $request, string $templateId)
     {
-        if (!isset($this->templates[$templateId])) {
+        $templates = $this->getTemplates();
+        if (!isset($templates[$templateId])) {
             abort(404);
         }
 
@@ -92,9 +100,10 @@ class TransactionalEmailController extends Controller
             'email' => 'required|email',
         ]);
 
-        $template = $this->templates[$templateId];
+        $template = $templates[$templateId];
         $dummyData = $this->getDummyData($templateId);
-        $mailable = new $template['mailable']($dummyData);
+        $mailableClass = $template['mailable_class'];
+        $mailable = new $mailableClass($dummyData);
 
         try {
             Mail::to($request->email)->send($mailable);
@@ -159,13 +168,15 @@ class TransactionalEmailController extends Controller
 
     public function renderHtml(string $templateId)
     {
-        if (!isset($this->templates[$templateId])) {
+        $templates = $this->getTemplates();
+        if (!isset($templates[$templateId])) {
             abort(404);
         }
 
-        $template = $this->templates[$templateId];
+        $template = $templates[$templateId];
         $dummyData = $this->getDummyData($templateId);
-        $mailable = new $template['mailable']($dummyData);
+        $mailableClass = $template['mailable_class'];
+        $mailable = new $mailableClass($dummyData);
 
         return $mailable->render();
     }
