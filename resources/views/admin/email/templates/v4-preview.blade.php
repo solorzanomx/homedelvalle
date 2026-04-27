@@ -45,7 +45,7 @@
                 <h3 style="margin: 0;">Código HTML</h3>
             </div>
             <div class="card-body" style="padding: 0;">
-                <pre style="margin: 0; overflow-x: auto; padding: 1rem; background: #f5f5f5; font-size: 0.85rem; max-height: 300px;"><code>{{ htmlspecialchars($mailable->render()) }}</code></pre>
+                <pre style="margin: 0; overflow-x: auto; padding: 1rem; background: #f5f5f5; font-size: 0.85rem; max-height: 300px;"><code>{{ htmlspecialchars($mailableHtml) }}</code></pre>
             </div>
         </div>
     </div>

@@ -66,11 +66,14 @@ class TransactionalEmailController extends Controller
             abort(404);
         }
 
+        // Render the HTML before passing to view to avoid auto-conversion
+        $html = $mailable->render();
+
         return view('admin.email.templates.v4-preview', [
             'templateId' => $templateId,
             'templateName' => $template['name'],
             'description' => $template['description'],
-            'mailable' => $mailable,
+            'mailableHtml' => $html,
         ]);
     }
 
