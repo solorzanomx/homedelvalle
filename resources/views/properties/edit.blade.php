@@ -156,6 +156,37 @@
 }
 .photo-item-uploading .photo-spinner { width: 20px; height: 20px; border-width: 2px; margin: 0; }
 
+/* Skeleton shimmer for per-file upload placeholders */
+@keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position:  400px 0; }
+}
+.photo-thumb-skeleton {
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
+    background-size: 400px 100%;
+    animation: shimmer 1.4s infinite linear;
+    border-radius: 6px;
+}
+/* Upload progress bar under the drop zone */
+.photo-upload-progress {
+    height: 3px; border-radius: 2px; overflow: hidden;
+    background: var(--border); margin: 0.4rem 0 0; display: none;
+}
+.photo-upload-progress-bar {
+    height: 100%; background: var(--primary);
+    width: 0%; transition: width 0.1s linear; border-radius: 2px;
+}
+/* Item enter / exit animations */
+@keyframes photoEnter { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+@keyframes photoExit  { to   { opacity: 0; transform: scale(0.95) translateX(6px); } }
+.photo-item { animation: photoEnter 0.22s ease; }
+.photo-item.is-removing { animation: photoExit 0.18s ease forwards; pointer-events: none; }
+/* Preview button in action row (not on thumbnail) */
+.btn-preview { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+/* Primary star button active state */
+.photo-item.is-primary .btn-set-primary { color: var(--primary); border-color: var(--primary); }
+
 /* Side card */
 .side-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
 .side-card-header { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); font-weight: 600; font-size: 0.85rem; }
@@ -502,8 +533,11 @@
                                 </div>
                                 <div id="photoDropLoading" style="display:none;">
                                     <div class="photo-spinner"></div>
-                                    <p style="margin:0.4rem 0 0; font-size:0.75rem; color:var(--primary); font-weight:500;">Subiendo...</p>
+                                    <p style="margin:0.4rem 0 0; font-size:0.75rem; color:var(--primary); font-weight:500;">Procesando...</p>
                                 </div>
+                            </div>
+                            <div class="photo-upload-progress" id="photoProgressWrap">
+                                <div class="photo-upload-progress-bar" id="photoProgressBar"></div>
                             </div>
 
                             <div class="photo-list" id="photoList">
@@ -511,16 +545,17 @@
                                 <div class="photo-item {{ $photo->is_primary ? 'is-primary' : '' }}" id="photo-{{ $photo->id }}" data-id="{{ $photo->id }}">
                                     <span class="photo-drag-handle" title="Arrastra para reordenar">&#9776;</span>
                                     <div class="photo-item-thumb">
-                                        <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description }}" loading="lazy">
+                                        <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->description }}" loading="{{ $loop->index < 4 ? 'eager' : 'lazy' }}">
                                     </div>
                                     <div class="photo-item-info">
                                         <div class="photo-item-top">
                                             <span class="photo-item-order">{{ $loop->iteration }}</span>
                                             @if($photo->is_primary)
-                                            <span class="photo-badge-primary">&#9733; Principal</span>
+                                            <span class="photo-badge-primary">&#9733; Portada</span>
                                             @endif
                                             <div class="photo-item-actions">
-                                                <button type="button" onclick="setPrimary({{ $photo->id }})" title="Marcar como principal">&#9733;</button>
+                                                <button type="button" class="btn-set-primary" onclick="setPrimary({{ $photo->id }})" title="Marcar como portada">&#9733;</button>
+                                                <a href="{{ asset('storage/' . $photo->path) }}" target="_blank" class="photo-item-actions btn-preview" title="Ver imagen completa" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:0.7rem;">&#8599;</a>
                                                 <button type="button" class="btn-del" onclick="deletePhoto({{ $photo->id }})" title="Eliminar">&#10005;</button>
                                             </div>
                                         </div>
@@ -716,44 +751,99 @@ var photoReorderUrl = '{{ route("properties.photos.reorder", $property) }}';
 
 function uploadPhotos(files) {
     if (!files || files.length === 0) return;
+
+    var list    = document.getElementById('photoList');
+    var empty   = document.getElementById('photoEmpty');
     var content = document.getElementById('photoDropContent');
     var loading = document.getElementById('photoDropLoading');
-    var drop = document.getElementById('photoDrop');
+    var drop    = document.getElementById('photoDrop');
+    var progressWrap = document.getElementById('photoProgressWrap');
+    var progressBar  = document.getElementById('photoProgressBar');
+
+    if (empty) empty.style.display = 'none';
     content.style.display = 'none';
     loading.style.display = '';
     drop.style.pointerEvents = 'none';
+    if (progressWrap) progressWrap.style.display = '';
+    if (progressBar)  progressBar.style.width = '0%';
 
-    var list = document.getElementById('photoList');
-    var empty = document.getElementById('photoEmpty');
-    if (empty) empty.style.display = 'none';
-
-    // Placeholder
-    var ph = document.createElement('div');
-    ph.className = 'photo-item-uploading';
-    ph.innerHTML = '<div class="photo-spinner"></div><span style="font-size:0.75rem; color:var(--primary);">Subiendo ' + files.length + ' foto(s)...</span>';
-    list.appendChild(ph);
+    // Create one skeleton placeholder per file immediately
+    var skeletons = Array.from(files).map(function(file) {
+        var sk = document.createElement('div');
+        sk.className = 'photo-item';
+        sk.style.cssText = 'animation:none;';
+        sk.innerHTML =
+            '<span class="photo-drag-handle" style="opacity:0.25;">&#9776;</span>' +
+            '<div class="photo-item-thumb"><div class="photo-thumb-skeleton"></div></div>' +
+            '<div class="photo-item-info" style="gap:6px;">' +
+                '<div style="display:flex;align-items:center;gap:6px;">' +
+                    '<span class="photo-item-order" style="opacity:0.3;"></span>' +
+                    '<div class="photo-spinner" style="width:14px;height:14px;border-width:2px;margin:0;flex-shrink:0;"></div>' +
+                    '<span style="font-size:0.7rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
+                        file.name.substring(0, 22) + (file.name.length > 22 ? '…' : '') +
+                    '</span>' +
+                '</div>' +
+                '<div style="height:7px;border-radius:4px;overflow:hidden;">' +
+                    '<div class="photo-thumb-skeleton" style="height:100%;border-radius:4px;"></div>' +
+                '</div>' +
+            '</div>';
+        list.appendChild(sk);
+        return sk;
+    });
 
     var fd = new FormData();
     fd.append('_token', csrfToken);
-    for (var j = 0; j < files.length; j++) fd.append('photos[]', files[j]);
+    Array.from(files).forEach(function(f) { fd.append('photos[]', f); });
 
-    fetch(photoStoreUrl, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-        ph.remove();
-        if (data.photos) {
-            data.photos.forEach(function(photo) { addPhotoItem(photo); });
-            updatePhotoCount(data.total);
-            renumberPhotos();
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', photoStoreUrl);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+    xhr.upload.onprogress = function(e) {
+        if (e.lengthComputable) {
+            progressBar.style.width = Math.round((e.loaded / e.total) * 92) + '%';
         }
-    })
-    .catch(function() { ph.remove(); alert('Error al subir fotos'); })
-    .finally(function() {
+    };
+
+    function cleanup() {
+        skeletons.forEach(function(sk) { sk.remove(); });
+        if (progressBar) progressBar.style.width = '100%';
+        setTimeout(function() {
+            if (progressWrap) progressWrap.style.display = 'none';
+            if (progressBar)  progressBar.style.width = '0%';
+        }, 350);
         content.style.display = '';
         loading.style.display = 'none';
         drop.style.pointerEvents = '';
         document.getElementById('photoFiles').value = '';
-    });
+    }
+
+    xhr.onload = function() {
+        console.log('[Upload] status:', xhr.status, 'response:', xhr.responseText.substring(0, 300));
+        cleanup();
+        try {
+            var data = JSON.parse(xhr.responseText);
+            console.log('[Upload] parsed:', data);
+            if (data.photos && data.photos.length) {
+                data.photos.forEach(function(photo) { addPhotoItem(photo); });
+                updatePhotoCount(data.total);
+                renumberPhotos();
+            } else {
+                window.toast(data.error || 'Error al subir fotos', 'error');
+            }
+        } catch(e) {
+            console.error('[Upload] parse error:', e.message);
+            window.toast('Error al subir fotos — revisa la consola', 'error');
+        }
+    };
+
+    xhr.onerror = function() {
+        console.error('[Upload] XHR network error, status:', xhr.status);
+        cleanup();
+        window.toast('Error de conexión al subir fotos', 'error');
+    };
+
+    xhr.send(fd);
 }
 
 function addPhotoItem(photo) {
@@ -764,13 +854,16 @@ function addPhotoItem(photo) {
     div.dataset.id = photo.id;
     div.innerHTML =
         '<span class="photo-drag-handle" title="Arrastra para reordenar">&#9776;</span>' +
-        '<div class="photo-item-thumb"><img src="' + photo.url + '" alt="" loading="lazy"></div>' +
+        '<div class="photo-item-thumb">' +
+            '<img src="' + photo.url + '" alt="" loading="eager">' +
+        '</div>' +
         '<div class="photo-item-info">' +
             '<div class="photo-item-top">' +
                 '<span class="photo-item-order"></span>' +
-                (photo.is_primary ? '<span class="photo-badge-primary">&#9733; Principal</span>' : '') +
+                (photo.is_primary ? '<span class="photo-badge-primary">&#9733; Portada</span>' : '') +
                 '<div class="photo-item-actions">' +
-                    '<button type="button" onclick="setPrimary(' + photo.id + ')" title="Principal">&#9733;</button>' +
+                    '<button type="button" class="btn-set-primary" onclick="setPrimary(' + photo.id + ')" title="Marcar como portada">&#9733;</button>' +
+                    '<a href="' + photo.url + '" target="_blank" class="btn-preview" title="Ver imagen completa" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:0.7rem;display:inline-flex;align-items:center;justify-content:center;">&#8599;</a>' +
                     '<button type="button" class="btn-del" onclick="deletePhoto(' + photo.id + ')" title="Eliminar">&#10005;</button>' +
                 '</div>' +
             '</div>' +
@@ -795,36 +888,45 @@ function setPrimary(photoId) {
             el.classList.add('is-primary');
             var top = el.querySelector('.photo-item-top');
             var order = top.querySelector('.photo-item-order');
-            var badge = document.createElement('span');
-            badge.className = 'photo-badge-primary';
-            badge.innerHTML = '&#9733; Principal';
-            order.after(badge);
+            if (!top.querySelector('.photo-badge-primary')) {
+                var badge = document.createElement('span');
+                badge.className = 'photo-badge-primary';
+                badge.innerHTML = '&#9733; Portada';
+                order.after(badge);
+            }
             renumberPhotos();
         }
-    });
+        window.toast('Imagen de portada actualizada', 'success');
+    })
+    .catch(function() { window.toast('Error al actualizar portada', 'error'); });
 }
 
 function deletePhoto(photoId) {
-    if (!confirm('Eliminar foto?')) return;
+    if (!confirm('¿Eliminar esta foto?')) return;
     var el = document.getElementById('photo-' + photoId);
-    if (el) el.style.opacity = '0.4';
-    var url = '/properties/' + propertyId + '/photos/' + photoId;
-    fetch(url, { method: 'DELETE', headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' } })
+    if (!el) return;
+    el.classList.add('is-removing');
+    fetch('/properties/' + propertyId + '/photos/' + photoId, {
+        method: 'DELETE',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-        if (!data.success) return;
-        if (el) el.remove();
-        updatePhotoCount(data.total);
-        renumberPhotos();
-        if (data.total === 0) {
-            var emptyDiv = document.createElement('div');
-            emptyDiv.id = 'photoEmpty';
-            emptyDiv.style.cssText = 'text-align:center;padding:1.5rem 0.5rem;color:var(--text-muted);';
-            emptyDiv.innerHTML = '<div style="font-size:2rem;opacity:0.3;margin-bottom:0.3rem;">&#127976;</div><p style="font-size:0.82rem;margin:0;">Sin fotos</p>';
-            document.getElementById('photoList').after(emptyDiv);
-        }
+        if (!data.success) { el.classList.remove('is-removing'); return; }
+        setTimeout(function() {
+            el.remove();
+            updatePhotoCount(data.total);
+            renumberPhotos();
+            if (data.total === 0) {
+                var emptyDiv = document.createElement('div');
+                emptyDiv.id = 'photoEmpty';
+                emptyDiv.style.cssText = 'text-align:center;padding:1.5rem 0.5rem;color:var(--text-muted);';
+                emptyDiv.innerHTML = '<div style="font-size:2rem;opacity:0.3;margin-bottom:0.3rem;">&#127976;</div><p style="font-size:0.82rem;margin:0;">Sin fotos</p>';
+                document.getElementById('photoList').after(emptyDiv);
+            }
+        }, 200);
     })
-    .catch(function() { if (el) el.style.opacity = '1'; });
+    .catch(function() { el.classList.remove('is-removing'); });
 }
 
 var descTimers = {};

@@ -15,6 +15,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Admin\EmailSettingsController;
 use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\EmailAssetController;
+use App\Http\Controllers\Admin\TransactionalEmailController;
 use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\HomepageController;
@@ -297,6 +298,12 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/email/templates/send-test', [EmailTemplateController::class, 'sendTest'])->name('email.templates.send-test');
         Route::get('/email/templates/{template}/preview', [EmailTemplateController::class, 'preview'])->name('email.templates.preview');
         Route::resource('/email/templates', EmailTemplateController::class)->names('email.templates')->parameters(['templates' => 'template']);
+
+        // Transactional Emails V4
+        Route::get('/email/transactional-emails', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'index'])->name('transactional-emails.index');
+        Route::get('/email/transactional-emails/{templateId}/preview', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'preview'])->name('transactional-emails.preview');
+        Route::post('/email/transactional-emails/{templateId}/send-test', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'sendTest'])->name('transactional-emails.send-test');
+        Route::get('/email/transactional-emails/{templateId}/render', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'renderHtml'])->name('transactional-emails.render');
 
         // Email assets (media gallery)
         Route::get('/email/assets/gallery', [EmailAssetController::class, 'gallery'])->name('email.assets.gallery');

@@ -9,6 +9,7 @@
     </div>
     <div style="display:flex; gap:0.5rem;">
         <a href="{{ route('admin.email.settings') }}" class="btn btn-outline">&#9881; Config SMTP</a>
+        <a href="{{ route('admin.transactional-emails.index') }}" class="btn btn-outline" style="background: #667eea; color: white; border-color: #667eea;">✨ Templates V4 Modernos</a>
         <a href="{{ route('admin.email.templates.create') }}" class="btn btn-primary">+ Nuevo Template</a>
     </div>
 </div>
