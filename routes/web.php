@@ -48,6 +48,7 @@ use App\Http\Controllers\PublicController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ContentCalendarController;
+use App\Http\Controllers\PreviewEmailV4Controller;
 use App\Http\Controllers\Admin\PageController;
 use App\Http\Controllers\Admin\ContactSubmissionController;
 use App\Http\Controllers\Admin\PostCategoryController;
@@ -652,3 +653,11 @@ Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
     }
 });
 
+// ── Preview emails V4 — solo en desarrollo local ─────────────────────
+if (app()->isLocal()) {
+    Route::get('/preview-emails/v4/lead-interno', [PreviewEmailV4Controller::class, 'leadInterno'])->name('preview.emails.lead-interno');
+    Route::get('/preview-emails/v4/acuse', [PreviewEmailV4Controller::class, 'acuse'])->name('preview.emails.acuse');
+    Route::get('/preview-emails/v4/cita', [PreviewEmailV4Controller::class, 'cita'])->name('preview.emails.cita');
+    Route::get('/preview-emails/v4/comprador', [PreviewEmailV4Controller::class, 'comprador'])->name('preview.emails.comprador');
+    Route::get('/preview-emails/v4/bienvenida', [PreviewEmailV4Controller::class, 'bienvenida'])->name('preview.emails.bienvenida');
+}

@@ -108,11 +108,7 @@ function leadChatbot() {
         init() {
             this.sessionId = sessionStorage.getItem('hdv_chat_session') || crypto.randomUUID();
             sessionStorage.setItem('hdv_chat_session', this.sessionId);
-
-            setTimeout(() => {
-                if (!this.opened) this.open = true;
-                this.startChat();
-            }, 25000);
+            // Chat starts closed by default
         },
 
         toggle() {

@@ -136,9 +136,9 @@
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,196,0.04)_0%,_transparent_60%)]"></div>
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">¿Que necesitas?</p>
+                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">¿Qué necesitas?</p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Soluciones para cada perfil</h2>
-                <p class="mt-4 text-lg text-gray-500">Selecciona tu perfil y descubre como podemos ayudarte.</p>
+                <p class="mt-4 text-lg text-gray-500">Selecciona tu perfil y descubre cómo podemos ayudarte.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
@@ -150,16 +150,16 @@
                         <x-icon name="search" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
                     <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy comprador</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco propiedades premium en la Benito Juarez con asesoría profesional y garantia.</p>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco propiedades premium en la Benito Juárez con asesoría profesional y garantía.</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-600">
                             <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Propiedades verificadas
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Asesoria personalizada
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Asesoría personalizada
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Seguridad en la transaccion
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Seguridad en la transacción
                         </li>
                     </ul>
                     <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
@@ -180,13 +180,13 @@
                         <x-icon name="home" class="w-7 h-7 text-brand-500" />
                     </div>
                     <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy propietario</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rapido, al mejor precio y con total seguridad juridica.</p>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rápido, al mejor precio y con total seguridad jurídica.</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Valuacion gratuita en 24h
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Valuación gratuita en 24h
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Venta en 45 dias promedio
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Venta en 45 días promedio
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
                             <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Acompañamiento legal completo
@@ -194,7 +194,7 @@
                     </ul>
                     <div class="mt-6 inline-flex items-center gap-2 rounded-xl text-white text-sm font-bold transition-all"
                          style="background:var(--color-brand-500); padding:0.6rem 1.25rem; box-shadow:0 4px 12px rgba(59,130,196,0.25);">
-                        Solicitar valuacion gratuita
+                        Solicitar valuación gratuita
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>
@@ -207,13 +207,13 @@
                         <x-icon name="landmark" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
                     <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy desarrollador</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco terrenos estrategicos y predios con potencial para proyectos inmobiliarios.</p>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco terrenos estratégicos y predios con potencial para proyectos inmobiliarios.</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-600">
                             <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Terrenos en zonas clave
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Analisis de potencial
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Análisis de potencial
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-600">
                             <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Red de contactos consolidada
@@ -417,7 +417,7 @@
                         @endforeach
                     </ul>
                     <a href="{{ $service['link_url'] ?? '/servicios' }}" class="group/link mt-8 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
-                        {{ $service['link_text'] ?? 'Conocer mas' }}
+                        {{ $service['link_text'] ?? 'Conocer más' }}
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover/link:translate-x-1" />
                     </a>
                 </div>
@@ -441,7 +441,7 @@
     @php
         $defaultStats = [
             ['value' => '30+', 'label' => 'Años de experiencia senior'],
-            ['value' => '200+', 'label' => 'Propiedades gestionadas'],
+            ['value' => '12+', 'label' => 'Propiedades gestionadas'],
             ['value' => '98%', 'label' => 'Clientes satisfechos'],
             ['value' => '50+', 'label' => 'Operaciones al año'],
         ];
