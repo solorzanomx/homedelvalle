@@ -30,12 +30,14 @@
             <div class="card-header">
                 <h3 style="margin: 0;">Preview del Email</h3>
             </div>
-            <div class="card-body" style="padding: 0; background: #f5f5f5; min-height: 600px; display: flex; align-items: center; justify-content: center;">
-                <iframe
-                    src="{{ route('admin.transactional-emails.render', $templateId) }}"
-                    style="width: 100%; height: 600px; border: none; border-radius: 0 0 8px 8px; display: block; transform: scale(0.75); transform-origin: top center; margin-top: -150px; margin-bottom: -150px;"
-                    sandbox="allow-same-origin"
-                ></iframe>
+            <div class="card-body" style="padding: 20px; background: #f5f5f5; display: flex; justify-content: center; align-items: flex-start; min-height: 700px; overflow-y: auto;">
+                <div style="width: 100%; max-width: 650px;">
+                    <iframe
+                        src="{{ route('admin.transactional-emails.render', $templateId) }}"
+                        style="width: 100%; height: auto; min-height: 700px; border: none; border-radius: 8px; display: block; background: white;"
+                        sandbox="allow-same-origin"
+                    ></iframe>
+                </div>
             </div>
         </div>
 
