@@ -32,8 +32,9 @@
             </div>
             <div class="card-body" style="padding: 20px; background: #f5f5f5; display: flex; justify-content: center;">
                 <iframe
+                    id="email-preview-iframe"
                     src="{{ route('admin.transactional-emails.render', $templateId) }}"
-                    style="width: 650px; border: none; display: block; background: white; min-height: 500px; border-radius: 8px; flex-shrink: 0;"
+                    style="width: 650px; border: none; display: block; background: white; min-height: 500px; border-radius: 8px; flex-shrink: 0; height: 500px;"
                     sandbox="allow-same-origin"
                 ></iframe>
             </div>
@@ -145,4 +146,51 @@
         margin-bottom: 2rem;
     }
 </style>
+
+<script>
+function adjustIframeHeight() {
+    const iframe = document.getElementById('email-preview-iframe');
+    if (!iframe) return;
+
+    try {
+        // Intenta acceder al contenido del iframe
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        if (iframeDoc && iframeDoc.body) {
+            const height = iframeDoc.documentElement.scrollHeight;
+            if (height > 0) {
+                iframe.style.height = (height + 20) + 'px';
+                return;
+            }
+        }
+    } catch (e) {
+        // Si no puede acceder (cross-origin), usa altura por defecto
+        console.log('No se pudo acceder al iframe');
+    }
+
+    // Fallback: intenta usar ResizeObserver si está disponible
+    if (window.ResizeObserver) {
+        try {
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            if (iframeDoc && iframeDoc.body) {
+                const observer = new ResizeObserver(() => {
+                    const height = iframeDoc.documentElement.scrollHeight;
+                    if (height > 0) {
+                        iframe.style.height = (height + 20) + 'px';
+                    }
+                });
+                observer.observe(iframeDoc.body);
+            }
+        } catch (e) {
+            console.log('ResizeObserver no disponible');
+        }
+    }
+}
+
+// Ajusta la altura cuando el iframe carga
+document.getElementById('email-preview-iframe').addEventListener('load', adjustIframeHeight);
+
+// También intenta ajustar después de un pequeño delay
+setTimeout(adjustIframeHeight, 500);
+setTimeout(adjustIframeHeight, 1500);
+</script>
 @endsection
