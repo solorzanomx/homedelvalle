@@ -603,7 +603,7 @@
                                 @if($photoCount === 0)
                                 <div id="photoEmpty" style="text-align:center; padding:1.75rem 0.5rem; color:var(--text-muted); grid-column:1/-1;">
                                     <div style="font-size:2.2rem; opacity:0.3; margin-bottom:0.4rem;">&#127976;</div>
-                                    <p style="font-size:0.82rem; margin:0;">Sin fotos aun</p>
+                                    <p style="font-size:0.82rem; margin:0;">Sin fotos a&uacute;n</p>
                                     <p style="font-size:0.72rem; margin:0.2rem 0 0; opacity:0.7;">Sube fotos para mostrar la propiedad</p>
                                 </div>
                                 @endif
@@ -1066,7 +1066,11 @@ function closeLightbox() {
     document.body.style.overflow = '';
 }
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'Escape' && document.getElementById('photoLightbox').classList.contains('open')) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeLightbox();
+    }
 });
 
 // ─── EasyBroker AJAX ───────────────────────────────────────────────
