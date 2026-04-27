@@ -23,17 +23,17 @@
     </div>
 @endif
 
-<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem; width: 100%; overflow: hidden;">
     {{-- Preview Panel --}}
-    <div>
+    <div style="min-width: 0; overflow-x: auto;">
         <div class="card">
             <div class="card-header">
                 <h3 style="margin: 0;">Preview del Email</h3>
             </div>
-            <div class="card-body" style="padding: 20px; background: #f5f5f5;">
+            <div class="card-body" style="padding: 20px; background: #f5f5f5; display: flex; justify-content: center;">
                 <iframe
                     src="{{ route('admin.transactional-emails.render', $templateId) }}"
-                    style="width: 100%; border: none; display: block; background: white; min-height: 500px; border-radius: 8px; box-sizing: border-box;"
+                    style="width: 650px; border: none; display: block; background: white; min-height: 500px; border-radius: 8px; flex-shrink: 0;"
                     sandbox="allow-same-origin"
                 ></iframe>
             </div>
