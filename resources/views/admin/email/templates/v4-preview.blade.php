@@ -23,19 +23,21 @@
     </div>
 @endif
 
-<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem;">
+<div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
     {{-- Preview Panel --}}
     <div>
         <div class="card">
             <div class="card-header">
                 <h3 style="margin: 0;">Preview del Email</h3>
             </div>
-            <div class="card-body" style="padding: 0; background: #f5f5f5;">
-                <iframe
-                    src="{{ route('admin.transactional-emails.render', $templateId) }}"
-                    style="width: 100%; height: 600px; border: none; border-radius: 0 0 8px 8px; display: block;"
-                    sandbox="allow-same-origin"
-                ></iframe>
+            <div class="card-body" style="padding: 0; background: #f5f5f5; overflow-x: auto;">
+                <div style="display: flex; justify-content: center; padding: 2rem 0; background: #f5f5f5;">
+                    <iframe
+                        src="{{ route('admin.transactional-emails.render', $templateId) }}"
+                        style="width: 620px; max-width: 95vw; height: 700px; border: none; border-radius: 8px; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"
+                        sandbox="allow-same-origin"
+                    ></iframe>
+                </div>
             </div>
         </div>
 
@@ -52,8 +54,9 @@
 
     {{-- Sidebar --}}
     <div>
-        {{-- Send Test Email --}}
-        <div class="card">
+        <div style="display: grid; grid-template-columns: 350px; gap: 1rem;">
+            {{-- Send Test Email --}}
+            <div class="card">
             <div class="card-header">
                 <h3 style="margin: 0;">📧 Enviar Test</h3>
             </div>
@@ -98,6 +101,7 @@
                     <p style="margin: 0.25rem 0;">📧 Mailable: <code>app/Mail/V4/Mailables/</code></p>
                 </div>
             </div>
+        </div>
         </div>
     </div>
 </div>
