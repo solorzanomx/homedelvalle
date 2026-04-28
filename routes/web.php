@@ -124,6 +124,8 @@ Route::get('/track/{trackingId}.gif', [ClientEmailController::class, 'track'])->
 
 // Landing pages (campañas de conversión)
 Route::get('/vende-tu-propiedad', [LandingController::class, 'show'])->name('landing.vende');
+Route::get('/comprar', [LandingController::class, 'compra'])->name('landing.compra');
+Route::get('/desarrolladores-e-inversionistas', [LandingController::class, 'desarrolladores'])->name('landing.desarrolladores');
 Route::post('/landing/submit', [LandingController::class, 'submit'])->middleware('throttle:public-form')->name('landing.submit');
 
 // Documentos legales públicos

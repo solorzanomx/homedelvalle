@@ -45,57 +45,7 @@
 
             {{-- Right: form --}}
             <div class="rounded-2xl bg-white p-8 lg:p-10 shadow-premium-xl" x-data x-intersect.once="$el.classList.add('animate-slide-in-right')">
-                <h2 class="text-xl font-bold text-gray-900">Solicita tu valuación gratuita</h2>
-                <p class="text-sm text-gray-500 mt-1.5 mb-6">Responderemos en menos de 24 horas.</p>
-
-                <form method="POST" action="{{ route('landing.submit') }}" x-data="{ submitting: false }" @submit="submitting = true" id="vende-form">
-                    @csrf
-                    <input type="hidden" name="utm_source" value="{{ request('utm_source') }}">
-                    <input type="hidden" name="utm_medium" value="{{ request('utm_medium') }}">
-                    <input type="hidden" name="utm_campaign" value="{{ request('utm_campaign') }}">
-                    <input type="hidden" name="recaptcha_token" id="recaptcha_token_vende">
-                    <div style="position:absolute;left:-9999px;" aria-hidden="true"><input type="text" name="website_url" tabindex="-1" autocomplete="off"></div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <input type="text" name="name" required placeholder="Tu nombre completo" value="{{ old('name') }}"
-                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
-                        </div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <input type="email" name="email" required placeholder="Email" value="{{ old('email') }}"
-                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
-                            <input type="tel" name="phone" required placeholder="Teléfono" value="{{ old('phone') }}"
-                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
-                        </div>
-                        <div>
-                            <textarea name="message" rows="3" placeholder="Cuéntanos sobre tu propiedad (ubicación, tipo, metros...)"
-                                class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all resize-none">{{ old('message') }}</textarea>
-                        </div>
-
-                        @php
-                            try { $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first(); } catch (\Exception $e) { $privacyDoc = null; }
-                        @endphp
-                        @if($privacyDoc)
-                        <div class="flex items-start gap-2">
-                            <input type="checkbox" name="accept_privacy" id="accept_privacy_vender" required class="mt-1 rounded border-gray-300">
-                            <label for="accept_privacy_vender" class="text-xs text-gray-500 leading-snug">
-                                Acepto el <a href="{{ route('legal.public', $privacyDoc->slug) }}" target="_blank" class="text-brand-500 underline hover:text-brand-600">Aviso de Privacidad</a>
-                            </label>
-                        </div>
-                        @endif
-
-                        <button type="submit" :disabled="submitting"
-                            class="w-full rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2">
-                            <template x-if="!submitting"><span>Quiero mi valuación gratuita</span></template>
-                            <template x-if="submitting">
-                                <span class="flex items-center gap-2">
-                                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                                    Enviando...
-                                </span>
-                            </template>
-                        </button>
-                    </div>
-                </form>
+                <livewire:forms.seller-valuation-form />
             </div>
         </div>
     </div>

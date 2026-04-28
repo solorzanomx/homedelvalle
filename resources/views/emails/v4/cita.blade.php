@@ -2,11 +2,11 @@
     <x-emails.v4.header />
 
     <x-emails.v4.body>
-        <x-emails.v4.h1>Tu visita está agendada</x-emails-v4-h1>
+        <x-emails.v4.h1>Tu visita está agendada</x-emails.v4.h1>
 
         <x-emails.v4.p color="muted" mb="{{ \App\Mail\V4\Tokens::SPACE_XL }}">
             Si necesitas reagendar tu cita, responde este correo con tus nuevas preferencias de horario.
-        </x-emails-v4-p>
+        </x-emails.v4.p>
 
         <x-emails.v4.card style="margin-bottom: {{ \App\Mail\V4\Tokens::SPACE_XL }};">
             <table role="presentation" width="100%">
@@ -32,21 +32,21 @@
                     </td>
                 </tr>
             </table>
-        </x-emails-v4-card>
+        </x-emails.v4.card>
 
         <x-emails.v4.p size="12" color="muted" mb="{{ \App\Mail\V4\Tokens::SPACE_XL }};">
             Tip: Anota tus preguntas sobre el inmueble antes de la visita. Esto te ayudará a aprovechar mejor el tiempo.
-        </x-emails-v4-p>
+        </x-emails.v4.p>
 
         <table role="presentation" width="100%" style="margin-bottom: 0;">
             <tr>
                 <td align="left" style="padding-right: {{ \App\Mail\V4\Tokens::SPACE_MD }};">
-                    <x-emails.v4.button href="https://calendar.google.com/calendar/u/0/r/eventedit" variant="primary">Agregar al calendario</x-emails-v4-button>
+                    <x-emails.v4.button href="https://calendar.google.com/calendar/u/0/r/eventedit" variant="primary">Agregar al calendario</x-emails.v4.button>
                 </td>
                 <td align="left">
-                    <x-emails.v4.button href="mailto:contacto@homedelvalle.mx" variant="secondary">Reagendar</x-emails-v4-button>
+                    <x-emails.v4.button href="mailto:contacto@homedelvalle.mx" variant="secondary">Reagendar</x-emails.v4.button>
                 </td>
             </tr>
         </table>
-    </x-emails-v4-body>
-</x-emails-v4-layout>
+    </x-emails.v4.body>
+</x-emails.v4.layout>

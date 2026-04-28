@@ -78,15 +78,15 @@
 
             <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-sm text-brand-200 backdrop-blur-sm mb-8">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                {{ $siteSettings?->hero_badge ?? 'Inmobiliaria boutique en Benito Juárez' }}
+                {{ $siteSettings?->hero_badge ?? 'Firma boutique en Benito Juárez · 30+ años' }}
             </div>
 
             <div class="max-w-3xl">
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white tracking-tight leading-[1.08]">
-                    {{ $siteSettings?->hero_heading ?? '¿Quieres vender tu propiedad en la Benito Juárez?' }}
+                    {{ $siteSettings?->hero_heading ?? 'Pocos inmuebles. Más control. Mejores resultados.' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    {{ $siteSettings?->hero_subheading ?? 'Somos la firma inmobiliaria boutique que vende tu inmueble más rápido, al mejor precio y con total seguridad jurídica. Sin catálogo masivo. Solo propiedades seleccionadas.' }}
+                    {{ $siteSettings?->hero_subheading ?? 'Comercializamos propiedades de alto valor en la Alcaldía Benito Juárez sin catálogo masivo. Operamos desde la demanda, no desde la oferta.' }}
                 </p>
                 <div class="mt-10 flex flex-wrap gap-4">
                     <a href="{{ $siteSettings?->hero_cta_url ?? route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl bg-white px-8 py-4.5 text-base font-bold text-brand-900 hover:bg-brand-50 transition-all duration-300 shadow-premium-xl hover:-translate-y-0.5 active:translate-y-0">
@@ -142,34 +142,34 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
-                {{-- Comprador --}}
-                <a href="{{ route('propiedades.index') }}"
+                {{-- Propietarios --}}
+                <a href="{{ route('landing.vende') }}"
                    class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
                    x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                     <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
-                        <x-icon name="search" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
+                        <x-icon name="home" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy comprador</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco propiedades premium en la Benito Juárez con asesoría profesional y garantía.</p>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Propietarios</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Propiedades verificadas
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Valuación gratuita en 24h
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Asesoría personalizada
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Venta en 45 días promedio
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Seguridad en la transacción
+                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Seguridad jurídica completa
                         </li>
                     </ul>
                     <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
-                        Ver propiedades
+                        Solicitar valuación
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>
 
-                {{-- Propietario (DESTACADO — centro) --}}
-                <a href="{{ route('landing.vende') }}"
+                {{-- Compradores (DESTACADO — centro) --}}
+                <a href="{{ route('landing.compra') }}"
                    class="group relative rounded-2xl bg-white p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 text-left"
                    style="border: 2px solid var(--color-brand-500); margin-top: -1rem; margin-bottom: -1rem;"
                    x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
@@ -177,37 +177,37 @@
                         ★ MAS SOLICITADO
                     </div>
                     <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 transition-all duration-500 group-hover:scale-105">
-                        <x-icon name="home" class="w-7 h-7 text-brand-500" />
+                        <x-icon name="search" class="w-7 h-7 text-brand-500" />
                     </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy propietario</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad rápido, al mejor precio y con total seguridad jurídica.</p>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Compradores</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Estoy buscando dónde vivir</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Valuación gratuita en 24h
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Propiedades verificadas
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Venta en 45 días promedio
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Asesoría personalizada
                         </li>
                         <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Acompañamiento legal completo
+                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Seguridad en la transacción
                         </li>
                     </ul>
                     <div class="mt-6 inline-flex items-center gap-2 rounded-xl text-white text-sm font-bold transition-all"
                          style="background:var(--color-brand-500); padding:0.6rem 1.25rem; box-shadow:0 4px 12px rgba(59,130,196,0.25);">
-                        Solicitar valuación gratuita
+                        Iniciar búsqueda
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>
 
-                {{-- Desarrollador --}}
-                <a href="{{ route('contacto') }}"
+                {{-- Desarrollo e inversión --}}
+                <a href="{{ route('landing.desarrolladores') }}"
                    class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
                    x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 200ms">
                     <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
                         <x-icon name="landmark" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Soy desarrollador</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Busco terrenos estratégicos y predios con potencial para proyectos inmobiliarios.</p>
+                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Desarrollo</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Soy desarrollador o inversionista</p>
                     <ul class="mt-5 space-y-2">
                         <li class="flex items-center gap-2 text-sm text-gray-600">
                             <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Terrenos en zonas clave
@@ -220,7 +220,7 @@
                         </li>
                     </ul>
                     <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
-                        Contactar equipo
+                        Solicitar brief
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>

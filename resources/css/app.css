@@ -22,6 +22,23 @@
     --color-brand-800: #1A2F4E;
     --color-brand-900: #14253E;
     --color-brand-950: #0C1A2E;
+
+    /* Navy Colors (Dark theme) */
+    --color-navy-950: #0A1A2F;
+    --color-navy-900: #1F3A5F;
+    --color-navy-700: #1E1B4B;
+
+    /* Blue accent */
+    --color-blue-500: #3B82F6;
+
+    /* Semantic colors */
+    --color-text: #0F172A;
+    --color-muted: #64748B;
+    --color-border: #E2E8F0;
+    --color-surface: #F1F5F9;
+    --color-success: #16A34A;
+    --color-error: #DC2626;
+    --color-warning: #D97706;
 }
 
 /* ─── Scroll-reveal keyframes ─── */

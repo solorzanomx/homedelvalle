@@ -18,11 +18,11 @@ class LandingController extends Controller
         return [
             'slug' => 'vende-del-valle',
             'badge' => 'Asesoría gratuita — Cupo limitado',
-            'heading' => 'Vende tu departamento en la <span class="text-indigo-400">Colonia del Valle</span> rápido y al mejor precio',
+            'heading' => 'Vende tu inmueble en Benito Juárez rápido y al mejor precio',
             'subheading' => 'Conectamos tu propiedad con compradores calificados. Sin exclusivas forzadas, sin comisiones ocultas.',
             'cta_heading' => '¿Listo para vender tu propiedad?',
             'cta_subheading' => 'Solicita tu asesoría gratuita hoy y descubre cuánto vale realmente tu propiedad en el mercado actual.',
-            'wa_message' => 'Hola, me interesa vender mi propiedad en Colonia del Valle',
+            'wa_message' => 'Hola, me interesa vender mi propiedad en Benito Juárez',
         ];
     }
 
@@ -49,9 +49,9 @@ class LandingController extends Controller
     private function defaultBenefits(): array
     {
         return [
-            ['icon' => 'rocket', 'title' => 'Venta rapida', 'desc' => 'Nuestra red de compradores calificados acelera el proceso de venta.'],
-            ['icon' => 'shield', 'title' => 'Seguridad juridica', 'desc' => 'Blindaje legal completo en cada operacion.'],
-            ['icon' => 'chart', 'title' => 'Mejor precio', 'desc' => 'Analisis de mercado para maximizar el valor de tu propiedad.'],
+            ['icon' => 'rocket', 'title' => 'Venta rápida', 'desc' => 'Nuestra red de compradores calificados acelera el proceso de venta.'],
+            ['icon' => 'shield', 'title' => 'Seguridad jurídica', 'desc' => 'Blindaje legal completo en cada operación.'],
+            ['icon' => 'chart', 'title' => 'Mejor precio', 'desc' => 'Análisis de mercado para maximizar el valor de tu propiedad.'],
             ['icon' => 'eye', 'title' => 'Transparencia total', 'desc' => 'Reportes y actualizaciones constantes del proceso.'],
         ];
     }
@@ -61,7 +61,7 @@ class LandingController extends Controller
         return [
             ['value' => '30+', 'label' => 'Años de experiencia'],
             ['value' => '200+', 'label' => 'Propiedades gestionadas'],
-            ['value' => '45', 'label' => 'Dias promedio de venta'],
+            ['value' => '45', 'label' => 'Días promedio de venta'],
             ['value' => '98%', 'label' => 'Clientes satisfechos'],
         ];
     }
@@ -69,9 +69,9 @@ class LandingController extends Controller
     private function defaultProcessSteps(): array
     {
         return [
-            ['num' => '01', 'title' => 'Valuacion gratuita', 'desc' => 'Analizamos tu propiedad y te damos un precio competitivo basado en datos reales del mercado.'],
-            ['num' => '02', 'title' => 'Estrategia personalizada', 'desc' => 'Diseñamos un plan de comercializacion con fotografia profesional y marketing digital.'],
-            ['num' => '03', 'title' => 'Cierre seguro', 'desc' => 'Negociamos, gestionamos la documentacion y te acompañamos hasta la firma de escrituras.'],
+            ['num' => '01', 'title' => 'Valuación gratuita', 'desc' => 'Analizamos tu propiedad y te damos un precio competitivo basado en datos reales del mercado.'],
+            ['num' => '02', 'title' => 'Estrategia personalizada', 'desc' => 'Diseñamos un plan de comercialización con fotografía profesional y marketing digital.'],
+            ['num' => '03', 'title' => 'Cierre seguro', 'desc' => 'Negociamos, gestionamos la documentación y te acompañamos hasta la firma de escrituras.'],
         ];
     }
 
@@ -102,6 +102,40 @@ class LandingController extends Controller
             'meta' => [
                 'title' => $content['meta_title'] ?? 'Vende tu propiedad en Benito Juarez | Home del Valle',
                 'description' => $content['meta_description'] ?? 'Vende tu propiedad rapido y al mejor precio. Asesoria profesional gratuita, compradores calificados y cierre seguro.',
+            ],
+        ]);
+    }
+
+    /**
+     * Show the buyer search landing page.
+     */
+    public function compra(Request $request)
+    {
+        $page = \App\Models\Page::where('slug', 'comprar')->first();
+
+        return view('public.comprar', [
+            'page' => $page ?? (object)[
+                'title' => 'Búsqueda asistida de inmuebles en Benito Juárez',
+                'meta_title' => 'Búsqueda asistida de inmuebles en Benito Juárez | Home del Valle',
+                'meta_description' => 'Encuentra tu próximo hogar en Benito Juárez sin perder fines de semana en visitas. Asesoría personalizada de expertos.',
+                'body' => '',
+            ],
+        ]);
+    }
+
+    /**
+     * Show the developer/investor landing page.
+     */
+    public function desarrolladores(Request $request)
+    {
+        $page = \App\Models\Page::where('slug', 'desarrolladores-e-inversionistas')->first();
+
+        return view('public.desarrolladores', [
+            'page' => $page ?? (object)[
+                'title' => 'Captación de predios e inversión inmobiliaria en Benito Juárez',
+                'meta_title' => 'Captación de predios e inversión inmobiliaria en Benito Juárez | Home del Valle',
+                'meta_description' => 'Captación de terrenos y producto terminado en Benito Juárez bajo demanda activa. Red de inversionistas consolidada.',
+                'body' => '',
             ],
         ]);
     }

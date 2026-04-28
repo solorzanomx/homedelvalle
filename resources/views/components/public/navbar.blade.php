@@ -25,17 +25,17 @@
         class="sticky top-0 z-40 border-b border-transparent transition-all duration-500">
     <nav class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-[72px] items-center justify-between">
-            {{-- Logo --}}
-            <a href="{{ route('home') }}" class="flex items-center gap-3 shrink-0 group">
+            {{-- Logo + Slogan --}}
+            <a href="{{ route('home') }}" class="flex flex-col items-start gap-0 shrink-0 group">
                 @if($logoType === 'image' && $logoPath)
-                    <img src="{{ asset('storage/' . $logoPath) }}" alt="{{ $siteName }}" class="h-9 w-auto transition-transform duration-300 group-hover:scale-105">
+                    <img src="{{ asset('storage/' . $logoPath) }}" alt="{{ $siteName }}" class="h-8 w-auto transition-transform duration-300 group-hover:scale-105">
                 @else
                     <div class="relative flex items-center justify-center w-10 h-10 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105"
                          style="background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));">
                         <x-icon name="home" class="w-5 h-5 text-white" />
                     </div>
-                    <span class="text-lg font-bold tracking-tight text-gray-800">{{ $siteName }}</span>
                 @endif
+                <span class="hidden lg:block text-xs font-semibold text-gray-500 tracking-wide leading-tight mt-1">Pocos inmuebles. Más control.</span>
             </a>
 
             {{-- Desktop Nav — always use $defaultLinks (ignore DB menus to avoid duplicates) --}}
