@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Models\FormSubmission;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -67,7 +68,11 @@ class BuyerSearchForm extends Component
     {
         if ($this->isProcessing) return;
         $this->isProcessing = true;
+
         $data = $this->validate();
+
+        $lockKey = 'form_submit_comprador_' . md5($data['email']);
+        if (! Cache::lock($lockKey, 30)->get()) return;
 
         $submission = FormSubmission::create([
             'form_type'   => 'comprador',

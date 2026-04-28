@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Models\FormSubmission;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -69,7 +70,11 @@ class DeveloperBriefForm extends Component
     {
         if ($this->isProcessing) return;
         $this->isProcessing = true;
+
         $data = $this->validate();
+
+        $lockKey = 'form_submit_b2b_' . md5($data['email']);
+        if (! Cache::lock($lockKey, 30)->get()) return;
 
         $submission = FormSubmission::create([
             'form_type'   => 'b2b',

@@ -3,6 +3,7 @@
 namespace App\Livewire\Forms;
 
 use App\Models\FormSubmission;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class ContactSegmentedForm extends Component
@@ -57,6 +58,9 @@ class ContactSegmentedForm extends Component
             'legal' => 'LEAD_LEGAL',
             'otro' => 'LEAD_OTRO',
         ];
+
+        $lockKey = 'form_submit_contacto_' . md5($data['email']);
+        if (! Cache::lock($lockKey, 30)->get()) return;
 
         $submission = FormSubmission::create([
             'form_type'   => 'contacto',
