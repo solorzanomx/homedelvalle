@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\FormSubmitted;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +46,15 @@ class FormSubmission extends Model implements HasMedia
             'contacted_at' => 'datetime',
             'is_read' => 'boolean',
         ];
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::created(function (self $submission) {
+            FormSubmitted::dispatch($submission);
+        });
     }
 
     /**

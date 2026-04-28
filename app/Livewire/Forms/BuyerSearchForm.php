@@ -81,10 +81,6 @@ class BuyerSearchForm extends Component
         ]);
 
         // Send transactional email and internal notification
-        dispatch(function () use ($submission) {
-            \Mail::to($submission->email)->send(new \App\Mail\LeadConfirmationMail($submission, '72 horas'));
-            \Notification::route('mail', 'leads@homedelvalle.mx')->notify(new \App\Notifications\NewLeadNotification($submission));
-        });
 
         $this->reset();
         $this->submitted = true;

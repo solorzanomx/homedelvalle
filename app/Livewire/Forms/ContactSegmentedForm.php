@@ -69,10 +69,6 @@ class ContactSegmentedForm extends Component
             'user_agent'  => request()->userAgent(),
         ]);
 
-        dispatch(function () use ($submission) {
-            \Mail::to($submission->email)->send(new \App\Mail\LeadConfirmationMail($submission, '24 horas'));
-            \Notification::route('mail', 'leads@homedelvalle.mx')->notify(new \App\Notifications\NewLeadNotification($submission));
-        });
 
         $this->reset();
         $this->submitted = true;

@@ -88,10 +88,6 @@ class DeveloperBriefForm extends Component
                 ->toMediaCollection('briefs');
         }
 
-        dispatch(function () use ($submission) {
-            \Mail::to($submission->email)->send(new \App\Mail\LeadConfirmationMail($submission, '48 horas'));
-            \Notification::route('mail', 'leads@homedelvalle.mx')->notify(new \App\Notifications\NewLeadNotification($submission));
-        });
 
         $this->reset();
         $this->submitted = true;
