@@ -255,6 +255,12 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
+    // Leads / Form Submissions
+    Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');
+    Route::get('/form-submissions/{formSubmission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'show'])->name('form-submissions.show');
+    Route::patch('/form-submissions/{formSubmission}/status', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateStatus'])->name('form-submissions.status');
+    Route::patch('/form-submissions/{formSubmission}/notes', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateNotes'])->name('form-submissions.notes');
+
     // IMPORTANTE: Rutas específicas ANTES del resource para que no sean "comidas" por {user}
     Route::get('users/permissions', [UserAdminController::class, 'permissions'])->name('users.permissions');
     Route::post('users/{user}/avatar', [UserAdminController::class, 'uploadAvatar'])->name('users.avatar');

@@ -350,6 +350,13 @@
                         <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Dashboard
                         </a>
+                        <a href="{{ route('admin.form-submissions.index') }}" class="nav-item {{ request()->routeIs('admin.form-submissions*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="inbox" class="w-4 h-4" /></span> Leads
+                            @php $newLeads = \App\Models\FormSubmission::where('status','new')->count(); @endphp
+                            @if($newLeads > 0)
+                            <span style="margin-left:auto;background:#f59e0b;color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:20px">{{ $newLeads > 99 ? '99+' : $newLeads }}</span>
+                            @endif
+                        </a>
                         <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="users" class="w-4 h-4" /></span> Clientes
                         </a>
