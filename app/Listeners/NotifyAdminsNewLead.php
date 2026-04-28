@@ -5,11 +5,16 @@ namespace App\Listeners;
 use App\Events\FormSubmitted;
 use App\Models\Notification;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 
 class NotifyAdminsNewLead
 {
     public function handle(FormSubmitted $event): void
     {
+        $cacheKey = 'notif_lead_sent_' . $event->submission->id;
+        if (Cache::has($cacheKey)) return;
+        Cache::put($cacheKey, true, now()->addMinutes(10));
+
         $sub = $event->submission;
 
         $typeLabels = [
