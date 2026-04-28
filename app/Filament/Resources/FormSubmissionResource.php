@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\FormSubmission;
-use Filament\Forms\Components\{FileUpload, Grid, Section, Select, Textarea, TextInput, Toggle};
+use Filament\Forms\Components\{FileUpload, Grid, Section, Select, Textarea, TextInput, Toggle, Badge, Placeholder};
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\{BulkActionGroup, DeleteBulkAction, EditAction, ViewAction};
@@ -52,6 +52,28 @@ class FormSubmissionResource extends Resource
                             ])
                             ->disabled(),
                         TextInput::make('source_page')->label('Origen (URL)')->disabled(),
+                    ]),
+
+                Section::make('Client & Lead Temperature')
+                    ->columns(['sm' => 2])
+                    ->schema([
+                        Placeholder::make('client_name')
+                            ->label('Cliente')
+                            ->content(fn (FormSubmission $record) => $record->client?->name ?? '—'),
+                        Placeholder::make('client_type')
+                            ->label('Tipo de Cliente')
+                            ->content(fn (FormSubmission $record) => $record->client?->client_type ?? '—'),
+                        Placeholder::make('lead_temperature')
+                            ->label('Lead Temperature')
+                            ->content(fn (FormSubmission $record) => match ($record->client?->lead_temperature) {
+                                'hot' => '🔥 Hot',
+                                'warm' => '🔆 Warm',
+                                'cold' => '❄️ Cold',
+                                default => $record->client?->lead_temperature ?? '—',
+                            }),
+                        Placeholder::make('budget_range')
+                            ->label('Presupuesto')
+                            ->content(fn (FormSubmission $record) => $record->client ? "$ " . number_format($record->client->budget_min ?? 0, 0, ',', '.') . " - $ " . number_format($record->client->budget_max ?? 0, 0, ',', '.') : '—'),
                     ]),
 
                 Section::make('Status & Assignment')
