@@ -584,9 +584,9 @@
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
                 <div x-data x-intersect.once="$el.classList.add('animate-slide-in-left')">
-                    <p class="text-sm font-semibold text-brand-400 uppercase tracking-widest mb-4">Hablemos de tu propiedad</p>
-                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{{ $siteSettings?->contact_heading ?? '¿Quieres vender? Platiquemos.' }}</h2>
-                    <p class="mt-5 text-lg text-brand-200/70 leading-relaxed">{{ $siteSettings?->contact_subheading ?? 'Cuéntanos sobre tu inmueble y te daremos una estrategia personalizada sin costo ni compromiso.' }}</p>
+                    <p class="text-sm font-semibold text-brand-400 uppercase tracking-widest mb-4">Contáctanos</p>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">{{ $siteSettings?->contact_heading ?? 'Cuéntanos qué necesitas.' }}</h2>
+                    <p class="mt-5 text-lg text-brand-200/70 leading-relaxed">{{ $siteSettings?->contact_subheading ?? 'Ya sea que quieras vender, comprar o explorar una inversión, respondemos en menos de 24 horas hábiles sin compromiso.' }}</p>
 
                     <div class="mt-12 space-y-6">
                         @if($siteSettings?->contact_phone)
@@ -626,9 +626,9 @@
                 </div>
 
                 <div class="rounded-2xl bg-white p-8 lg:p-10 shadow-premium-xl" x-data x-intersect.once="$el.classList.add('animate-slide-in-right')">
-                    <h3 class="text-xl font-bold text-gray-900">Envíanos un mensaje</h3>
-                    <p class="text-sm text-gray-500 mt-1.5 mb-8">Responderemos en menos de 24 horas.</p>
-                    <x-public.contact-form source="home" />
+                    <h3 class="text-xl font-bold text-gray-900">¿En qué te podemos ayudar?</h3>
+                    <p class="text-sm text-gray-500 mt-1.5 mb-8">Responderemos en menos de 24 horas hábiles.</p>
+                    @livewire('forms.contact-segmented-form')
                 </div>
             </div>
         </div>
