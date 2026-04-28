@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\FormSubmitted;
 use App\Http\Requests\LandingFormRequest;
 use App\Models\ContactSubmission;
+use App\Models\FormSubmission;
 use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
 use Illuminate\Http\Request;
@@ -201,5 +203,133 @@ class LandingController extends Controller
         }
 
         return back()->with('success', '¡Gracias! Un asesor te contactará en menos de 24 horas.');
+    }
+
+    public function storeVendedor(Request $request)
+    {
+        $data = $request->validate([
+            'nombre'          => 'required|string|max:120',
+            'email'           => 'required|email|max:160',
+            'whatsapp'        => 'required|string|max:20',
+            'tipo_propiedad'  => 'required|in:departamento,casa,terreno,oficina,comercial',
+            'colonia'         => 'required|string|max:160',
+            'superficie_m2'   => 'nullable|integer|min:1',
+            'recamaras'       => 'nullable|in:1,2,3,4+,na',
+            'precio_esperado' => 'required|in:hasta_4m,4m_6m,6m_9m,9m_14m,14m_plus,no_se',
+            'motivo'          => 'required|in:mudanza,sucesion,liquidez,patrimonio,otro',
+            'estado_doc'      => 'required|in:al_corriente,pendientes,sucesion,no_se',
+            'timing'          => 'required|in:inmediato,1_3m,3_6m,sin_prisa',
+            'aviso'           => 'accepted',
+        ]);
+
+        $submission = FormSubmission::create([
+            'form_type'    => 'vendedor',
+            'source_page'  => '/vende-tu-propiedad',
+            'full_name'    => $data['nombre'],
+            'email'        => $data['email'],
+            'phone'        => $data['whatsapp'],
+            'payload'      => collect($data)->except(['nombre','email','whatsapp','aviso'])->toArray(),
+            'lead_tag'     => 'LEAD_VENDEDOR',
+            'utm_source'   => $request->query('utm_source'),
+            'utm_medium'   => $request->query('utm_medium'),
+            'utm_campaign' => $request->query('utm_campaign'),
+            'referrer'     => $request->headers->get('referer'),
+            'ip'           => $request->ip(),
+            'user_agent'   => $request->userAgent(),
+        ]);
+
+        try { FormSubmitted::dispatch($submission); } catch (\Throwable) {}
+
+        return redirect()->route('contacto.gracias')->with([
+            'form_type'   => 'vendedor',
+            'client_name' => $data['nombre'],
+            'folio'       => 'HDV-' . strtoupper(substr(md5($submission->id.'v'), 0, 4)) . '-' . $submission->id,
+        ]);
+    }
+
+    public function storeComprador(Request $request)
+    {
+        $data = $request->validate([
+            'tipo_inmueble'   => 'required|array|min:1',
+            'tipo_inmueble.*' => 'in:departamento,casa,terreno,oficina,comercial',
+            'operacion'       => 'required|in:compra,renta',
+            'zonas'           => 'required|array|min:1',
+            'recamaras'       => 'required|in:1,2,3,4+',
+            'presupuesto'     => 'required|in:hasta_4m,4m_6m,6m_9m,9m_14m,14m_plus',
+            'pago'            => 'required|in:contado,credito,infonavit,fovissste,mixto',
+            'timing'          => 'required|in:inmediato,1_3m,3_6m,explorando',
+            'must_have'       => 'nullable|string|max:280',
+            'nombre'          => 'required|string|max:120',
+            'email'           => 'required|email|max:160',
+            'whatsapp'        => 'required|string|max:20',
+            'aviso'           => 'accepted',
+        ]);
+
+        $submission = FormSubmission::create([
+            'form_type'    => 'comprador',
+            'source_page'  => '/comprar',
+            'full_name'    => $data['nombre'],
+            'email'        => $data['email'],
+            'phone'        => $data['whatsapp'],
+            'payload'      => collect($data)->except(['nombre','email','whatsapp','aviso'])->toArray(),
+            'lead_tag'     => 'LEAD_COMPRADOR',
+            'utm_source'   => $request->query('utm_source'),
+            'utm_medium'   => $request->query('utm_medium'),
+            'utm_campaign' => $request->query('utm_campaign'),
+            'referrer'     => $request->headers->get('referer'),
+            'ip'           => $request->ip(),
+            'user_agent'   => $request->userAgent(),
+        ]);
+
+        try { FormSubmitted::dispatch($submission); } catch (\Throwable) {}
+
+        return redirect()->route('contacto.gracias')->with([
+            'form_type'   => 'comprador',
+            'client_name' => $data['nombre'],
+            'folio'       => 'HDV-' . strtoupper(substr(md5($submission->id.'c'), 0, 4)) . '-' . $submission->id,
+        ]);
+    }
+
+    public function storeDesarrollador(Request $request)
+    {
+        $data = $request->validate([
+            'tipo_operacion'   => 'required|array|min:1',
+            'tipo_operacion.*' => 'in:compra_predio,compra_terminado,coinversion,asesoria',
+            'uso'              => 'required|array|min:1',
+            'uso.*'            => 'in:vertical,horizontal,mixto,comercial,oficinas,industrial',
+            'm2_terreno'       => 'required|in:menos_200,200_400,400_800,800_1500,1500_plus',
+            'zonas'            => 'required|array|min:1',
+            'presupuesto'      => 'required|in:menos_20m,20m_50m,50m_120m,120m_300m,300m_plus',
+            'horizonte'        => 'required|in:6m,6_12m,12_24m,24m_plus',
+            'empresa'          => 'required|string|max:160',
+            'nombre_rol'       => 'required|string|max:160',
+            'email'            => 'required|email|max:160',
+            'telefono'         => 'required|string|max:20',
+            'aviso'            => 'accepted',
+        ]);
+
+        $submission = FormSubmission::create([
+            'form_type'    => 'b2b',
+            'source_page'  => '/desarrolladores-e-inversionistas',
+            'full_name'    => $data['nombre_rol'],
+            'email'        => $data['email'],
+            'phone'        => $data['telefono'],
+            'payload'      => collect($data)->except(['nombre_rol','email','telefono','aviso'])->toArray(),
+            'lead_tag'     => 'LEAD_B2B',
+            'utm_source'   => $request->query('utm_source'),
+            'utm_medium'   => $request->query('utm_medium'),
+            'utm_campaign' => $request->query('utm_campaign'),
+            'referrer'     => $request->headers->get('referer'),
+            'ip'           => $request->ip(),
+            'user_agent'   => $request->userAgent(),
+        ]);
+
+        try { FormSubmitted::dispatch($submission); } catch (\Throwable) {}
+
+        return redirect()->route('contacto.gracias')->with([
+            'form_type'   => 'b2b',
+            'client_name' => $data['nombre_rol'],
+            'folio'       => 'HDV-B2B-' . strtoupper(substr(md5($submission->id.'b'), 0, 4)) . '-' . $submission->id,
+        ]);
     }
 }

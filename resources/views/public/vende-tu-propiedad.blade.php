@@ -45,7 +45,107 @@
 
             {{-- Right: form --}}
             <div class="rounded-2xl bg-white p-8 lg:p-10 shadow-premium-xl" x-data x-intersect.once="$el.classList.add('animate-slide-in-right')">
-                <livewire:forms.seller-valuation-form />
+                <h2 class="text-xl font-bold text-gray-900">Solicita tu valuación gratuita</h2>
+                <p class="text-sm text-gray-500 mt-1.5 mb-6">Respondemos en menos de 24 horas.</p>
+
+                <form method="POST" action="{{ route('landing.vende.store') }}" class="space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo <span class="text-red-500">*</span></label>
+                        <input type="text" name="nombre" value="{{ old('nombre') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all" placeholder="Tu nombre completo">
+                        @error('nombre')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" value="{{ old('email') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all" placeholder="tu@email.com">
+                            @error('email')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">WhatsApp <span class="text-red-500">*</span></label>
+                            <input type="tel" name="whatsapp" value="{{ old('whatsapp') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all" placeholder="55 1234 5678">
+                            @error('whatsapp')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de propiedad <span class="text-red-500">*</span></label>
+                            <select name="tipo_propiedad" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
+                                <option value="">Selecciona...</option>
+                                <option value="departamento" {{ old('tipo_propiedad') === 'departamento' ? 'selected' : '' }}>Departamento</option>
+                                <option value="casa"         {{ old('tipo_propiedad') === 'casa'         ? 'selected' : '' }}>Casa</option>
+                                <option value="terreno"      {{ old('tipo_propiedad') === 'terreno'      ? 'selected' : '' }}>Terreno</option>
+                                <option value="oficina"      {{ old('tipo_propiedad') === 'oficina'      ? 'selected' : '' }}>Oficina</option>
+                                <option value="comercial"    {{ old('tipo_propiedad') === 'comercial'    ? 'selected' : '' }}>Local comercial</option>
+                            </select>
+                            @error('tipo_propiedad')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio esperado <span class="text-red-500">*</span></label>
+                            <select name="precio_esperado" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
+                                <option value="">Selecciona...</option>
+                                <option value="hasta_4m"    {{ old('precio_esperado') === 'hasta_4m'    ? 'selected' : '' }}>Hasta $4M</option>
+                                <option value="4m_6m"       {{ old('precio_esperado') === '4m_6m'       ? 'selected' : '' }}>$4M – $6M</option>
+                                <option value="6m_9m"       {{ old('precio_esperado') === '6m_9m'       ? 'selected' : '' }}>$6M – $9M</option>
+                                <option value="9m_14m"      {{ old('precio_esperado') === '9m_14m'      ? 'selected' : '' }}>$9M – $14M</option>
+                                <option value="14m_plus"    {{ old('precio_esperado') === '14m_plus'    ? 'selected' : '' }}>$14M+</option>
+                                <option value="no_se"       {{ old('precio_esperado') === 'no_se'       ? 'selected' : '' }}>No estoy seguro</option>
+                            </select>
+                            @error('precio_esperado')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Colonia o dirección <span class="text-red-500">*</span></label>
+                        <input type="text" name="colonia" value="{{ old('colonia') }}" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all" placeholder="Ej. Del Valle Centro">
+                        @error('colonia')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo de venta <span class="text-red-500">*</span></label>
+                            <select name="motivo" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
+                                <option value="">Selecciona...</option>
+                                <option value="mudanza"    {{ old('motivo') === 'mudanza'    ? 'selected' : '' }}>Mudanza</option>
+                                <option value="sucesion"   {{ old('motivo') === 'sucesion'   ? 'selected' : '' }}>Sucesión / herencia</option>
+                                <option value="liquidez"   {{ old('motivo') === 'liquidez'   ? 'selected' : '' }}>Liquidez</option>
+                                <option value="patrimonio" {{ old('motivo') === 'patrimonio' ? 'selected' : '' }}>Mejora patrimonial</option>
+                                <option value="otro"       {{ old('motivo') === 'otro'       ? 'selected' : '' }}>Otro</option>
+                            </select>
+                            @error('motivo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">¿Cuándo quieres cerrar? <span class="text-red-500">*</span></label>
+                            <select name="timing" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
+                                <option value="">Selecciona...</option>
+                                <option value="inmediato" {{ old('timing') === 'inmediato' ? 'selected' : '' }}>Inmediato (≤ 1 mes)</option>
+                                <option value="1_3m"      {{ old('timing') === '1_3m'      ? 'selected' : '' }}>1 a 3 meses</option>
+                                <option value="3_6m"      {{ old('timing') === '3_6m'      ? 'selected' : '' }}>3 a 6 meses</option>
+                                <option value="sin_prisa" {{ old('timing') === 'sin_prisa' ? 'selected' : '' }}>Sin prisa</option>
+                            </select>
+                            @error('timing')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Estado documental <span class="text-red-500">*</span></label>
+                        <select name="estado_doc" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
+                            <option value="">Selecciona...</option>
+                            <option value="al_corriente" {{ old('estado_doc') === 'al_corriente' ? 'selected' : '' }}>Escrituras al corriente</option>
+                            <option value="pendientes"   {{ old('estado_doc') === 'pendientes'   ? 'selected' : '' }}>Pendientes / por regularizar</option>
+                            <option value="sucesion"     {{ old('estado_doc') === 'sucesion'     ? 'selected' : '' }}>En sucesión</option>
+                            <option value="no_se"        {{ old('estado_doc') === 'no_se'        ? 'selected' : '' }}>No estoy seguro</option>
+                        </select>
+                        @error('estado_doc')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div class="flex items-start gap-3">
+                        <input type="checkbox" name="aviso" id="aviso_vende" value="1" {{ old('aviso') ? 'checked' : '' }} required class="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600">
+                        <label for="aviso_vende" class="text-xs text-gray-500 leading-relaxed">He leído y acepto el <a href="{{ url('/aviso-de-privacidad') }}" target="_blank" class="text-brand-600 underline">Aviso de Privacidad</a></label>
+                    </div>
+                    @error('aviso')<p class="text-red-500 text-xs -mt-2">{{ $message }}</p>@enderror
+
+                    <button type="submit" class="w-full rounded-xl bg-brand-600 px-6 py-3.5 text-sm font-bold text-white shadow hover:bg-brand-700 transition-all">
+                        Quiero mi valuación gratuita →
+                    </button>
+                    <p class="text-center text-xs text-gray-400">Sin compromiso · Sin spam · Respuesta en &lt; 24 horas</p>
+                </form>
             </div>
         </div>
     </div>
