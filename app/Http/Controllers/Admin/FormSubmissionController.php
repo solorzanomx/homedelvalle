@@ -70,14 +70,20 @@ class FormSubmissionController extends Controller
 
     public function destroy(FormSubmission $formSubmission)
     {
-        $formSubmission->delete();
+        try {
+            $formSubmission->delete();
+        } catch (\Throwable) {
+            // Si falla el cleanup de media, forzar borrado directo
+            \DB::table('form_submissions')->where('id', $formSubmission->id)->delete();
+        }
         return redirect()->route('admin.form-submissions.index')->with('success', 'Lead eliminado');
     }
 
     public function bulkDestroy(Request $request)
     {
         $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
-        $count = FormSubmission::whereIn('id', $request->ids)->delete();
+        // Borrado directo sin disparar eventos de Media Library
+        $count = \DB::table('form_submissions')->whereIn('id', $request->ids)->delete();
         return redirect()->route('admin.form-submissions.index')->with('success', "{$count} leads eliminados");
     }
 }
