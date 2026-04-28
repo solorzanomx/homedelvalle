@@ -9,7 +9,7 @@ class WhatsAppHelper
      */
     public static function getOptions(): array
     {
-        $currentRoute = request()->route()->getName() ?? '';
+        $currentRoute = request()->route()?->getName() ?? '';
         $currentPath = request()->path();
 
         return match (true) {
