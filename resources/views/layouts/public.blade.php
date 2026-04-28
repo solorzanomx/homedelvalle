@@ -100,7 +100,6 @@
     </main>
 
     <x-public.footer />
-    <x-public.lead-popup />
     <x-public.whatsapp-float :siteSettings="$siteSettings" />
 
     @yield('scripts')
