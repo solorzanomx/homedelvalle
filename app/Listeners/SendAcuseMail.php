@@ -12,6 +12,11 @@ class SendAcuseMail
 {
     public function handle(FormSubmitted $event): void
     {
+        \Illuminate\Support\Facades\Log::info('SendAcuseMail::handle fired', [
+            'submission_id' => $event->submission->id,
+            'email'         => $event->submission->email,
+        ]);
+
         MailConfigurator::applyGlobalSettings();
 
         $submission = $event->submission;
