@@ -16,7 +16,7 @@ class SendAcuseMail
 
         Mail::to($submission->email)->send(
             new AcuseMail(
-                new AcuseData(folio: (string) $submission->id)
+                new AcuseData(folio: (string) $submission->id, email: $submission->email)
             )
         );
     }
