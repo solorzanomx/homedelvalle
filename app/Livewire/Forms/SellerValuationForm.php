@@ -71,34 +71,7 @@ class SellerValuationForm extends Component
         $lockKey = 'form_submit_vendedor_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
 
-        // Crear o actualizar Cliente
-        $client = Client::firstOrCreate(
-            ['email' => $data['email']],
-            [
-                'name' => $data['nombre'],
-                'email' => $data['email'],
-                'phone' => $data['whatsapp'],
-                'whatsapp' => $data['whatsapp'],
-                'client_type' => 'owner',
-                'lead_temperature' => $this->calculateLeadTemperature($data),
-                'property_type' => $data['tipo_propiedad'],
-                'initial_notes' => "Propiedad en {$data['colonia']}, motivo: {$data['motivo']}, estado doc: {$data['estado_doc']}",
-                'lead_source' => '/vende-tu-propiedad',
-                'utm_source' => request()->query('utm_source'),
-                'utm_medium' => request()->query('utm_medium'),
-                'utm_campaign' => request()->query('utm_campaign'),
-            ]
-        );
-
-        // Crear Operation para captación
-        $operation = Operation::create([
-            'client_id' => $client->id,
-            'type' => 'captacion',
-            'stage' => 'contacto',
-            'status' => 'activo',
-            'notes' => "Solicitud de valuación: {$data['tipo_propiedad']} en {$data['colonia']}, {$data['superficie_m2']}m², {$data['recamaras']} recámaras. Precio esperado: {$data['precio_esperado']}, Timing: {$data['timing']}",
-        ]);
-
+        // Crear FormSubmission (Lead) directamente - NO crear Client ni Operation
         $submission = FormSubmission::create([
             'form_type'   => 'vendedor',
             'source_page' => '/vende-tu-propiedad',
@@ -107,7 +80,9 @@ class SellerValuationForm extends Component
             'phone'       => $data['whatsapp'],
             'payload'     => collect($data)->except(['nombre', 'email', 'whatsapp', 'aviso'])->toArray(),
             'lead_tag'    => 'LEAD_VENDEDOR',
-            'client_id'   => $client->id,
+            'client_type' => 'owner',
+            'lead_temperature' => $this->calculateLeadTemperature($data),
+            'property_type' => $data['tipo_propiedad'],
             'utm_source'  => request()->query('utm_source'),
             'utm_medium'  => request()->query('utm_medium'),
             'utm_campaign'=> request()->query('utm_campaign'),

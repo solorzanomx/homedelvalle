@@ -77,25 +77,7 @@ class DeveloperBriefForm extends Component
         $lockKey = 'form_submit_b2b_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
 
-        // Crear o actualizar Cliente
-        $client = Client::firstOrCreate(
-            ['email' => $data['email']],
-            [
-                'name' => $data['empresa'],
-                'email' => $data['email'],
-                'phone' => $data['telefono'],
-                'whatsapp' => $data['telefono'],
-                'client_type' => 'investor',
-                'lead_temperature' => 'warm',
-                'initial_notes' => "Empresa: {$data['empresa']}, Contacto: {$data['nombre_rol']}, Tipo: " . implode(', ', $data['tipo_operacion']),
-                'interest_types' => $data['tipo_operacion'],
-                'lead_source' => '/desarrolladores-e-inversionistas',
-                'utm_source' => request()->query('utm_source'),
-                'utm_medium' => request()->query('utm_medium'),
-                'utm_campaign' => request()->query('utm_campaign'),
-            ]
-        );
-
+        // Crear FormSubmission (Lead) directamente - NO crear Client
         $submission = FormSubmission::create([
             'form_type'   => 'b2b',
             'source_page' => '/desarrolladores-e-inversionistas',
@@ -104,7 +86,9 @@ class DeveloperBriefForm extends Component
             'phone'       => $data['telefono'],
             'payload'     => collect($data)->except(['nombre_rol', 'email', 'telefono', 'aviso', 'brief_file'])->toArray(),
             'lead_tag'    => 'LEAD_B2B',
-            'client_id'   => $client->id,
+            'client_type' => 'investor',
+            'lead_temperature' => 'warm',
+            'interest_types' => $data['tipo_operacion'],
             'utm_source'  => request()->query('utm_source'),
             'utm_medium'  => request()->query('utm_medium'),
             'utm_campaign'=> request()->query('utm_campaign'),
@@ -118,7 +102,6 @@ class DeveloperBriefForm extends Component
             $submission->addMedia($this->brief_file)
                 ->toMediaCollection('briefs');
         }
-
 
         $savedName  = $data['nombre_rol'];
         $savedFolio = 'HDV-B2B-' . strtoupper(substr(md5($submission->id . 'b2b'), 0, 4)) . '-' . $submission->id;

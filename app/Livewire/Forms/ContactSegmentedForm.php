@@ -72,28 +72,7 @@ class ContactSegmentedForm extends Component
         $lockKey = 'form_submit_contacto_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
 
-        // Crear o actualizar Cliente (solo si tiene client_type válido)
-        if ($clientTypeMap[$data['intento']]) {
-            $client = Client::firstOrCreate(
-                ['email' => $data['email']],
-                [
-                    'name' => $data['nombre'],
-                    'email' => $data['email'],
-                    'phone' => $data['whatsapp'],
-                    'whatsapp' => $data['whatsapp'],
-                    'client_type' => $clientTypeMap[$data['intento']],
-                    'lead_temperature' => 'warm',
-                    'initial_notes' => $data['mensaje'] ?? "Contacto general desde /contacto",
-                    'lead_source' => '/contacto',
-                    'utm_source' => request()->query('utm_source'),
-                    'utm_medium' => request()->query('utm_medium'),
-                    'utm_campaign' => request()->query('utm_campaign'),
-                ]
-            );
-        } else {
-            $client = null;
-        }
-
+        // Crear FormSubmission (Lead) directamente - NO crear Client
         $submission = FormSubmission::create([
             'form_type'   => 'contacto',
             'source_page' => '/contacto',
@@ -102,7 +81,8 @@ class ContactSegmentedForm extends Component
             'phone'       => $data['whatsapp'],
             'payload'     => collect($data)->except(['nombre', 'email', 'whatsapp', 'aviso'])->toArray(),
             'lead_tag'    => $tagMap[$data['intento']] ?? 'LEAD_OTRO',
-            'client_id'   => $client?->id,
+            'client_type' => $clientTypeMap[$data['intento']],
+            'lead_temperature' => 'warm',
             'utm_source'  => request()->query('utm_source'),
             'utm_medium'  => request()->query('utm_medium'),
             'utm_campaign'=> request()->query('utm_campaign'),
@@ -110,7 +90,6 @@ class ContactSegmentedForm extends Component
             'ip'          => request()->ip(),
             'user_agent'  => request()->userAgent(),
         ]);
-
 
         $savedName  = $data['nombre'];
         $savedFolio = 'HDV-' . strtoupper(substr(md5($submission->id . 'contacto'), 0, 4)) . '-' . $submission->id;

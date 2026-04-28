@@ -54,26 +54,33 @@ class FormSubmissionResource extends Resource
                         TextInput::make('source_page')->label('Origen (URL)')->disabled(),
                     ]),
 
-                Section::make('Client & Lead Temperature')
+                Section::make('Lead Qualification')
                     ->columns(['sm' => 2])
                     ->schema([
-                        Placeholder::make('client_name')
-                            ->label('Cliente')
-                            ->content(fn (FormSubmission $record) => $record->client?->name ?? '—'),
                         Placeholder::make('client_type')
-                            ->label('Tipo de Cliente')
-                            ->content(fn (FormSubmission $record) => $record->client?->client_type ?? '—'),
+                            ->label('Tipo de Lead')
+                            ->content(fn (FormSubmission $record) => match($record->client_type) {
+                                'buyer' => 'Comprador',
+                                'owner' => 'Propietario',
+                                'investor' => 'Inversionista',
+                                default => $record->client_type ?? '—'
+                            }),
                         Placeholder::make('lead_temperature')
                             ->label('Lead Temperature')
-                            ->content(fn (FormSubmission $record) => match ($record->client?->lead_temperature) {
+                            ->content(fn (FormSubmission $record) => match ($record->lead_temperature) {
                                 'hot' => '🔥 Hot',
                                 'warm' => '🔆 Warm',
                                 'cold' => '❄️ Cold',
-                                default => $record->client?->lead_temperature ?? '—',
+                                default => $record->lead_temperature ?? '—',
                             }),
                         Placeholder::make('budget_range')
                             ->label('Presupuesto')
-                            ->content(fn (FormSubmission $record) => $record->client ? "$ " . number_format($record->client->budget_min ?? 0, 0, ',', '.') . " - $ " . number_format($record->client->budget_max ?? 0, 0, ',', '.') : '—'),
+                            ->content(fn (FormSubmission $record) => $record->budget_min && $record->budget_max
+                                ? "$ " . number_format($record->budget_min, 0, ',', '.') . " - $ " . number_format($record->budget_max, 0, ',', '.')
+                                : '—'),
+                        Placeholder::make('property_type')
+                            ->label('Tipo de Propiedad')
+                            ->content(fn (FormSubmission $record) => $record->property_type ?? '—'),
                     ]),
 
                 Section::make('Status & Assignment')
@@ -118,7 +125,6 @@ class FormSubmissionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with('client'))
             ->columns([
                 BadgeColumn::make('form_type')
                     ->label('Tipo')
@@ -139,7 +145,7 @@ class FormSubmissionResource extends Resource
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('phone')->label('Teléfono')->searchable(),
                 BadgeColumn::make('lead_tag')->label('Tag'),
-                BadgeColumn::make('client.lead_temperature')
+                BadgeColumn::make('lead_temperature')
                     ->label('Temperatura')
                     ->colors([
                         'danger' => 'hot',

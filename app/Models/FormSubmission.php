@@ -21,6 +21,12 @@ class FormSubmission extends Model implements HasMedia
         'phone',
         'payload',
         'lead_tag',
+        'client_type',
+        'lead_temperature',
+        'budget_min',
+        'budget_max',
+        'property_type',
+        'interest_types',
         'status',
         'utm_source',
         'utm_medium',
@@ -45,9 +51,12 @@ class FormSubmission extends Model implements HasMedia
         return [
             'payload' => 'array',
             'data' => 'array',
+            'interest_types' => 'array',
             'contacted_at' => 'datetime',
             'seen_at'      => 'datetime',
             'is_read' => 'boolean',
+            'budget_min' => 'decimal:2',
+            'budget_max' => 'decimal:2',
         ];
     }
 
