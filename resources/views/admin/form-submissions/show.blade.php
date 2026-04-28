@@ -79,6 +79,39 @@
 
     {{-- Sidebar --}}
     <div>
+        {{-- Temperatura --}}
+        @php
+            $tempMeta = match($submission->lead_temperature) {
+                'hot'  => ['label'=>'🔥 Caliente', 'bg'=>'#fef2f2', 'color'=>'#b91c1c', 'border'=>'#fca5a5', 'desc'=>'Lead muy interesado, responder hoy'],
+                'warm' => ['label'=>'☀ Templado',  'bg'=>'#fffbeb', 'color'=>'#b45309', 'border'=>'#fcd34d', 'desc'=>'Lead interesado, seguimiento pronto'],
+                'cold' => ['label'=>'❄ Frío',      'bg'=>'#eff6ff', 'color'=>'#1d4ed8', 'border'=>'#93c5fd', 'desc'=>'Lead en exploración'],
+                default=> ['label'=>'Sin temperatura', 'bg'=>'#f8fafc', 'color'=>'var(--text-muted)', 'border'=>'var(--border)', 'desc'=>''],
+            };
+        @endphp
+        <div style="background:{{ $tempMeta['bg'] }};border:1px solid {{ $tempMeta['border'] }};border-radius:var(--radius);padding:1rem 1.1rem;margin-bottom:1rem">
+            <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ $tempMeta['color'] }};opacity:0.75;margin-bottom:0.35rem">Temperatura del lead</div>
+            <div style="font-size:1.1rem;font-weight:700;color:{{ $tempMeta['color'] }}">{{ $tempMeta['label'] }}</div>
+            @if($tempMeta['desc'])
+            <div style="font-size:0.75rem;color:{{ $tempMeta['color'] }};opacity:0.8;margin-top:0.2rem">{{ $tempMeta['desc'] }}</div>
+            @endif
+        </div>
+
+        {{-- Convertir a cliente --}}
+        @if(!$submission->client_id)
+        <form method="POST" action="{{ route('admin.form-submissions.convert-client', $submission) }}" style="margin-bottom:1rem"
+              onsubmit="return confirm('¿Convertir a «{{ $submission->full_name }}» en cliente?')">
+            @csrf
+            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#1d4ed8;border-color:#1d4ed8">
+                ✦ Convertir a cliente
+            </button>
+        </form>
+        @else
+        <div style="background:#d1fae5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem">
+            <svg style="width:16px;height:16px;color:#059669;flex-shrink:0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            <span style="font-size:0.82rem;font-weight:600;color:#065f46">Ya convertido a cliente <span style="font-weight:400">(ID #{{ $submission->client_id }})</span></span>
+        </div>
+        @endif
+
         <div class="card">
             <div class="card-header"><h3>Estado del lead</h3></div>
             <div class="card-body">

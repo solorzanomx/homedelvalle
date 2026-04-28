@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\FormSubmission;
 use Illuminate\Http\Request;
 
@@ -69,6 +70,35 @@ class FormSubmissionController extends Controller
         $request->validate(['notes' => 'nullable|string|max:2000']);
         $formSubmission->update(['notes' => $request->notes]);
         return back()->with('success', 'Notas guardadas');
+    }
+
+    public function convertToClient(FormSubmission $formSubmission)
+    {
+        if ($formSubmission->client_id) {
+            return back()->with('success', 'Este lead ya tiene un cliente asociado.');
+        }
+
+        $client = Client::create([
+            'name'             => $formSubmission->full_name,
+            'email'            => $formSubmission->email,
+            'phone'            => $formSubmission->phone,
+            'whatsapp'         => $formSubmission->phone,
+            'client_type'      => $formSubmission->client_type,
+            'lead_temperature' => $formSubmission->lead_temperature ?? 'warm',
+            'budget_min'       => $formSubmission->budget_min,
+            'budget_max'       => $formSubmission->budget_max,
+            'property_type'    => $formSubmission->property_type,
+            'interest_types'   => $formSubmission->interest_types,
+            'utm_source'       => $formSubmission->utm_source,
+            'utm_medium'       => $formSubmission->utm_medium,
+            'utm_campaign'     => $formSubmission->utm_campaign,
+            'lead_source'      => 'form_' . $formSubmission->form_type,
+            'initial_notes'    => $formSubmission->payload['mensaje'] ?? null,
+        ]);
+
+        $formSubmission->update(['client_id' => $client->id]);
+
+        return back()->with('success', "Cliente «{$client->name}» creado exitosamente.");
     }
 
     public function destroy(FormSubmission $formSubmission)

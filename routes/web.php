@@ -260,6 +260,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::get('/form-submissions/{formSubmission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'show'])->name('form-submissions.show');
     Route::patch('/form-submissions/{formSubmission}/status', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateStatus'])->name('form-submissions.status');
     Route::patch('/form-submissions/{formSubmission}/notes', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateNotes'])->name('form-submissions.notes');
+    Route::post('/form-submissions/{formSubmission}/convert-client', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'convertToClient'])->name('form-submissions.convert-client');
     Route::delete('/form-submissions/{formSubmission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
     Route::delete('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'bulkDestroy'])->name('form-submissions.bulk-destroy');
 

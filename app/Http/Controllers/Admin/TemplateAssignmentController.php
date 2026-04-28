@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 
 class TemplateAssignmentController extends Controller
 {
-}
-
     public function store(CustomEmailTemplate $custom_template, StoreTemplateAssignmentRequest $request)
     {
         $validated = $request->validated();
