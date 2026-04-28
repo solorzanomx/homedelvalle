@@ -39,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // ─── Load helper functions ────────────────────────────
+        require_once app_path('Helpers/helpers.php');
+
         // ─── Eventos Google eSignature ────────────────────
         Event::listen(DocumentoFirmadoGoogle::class, ProcesarDocumentoFirmadoGoogle::class);
 
