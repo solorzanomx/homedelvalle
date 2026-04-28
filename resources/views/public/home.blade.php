@@ -95,38 +95,38 @@
             {{-- ── Tarjetas de intención ── --}}
             <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
 
-                {{-- Propietarios --}}
+                {{-- Propietarios — destacado --}}
                 <a href="{{ route('landing.vende') }}"
-                   class="group relative flex flex-col justify-between bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-6 hover:bg-white/14 hover:border-white/25 hover:shadow-2xl transition-all duration-300 text-left">
-                    <div>
-                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 group-hover:bg-brand-500 transition-all duration-300 mb-5">
-                            <x-icon name="home" class="w-5 h-5 text-white" />
-                        </div>
-                        <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Propietarios</p>
-                        <p class="text-white font-semibold text-base leading-snug">Quiero vender mi propiedad</p>
-                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa.</p>
-                    </div>
-                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 group-hover:text-white transition-colors duration-300">
-                        Solicitar valuación
-                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                </a>
-
-                {{-- Compradores — destacado --}}
-                <a href="{{ route('landing.compra') }}"
                    class="group relative flex flex-col justify-between bg-brand-500/20 backdrop-blur-sm border border-brand-400/40 rounded-2xl p-6 hover:bg-brand-500/28 hover:border-brand-400/60 hover:shadow-2xl transition-all duration-300 text-left ring-1 ring-brand-400/20">
                     <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[0.6rem] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
                         ★ Más solicitado
                     </div>
                     <div>
                         <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-400/20 group-hover:bg-brand-500 transition-all duration-300 mb-5">
+                            <x-icon name="home" class="w-5 h-5 text-white" />
+                        </div>
+                        <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Propietarios</p>
+                        <p class="text-white font-semibold text-base leading-snug">Quiero vender mi propiedad</p>
+                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa.</p>
+                    </div>
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-colors duration-300">
+                        Solicitar valuación
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
+                {{-- Compradores --}}
+                <a href="{{ route('landing.compra') }}"
+                   class="group relative flex flex-col justify-between bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-6 hover:bg-white/14 hover:border-white/25 hover:shadow-2xl transition-all duration-300 text-left">
+                    <div>
+                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 group-hover:bg-brand-500 transition-all duration-300 mb-5">
                             <x-icon name="search" class="w-5 h-5 text-white" />
                         </div>
                         <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Compradores</p>
                         <p class="text-white font-semibold text-base leading-snug">Estoy buscando dónde vivir o invertir</p>
                         <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Propiedades verificadas, asesoría personalizada y acompañamiento hasta el cierre.</p>
                     </div>
-                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-colors duration-300">
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 group-hover:text-white transition-colors duration-300">
                         Iniciar búsqueda
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
@@ -294,8 +294,8 @@
     {{-- ============================================ --}}
     @php
         $defaultServices = [
-            ['title' => 'Vende tu propiedad', 'description' => 'Valuación profesional gratuita, compradores calificados y cierre seguro. Sin catálogo masivo, con atención personalizada.', 'features' => ['Valuación gratuita en 24 h', 'Venta en 45 días promedio', 'Seguridad jurídica completa'], 'link_text' => 'Solicitar valuación', 'link_url' => '/vende-tu-propiedad', 'highlighted' => false],
-            ['title' => 'Compra o renta', 'description' => 'Búsqueda asistida con propiedades verificadas en la Benito Juárez. Te acompañamos desde el primer recorrido hasta el cierre.', 'features' => ['Propiedades verificadas', 'Asesoría personalizada', 'Negociación y cierre'], 'link_text' => 'Iniciar búsqueda', 'link_url' => '/comprar', 'highlighted' => true],
+            ['title' => 'Vende tu propiedad', 'description' => 'Valuación profesional gratuita, compradores calificados y cierre seguro. Sin catálogo masivo, con atención personalizada.', 'features' => ['Valuación gratuita en 24 h', 'Venta en 45 días promedio', 'Seguridad jurídica completa'], 'link_text' => 'Solicitar valuación', 'link_url' => '/vende-tu-propiedad', 'highlighted' => true],
+            ['title' => 'Compra o renta', 'description' => 'Búsqueda asistida con propiedades verificadas en la Benito Juárez. Te acompañamos desde el primer recorrido hasta el cierre.', 'features' => ['Propiedades verificadas', 'Asesoría personalizada', 'Negociación y cierre'], 'link_text' => 'Iniciar búsqueda', 'link_url' => '/comprar', 'highlighted' => false],
             ['title' => 'Inversión & Desarrollo', 'description' => 'Captación de terrenos y producto terminado bajo demanda activa. Para desarrolladores e inversionistas con proyectos en Benito Juárez.', 'features' => ['Terrenos en zonas clave', 'Análisis de potencial de inversión', 'Red consolidada de desarrolladores'], 'link_text' => 'Solicitar brief', 'link_url' => '/desarrolladores-e-inversionistas', 'highlighted' => false],
             ['title' => 'Administración', 'description' => 'Gestión profesional de activos inmobiliarios para maximizar tu inversión.', 'features' => ['Gestión de inquilinos', 'Reportes financieros', 'Mantenimiento integral'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#administracion', 'highlighted' => false],
             ['title' => 'Legal y Gestoría', 'description' => 'Regularización documental, sucesiones y blindaje jurídico en escrituración.', 'features' => ['Regularización de escrituras', 'Trámites de sucesión', 'Blindaje jurídico'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#legal-gestoria', 'highlighted' => false],
