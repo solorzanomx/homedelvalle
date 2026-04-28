@@ -1,63 +1,63 @@
 @php
-    $nombre    = $data->nombre ? explode(' ', trim($data->nombre))[0] : '';
-    $formType  = $data->form_type;
+    $primerNombre = $data->nombre ? explode(' ', trim($data->nombre))[0] : '';
+    $saludo       = $primerNombre ? ', ' . $primerNombre : '';
+    $formType     = $data->form_type;
+    $folio        = 'HDV-' . strtoupper(substr(md5($data->folio), 0, 4)) . '-' . $data->folio;
 
     $config = match($formType) {
         'vendedor' => [
-            'preheader' => 'Recibimos tu solicitud de valuación — te contactamos en < 24 horas',
-            'titulo'    => "Recibimos tu solicitud{$nombre ? ', ' . $nombre : ''} 👋",
+            'preheader' => 'Recibimos tu solicitud de valuacion — te contactamos en menos de 24 horas',
+            'titulo'    => 'Recibimos tu solicitud' . $saludo . ' 👋',
             'bajada'    => 'Un asesor especializado revisará tu propiedad y te contactará por WhatsApp en <strong>menos de 24 horas hábiles</strong> con tu valuación gratuita.',
             'pasos'     => [
-                ['icono' => '🏠', 'titulo' => 'Analizamos tu propiedad',   'desc' => 'Revisamos ubicación, metraje y comparables del mercado actual en Benito Juárez.'],
-                ['icono' => '📊', 'titulo' => 'Te enviamos la valuación',   'desc' => 'Precio competitivo basado en datos reales, no estimados genéricos.'],
-                ['icono' => '🤝', 'titulo' => 'Diseñamos tu estrategia',    'desc' => 'Fotografía profesional, marketing digital y red de compradores calificados.'],
+                ['icono' => '🏠', 'titulo' => 'Analizamos tu propiedad',  'desc' => 'Revisamos ubicación, metraje y comparables del mercado actual en Benito Juárez.'],
+                ['icono' => '📊', 'titulo' => 'Te enviamos la valuación',  'desc' => 'Precio competitivo basado en datos reales, no estimados genéricos.'],
+                ['icono' => '🤝', 'titulo' => 'Diseñamos tu estrategia',   'desc' => 'Fotografía profesional, marketing digital y red de compradores calificados.'],
             ],
-            'cta_primary'   => ['url' => 'https://homedelvalle.mx/mercado',      'label' => 'Ver precios de mercado'],
-            'cta_secondary' => ['url' => 'https://homedelvalle.mx/propiedades',  'label' => 'Ver propiedades'],
+            'cta_primary'   => ['url' => 'https://homedelvalle.mx/mercado',     'label' => 'Ver precios de mercado'],
+            'cta_secondary' => ['url' => 'https://homedelvalle.mx/propiedades', 'label' => 'Ver propiedades'],
             'nota'          => 'Sin compromiso y sin costos. Solo cobramos comisión al cerrar exitosamente.',
         ],
         'comprador' => [
-            'preheader' => 'Recibimos tu búsqueda — curaduría en < 72 horas',
-            'titulo'    => "Recibimos tu búsqueda{$nombre ? ', ' . $nombre : ''} 🔍",
+            'preheader' => 'Recibimos tu busqueda — curaduria en menos de 72 horas',
+            'titulo'    => 'Recibimos tu búsqueda' . $saludo . ' 🔍',
             'bajada'    => 'Vamos a curar las mejores opciones que coincidan con tu brief y te las enviamos en <strong>menos de 72 horas hábiles</strong>. Sin spam, sin catálogos masivos.',
             'pasos'     => [
-                ['icono' => '🔍', 'titulo' => 'Filtramos el mercado',      'desc' => 'Revisamos inventario propio, red de contactos privada y mercado abierto.'],
-                ['icono' => '✅', 'titulo' => 'Selección curada',           'desc' => 'Solo te enviamos 3-5 opciones que realmente matchean con tu brief.'],
-                ['icono' => '📝', 'titulo' => 'Acompañamiento al cierre',   'desc' => 'Negociación, due diligence legal y firma de escrituras incluidos.'],
+                ['icono' => '🔍', 'titulo' => 'Filtramos el mercado',     'desc' => 'Revisamos inventario propio, red de contactos privada y mercado abierto.'],
+                ['icono' => '✅', 'titulo' => 'Selección curada',          'desc' => 'Solo te enviamos 3–5 opciones que realmente coinciden con tu brief.'],
+                ['icono' => '📝', 'titulo' => 'Acompañamiento al cierre',  'desc' => 'Negociación, due diligence legal y firma de escrituras incluidos.'],
             ],
             'cta_primary'   => ['url' => 'https://homedelvalle.mx/propiedades', 'label' => 'Ver propiedades disponibles'],
             'cta_secondary' => ['url' => 'https://homedelvalle.mx/mercado',     'label' => 'Ver precios de mercado'],
             'nota'          => 'El servicio es gratuito para el comprador. La comisión la cubre el vendedor al cierre.',
         ],
         'b2b' => [
-            'preheader' => 'Recibimos tu brief calificador — llamada en < 48 horas',
-            'titulo'    => "Recibimos tu brief{$nombre ? ', ' . $nombre : ''}.",
+            'preheader' => 'Recibimos tu brief calificador — llamada en menos de 48 horas',
+            'titulo'    => 'Recibimos tu brief' . $saludo . '.',
             'bajada'    => 'Un miembro de nuestra dirección general te contactará en <strong>menos de 48 horas hábiles</strong> para agendar la llamada de calificación.',
             'pasos'     => [
-                ['icono' => '📋', 'titulo' => 'Calificamos tu brief',      'desc' => 'Revisamos objetivos, presupuesto y horizonte de inversión.'],
-                ['icono' => '📞', 'titulo' => 'Llamada de alineación',     'desc' => 'Definimos criterios técnicos y financieros con dirección general.'],
-                ['icono' => '🎯', 'titulo' => 'Captación dirigida',        'desc' => 'Activamos la red para identificar activos que cumplan al 100%.'],
+                ['icono' => '📋', 'titulo' => 'Calificamos tu brief',     'desc' => 'Revisamos objetivos, presupuesto y horizonte de inversión.'],
+                ['icono' => '📞', 'titulo' => 'Llamada de alineación',    'desc' => 'Definimos criterios técnicos y financieros con dirección general.'],
+                ['icono' => '🎯', 'titulo' => 'Captación dirigida',       'desc' => 'Activamos la red para identificar activos que cumplan al 100%.'],
             ],
             'cta_primary'   => ['url' => 'mailto:leads@homedelvalle.mx', 'label' => 'Contactar dirección general'],
             'cta_secondary' => null,
             'nota'          => 'Información tratada bajo confidencialidad. Nunca compartimos tu brief sin autorización.',
         ],
         default => [
-            'preheader' => 'Recibimos tu mensaje — respondemos en < 24 horas',
-            'titulo'    => "Recibimos tu mensaje{$nombre ? ', ' . $nombre : ''} 👋",
+            'preheader' => 'Recibimos tu mensaje — respondemos en menos de 24 horas',
+            'titulo'    => 'Recibimos tu mensaje' . $saludo . ' 👋',
             'bajada'    => 'Un asesor de <strong>Home del Valle</strong> te responderá en <strong>menos de 24 horas hábiles</strong>. Sin compromiso y sin spam.',
             'pasos'     => [
-                ['icono' => '📬', 'titulo' => 'Revisamos tu mensaje',      'desc' => 'Un asesor lee tu solicitud y prepara la mejor respuesta.'],
-                ['icono' => '💬', 'titulo' => 'Te contactamos',            'desc' => 'Por teléfono, email o WhatsApp según tu preferencia.'],
-                ['icono' => '🏡', 'titulo' => 'Asesoría personalizada',    'desc' => 'Sin compromiso. Solo soluciones reales para tu caso.'],
+                ['icono' => '📬', 'titulo' => 'Revisamos tu mensaje',     'desc' => 'Un asesor lee tu solicitud y prepara la mejor respuesta.'],
+                ['icono' => '💬', 'titulo' => 'Te contactamos',           'desc' => 'Por teléfono, email o WhatsApp según tu preferencia.'],
+                ['icono' => '🏡', 'titulo' => 'Asesoría personalizada',   'desc' => 'Sin compromiso. Solo soluciones reales para tu caso.'],
             ],
             'cta_primary'   => ['url' => 'https://homedelvalle.mx/propiedades', 'label' => 'Ver propiedades'],
             'cta_secondary' => ['url' => 'https://homedelvalle.mx/mercado',     'label' => 'Observatorio de precios'],
             'nota'          => 'Pocos inmuebles. Más control. Mejores resultados.',
         ],
     };
-
-    $folio = 'HDV-' . strtoupper(substr(md5($data->folio), 0, 4)) . '-' . $data->folio;
 @endphp
 
 <x-emails.v4.layout :preheader="$config['preheader']">
