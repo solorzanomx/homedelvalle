@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\FormSubmitted;
+use App\Helpers\MailConfigurator;
 use App\Mail\V4\Data\AcuseData;
 use App\Mail\V4\Mailables\AcuseMail;
 use Illuminate\Support\Facades\Mail;
@@ -11,6 +12,8 @@ class SendAcuseMail
 {
     public function handle(FormSubmitted $event): void
     {
+        MailConfigurator::applyGlobalSettings();
+
         $submission = $event->submission;
 
         Mail::to($submission->email)->send(
