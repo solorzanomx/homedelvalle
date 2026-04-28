@@ -53,7 +53,16 @@ class FormSubmission extends Model implements HasMedia
         parent::boot();
 
         static::created(function (self $submission) {
-            FormSubmitted::dispatch($submission);
+            // Guard: skip if a duplicate was already created in the last 30s
+            $isDuplicate = static::where('email', $submission->email)
+                ->where('form_type', $submission->form_type)
+                ->where('id', '!=', $submission->id)
+                ->where('created_at', '>=', now()->subSeconds(30))
+                ->exists();
+
+            if (! $isDuplicate) {
+                FormSubmitted::dispatch($submission);
+            }
         });
     }
 

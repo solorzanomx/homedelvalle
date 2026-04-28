@@ -25,6 +25,7 @@ class DeveloperBriefForm extends Component
     public bool $aviso = false;
 
     public bool $submitted = false;
+    public bool $isProcessing = false;
     public string $folio = '';
     public string $clientName = '';
 
@@ -66,6 +67,8 @@ class DeveloperBriefForm extends Component
 
     public function submit(): void
     {
+        if ($this->isProcessing) return;
+        $this->isProcessing = true;
         $data = $this->validate();
 
         $submission = FormSubmission::create([
