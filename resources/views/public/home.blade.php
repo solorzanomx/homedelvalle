@@ -61,7 +61,7 @@
 @section('content')
 
     {{-- ============================================ --}}
-    {{-- 1. HERO SECTION --}}
+    {{-- 1. HERO SECTION — Selector de intención --}}
     {{-- ============================================ --}}
     <section class="relative overflow-hidden bg-brand-950" id="inicio">
         @if($siteSettings?->hero_image_path)
@@ -73,56 +73,100 @@
         <div class="absolute top-20 right-10 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-20 left-10 w-96 h-96 bg-brand-400/5 rounded-full blur-3xl animate-float animation-delay-300"></div>
 
-        <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 pb-32 sm:pt-32 sm:pb-40 lg:pt-40 lg:pb-48"
+        <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24 pb-16 sm:pt-32 sm:pb-20 lg:pt-36 lg:pb-24"
              x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
 
+            {{-- Eyebrow --}}
             <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-4 py-1.5 text-sm text-brand-200 backdrop-blur-sm mb-8">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                 {{ $siteSettings?->hero_badge ?? 'Firma boutique en Benito Juárez · 30+ años' }}
             </div>
 
+            {{-- Headline + subheadline --}}
             <div class="max-w-3xl">
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white tracking-tight leading-[1.08]">
                     {{ $siteSettings?->hero_heading ?? 'Pocos inmuebles. Más control. Mejores resultados.' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    {{ $siteSettings?->hero_subheading ?? 'Comercializamos propiedades de alto valor en la Alcaldía Benito Juárez sin catálogo masivo. Operamos desde la demanda, no desde la oferta.' }}
+                    Operamos desde la demanda, no desde la oferta. ¿Cómo podemos ayudarte?
                 </p>
-                <div class="mt-10 flex flex-wrap gap-4">
-                    <a href="{{ $siteSettings?->hero_cta_url ?? route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl bg-white px-8 py-4.5 text-base font-bold text-brand-900 hover:bg-brand-50 transition-all duration-300 shadow-premium-xl hover:-translate-y-0.5 active:translate-y-0">
-                        {{ $siteSettings?->hero_cta_text ?? 'Solicita tu valuación gratuita' }}
+            </div>
+
+            {{-- ── Tarjetas de intención ── --}}
+            <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                {{-- Propietarios --}}
+                <a href="{{ route('landing.vende') }}"
+                   class="group relative flex flex-col justify-between bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-6 hover:bg-white/14 hover:border-white/25 hover:shadow-2xl transition-all duration-300 text-left">
+                    <div>
+                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 group-hover:bg-brand-500 transition-all duration-300 mb-5">
+                            <x-icon name="home" class="w-5 h-5 text-white" />
+                        </div>
+                        <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Propietarios</p>
+                        <p class="text-white font-semibold text-base leading-snug">Quiero vender mi propiedad</p>
+                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa.</p>
+                    </div>
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 group-hover:text-white transition-colors duration-300">
+                        Solicitar valuación
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </a>
-                    @if($siteSettings?->whatsapp_number)
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaría una valuación.') }}" target="_blank" rel="noopener noreferrer"
-                       class="inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300">
-                        <x-icon name="brands/whatsapp" class="w-5 h-5 text-[#25D366]" />
-                        Escríbenos por WhatsApp
-                    </a>
-                    @else
-                    <a href="{{ $siteSettings?->hero_secondary_cta_url ?? route('propiedades.index') }}" class="inline-flex items-center gap-2 rounded-xl border border-white/20 px-7 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/40 transition-all duration-300">
-                        {{ $siteSettings?->hero_secondary_cta_text ?? 'Ver propiedades' }}
-                    </a>
-                    @endif
-                </div>
+                    </div>
+                </a>
+
+                {{-- Compradores — destacado --}}
+                <a href="{{ route('landing.compra') }}"
+                   class="group relative flex flex-col justify-between bg-brand-500/20 backdrop-blur-sm border border-brand-400/40 rounded-2xl p-6 hover:bg-brand-500/28 hover:border-brand-400/60 hover:shadow-2xl transition-all duration-300 text-left ring-1 ring-brand-400/20">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[0.6rem] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                        ★ Más solicitado
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-400/20 group-hover:bg-brand-500 transition-all duration-300 mb-5">
+                            <x-icon name="search" class="w-5 h-5 text-white" />
+                        </div>
+                        <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Compradores</p>
+                        <p class="text-white font-semibold text-base leading-snug">Estoy buscando dónde vivir o invertir</p>
+                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Propiedades verificadas, asesoría personalizada y acompañamiento hasta el cierre.</p>
+                    </div>
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-colors duration-300">
+                        Iniciar búsqueda
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
+                {{-- Desarrollo e Inversión --}}
+                <a href="{{ route('landing.desarrolladores') }}"
+                   class="group relative flex flex-col justify-between bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-6 hover:bg-white/14 hover:border-white/25 hover:shadow-2xl transition-all duration-300 text-left">
+                    <div>
+                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 group-hover:bg-brand-500 transition-all duration-300 mb-5">
+                            <x-icon name="landmark" class="w-5 h-5 text-white" />
+                        </div>
+                        <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Desarrollo e Inversión</p>
+                        <p class="text-white font-semibold text-base leading-snug">Soy desarrollador o inversionista</p>
+                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Captación de terrenos y producto terminado bajo demanda activa verificada.</p>
+                    </div>
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 group-hover:text-white transition-colors duration-300">
+                        Solicitar brief
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
             </div>
 
             {{-- Trust metrics --}}
-            <div class="mt-12 flex flex-wrap gap-x-10 gap-y-4 text-sm" x-data x-intersect.once="$el.classList.add('animate-fade-in')">
+            <div class="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm border-t border-white/8 pt-8">
                 <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     Valuación profesional gratuita
                 </div>
                 <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     Vendemos en 45 días promedio
                 </div>
                 <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     Seguridad jurídica completa
                 </div>
                 <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     Especialistas en Benito Juárez
                 </div>
             </div>
@@ -130,15 +174,15 @@
     </section>
 
     {{-- ============================================ --}}
-    {{-- 1.5 SEGMENTACION POR PERFIL --}}
+    {{-- 1.5 DETALLE POR PERFIL --}}
     {{-- ============================================ --}}
     <section class="py-16 sm:py-20 bg-white relative overflow-hidden">
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,196,0.04)_0%,_transparent_60%)]"></div>
         <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">¿Qué necesitas?</p>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Soluciones para cada perfil</h2>
-                <p class="mt-4 text-lg text-gray-500">Selecciona tu perfil y descubre cómo podemos ayudarte.</p>
+                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">¿Cómo podemos ayudarte?</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Servicios diseñados para cada perfil</h2>
+                <p class="mt-4 text-lg text-gray-500">Cada perfil tiene un proceso distinto. Conoce en detalle lo que hacemos por ti.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
