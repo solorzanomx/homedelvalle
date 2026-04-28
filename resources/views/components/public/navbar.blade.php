@@ -5,18 +5,19 @@
 
     // Orden persuasivo: interés → validación → confianza → conversión
     $defaultLinks = [
-        ['label' => 'Propiedades', 'url' => '/propiedades'],
-        ['label' => 'Precios de Mercado', 'url' => '/mercado'],
+        ['label' => 'Comprar', 'url' => '/comprar'],
+        ['label' => 'Vender', 'url' => '/vende-tu-propiedad'],
+        ['label' => 'Inversión & Desarrollo', 'url' => '/desarrolladores-e-inversionistas'],
+        ['label' => 'Mercado', 'url' => '/mercado'],
         ['label' => 'Servicios', 'url' => '/servicios'],
         ['label' => 'Nosotros', 'url' => '/nosotros'],
-        ['label' => 'Testimonios', 'url' => '/testimonios'],
-        ['label' => 'Guía Inmobiliaria', 'url' => '/blog'],
+        ['label' => 'Blog', 'url' => '/blog'],
         ['label' => 'Contacto', 'url' => '/contacto'],
     ];
 
     $navbarCtaEnabled = $siteSettings?->navbar_cta_enabled ?? true;
-    $navbarCtaText = $siteSettings?->navbar_cta_text ?? 'Vende tu propiedad';
-    $navbarCtaUrl = $siteSettings?->navbar_cta_url ?? '/vende-tu-propiedad';
+    $navbarCtaText = $siteSettings?->navbar_cta_text ?? 'Hablemos';
+    $navbarCtaUrl = $siteSettings?->navbar_cta_url ?? route('contacto');
 @endphp
 
 <header x-data="{ open: false, scrolled: false }"
@@ -35,7 +36,10 @@
                         <x-icon name="home" class="w-5 h-5 text-white" />
                     </div>
                 @endif
-                <span class="hidden lg:block text-xs font-semibold text-gray-500 tracking-wide leading-tight mt-1">Pocos inmuebles. Más control.</span>
+                <span class="hidden lg:block text-xs font-semibold text-gray-500 tracking-wide leading-tight mt-1">
+                    <span class="hidden xl:inline">Pocos inmuebles. Más control. Mejores resultados.</span>
+                    <span class="inline xl:hidden">Pocos inmuebles. Más control.</span>
+                </span>
             </a>
 
             {{-- Desktop Nav — always use $defaultLinks (ignore DB menus to avoid duplicates) --}}
