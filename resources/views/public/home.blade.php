@@ -174,7 +174,7 @@
                    style="border: 2px solid var(--color-brand-500); margin-top: -1rem; margin-bottom: -1rem;"
                    x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                     <div style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--color-brand-500); color:#fff; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; padding:0.3rem 1rem; border-radius:50px; box-shadow:0 4px 12px rgba(59,130,196,0.3); white-space:nowrap;">
-                        ★ MAS SOLICITADO
+                        ★ MÁS SOLICITADO
                     </div>
                     <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 transition-all duration-500 group-hover:scale-105">
                         <x-icon name="search" class="w-7 h-7 text-brand-500" />

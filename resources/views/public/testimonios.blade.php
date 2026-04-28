@@ -59,7 +59,7 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
                 <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Experiencias de nuestros clientes</h2>
-                <p class="mt-3 text-gray-500 max-w-2xl mx-auto">Cada operacion es unica. Aqui comparten su experiencia quienes nos confiaron la busqueda, compra o renta de su inmueble.</p>
+                <p class="mt-3 text-gray-500 max-w-2xl mx-auto">Cada operación es única. Aquí comparten su experiencia quienes nos confiaron la búsqueda, compra o renta de su inmueble.</p>
             </div>
 
             @if($testimonials->isEmpty())
@@ -138,7 +138,7 @@
     <section class="py-16 sm:py-20 bg-gradient-to-br from-brand-900 via-brand-800 to-brand-700">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">¿Listo para comenzar tu historia?</h2>
-            <p class="mt-3 text-brand-200 text-lg">Contactanos y descubre por que nuestros clientes nos recomiendan.</p>
+            <p class="mt-3 text-brand-200 text-lg">Contáctanos y descubre por qué nuestros clientes nos recomiendan.</p>
             <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a href="{{ route('contacto') }}" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-white text-brand-700 font-bold text-sm hover:bg-brand-50 transition-all shadow-lg hover:shadow-xl">
                     Contactar ahora

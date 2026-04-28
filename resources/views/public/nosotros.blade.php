@@ -26,7 +26,7 @@
 
 @section('content')
     <x-public.hero
-        :heading="'Quienes somos'"
+        :heading="'Quiénes somos'"
         :subheading="'Firma inmobiliaria boutique especializada en la Alcaldía Benito Juárez, Ciudad de México.'"
         :breadcrumb-items="[['label' => 'Nosotros']]"
     />
