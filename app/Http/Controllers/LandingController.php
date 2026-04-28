@@ -101,7 +101,7 @@ class LandingController extends Controller
             'processSteps' => $content['process_steps'] ?? $this->defaultProcessSteps(),
             'faqs' => $content['faqs'] ?? $this->defaultFaqs(),
             'meta' => [
-                'title' => $content['meta_title'] ?? 'Vende tu propiedad en Benito Juarez | Home del Valle',
+                'title' => $content['meta_title'] ?? 'Vende tu propiedad en Benito Juárez',
                 'description' => $content['meta_description'] ?? 'Vende tu propiedad rapido y al mejor precio. Asesoria profesional gratuita, compradores calificados y cierre seguro.',
             ],
         ]);
@@ -117,7 +117,7 @@ class LandingController extends Controller
         return view('public.comprar', [
             'page' => $page ?? (object)[
                 'title' => 'Búsqueda asistida de inmuebles en Benito Juárez',
-                'meta_title' => 'Búsqueda asistida de inmuebles en Benito Juárez | Home del Valle',
+                'meta_title' => 'Búsqueda asistida de inmuebles en Benito Juárez',
                 'meta_description' => 'Encuentra tu próximo hogar en Benito Juárez sin perder fines de semana en visitas. Asesoría personalizada de expertos.',
                 'body' => '',
             ],
@@ -134,7 +134,7 @@ class LandingController extends Controller
         return view('public.desarrolladores', [
             'page' => $page ?? (object)[
                 'title' => 'Captación de predios e inversión inmobiliaria en Benito Juárez',
-                'meta_title' => 'Captación de predios e inversión inmobiliaria en Benito Juárez | Home del Valle',
+                'meta_title' => 'Captación de predios e inversión inmobiliaria en Benito Juárez',
                 'meta_description' => 'Captación de terrenos y producto terminado en Benito Juárez bajo demanda activa. Red de inversionistas consolidada.',
                 'body' => '',
             ],
