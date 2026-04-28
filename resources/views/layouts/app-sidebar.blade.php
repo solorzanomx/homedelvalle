@@ -648,6 +648,9 @@
                         <a href="{{ route('admin.email.settings') }}" class="nav-item {{ request()->routeIs('admin.email.settings*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Correo SMTP
                         </a>
+                        <a href="{{ route('admin.transactional-emails.index') }}" class="nav-item {{ request()->routeIs('admin.transactional-emails*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="zap" class="w-4 h-4" /></span> Emails Transaccionales
+                        </a>
                         <a href="{{ route('admin.custom-templates.index') }}" class="nav-item {{ request()->routeIs('admin.custom-templates*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Email Templates
                         </a>
