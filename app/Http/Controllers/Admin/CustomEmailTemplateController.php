@@ -30,7 +30,15 @@ class CustomEmailTemplateController extends Controller
 
         $templates = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        return view('admin.email.custom-templates.index', compact('templates'));
+        $transactionalTemplates = [
+            ['id' => 'lead-interno',  'name' => 'Notificación de Lead',          'description' => 'Email interno al equipo cuando llega un nuevo lead',       'icon' => '📥'],
+            ['id' => 'acuse',         'name' => 'Acuse de Recibido',              'description' => 'Confirmación automática enviada al cliente tras su contacto','icon' => '✅'],
+            ['id' => 'cita',          'name' => 'Confirmación de Cita',           'description' => 'Detalles de cita agendada enviados al cliente',              'icon' => '📅'],
+            ['id' => 'comprador',     'name' => 'Propiedad Sugerida',             'description' => 'Ficha de propiedad curada enviada al comprador',             'icon' => '🏠'],
+            ['id' => 'bienvenida',    'name' => 'Bienvenida Área de Clientes',    'description' => 'Credenciales de acceso al portal del cliente',               'icon' => '👋'],
+        ];
+
+        return view('admin.email.custom-templates.index', compact('templates', 'transactionalTemplates'));
     }
 
     public function create()
