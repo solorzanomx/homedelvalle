@@ -36,10 +36,7 @@
                         <x-icon name="home" class="w-5 h-5 text-white" />
                     </div>
                 @endif
-                <span class="hidden lg:block text-xs font-semibold text-gray-500 tracking-wide leading-tight mt-1">
-                    <span class="hidden xl:inline">Pocos inmuebles. Más control. Mejores resultados.</span>
-                    <span class="inline xl:hidden">Pocos inmuebles. Más control.</span>
-                </span>
+                <span class="hidden lg:block text-xs font-semibold text-gray-500 tracking-wide leading-tight mt-1">Mejores resultados</span>
             </a>
 
             {{-- Desktop Nav — always use $defaultLinks (ignore DB menus to avoid duplicates) --}}

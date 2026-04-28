@@ -17,6 +17,7 @@ class Client extends Model
         'photo', 'user_id',
         'marketing_channel_id', 'marketing_campaign_id',
         'acquisition_cost', 'utm_source', 'utm_medium', 'utm_campaign',
+        'client_type', 'lead_source',
     ];
 
     protected $casts = [
@@ -24,6 +25,7 @@ class Client extends Model
         'budget_max' => 'decimal:2',
         'acquisition_cost' => 'decimal:2',
         'interest_types' => 'array',
+        'client_type' => 'string',
     ];
 
     public function broker(): BelongsTo

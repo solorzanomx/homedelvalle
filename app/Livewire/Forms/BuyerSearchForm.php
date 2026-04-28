@@ -3,6 +3,8 @@
 namespace App\Livewire\Forms;
 
 use App\Models\FormSubmission;
+use App\Models\Client;
+use App\Helpers\BudgetHelper;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -74,6 +76,30 @@ class BuyerSearchForm extends Component
         $lockKey = 'form_submit_comprador_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
 
+        // Crear o actualizar Cliente
+        [$budgetMin, $budgetMax] = BudgetHelper::convertRangeToMinMax($data['presupuesto']);
+
+        $client = Client::firstOrCreate(
+            ['email' => $data['email']],
+            [
+                'name' => $data['nombre'],
+                'email' => $data['email'],
+                'phone' => $data['whatsapp'],
+                'whatsapp' => $data['whatsapp'],
+                'client_type' => 'buyer',
+                'lead_temperature' => $this->calculateLeadTemperature($data),
+                'budget_min' => $budgetMin,
+                'budget_max' => $budgetMax,
+                'property_type' => implode(',', $data['tipo_inmueble']),
+                'interest_types' => $data['tipo_inmueble'],
+                'initial_notes' => "Operación: {$data['operacion']}, Timing: {$data['timing']}, Pago: {$data['pago']}",
+                'lead_source' => '/comprar',
+                'utm_source' => request()->query('utm_source'),
+                'utm_medium' => request()->query('utm_medium'),
+                'utm_campaign' => request()->query('utm_campaign'),
+            ]
+        );
+
         $submission = FormSubmission::create([
             'form_type'   => 'comprador',
             'source_page' => '/comprar',
@@ -82,6 +108,7 @@ class BuyerSearchForm extends Component
             'phone'       => $data['whatsapp'],
             'payload'     => collect($data)->except(['nombre', 'email', 'whatsapp', 'aviso'])->toArray(),
             'lead_tag'    => 'LEAD_COMPRADOR',
+            'client_id'   => $client->id,
             'utm_source'  => request()->query('utm_source'),
             'utm_medium'  => request()->query('utm_medium'),
             'utm_campaign'=> request()->query('utm_campaign'),
@@ -99,8 +126,24 @@ class BuyerSearchForm extends Component
         $this->clientName = $savedName;
     }
 
+    /**
+     * Calcula lead temperature basado en timing y presupuesto
+     */
+    private function calculateLeadTemperature(array $data): string
+    {
+        $isImmediate = $data['timing'] === 'inmediato';
+        $isBudgetHigh = in_array($data['presupuesto'], ['9m_14m', '14m_plus']);
+
+        if ($isImmediate && $isBudgetHigh) {
+            return 'hot';
+        }
+
+        return 'warm';
+    }
+
     public function render()
     {
         return view('livewire.forms.buyer-search-form');
     }
 }
+

@@ -32,6 +32,7 @@ class FormSubmission extends Model implements HasMedia
         'seen_at',
         'assigned_to',
         'notes',
+        'client_id',
         // Keep legacy fields for backward compatibility
         'form_id',
         'data',
@@ -79,6 +80,14 @@ class FormSubmission extends Model implements HasMedia
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /**
+     * Get the client associated with this submission
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     /**
