@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Forms;
 
-use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -94,10 +93,6 @@ class DeveloperBriefForm extends Component
 
         $savedName  = $data['nombre_rol'];
         $savedFolio = 'HDV-B2B-' . strtoupper(substr(md5($submission->id . 'b2b'), 0, 4)) . '-' . $submission->id;
-
-        try {
-            FormSubmitted::dispatch($submission);
-        } catch (\Throwable) {}
 
         $this->reset();
         $this->submitted  = true;

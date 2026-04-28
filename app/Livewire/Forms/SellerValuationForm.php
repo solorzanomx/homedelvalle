@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Forms;
 
-use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 
@@ -80,10 +79,6 @@ class SellerValuationForm extends Component
 
         $savedName  = $data['nombre'];
         $savedFolio = 'HDV-' . strtoupper(substr(md5($submission->id . 'vendedor'), 0, 4)) . '-' . $submission->id;
-
-        try {
-            FormSubmitted::dispatch($submission);
-        } catch (\Throwable) {}
 
         $this->reset();
         $this->submitted  = true;

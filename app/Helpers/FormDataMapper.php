@@ -29,7 +29,9 @@ class FormDataMapper
         return match ($submission->form_type) {
             'vendedor' => $payload['motivo'] ?? 'Solicitud de venta',
             'comprador' => $payload['intento'] ?? 'Solicitud de compra',
-            'b2b' => $payload['tipo_operacion'] ?? 'Oportunidad B2B',
+            'b2b' => is_array($payload['tipo_operacion'] ?? null)
+                ? implode(', ', $payload['tipo_operacion'])
+                : ($payload['tipo_operacion'] ?? 'Oportunidad B2B'),
             'contacto' => $payload['intento'] ?? 'Consulta general',
             default => 'Formulario enviado',
         };

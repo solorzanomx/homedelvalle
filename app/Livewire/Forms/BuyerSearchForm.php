@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Forms;
 
-use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -85,10 +84,6 @@ class BuyerSearchForm extends Component
 
         $savedName  = $data['nombre'];
         $savedFolio = 'HDV-' . strtoupper(substr(md5($submission->id . 'comprador'), 0, 4)) . '-' . $submission->id;
-
-        try {
-            FormSubmitted::dispatch($submission);
-        } catch (\Throwable) {}
 
         $this->reset();
         $this->submitted  = true;
