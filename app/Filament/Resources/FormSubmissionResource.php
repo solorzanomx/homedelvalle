@@ -118,6 +118,7 @@ class FormSubmissionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('client'))
             ->columns([
                 BadgeColumn::make('form_type')
                     ->label('Tipo')
