@@ -88,7 +88,7 @@
                     {{ $siteSettings?->hero_heading ?? 'Pocos inmuebles. Más control. Mejores resultados.' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    Operamos desde la demanda, no desde la oferta. ¿Cómo podemos ayudarte?
+                    {{ $siteSettings?->hero_subheading ?? 'Firma inmobiliaria boutique en la Alcaldía Benito Juárez. ¿Cómo podemos ayudarte?' }}
                 </p>
             </div>
 
@@ -169,105 +169,6 @@
                     <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
                     Especialistas en Benito Juárez
                 </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- ============================================ --}}
-    {{-- 1.5 DETALLE POR PERFIL --}}
-    {{-- ============================================ --}}
-    <section class="py-16 sm:py-20 bg-white relative overflow-hidden">
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,196,0.04)_0%,_transparent_60%)]"></div>
-        <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">¿Cómo podemos ayudarte?</p>
-                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Servicios diseñados para cada perfil</h2>
-                <p class="mt-4 text-lg text-gray-500">Cada perfil tiene un proceso distinto. Conoce en detalle lo que hacemos por ti.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-start">
-                {{-- Propietarios --}}
-                <a href="{{ route('landing.vende') }}"
-                   class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
-                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
-                        <x-icon name="home" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
-                    </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Propietarios</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Quiero vender mi propiedad</p>
-                    <ul class="mt-5 space-y-2">
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Valuación gratuita en 24h
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Venta en 45 días promedio
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Seguridad jurídica completa
-                        </li>
-                    </ul>
-                    <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
-                        Solicitar valuación
-                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                </a>
-
-                {{-- Compradores (DESTACADO — centro) --}}
-                <a href="{{ route('landing.compra') }}"
-                   class="group relative rounded-2xl bg-white p-8 lg:p-10 shadow-xl hover:shadow-2xl transition-all duration-500 text-left"
-                   style="border: 2px solid var(--color-brand-500); margin-top: -1rem; margin-bottom: -1rem;"
-                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                    <div style="position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--color-brand-500); color:#fff; font-size:0.7rem; font-weight:700; letter-spacing:0.05em; padding:0.3rem 1rem; border-radius:50px; box-shadow:0 4px 12px rgba(59,130,196,0.3); white-space:nowrap;">
-                        ★ MÁS SOLICITADO
-                    </div>
-                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 transition-all duration-500 group-hover:scale-105">
-                        <x-icon name="search" class="w-7 h-7 text-brand-500" />
-                    </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Compradores</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Estoy buscando dónde vivir</p>
-                    <ul class="mt-5 space-y-2">
-                        <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Propiedades verificadas
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Asesoría personalizada
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                            <x-icon name="check" class="w-4 h-4 text-brand-500 shrink-0" /> Seguridad en la transacción
-                        </li>
-                    </ul>
-                    <div class="mt-6 inline-flex items-center gap-2 rounded-xl text-white text-sm font-bold transition-all"
-                         style="background:var(--color-brand-500); padding:0.6rem 1.25rem; box-shadow:0 4px 12px rgba(59,130,196,0.25);">
-                        Iniciar búsqueda
-                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                </a>
-
-                {{-- Desarrollo e inversión --}}
-                <a href="{{ route('landing.desarrolladores') }}"
-                   class="group relative rounded-2xl border border-gray-200/80 bg-white p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 text-left"
-                   x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: 200ms">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
-                        <x-icon name="landmark" class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" />
-                    </div>
-                    <h3 class="mt-6 text-xl font-bold text-gray-900 group-hover:text-brand-700 transition-colors">Desarrollo</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">Soy desarrollador o inversionista</p>
-                    <ul class="mt-5 space-y-2">
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Terrenos en zonas clave
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Análisis de potencial
-                        </li>
-                        <li class="flex items-center gap-2 text-sm text-gray-600">
-                            <x-icon name="check" class="w-4 h-4 text-emerald-500 shrink-0" /> Red de contactos consolidada
-                        </li>
-                    </ul>
-                    <div class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 group-hover:text-brand-700">
-                        Solicitar brief
-                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-                    </div>
-                </a>
             </div>
         </div>
     </section>
