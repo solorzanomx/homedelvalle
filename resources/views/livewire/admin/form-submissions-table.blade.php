@@ -1,11 +1,20 @@
 <div wire:poll.10s>
 
-    {{-- Flash --}}
+    {{-- Toast flotante --}}
     @if(session('success'))
-    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3500)"
-         style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#065f46;font-size:0.85rem;display:flex;align-items:center;justify-content:space-between">
-        <span>{{ session('success') }}</span>
-        <button @click="show=false" style="background:none;border:none;cursor:pointer;color:#065f46;font-size:1rem;padding:0">&times;</button>
+    <div x-data="{ show: true }"
+         x-show="show"
+         x-init="setTimeout(() => show = false, 3500)"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-x-16"
+         x-transition:enter-end="opacity-100 translate-x-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-x-0"
+         x-transition:leave-end="opacity-0 translate-x-16"
+         style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:0.75rem 1.1rem;color:#065f46;font-size:0.85rem;display:flex;align-items:center;gap:0.75rem;box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:220px;max-width:360px">
+        <svg style="flex-shrink:0;width:16px;height:16px" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        <span style="flex:1">{{ session('success') }}</span>
+        <button @click="show=false" style="background:none;border:none;cursor:pointer;color:#065f46;font-size:1.1rem;line-height:1;padding:0;opacity:0.6">&times;</button>
     </div>
     @endif
 
