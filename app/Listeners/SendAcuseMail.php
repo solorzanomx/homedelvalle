@@ -7,7 +7,6 @@ use App\Helpers\MailConfigurator;
 use App\Mail\V4\Data\AcuseData;
 use App\Mail\V4\Mailables\AcuseMail;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class SendAcuseMail
@@ -18,16 +17,10 @@ class SendAcuseMail
 
         // Idempotency guard — skip if already sent for this submission
         if (Cache::has($cacheKey)) {
-            Log::info('SendAcuseMail: skipped duplicate for submission ' . $event->submission->id);
             return;
         }
 
         Cache::put($cacheKey, true, now()->addMinutes(10));
-
-        Log::info('SendAcuseMail::handle fired', [
-            'submission_id' => $event->submission->id,
-            'email'         => $event->submission->email,
-        ]);
 
         MailConfigurator::applyGlobalSettings();
 
