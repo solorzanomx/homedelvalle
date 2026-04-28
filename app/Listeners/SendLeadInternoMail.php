@@ -9,13 +9,15 @@ use Illuminate\Support\Facades\Mail;
 
 class SendLeadInternoMail
 {
-
     public function handle(FormSubmitted $event): void
     {
         $data = FormDataMapper::toLeadInternoData($event->submission);
 
-        Mail::to(config('mail.team_inbox', 'leads@homedelvalle.mx'))->send(
-            new LeadInternoMail($data)
-        );
+        // LEADS_EMAIL en .env → fallback al from address configurado
+        $teamInbox = config('mail.leads_email')
+            ?? env('LEADS_EMAIL')
+            ?? config('mail.from.address');
+
+        Mail::to($teamInbox)->send(new LeadInternoMail($data));
     }
 }

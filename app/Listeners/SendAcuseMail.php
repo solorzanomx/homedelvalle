@@ -9,15 +9,17 @@ use Illuminate\Support\Facades\Mail;
 
 class SendAcuseMail
 {
-
     public function handle(FormSubmitted $event): void
     {
         $submission = $event->submission;
 
         Mail::to($submission->email)->send(
-            new AcuseMail(
-                new AcuseData(folio: (string) $submission->id, email: $submission->email)
-            )
+            new AcuseMail(new AcuseData(
+                folio:     (string) $submission->id,
+                email:     $submission->email,
+                form_type: $submission->form_type,
+                nombre:    $submission->full_name,
+            ))
         );
     }
 }

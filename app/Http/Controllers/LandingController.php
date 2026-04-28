@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\FormSubmitted;
 use App\Http\Requests\LandingFormRequest;
 use App\Models\ContactSubmission;
 use App\Models\FormSubmission;
@@ -238,7 +237,6 @@ class LandingController extends Controller
             'user_agent'   => $request->userAgent(),
         ]);
 
-        try { FormSubmitted::dispatch($submission); } catch (\Throwable) {}
 
         return redirect()->route('contacto.gracias')->with([
             'form_type'   => 'vendedor',
@@ -281,7 +279,6 @@ class LandingController extends Controller
             'user_agent'   => $request->userAgent(),
         ]);
 
-        try { FormSubmitted::dispatch($submission); } catch (\Throwable) {}
 
         return redirect()->route('contacto.gracias')->with([
             'form_type'   => 'comprador',
@@ -324,7 +321,6 @@ class LandingController extends Controller
             'user_agent'   => $request->userAgent(),
         ]);
 
-        try { FormSubmitted::dispatch($submission); } catch (\Throwable) {}
 
         return redirect()->route('contacto.gracias')->with([
             'form_type'   => 'b2b',
