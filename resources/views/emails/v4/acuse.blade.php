@@ -80,7 +80,7 @@
                         <div style="display:inline-block;width:36px;height:36px;border-radius:50%;background-color:{{ \App\Mail\V4\Tokens::GREEN_SOFT }};color:{{ \App\Mail\V4\Tokens::GREEN }};font-size:18px;line-height:36px;text-align:center;">✓</div>
                     </td>
                     <td style="vertical-align:top;">
-                        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:{{ \App\Mail\V4\Tokens::TEXT_MUTED }};text-transform:uppercase;letter-spacing:0.05em">Folio de seguimiento</p>
+                        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:{{ \App\Mail\V4\Tokens::MUTED }};text-transform:uppercase;letter-spacing:0.05em">Folio de seguimiento</p>
                         <p style="margin:0;font-family:'Courier New',monospace;font-size:{{ \App\Mail\V4\Tokens::FONT_SIZE_16 }};font-weight:700;color:{{ \App\Mail\V4\Tokens::NAVY }}">{{ $folio }}</p>
                     </td>
                 </tr>
@@ -97,7 +97,7 @@
                     <td style="width:32px;vertical-align:top;padding-right:12px;font-size:20px;line-height:1.4">{{ $paso['icono'] }}</td>
                     <td style="vertical-align:top;">
                         <p style="margin:0 0 3px;font-size:{{ \App\Mail\V4\Tokens::FONT_SIZE_14 }};font-weight:600;color:{{ \App\Mail\V4\Tokens::INK }}">{{ $paso['titulo'] }}</p>
-                        <p style="margin:0;font-size:{{ \App\Mail\V4\Tokens::FONT_SIZE_13 }};color:{{ \App\Mail\V4\Tokens::TEXT_MUTED }};line-height:1.5">{{ $paso['desc'] }}</p>
+                        <p style="margin:0;font-size:{{ \App\Mail\V4\Tokens::FONT_SIZE_13 }};color:{{ \App\Mail\V4\Tokens::MUTED }};line-height:1.5">{{ $paso['desc'] }}</p>
                     </td>
                 </tr>
             </table>
