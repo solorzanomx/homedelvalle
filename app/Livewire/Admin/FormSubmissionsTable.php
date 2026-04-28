@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Client;
 use App\Models\FormSubmission;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -52,6 +53,40 @@ class FormSubmissionsTable extends Component
         $this->selected  = [];
         $this->selectAll = false;
         session()->flash('success', "{$count} leads eliminados");
+    }
+
+    public function convertToClient(int $id): void
+    {
+        $submission = FormSubmission::findOrFail($id);
+
+        if ($submission->client_id) {
+            session()->flash('success', 'Este lead ya tiene un cliente asociado.');
+            return;
+        }
+
+        $client = Client::create([
+            'name'             => $submission->full_name,
+            'email'            => $submission->email,
+            'phone'            => $submission->phone,
+            'whatsapp'         => $submission->phone,
+            'client_type'      => $submission->client_type,
+            'lead_temperature' => $submission->lead_temperature ?? 'warm',
+            'budget_min'       => $submission->budget_min,
+            'budget_max'       => $submission->budget_max,
+            'property_type'    => $submission->property_type,
+            'interest_types'   => $submission->interest_types,
+            'utm_source'       => $submission->utm_source,
+            'utm_medium'       => $submission->utm_medium,
+            'utm_campaign'     => $submission->utm_campaign,
+            'lead_source'      => 'form_' . $submission->form_type,
+            'initial_notes'    => isset($submission->payload['mensaje'])
+                                    ? $submission->payload['mensaje']
+                                    : null,
+        ]);
+
+        $submission->update(['client_id' => $client->id]);
+
+        session()->flash('success', "Cliente «{$client->name}» creado exitosamente.");
     }
 
     private function getQuery()

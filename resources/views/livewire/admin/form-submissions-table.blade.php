@@ -92,6 +92,7 @@
                         </th>
                         <th>Nombre</th>
                         <th>Tipo</th>
+                        <th>Temperatura</th>
                         <th>Estado</th>
                         <th>Email / Teléfono</th>
                         <th>Fecha</th>
@@ -104,6 +105,12 @@
                         $typeColors   = ['vendedor'=>'badge-blue','comprador'=>'badge-green','b2b'=>'badge-yellow','contacto'=>''];
                         $statusColors = ['new'=>'badge-yellow','contacted'=>'badge-blue','qualified'=>'badge-green','won'=>'badge-green','lost'=>'badge-red'];
                         $statusLabels = ['new'=>'Nuevo','contacted'=>'Contactado','qualified'=>'Calificado','won'=>'Ganado','lost'=>'Perdido'];
+                        $tempMeta = match($sub->lead_temperature) {
+                            'hot'  => ['label'=>'🔥 Caliente', 'bg'=>'#fef2f2', 'color'=>'#b91c1c', 'border'=>'#fca5a5'],
+                            'warm' => ['label'=>'☀ Templado',  'bg'=>'#fffbeb', 'color'=>'#b45309', 'border'=>'#fcd34d'],
+                            'cold' => ['label'=>'❄ Frío',      'bg'=>'#eff6ff', 'color'=>'#1d4ed8', 'border'=>'#93c5fd'],
+                            default=> ['label'=>'—',           'bg'=>'transparent', 'color'=>'var(--text-muted)', 'border'=>'transparent'],
+                        };
                     @endphp
                     @php $unseen = !$sub->seen_at; @endphp
                     <tr wire:key="sub-{{ $sub->id }}" style="{{ in_array((string)$sub->id, $selected) ? 'background:rgba(99,102,241,0.06)' : ($unseen ? 'background:rgba(245,158,11,0.04)' : '') }}">
@@ -116,9 +123,17 @@
                                 <span title="No visto" style="width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;box-shadow:0 0 0 2px rgba(245,158,11,0.25)"></span>
                                 @endif
                                 {{ $sub->full_name }}
+                                @if($sub->client_id)
+                                <span title="Convertido a cliente" style="font-size:0.65rem;font-weight:700;letter-spacing:0.03em;background:#d1fae5;color:#065f46;border-radius:4px;padding:1px 5px;border:1px solid #a7f3d0">CLI</span>
+                                @endif
                             </div>
                         </td>
                         <td><span class="badge {{ $typeColors[$sub->form_type] ?? '' }}">{{ ucfirst($sub->form_type) }}</span></td>
+                        <td>
+                            <span style="display:inline-flex;align-items:center;font-size:0.78rem;font-weight:600;padding:3px 8px;border-radius:99px;background:{{ $tempMeta['bg'] }};color:{{ $tempMeta['color'] }};border:1px solid {{ $tempMeta['border'] }};white-space:nowrap">
+                                {{ $tempMeta['label'] }}
+                            </span>
+                        </td>
                         <td><span class="badge {{ $statusColors[$sub->status] ?? '' }}">{{ $statusLabels[$sub->status] ?? $sub->status }}</span></td>
                         <td style="font-size:0.82rem">
                             <div>{{ $sub->email }}</div>
@@ -128,8 +143,25 @@
                             {{ $sub->created_at->diffForHumans() }}
                         </td>
                         <td>
-                            <div style="display:flex;gap:0.4rem;align-items:center">
+                            <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
                                 <a href="{{ route('admin.form-submissions.show', $sub) }}" class="btn btn-outline btn-sm">Ver</a>
+                                @if(!$sub->client_id)
+                                <button wire:click="convertToClient({{ $sub->id }})"
+                                        wire:confirm="¿Convertir «{{ $sub->full_name }}» a cliente?"
+                                        wire:loading.attr="disabled"
+                                        wire:target="convertToClient({{ $sub->id }})"
+                                        class="btn btn-sm"
+                                        style="background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;font-size:0.78rem"
+                                        title="Crear registro de cliente a partir de este lead">
+                                    <span wire:loading.remove wire:target="convertToClient({{ $sub->id }})">→ Cliente</span>
+                                    <span wire:loading wire:target="convertToClient({{ $sub->id }})">...</span>
+                                </button>
+                                @else
+                                <span style="font-size:0.75rem;color:#059669;font-weight:600;display:inline-flex;align-items:center;gap:0.25rem">
+                                    <svg style="width:12px;height:12px" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                    Cliente
+                                </span>
+                                @endif
                                 <button wire:click="delete({{ $sub->id }})"
                                         wire:confirm="¿Eliminar este lead?"
                                         wire:loading.attr="disabled"
