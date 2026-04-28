@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 
@@ -74,6 +75,8 @@ class SellerValuationForm extends Component
             'ip'          => request()->ip(),
             'user_agent'  => request()->userAgent(),
         ]);
+
+        FormSubmitted::dispatch($submission);
 
         $this->reset();
         $this->submitted = true;

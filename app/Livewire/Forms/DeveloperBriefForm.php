@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -88,6 +89,8 @@ class DeveloperBriefForm extends Component
                 ->toMediaCollection('briefs');
         }
 
+
+        FormSubmitted::dispatch($submission);
 
         $this->reset();
         $this->submitted = true;

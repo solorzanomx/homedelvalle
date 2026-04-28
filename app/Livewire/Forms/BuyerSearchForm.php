@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -80,7 +81,7 @@ class BuyerSearchForm extends Component
             'user_agent'  => request()->userAgent(),
         ]);
 
-        // Send transactional email and internal notification
+        FormSubmitted::dispatch($submission);
 
         $this->reset();
         $this->submitted = true;

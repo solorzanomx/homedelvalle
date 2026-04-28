@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Events\FormSubmitted;
 use App\Models\FormSubmission;
 use Livewire\Component;
 
@@ -69,6 +70,8 @@ class ContactSegmentedForm extends Component
             'user_agent'  => request()->userAgent(),
         ]);
 
+
+        FormSubmitted::dispatch($submission);
 
         $this->reset();
         $this->submitted = true;
