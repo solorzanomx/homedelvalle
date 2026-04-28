@@ -21,10 +21,7 @@
 
     @livewireStyles
 
-    {{-- Alpine.js + plugins --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine.js viene incluido en Livewire 4 — no cargar desde CDN --}}
 
     <style>
         [x-cloak] { display: none !important; }
