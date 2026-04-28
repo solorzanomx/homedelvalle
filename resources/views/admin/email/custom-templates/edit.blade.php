@@ -1,294 +1,270 @@
 @extends('layouts.app-sidebar')
 
-@section('title', 'Edit Email Template')
+@section('title', 'Editar Template')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">{{ $template->name }}</h1>
-        <div class="flex items-center gap-4 mt-2">
+<div class="page-header">
+    <div>
+        <h1 style="font-size:1.4rem;font-weight:700;margin:0">{{ $template->name }}</h1>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:0.35rem">
             @if($template->isDraft())
-                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-gray-100 text-gray-800">Draft</span>
+                <span class="badge" style="background:#f1f5f9;color:#64748b">Borrador</span>
             @elseif($template->isPublished())
-                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">Published</span>
+                <span class="badge badge-green">Publicado</span>
             @else
-                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">Archived</span>
+                <span class="badge badge-red">Archivado</span>
             @endif
-            <span class="text-gray-600 text-sm">Created by {{ $template->creator->name ?? 'Unknown' }} on {{ $template->created_at->format('M d, Y') }}</span>
+            <span style="color:var(--text-muted);font-size:0.8rem">Creado por {{ $template->creator->name ?? 'N/A' }} · {{ $template->created_at->format('d M Y') }}</span>
         </div>
     </div>
+    <a href="{{ route('admin.custom-templates.index') }}" class="btn btn-outline">← Volver</a>
+</div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content -->
-        <div class="lg:col-span-2">
-            <!-- Template Editor Form -->
-            <form method="POST" action="{{ route('admin.custom-templates.update', $template) }}" class="bg-white rounded-lg shadow p-6 mb-8">
-                @csrf
-                @method('PUT')
+@if(session('success'))
+<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#065f46;font-size:0.85rem">
+    {{ session('success') }}
+</div>
+@endif
 
-                <div class="space-y-6">
-                    <!-- Name -->
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Template Name</label>
-                        <input type="text" id="name" name="name" value="{{ old('name', $template->name) }}" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        @error('name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+@if($errors->any())
+<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#991b1b;font-size:0.85rem">
+    <ul style="margin:0;padding-left:1.2rem">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+</div>
+@endif
+
+<div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start">
+
+    <!-- Main Column -->
+    <div>
+        <!-- Editor -->
+        <form method="POST" action="{{ route('admin.custom-templates.update', $template) }}">
+            @csrf @method('PUT')
+            <div class="card">
+                <div class="card-header"><h3>Editar Template</h3></div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Nombre <span style="color:var(--danger)">*</span></label>
+                        <input type="text" name="name" value="{{ old('name', $template->name) }}" class="form-input" required>
                     </div>
 
-                    <!-- Description -->
-                    <div>
-                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                        <textarea id="description" name="description" rows="3" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('description', $template->description) }}</textarea>
-                        @error('description') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    <div class="form-group">
+                        <label class="form-label">Descripción</label>
+                        <textarea name="description" class="form-textarea" rows="2">{{ old('description', $template->description) }}</textarea>
                     </div>
 
-                    <!-- Type -->
-                    <div>
-                        <label for="template_type" class="block text-sm font-medium text-gray-700">Type</label>
-                        <select id="template_type" name="template_type" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="custom" {{ old('template_type', $template->template_type) === 'custom' ? 'selected' : '' }}>Custom</option>
-                            <option value="marketing" {{ old('template_type', $template->template_type) === 'marketing' ? 'selected' : '' }}>Marketing</option>
-                            <option value="newsletter" {{ old('template_type', $template->template_type) === 'newsletter' ? 'selected' : '' }}>Newsletter</option>
-                            <option value="promotional" {{ old('template_type', $template->template_type) === 'promotional' ? 'selected' : '' }}>Promotional</option>
-                        </select>
-                        @error('template_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Subject -->
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-gray-700">
-                        Email Subject
-                        <span class="text-gray-500 font-normal text-xs ml-2">(supports @{{placeholders}})</span>
-                    </label>
-                        <input type="text" id="subject" name="subject" value="{{ old('subject', $template->subject) }}" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        @error('subject') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Preview Text -->
-                    <div>
-                        <label for="preview_text" class="block text-sm font-medium text-gray-700">Preview Text</label>
-                        <input type="text" id="preview_text" name="preview_text" value="{{ old('preview_text', $template->preview_text) }}" maxlength="150" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        @error('preview_text') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- HTML Body (TinyMCE) -->
-                    <div>
-                        <label for="html_body" class="block text-sm font-medium text-gray-700">Email Body (HTML)</label>
-                        <textarea id="html_body" name="html_body" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('html_body', $template->html_body) }}</textarea>
-                        @error('html_body') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                    </div>
-
-                    <!-- Status -->
-                    <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                        <select id="status" name="status" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="draft" {{ old('status', $template->status) === 'draft' ? 'selected' : '' }}>Draft</option>
-                            <option value="published" {{ old('status', $template->status) === 'published' ? 'selected' : '' }}>Published</option>
-                            <option value="archived" {{ old('status', $template->status) === 'archived' ? 'selected' : '' }}>Archived</option>
-                        </select>
-                        @error('status') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                    </div>
-                </div>
-
-                <!-- Form Actions -->
-                <div class="mt-8 flex gap-4 border-t border-gray-200 pt-6">
-                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                        Save Changes
-                    </button>
-                    <a href="{{ route('admin.custom-templates.index') }}" class="px-6 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium">
-                        Back
-                    </a>
-                </div>
-            </form>
-
-            <!-- Test Email Section -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Send Test Email</h3>
-                <form method="POST" action="{{ route('admin.custom-templates.test', $template) }}" class="space-y-4">
-                    @csrf
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="test_email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                            <input type="email" id="test_email" name="test_email" value="{{ old('test_email', auth()->user()->email) }}" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            @error('test_email') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Tipo</label>
+                            <select name="template_type" class="form-select">
+                                <option value="custom"      {{ old('template_type', $template->template_type) === 'custom'      ? 'selected' : '' }}>Custom</option>
+                                <option value="marketing"   {{ old('template_type', $template->template_type) === 'marketing'   ? 'selected' : '' }}>Marketing</option>
+                                <option value="newsletter"  {{ old('template_type', $template->template_type) === 'newsletter'  ? 'selected' : '' }}>Newsletter</option>
+                                <option value="promotional" {{ old('template_type', $template->template_type) === 'promotional' ? 'selected' : '' }}>Promocional</option>
+                            </select>
                         </div>
-                        <div>
-                            <label for="dataset" class="block text-sm font-medium text-gray-700">Sample Data</label>
-                            <select name="dataset" id="dataset" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="generic">Generic</option>
-                                <option value="seller">Seller</option>
-                                <option value="buyer">Buyer</option>
-                                <option value="developer">Developer</option>
+                        <div class="form-group">
+                            <label class="form-label">Estado</label>
+                            <select name="status" class="form-select">
+                                <option value="draft"     {{ old('status', $template->status) === 'draft'     ? 'selected' : '' }}>Borrador</option>
+                                <option value="published" {{ old('status', $template->status) === 'published' ? 'selected' : '' }}>Publicado</option>
+                                <option value="archived"  {{ old('status', $template->status) === 'archived'  ? 'selected' : '' }}>Archivado</option>
                             </select>
                         </div>
                     </div>
 
-                    <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
-                        Send Test Email
-                    </button>
-                </form>
-            </div>
-        </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            Asunto <span style="color:var(--danger)">*</span>
+                            <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;margin-left:0.5rem">(soporta &#123;&#123;placeholders&#125;&#125;)</span>
+                        </label>
+                        <input type="text" name="subject" value="{{ old('subject', $template->subject) }}" class="form-input" required>
+                    </div>
 
-        <!-- Right Sidebar -->
-        <div class="lg:col-span-1 space-y-6">
-            <!-- Available Placeholders -->
-            <div class="bg-gray-50 rounded-lg p-6">
-                <h3 class="font-semibold text-gray-900 mb-4">Available Placeholders</h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex items-center gap-2">
-                        <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono text-xs">@{{nombre}}</code>
-                        <span class="text-gray-600">Name</span>
+                    <div class="form-group">
+                        <label class="form-label">Preview text</label>
+                        <input type="text" name="preview_text" value="{{ old('preview_text', $template->preview_text) }}" class="form-input" maxlength="150">
                     </div>
-                    <div class="flex items-center gap-2">
-                        <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono text-xs">@{{email}}</code>
-                        <span class="text-gray-600">Email</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono text-xs">@{{colonia}}</code>
-                        <span class="text-gray-600">Area</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono text-xs">@{{precio}}</code>
-                        <span class="text-gray-600">Price</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono text-xs">@{{fecha}}</code>
-                        <span class="text-gray-600">Date</span>
+
+                    <div class="form-group">
+                        <label class="form-label">Cuerpo HTML <span style="color:var(--danger)">*</span></label>
+                        <textarea name="html_body" id="html_body" class="form-textarea" rows="18" style="font-family:monospace;font-size:0.8rem" required>{{ old('html_body', $template->html_body) }}</textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- Assignments Summary -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="font-semibold text-gray-900 mb-4">Assignments</h3>
-                <p class="text-sm text-gray-600 mb-4">This template is assigned to <strong>{{ $assignments->count() }}</strong> trigger{{ $assignments->count() !== 1 ? 's' : '' }}</p>
+            <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <a href="{{ route('admin.custom-templates.clone', $template) }}" class="btn btn-outline" onclick="return confirm('¿Clonar este template?')">Clonar</a>
+            </div>
+        </form>
 
-                @if($assignments->count() > 0)
-                    <div class="space-y-3 mb-6 max-h-64 overflow-y-auto">
-                        @foreach($assignments as $assignment)
-                            <div class="flex items-center justify-between text-sm p-3 bg-gray-50 rounded">
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ $assignment->trigger_name }}</p>
-                                    <p class="text-gray-600 text-xs">{{ ucfirst(str_replace('_', ' ', $assignment->trigger_type)) }}</p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <form method="PATCH" action="{{ route('admin.custom-templates.assignments.toggle', [$template, $assignment]) }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="text-xs {{ $assignment->is_active ? 'text-green-600 hover:text-green-900' : 'text-gray-600 hover:text-gray-900' }}">
-                                            {{ $assignment->is_active ? 'Active' : 'Inactive' }}
-                                        </button>
-                                    </form>
-                                    <form method="DELETE" action="{{ route('admin.custom-templates.assignments.destroy', [$template, $assignment]) }}" class="inline" onsubmit="return confirm('Remove assignment?')">
-                                        @csrf
-                                        <button type="submit" class="text-red-600 hover:text-red-900 text-xs">Remove</button>
-                                    </form>
-                                </div>
-                            </div>
-                        @endforeach
+        <!-- Test Email -->
+        <div class="card">
+            <div class="card-header"><h3>Enviar Email de Prueba</h3></div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('admin.custom-templates.test', $template) }}">
+                    @csrf
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Email destino</label>
+                            <input type="email" name="test_email" value="{{ old('test_email', auth()->user()->email) }}" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Datos de muestra</label>
+                            <select name="dataset" class="form-select">
+                                <option value="generic">Genérico</option>
+                                <option value="seller">Vendedor</option>
+                                <option value="buyer">Comprador</option>
+                                <option value="developer">Desarrollador</option>
+                            </select>
+                        </div>
                     </div>
-                @else
-                    <p class="text-sm text-gray-500 mb-4">No assignments yet</p>
-                @endif
+                    <button type="submit" class="btn btn-primary">Enviar prueba</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                <button type="button" onclick="openAssignmentModal()" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
-                    + Add Assignment
-                </button>
+    <!-- Sidebar -->
+    <div>
+        <!-- Placeholders -->
+        <div class="card" style="margin-bottom:1rem">
+            <div class="card-header"><h3>Placeholders</h3></div>
+            <div class="card-body" style="padding:1rem">
+                <div style="display:flex;flex-direction:column;gap:0.5rem">
+                    @foreach([
+                        ['nombre',  'Nombre'],
+                        ['email',   'Correo'],
+                        ['colonia', 'Colonia'],
+                        ['precio',  'Precio'],
+                        ['fecha',   'Fecha'],
+                        ['folio',   'Folio'],
+                    ] as [$key, $desc])
+                    <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" onclick="insertPlaceholder('{{ $key }}')" title="Click para insertar">
+                        <code style="background:var(--bg);border:1px solid var(--border);padding:0.2rem 0.4rem;border-radius:4px;font-size:0.72rem;color:var(--primary)">&#123;&#123;{{ $key }}&#125;&#125;</code>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">{{ $desc }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignments -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Asignaciones</h3>
+                <span class="badge badge-blue">{{ $assignments->count() }}</span>
+            </div>
+            <div class="card-body" style="padding:0">
+                @if($assignments->count() > 0)
+                <div style="max-height:280px;overflow-y:auto">
+                    @foreach($assignments as $assignment)
+                    <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
+                        <div style="min-width:0">
+                            <p style="font-size:0.82rem;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ $assignment->trigger_name }}</p>
+                            <p style="font-size:0.73rem;color:var(--text-muted);margin:0.1rem 0 0">{{ ucfirst(str_replace('_', ' ', $assignment->trigger_type)) }}</p>
+                        </div>
+                        <div style="display:flex;gap:0.35rem;flex-shrink:0">
+                            <form method="POST" action="{{ route('admin.custom-templates.assignments.toggle', [$template, $assignment]) }}" style="display:inline">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="btn btn-sm" style="padding:0.2rem 0.6rem;font-size:0.72rem;{{ $assignment->is_active ? 'background:#ecfdf5;color:#065f46;border-color:#a7f3d0' : 'background:var(--bg);color:var(--text-muted);border-color:var(--border)' }}">
+                                    {{ $assignment->is_active ? 'Activo' : 'Inactivo' }}
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('admin.custom-templates.assignments.destroy', [$template, $assignment]) }}" style="display:inline" onsubmit="return confirm('¿Eliminar asignación?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" style="padding:0.2rem 0.5rem">✕</button>
+                            </form>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                @else
+                <div style="padding:1.5rem;text-align:center;color:var(--text-muted);font-size:0.85rem">Sin asignaciones</div>
+                @endif
+                <div style="padding:0.75rem 1rem;border-top:1px solid var(--border)">
+                    <button type="button" onclick="document.getElementById('assignModal').style.display='flex'" class="btn btn-primary" style="width:100%;justify-content:center">
+                        + Agregar asignación
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Assignment Modal -->
-<div id="assignmentModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Assign to Event</h3>
-
-        <form method="POST" action="{{ route('admin.custom-templates.assignments.store', $template) }}" class="space-y-4">
+<div id="assignModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:50;align-items:center;justify-content:center">
+    <div style="background:var(--card);border-radius:10px;padding:1.5rem;width:100%;max-width:440px;margin:1rem">
+        <h3 style="margin:0 0 1.25rem;font-size:1rem;font-weight:600">Asignar a Evento</h3>
+        <form method="POST" action="{{ route('admin.custom-templates.assignments.store', $template) }}">
             @csrf
-
-            <div>
-                <label for="trigger_type" class="block text-sm font-medium text-gray-700">Event Type</label>
-                <select id="trigger_type" name="trigger_type" required onchange="updateTriggerOptions()" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Select event type...</option>
-                    <option value="event">Event</option>
-                    <option value="form_submission">Form Submission</option>
-                    <option value="user_action">User Action</option>
+            <div class="form-group">
+                <label class="form-label">Tipo de evento</label>
+                <select id="trigger_type" name="trigger_type" class="form-select" onchange="updateTriggerNames()" required>
+                    <option value="">Selecciona tipo...</option>
+                    <option value="event">Evento del sistema</option>
+                    <option value="form_submission">Envío de formulario</option>
+                    <option value="user_action">Acción de usuario</option>
                 </select>
             </div>
-
-            <div>
-                <label for="trigger_name" class="block text-sm font-medium text-gray-700">Event Name</label>
-                <select id="trigger_name" name="trigger_name" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Select an event...</option>
+            <div class="form-group">
+                <label class="form-label">Nombre del evento</label>
+                <select id="trigger_name" name="trigger_name" class="form-select" required>
+                    <option value="">Selecciona un evento...</option>
                 </select>
             </div>
-
-            <div class="flex gap-4 pt-4">
-                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                    Assign
-                </button>
-                <button type="button" onclick="closeAssignmentModal()" class="flex-1 px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium">
-                    Cancel
-                </button>
+            <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+                <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center">Asignar</button>
+                <button type="button" onclick="document.getElementById('assignModal').style.display='none'" class="btn btn-outline" style="flex:1;justify-content:center">Cancelar</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-const htmlBody = document.getElementById('html_body');
-htmlBody.style.fontFamily = 'monospace';
-htmlBody.style.fontSize = '12px';
-
-function openAssignmentModal() {
-    document.getElementById('assignmentModal').classList.remove('hidden');
+function insertPlaceholder(key) {
+    const t = document.getElementById('html_body');
+    const s = t.selectionStart, e = t.selectionEnd;
+    t.value = t.value.substring(0,s) + '{{'+key+'}}' + t.value.substring(e);
+    t.selectionStart = t.selectionEnd = s + key.length + 4;
+    t.focus();
 }
 
-function closeAssignmentModal() {
-    document.getElementById('assignmentModal').classList.add('hidden');
-}
+const triggers = {
+    event: {
+        FormSubmitted: 'Formulario enviado',
+        UserCreated: 'Usuario creado',
+        UserActivated: 'Usuario activado',
+        LeadAssigned: 'Lead asignado',
+        PropertyListed: 'Propiedad listada',
+    },
+    form_submission: {
+        seller_valuation: 'Solicitud de valuación',
+        buyer_search: 'Búsqueda de comprador',
+        contact_form: 'Formulario de contacto',
+        developer_brief: 'Briefing de desarrollador',
+    },
+    user_action: {
+        first_login: 'Primer acceso',
+        profile_updated: 'Perfil actualizado',
+        password_changed: 'Contraseña cambiada',
+        document_uploaded: 'Documento cargado',
+    },
+};
 
-function updateTriggerOptions() {
-    const triggerType = document.getElementById('trigger_type').value;
-    const triggerName = document.getElementById('trigger_name');
-    const triggers = {
-        'event': {
-            'FormSubmitted': 'Formulario enviado',
-            'UserCreated': 'Usuario creado',
-            'UserActivated': 'Usuario activado',
-            'LeadAssigned': 'Lead asignado',
-        },
-        'form_submission': {
-            'seller_valuation': 'Solicitud de valuación',
-            'buyer_search': 'Búsqueda de comprador',
-            'contact_form': 'Formulario de contacto',
-            'developer_brief': 'Briefing de desarrollador',
-        },
-        'user_action': {
-            'first_login': 'Primer acceso',
-            'profile_updated': 'Perfil actualizado',
-            'password_changed': 'Contraseña cambiada',
-        },
-    };
-
-    triggerName.innerHTML = '<option value="">Select an event...</option>';
-    if (triggers[triggerType]) {
-        Object.entries(triggers[triggerType]).forEach(([key, label]) => {
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = label;
-            triggerName.appendChild(option);
+function updateTriggerNames() {
+    const type = document.getElementById('trigger_type').value;
+    const sel = document.getElementById('trigger_name');
+    sel.innerHTML = '<option value="">Selecciona un evento...</option>';
+    if (triggers[type]) {
+        Object.entries(triggers[type]).forEach(([k, v]) => {
+            sel.innerHTML += `<option value="${k}">${v}</option>`;
         });
     }
 }
 
-// Close modal when clicking outside
-document.getElementById('assignmentModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeAssignmentModal();
-    }
+document.getElementById('assignModal').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
 });
 </script>
 @endsection

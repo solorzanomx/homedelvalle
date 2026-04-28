@@ -1,109 +1,102 @@
 @extends('layouts.app-sidebar')
 
-@section('title', 'Email Templates Personalizados')
+@section('title', 'Email Templates')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Email Templates</h1>
-            <p class="text-gray-600 mt-2">Manage custom email templates for marketing and other purposes</p>
-        </div>
-        <a href="{{ route('admin.custom-templates.create') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            New Template
-        </a>
+<div class="page-header">
+    <div>
+        <h1 style="font-size:1.4rem;font-weight:700;margin:0">Email Templates</h1>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.25rem">Gestiona plantillas de correo para marketing y campañas</p>
     </div>
+    <a href="{{ route('admin.custom-templates.create') }}" class="btn btn-primary">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Nuevo Template
+    </a>
+</div>
 
-    <!-- Filters -->
-    <div class="mb-6 flex gap-4">
-        <form method="GET" action="{{ route('admin.custom-templates.index') }}" class="flex gap-4 flex-1">
-            <input type="text" name="search" placeholder="Search templates..." value="{{ request('search') }}" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+@if(session('success'))
+<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#065f46;font-size:0.85rem">
+    {{ session('success') }}
+</div>
+@endif
 
-            <select name="status" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">All Status</option>
-                <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
-                <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Published</option>
-                <option value="archived" {{ request('status') === 'archived' ? 'selected' : '' }}>Archived</option>
-            </select>
+<!-- Filters -->
+<form method="GET" action="{{ route('admin.custom-templates.index') }}" style="display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap">
+    <input type="text" name="search" placeholder="Buscar templates..." value="{{ request('search') }}" class="form-input" style="flex:1;min-width:200px">
+    <select name="status" onchange="this.form.submit()" class="form-select" style="width:auto">
+        <option value="">Todos los estados</option>
+        <option value="draft"     {{ request('status') === 'draft'     ? 'selected' : '' }}>Borrador</option>
+        <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Publicado</option>
+        <option value="archived"  {{ request('status') === 'archived'  ? 'selected' : '' }}>Archivado</option>
+    </select>
+    <select name="type" onchange="this.form.submit()" class="form-select" style="width:auto">
+        <option value="">Todos los tipos</option>
+        <option value="custom"      {{ request('type') === 'custom'      ? 'selected' : '' }}>Custom</option>
+        <option value="marketing"   {{ request('type') === 'marketing'   ? 'selected' : '' }}>Marketing</option>
+        <option value="newsletter"  {{ request('type') === 'newsletter'  ? 'selected' : '' }}>Newsletter</option>
+        <option value="promotional" {{ request('type') === 'promotional' ? 'selected' : '' }}>Promocional</option>
+    </select>
+    @if(request('search') || request('status') || request('type'))
+    <a href="{{ route('admin.custom-templates.index') }}" class="btn btn-outline">Limpiar</a>
+    @endif
+</form>
 
-            <select name="type" onchange="this.form.submit()" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">All Types</option>
-                <option value="custom" {{ request('type') === 'custom' ? 'selected' : '' }}>Custom</option>
-                <option value="marketing" {{ request('type') === 'marketing' ? 'selected' : '' }}>Marketing</option>
-                <option value="newsletter" {{ request('type') === 'newsletter' ? 'selected' : '' }}>Newsletter</option>
-                <option value="promotional" {{ request('type') === 'promotional' ? 'selected' : '' }}>Promotional</option>
-            </select>
-        </form>
+<!-- Table -->
+<div class="card">
+    @if($templates->count() > 0)
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Asignaciones</th>
+                    <th>Creado por</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($templates as $template)
+                <tr>
+                    <td style="font-weight:600">{{ $template->name }}</td>
+                    <td>
+                        <span class="badge badge-blue">{{ ucfirst($template->template_type) }}</span>
+                    </td>
+                    <td>
+                        @if($template->isDraft())
+                            <span class="badge" style="background:#f1f5f9;color:#64748b">Borrador</span>
+                        @elseif($template->isPublished())
+                            <span class="badge badge-green">Publicado</span>
+                        @else
+                            <span class="badge badge-red">Archivado</span>
+                        @endif
+                    </td>
+                    <td style="color:var(--text-muted)">{{ $template->assignments->count() }}</td>
+                    <td style="color:var(--text-muted)">{{ $template->creator->name ?? 'N/A' }}</td>
+                    <td>
+                        <div style="display:flex;gap:0.5rem;align-items:center">
+                            <a href="{{ route('admin.custom-templates.edit', $template) }}" class="btn btn-outline btn-sm">Editar</a>
+                            <a href="{{ route('admin.custom-templates.clone', $template) }}" class="btn btn-outline btn-sm" onclick="return confirm('¿Clonar este template?')">Clonar</a>
+                            <form method="POST" action="{{ route('admin.custom-templates.destroy', $template) }}" style="display:inline" onsubmit="return confirm('¿Eliminar este template?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
-
-    <!-- Templates Table -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        @if($templates->count() > 0)
-            <table class="w-full">
-                <thead class="bg-gray-50 border-b border-gray-200">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Assignments</th>
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Created By</th>
-                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach($templates as $template)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 text-sm text-gray-900 font-medium">{{ $template->name }}</td>
-                            <td class="px-6 py-4 text-sm">
-                                <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                                    {{ ucfirst($template->template_type) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 text-sm">
-                                @if($template->isDraft())
-                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Draft</span>
-                                @elseif($template->isPublished())
-                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Published</span>
-                                @else
-                                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">Archived</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ $template->assignments->count() }} assignments
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                {{ $template->creator->name ?? 'Unknown' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm">
-                                <div class="flex gap-2">
-                                    <a href="{{ route('admin.custom-templates.edit', $template) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
-                                    <button onclick="openPreview({{ $template->id }})" class="text-gray-600 hover:text-gray-900">Preview</button>
-                                    <a href="{{ route('admin.custom-templates.clone', $template) }}" class="text-green-600 hover:text-green-900" onclick="return confirm('Clone this template?')">Clone</a>
-                                    <form method="POST" action="{{ route('admin.custom-templates.destroy', $template) }}" class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <!-- Pagination -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                {{ $templates->links() }}
-            </div>
-        @else
-            <div class="px-6 py-12 text-center">
-                <p class="text-gray-500">No templates found. Create one to get started.</p>
-            </div>
-        @endif
+    <div style="padding:1rem 1.2rem;border-top:1px solid var(--border)">
+        {{ $templates->links() }}
     </div>
+    @else
+    <div style="padding:3rem;text-align:center;color:var(--text-muted)">
+        <p style="margin:0 0 1rem">No hay templates. Crea uno para empezar.</p>
+        <a href="{{ route('admin.custom-templates.create') }}" class="btn btn-primary">Nuevo Template</a>
+    </div>
+    @endif
 </div>
 @endsection

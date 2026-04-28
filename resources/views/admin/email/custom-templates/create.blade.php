@@ -1,140 +1,119 @@
 @extends('layouts.app-sidebar')
 
-@section('title', 'Create Email Template')
+@section('title', 'Nuevo Email Template')
 
 @section('content')
-<div class="max-w-6xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Create Email Template</h1>
-        <p class="text-gray-600 mt-2">Create a new custom email template with dynamic placeholders</p>
+<div class="page-header">
+    <div>
+        <h1 style="font-size:1.4rem;font-weight:700;margin:0">Nuevo Email Template</h1>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.25rem">Crea una nueva plantilla de correo con placeholders dinámicos</p>
     </div>
-
-    <form method="POST" action="{{ route('admin.custom-templates.store') }}" class="bg-white rounded-lg shadow p-6">
-        @csrf
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Left Column: Form Fields -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Name -->
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700">Template Name</label>
-                    <input type="text" id="name" name="name" value="{{ old('name') }}" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $errors->has('name') ? 'border-red-500' : '' }}" placeholder="e.g., Newsletter Febrero">
-                    @error('name') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- Description -->
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea id="description" name="description" rows="3" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Optional description of the template...">{{ old('description') }}</textarea>
-                    @error('description') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- Type -->
-                <div>
-                    <label for="template_type" class="block text-sm font-medium text-gray-700">Type</label>
-                    <select id="template_type" name="template_type" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="custom" {{ old('template_type') === 'custom' ? 'selected' : '' }}>Custom</option>
-                        <option value="marketing" {{ old('template_type') === 'marketing' ? 'selected' : '' }}>Marketing</option>
-                        <option value="newsletter" {{ old('template_type') === 'newsletter' ? 'selected' : '' }}>Newsletter</option>
-                        <option value="promotional" {{ old('template_type') === 'promotional' ? 'selected' : '' }}>Promotional</option>
-                    </select>
-                    @error('template_type') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- Subject -->
-                <div>
-                    <label for="subject" class="block text-sm font-medium text-gray-700">
-                        Email Subject
-                        <span class="text-gray-500 font-normal text-xs ml-2">(supports @{{placeholders}})</span>
-                    </label>
-                    <input type="text" id="subject" name="subject" value="{{ old('subject') }}" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $errors->has('subject') ? 'border-red-500' : '' }}" placeholder="e.g., Hola @@{{nombre}}, tenemos una oferta para ti">
-                    @error('subject') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- Preview Text -->
-                <div>
-                    <label for="preview_text" class="block text-sm font-medium text-gray-700">Preview Text</label>
-                    <input type="text" id="preview_text" name="preview_text" value="{{ old('preview_text') }}" maxlength="150" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Short preview for email client (max 150 chars)">
-                    @error('preview_text') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- HTML Body (TinyMCE) -->
-                <div>
-                    <label for="html_body" class="block text-sm font-medium text-gray-700">Email Body (HTML)</label>
-                    <textarea id="html_body" name="html_body" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">{{ old('html_body') }}</textarea>
-                    @error('html_body') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-
-                <!-- Status -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
-                    <select id="status" name="status" required class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="draft" {{ old('status') === 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>Publish Immediately</option>
-                    </select>
-                    @error('status') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
-                </div>
-            </div>
-
-            <!-- Right Column: Preview & Helpers -->
-            <div class="lg:col-span-1">
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <h3 class="font-semibold text-gray-900 mb-4">Available Placeholders</h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex items-center gap-2">
-                            <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono">@{{nombre}}</code>
-                            <span class="text-gray-600">Recipient name</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono">@{{email}}</code>
-                            <span class="text-gray-600">Email address</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono">@{{colonia}}</code>
-                            <span class="text-gray-600">Neighborhood</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono">@{{precio}}</code>
-                            <span class="text-gray-600">Price</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <code class="bg-white px-2 py-1 rounded text-blue-600 font-mono">@{{fecha}}</code>
-                            <span class="text-gray-600">Date</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Form Actions -->
-        <div class="mt-8 flex gap-4 border-t border-gray-200 pt-6">
-            <button type="submit" name="action" value="save" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                Save as Draft
-            </button>
-            <button type="submit" name="action" value="publish" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
-                Publish
-            </button>
-            <a href="{{ route('admin.custom-templates.index') }}" class="px-6 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 font-medium">
-                Cancel
-            </a>
-        </div>
-    </form>
+    <a href="{{ route('admin.custom-templates.index') }}" class="btn btn-outline">← Volver</a>
 </div>
 
-<!-- Handle status via form action -->
-<script>
-document.querySelector('form').addEventListener('submit', function(e) {
-    const statusField = document.getElementById('status');
-    const submitButton = e.submitter;
-    if (submitButton && submitButton.name === 'action' && submitButton.value === 'publish') {
-        statusField.value = 'published';
-    }
-});
+<form method="POST" action="{{ route('admin.custom-templates.store') }}" style="display:grid;grid-template-columns:1fr 280px;gap:1.5rem;align-items:start">
+    @csrf
 
-// Simple HTML editor with syntax highlighting
-const htmlBody = document.getElementById('html_body');
-htmlBody.style.fontFamily = 'monospace';
-htmlBody.style.fontSize = '12px';
+    <!-- Main Column -->
+    <div>
+        <div class="card">
+            <div class="card-header"><h3>Información del Template</h3></div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Nombre del Template <span style="color:var(--danger)">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" class="form-input" placeholder="Ej. Newsletter Abril 2026" required>
+                    @error('name')<p style="color:var(--danger);font-size:0.78rem;margin-top:0.25rem">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descripción</label>
+                    <textarea name="description" class="form-textarea" rows="2" placeholder="Descripción opcional del template...">{{ old('description') }}</textarea>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Tipo <span style="color:var(--danger)">*</span></label>
+                        <select name="template_type" class="form-select" required>
+                            <option value="custom"      {{ old('template_type') === 'custom'      ? 'selected' : '' }}>Custom</option>
+                            <option value="marketing"   {{ old('template_type') === 'marketing'   ? 'selected' : '' }}>Marketing</option>
+                            <option value="newsletter"  {{ old('template_type') === 'newsletter'  ? 'selected' : '' }}>Newsletter</option>
+                            <option value="promotional" {{ old('template_type') === 'promotional' ? 'selected' : '' }}>Promocional</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estado <span style="color:var(--danger)">*</span></label>
+                        <select name="status" id="status" class="form-select" required>
+                            <option value="draft"     {{ old('status', 'draft') === 'draft'     ? 'selected' : '' }}>Borrador</option>
+                            <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>Publicar ahora</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Asunto del correo <span style="color:var(--danger)">*</span>
+                        <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem;margin-left:0.5rem">(soporta &#123;&#123;placeholders&#125;&#125;)</span>
+                    </label>
+                    <input type="text" name="subject" value="{{ old('subject') }}" class="form-input" placeholder="Ej. Hola &#123;&#123;nombre&#125;&#125;, tenemos una oferta para ti" required>
+                    @error('subject')<p style="color:var(--danger);font-size:0.78rem;margin-top:0.25rem">{{ $message }}</p>@enderror
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preview text <span style="color:var(--text-muted);font-weight:400;font-size:0.75rem">(máx 150 chars)</span></label>
+                    <input type="text" name="preview_text" value="{{ old('preview_text') }}" class="form-input" maxlength="150" placeholder="Texto corto visible en cliente de correo">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Cuerpo HTML <span style="color:var(--danger)">*</span></label>
+                    <textarea name="html_body" id="html_body" class="form-textarea" rows="16" style="font-family:monospace;font-size:0.8rem" required>{{ old('html_body') }}</textarea>
+                    @error('html_body')<p style="color:var(--danger);font-size:0.78rem;margin-top:0.25rem">{{ $message }}</p>@enderror
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:0.75rem">
+            <button type="submit" class="btn btn-primary">Guardar Template</button>
+            <a href="{{ route('admin.custom-templates.index') }}" class="btn btn-outline">Cancelar</a>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+        <div class="card">
+            <div class="card-header"><h3>Placeholders disponibles</h3></div>
+            <div class="card-body" style="padding:1rem">
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem">Usa estas variables en el asunto y cuerpo del correo:</p>
+                <div style="display:flex;flex-direction:column;gap:0.5rem">
+                    @foreach([
+                        ['nombre',  'Nombre del destinatario'],
+                        ['email',   'Correo electrónico'],
+                        ['colonia', 'Colonia / zona'],
+                        ['precio',  'Precio del inmueble'],
+                        ['fecha',   'Fecha'],
+                        ['folio',   'Número de folio'],
+                    ] as [$key, $desc])
+                    <div style="display:flex;align-items:center;gap:0.5rem;cursor:pointer" onclick="insertPlaceholder('{{ $key }}')" title="Click para insertar">
+                        <code style="background:var(--bg);border:1px solid var(--border);padding:0.2rem 0.5rem;border-radius:4px;font-size:0.75rem;color:var(--primary);white-space:nowrap">&#123;&#123;{{ $key }}&#125;&#125;</code>
+                        <span style="font-size:0.8rem;color:var(--text-muted)">{{ $desc }}</span>
+                    </div>
+                    @endforeach
+                </div>
+                <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem">↑ Click en un placeholder para insertarlo en el cuerpo</p>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+function insertPlaceholder(key) {
+    const textarea = document.getElementById('html_body');
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    textarea.value = text.substring(0, start) + '{{' + key + '}}' + text.substring(end);
+    textarea.selectionStart = textarea.selectionEnd = start + key.length + 4;
+    textarea.focus();
+}
 </script>
 @endsection
