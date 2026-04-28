@@ -64,7 +64,7 @@
                                 <x-icon name="map-pin" class="w-5 h-5 text-brand-500" />
                             </div>
                             <div>
-                                <p class="text-sm font-bold text-gray-900">Direccion</p>
+                                <p class="text-sm font-bold text-gray-900">Dirección</p>
                                 <p class="text-sm text-gray-500">{{ $siteSettings->address }}</p>
                             </div>
                         </div>
@@ -74,7 +74,7 @@
                     {{-- Social Networks --}}
                     @if($siteSettings?->facebook_url || $siteSettings?->instagram_url || $siteSettings?->tiktok_url)
                     <div class="mt-8">
-                        <p class="text-sm font-bold text-gray-900 mb-3">Siguenos en redes</p>
+                        <p class="text-sm font-bold text-gray-900 mb-3">Síguenos en redes</p>
                         <div class="flex gap-3">
                             @if($siteSettings?->facebook_url)
                             <a href="{{ $siteSettings->facebook_url }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-11 h-11 rounded-xl border border-gray-200/60 text-gray-400 hover:text-[#1877F2] hover:border-[#1877F2]/30 hover:bg-[#1877F2]/5 transition-all duration-300">
@@ -102,7 +102,7 @@
                         <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Formulario</p>
                         <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Envíanos un mensaje</h2>
                         <p class="mt-2 text-gray-500 mb-8">Completa el formulario y te contactaremos lo antes posible.</p>
-                        <x-public.contact-form />
+                        <livewire:forms.contact-segmented-form />
                     </div>
 
                     {{-- Trust signals --}}
@@ -130,8 +130,8 @@
     <section class="pb-20 sm:pb-24 bg-white">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
             <div class="text-center mb-8">
-                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Ubicacion</p>
-                <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Visitanos</h2>
+                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Ubicación</p>
+                <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Visítanos</h2>
                 @if($siteSettings?->address)
                     <p class="mt-2 text-gray-500">{{ $siteSettings->address }}</p>
                 @endif
