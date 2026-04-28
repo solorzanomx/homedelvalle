@@ -2,7 +2,7 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Nosotros — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
+        title="Nosotros"
         description="Firma inmobiliaria boutique de alta precisión en la Benito Juárez, CDMX. Más de 30 años de experiencia en el sector."
         :canonical="route('nosotros')"
     />

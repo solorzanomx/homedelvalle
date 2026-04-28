@@ -1,6 +1,6 @@
 @extends('layouts.public')
 
-@section('title', 'Servicios — ' . ($siteSettings?->site_name ?? 'Home del Valle'))
+@section('title', 'Servicios')
 
 @section('content')
 

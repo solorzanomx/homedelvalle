@@ -2,7 +2,7 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Testimonios — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
+        title="Testimonios"
         description="Lo que dicen nuestros clientes sobre Home del Valle. Testimonios reales de compradores e inquilinos en Del Valle, Narvarte y la Benito Juárez, CDMX."
         :canonical="route('testimonios')"
     />

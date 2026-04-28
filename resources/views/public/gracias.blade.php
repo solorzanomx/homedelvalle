@@ -2,7 +2,7 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Solicitud recibida — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
+        title="Solicitud recibida"
         description="Recibimos tu solicitud. Te responderemos pronto."
         :canonical="url('/gracias')"
         :noindex="true"

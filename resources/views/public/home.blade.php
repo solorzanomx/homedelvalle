@@ -2,7 +2,7 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Firma Inmobiliaria Boutique en Benito Juárez — {{ $siteSettings?->site_name ?? 'Home del Valle' }}"
+        title="Firma inmobiliaria boutique en Benito Juárez"
         description="¿Quieres vender tu propiedad en la Benito Juárez? Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa. Firma inmobiliaria boutique en CDMX."
         :canonical="url('/')"
     />
