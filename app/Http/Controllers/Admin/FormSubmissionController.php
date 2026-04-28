@@ -67,4 +67,17 @@ class FormSubmissionController extends Controller
         $formSubmission->update(['notes' => $request->notes]);
         return back()->with('success', 'Notas guardadas');
     }
+
+    public function destroy(FormSubmission $formSubmission)
+    {
+        $formSubmission->delete();
+        return redirect()->route('admin.form-submissions.index')->with('success', 'Lead eliminado');
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+        $count = FormSubmission::whereIn('id', $request->ids)->delete();
+        return redirect()->route('admin.form-submissions.index')->with('success', "{$count} leads eliminados");
+    }
 }

@@ -53,12 +53,25 @@
     @endif
 </form>
 
+{{-- Bulk actions bar --}}
+<div id="bulkBar" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:0.6rem 1rem;margin-bottom:0.75rem;display:none;align-items:center;gap:0.75rem">
+    <span id="bulkCount" style="font-size:0.85rem;font-weight:600">0 seleccionados</span>
+    <form method="POST" action="{{ route('admin.form-submissions.bulk-destroy') }}" id="bulkForm" onsubmit="return confirm('¿Eliminar los leads seleccionados?')">
+        @csrf @method('DELETE')
+        <div id="bulkInputs"></div>
+        <button type="submit" class="btn btn-danger btn-sm">Eliminar seleccionados</button>
+    </form>
+</div>
+
 <div class="card">
     @if($submissions->count() > 0)
     <div class="table-wrap">
         <table class="data-table">
             <thead>
                 <tr>
+                    <th style="width:36px">
+                        <input type="checkbox" id="selectAll" style="cursor:pointer" title="Seleccionar todos">
+                    </th>
                     <th>Nombre</th>
                     <th>Tipo</th>
                     <th>Estado</th>
@@ -75,6 +88,9 @@
                     $statusLabels = ['new'=>'Nuevo','contacted'=>'Contactado','qualified'=>'Calificado','won'=>'Ganado','lost'=>'Perdido'];
                 @endphp
                 <tr>
+                    <td>
+                        <input type="checkbox" class="row-check" value="{{ $sub->id }}" style="cursor:pointer">
+                    </td>
                     <td style="font-weight:600">{{ $sub->full_name }}</td>
                     <td><span class="badge {{ $typeColors[$sub->form_type] ?? '' }}">{{ ucfirst($sub->form_type) }}</span></td>
                     <td><span class="badge {{ $statusColors[$sub->status] ?? '' }}">{{ $statusLabels[$sub->status] ?? $sub->status }}</span></td>
@@ -84,7 +100,13 @@
                     </td>
                     <td style="color:var(--text-muted);font-size:0.82rem;white-space:nowrap">{{ $sub->created_at->format('d/m/Y H:i') }}</td>
                     <td>
-                        <a href="{{ route('admin.form-submissions.show', $sub) }}" class="btn btn-outline btn-sm">Ver</a>
+                        <div style="display:flex;gap:0.4rem;align-items:center">
+                            <a href="{{ route('admin.form-submissions.show', $sub) }}" class="btn btn-outline btn-sm">Ver</a>
+                            <form method="POST" action="{{ route('admin.form-submissions.destroy', $sub) }}" style="display:inline" onsubmit="return confirm('¿Eliminar este lead?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 @endforeach
@@ -100,10 +122,40 @@
             @if(request('search')||request('type')||request('status'))
                 No hay leads con esos filtros.
             @else
-                Aún no hay envíos. Aparecerán aquí cuando alguien llene un formulario.
+                Aún no hay envíos.
             @endif
         </p>
     </div>
     @endif
 </div>
+
+<script>
+const selectAll   = document.getElementById('selectAll');
+const bulkBar     = document.getElementById('bulkBar');
+const bulkCount   = document.getElementById('bulkCount');
+const bulkInputs  = document.getElementById('bulkInputs');
+
+function updateBulkBar() {
+    const checked = document.querySelectorAll('.row-check:checked');
+    bulkBar.style.display = checked.length > 0 ? 'flex' : 'none';
+    bulkCount.textContent = checked.length + ' seleccionado' + (checked.length !== 1 ? 's' : '');
+    bulkInputs.innerHTML = '';
+    checked.forEach(cb => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids[]';
+        input.value = cb.value;
+        bulkInputs.appendChild(input);
+    });
+}
+
+selectAll?.addEventListener('change', function() {
+    document.querySelectorAll('.row-check').forEach(cb => cb.checked = this.checked);
+    updateBulkBar();
+});
+
+document.querySelectorAll('.row-check').forEach(cb => {
+    cb.addEventListener('change', updateBulkBar);
+});
+</script>
 @endsection
