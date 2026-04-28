@@ -26,6 +26,8 @@ class DeveloperBriefForm extends Component
     public bool $aviso = false;
 
     public bool $submitted = false;
+    public string $folio = '';
+    public string $clientName = '';
 
     protected function rules(): array
     {
@@ -90,10 +92,17 @@ class DeveloperBriefForm extends Component
         }
 
 
-        FormSubmitted::dispatch($submission);
+        $savedName  = $data['nombre_rol'];
+        $savedFolio = 'HDV-B2B-' . strtoupper(substr(md5($submission->id . 'b2b'), 0, 4)) . '-' . $submission->id;
+
+        try {
+            FormSubmitted::dispatch($submission);
+        } catch (\Throwable) {}
 
         $this->reset();
-        $this->submitted = true;
+        $this->submitted  = true;
+        $this->folio      = $savedFolio;
+        $this->clientName = $savedName;
     }
 
     public function render()

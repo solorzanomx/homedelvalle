@@ -22,6 +22,8 @@ class SellerValuationForm extends Component
     public bool $aviso = false;
 
     public bool $submitted = false;
+    public string $folio = '';
+    public string $clientName = '';
 
     protected function rules(): array
     {
@@ -76,10 +78,17 @@ class SellerValuationForm extends Component
             'user_agent'  => request()->userAgent(),
         ]);
 
-        FormSubmitted::dispatch($submission);
+        $savedName  = $data['nombre'];
+        $savedFolio = 'HDV-' . strtoupper(substr(md5($submission->id . 'vendedor'), 0, 4)) . '-' . $submission->id;
+
+        try {
+            FormSubmitted::dispatch($submission);
+        } catch (\Throwable) {}
 
         $this->reset();
-        $this->submitted = true;
+        $this->submitted  = true;
+        $this->folio      = $savedFolio;
+        $this->clientName = $savedName;
     }
 
     public function render()

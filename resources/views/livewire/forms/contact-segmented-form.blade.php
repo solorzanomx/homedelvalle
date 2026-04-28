@@ -1,15 +1,21 @@
 <div class="w-full max-w-2xl mx-auto">
     @if ($submitted)
-        <div class="bg-green-50 border border-green-200 rounded-xl p-6 mb-6">
-            <div class="flex gap-3">
-                <svg class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                </svg>
-                <div>
-                    <h3 class="font-semibold text-green-900">¡Recibimos tu mensaje, {{ $nombre }}!</h3>
-                    <p class="text-green-800 text-sm mt-1">Te respondemos por WhatsApp en menos de 24 horas hábiles.</p>
-                </div>
+        <div class="text-center py-10 px-4">
+            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-100 mx-auto mb-5">
+                <svg class="w-7 h-7 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
             </div>
+            <h3 class="text-xl font-bold text-gray-900">¡Recibimos tu mensaje, {{ $clientName }}!</h3>
+            <p class="mt-3 text-sm text-gray-600 leading-relaxed max-w-xs mx-auto">
+                Te respondemos por WhatsApp en <strong>menos de 24 horas hábiles</strong>. Sin compromiso y sin spam.
+            </p>
+            @if($folio)
+            <p class="mt-4 text-xs font-mono text-gray-400 bg-gray-50 rounded-lg px-3 py-2 inline-block">
+                Folio: {{ $folio }}
+            </p>
+            @endif
+            <p class="mt-5 text-xs text-gray-400">
+                Mientras tanto, consulta el <a href="{{ url('/mercado') }}" class="text-brand-500 font-medium underline">observatorio de precios de Benito Juárez</a>.
+            </p>
         </div>
     @else
         <form wire:submit="submit" class="space-y-6">

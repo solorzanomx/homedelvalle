@@ -1,15 +1,20 @@
 <div>
     @if($submitted)
-        <div class="text-center py-8" x-data x-intersect.once="$el.classList.add('animate-scale-in')">
-            <div class="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mx-auto mb-4">
-                <x-icon name="check" class="w-6 h-6 text-emerald-600" />
+        <div class="py-8 px-2 text-center">
+            <div class="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-100 mx-auto mb-5">
+                <x-icon name="check" class="w-7 h-7 text-emerald-600" />
             </div>
-            <h3 class="text-lg font-bold text-gray-900 mt-4">¡Recibimos tu solicitud!</h3>
-            <p class="mt-3 text-sm text-gray-500 leading-relaxed">
-                Un asesor especializado te contactará en menos de 24 horas por WhatsApp para brindarte tu valuación gratuita.
+            <h3 class="text-xl font-bold text-gray-900">¡Recibimos tu solicitud, {{ $clientName }}!</h3>
+            <p class="mt-3 text-sm text-gray-600 leading-relaxed max-w-xs mx-auto">
+                Un asesor especializado revisará tu propiedad y te contactará en <strong>menos de 24 horas</strong> por WhatsApp con tu valuación gratuita.
             </p>
-            <p class="mt-4 text-xs text-gray-400">
-                Mientras tanto, puedes explorar el <a href="{{ url('/mercado') }}" class="text-brand-500 hover:text-brand-600 font-medium">observatorio de precios de Benito Juárez</a>.
+            @if($folio)
+            <p class="mt-4 text-xs font-mono text-gray-400 bg-gray-50 rounded-lg px-3 py-2 inline-block">
+                Folio: {{ $folio }}
+            </p>
+            @endif
+            <p class="mt-5 text-xs text-gray-400">
+                Mientras tanto, consulta el <a href="{{ url('/mercado') }}" class="text-brand-500 hover:text-brand-600 font-medium underline">observatorio de precios de Benito Juárez</a>.
             </p>
         </div>
     @else
