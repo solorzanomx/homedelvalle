@@ -648,8 +648,8 @@
                         <a href="{{ route('admin.email.settings') }}" class="nav-item {{ request()->routeIs('admin.email.settings*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Correo SMTP
                         </a>
-                        <a href="{{ route('admin.email.templates.index') }}" class="nav-item {{ request()->routeIs('admin.email.templates*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Templates Email
+                        <a href="{{ route('admin.custom-templates.index') }}" class="nav-item {{ request()->routeIs('admin.custom-templates*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Email Templates
                         </a>
                         <a href="{{ route('admin.email.assets.index') }}" class="nav-item {{ request()->routeIs('admin.email.assets*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="image" class="w-4 h-4" /></span> Assets Email

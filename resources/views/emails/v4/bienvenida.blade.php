@@ -1,5 +1,5 @@
 <x-emails.v4.layout preheader="Bienvenido al área de clientes de Home del Valle">
-    <x-emails.v4.header />
+    <x-emails.v4.header :logoUrl="$logoUrl ?? null" />
 
     <x-emails.v4.body>
         <x-emails.v4.h1>Bienvenido al área de clientes</x-emails.v4.h1>

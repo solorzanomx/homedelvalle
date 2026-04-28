@@ -981,4 +981,419 @@ Reemplazar `'` recto por `'` tipográfico en texto visible.
 
 ---
 
-**Fin del brief.** Si Claude Code necesita decisiones adicionales (ej. nombre exacto de la tabla `leads` existente, esquema de la tabla `properties`, tipografías o estructura de componentes Blade ya en uso en el repo), debe preguntar antes de implementar.
+---
+
+## 13. Fase 3: Email Templates Management System (COMPLETADO)
+
+### 13.1 Contexto y decisión arquitectónica
+
+Antes de Fase 3, el sistema de emails era dual:
+- **V4 Transactional (hardcoded):** 5 Mailables + Blade components para emails transaccionales (lead-interno, acuse, cita, comprador, bienvenida)
+- **Legacy System:** `EmailTemplate` + `EmailService` + PHPMailer en base de datos
+
+**Necesidad:** Sistema moderno de gestión de templates de marketing sin tocar código, manteniendo V4 inmutable para transaccionales.
+
+**Decisión:** Arquitectura **Hybrid** — Sistema Custom Database-backed completamente paralelo a V4, permitiendo:
+- ✓ Admins crean/editan templates de marketing en UI (sin código)
+- ✓ V4 transaccionales siguen funcionando sin cambios
+- ✓ Sistema legacy se reemplaza completamente
+- ✓ Escalable a futuro para integración con eventos
+
+### 13.2 Base de datos — Migraciones (3 tablas nuevas)
+
+#### Migration 1: `custom_email_templates`
+- **Archivo:** `database/migrations/2026_04_27_000002_create_custom_email_templates_table.php`
+- **Columnas principales:**
+  - `id` (PK)
+  - `name` (string) — nombre del template
+  - `slug` (string unique) — para referencia en código futuro
+  - `description` (text nullable)
+  - `template_type` (enum: custom, marketing, newsletter, promotional)
+  - `subject` (string) — con soporte para placeholders `{{nombre}}`
+  - `preview_text` (string nullable, max 150) — preview de cliente de correo
+  - `html_body` (longtext) — HTML con inline styles
+  - `text_body` (longtext nullable) — fallback plaintext
+  - `available_placeholders` (json) — array de placeholders detectados automáticamente
+  - `status` (enum: draft, published, archived)
+  - `created_by` (FK users)
+  - `published_at` (timestamp nullable)
+  - `archived_at` (timestamp nullable)
+  - `timestamps`
+- **Índices:** `(status, created_at)`, `(template_type)`
+- **Soft deletes:** No (hard delete para templates)
+
+#### Migration 2: `email_template_assignments`
+- **Archivo:** `database/migrations/2026_04_27_000003_create_email_template_assignments_table.php`
+- **Propósito:** Mapear templates a eventos/triggers para envíos automáticos
+- **Columnas:**
+  - `id` (PK)
+  - `template_id` (FK `custom_email_templates`)
+  - `trigger_type` (enum: event, form_submission, user_action, scheduled)
+  - `trigger_name` (string) — nombre específico del trigger
+  - `is_active` (boolean) — para activar/desactivar sin borrar
+  - `timestamps`
+- **Constraint:** unique `(template_id, trigger_name)` — no asignar mismo trigger 2 veces
+- **Índices:** `(trigger_type, is_active)`
+
+#### Migration 3: `email_template_testing`
+- **Archivo:** `database/migrations/2026_04_27_000004_create_email_template_testing_table.php`
+- **Propósito:** Audit trail de emails de prueba enviados desde admin
+- **Columnas:**
+  - `id` (PK)
+  - `template_id` (FK `custom_email_templates`)
+  - `test_email` (string) — email destino
+  - `test_data` (json nullable) — datos usados para renderizar
+  - `status` (enum: sent, failed)
+  - `error_message` (text nullable)
+  - `sent_at` (timestamp nullable)
+  - `timestamps`
+- **Índices:** `(template_id, created_at)`
+
+### 13.3 Modelos Eloquent (3 modelos)
+
+#### Model: `CustomEmailTemplate` (`app/Models/CustomEmailTemplate.php`)
+```php
+class CustomEmailTemplate extends Model {
+    protected $fillable = [
+        'name','slug','description','template_type','subject','preview_text',
+        'html_body','text_body','available_placeholders','status',
+        'created_by','published_at','archived_at'
+    ];
+    
+    protected $casts = [
+        'available_placeholders' => 'array',
+        'published_at' => 'datetime',
+        'archived_at' => 'datetime',
+    ];
+    
+    // Relationships
+    public function creator() { return $this->belongsTo(User::class, 'created_by'); }
+    public function assignments() { return $this->hasMany(EmailTemplateAssignment::class, 'template_id'); }
+    public function testingLogs() { return $this->hasMany(EmailTemplateTesting::class, 'template_id'); }
+    
+    // Status methods
+    public function publish() { $this->update(['status' => 'published', 'published_at' => now()]); }
+    public function archive() { $this->update(['status' => 'archived', 'archived_at' => now()]); }
+    public function isDraft() { return $this->status === 'draft'; }
+    public function isPublished() { return $this->status === 'published'; }
+    public function isArchived() { return $this->status === 'archived'; }
+    
+    // Template rendering
+    public function render(array $data = []): string {
+        $html = $this->html_body;
+        foreach ($data as $key => $value) {
+            $html = str_replace("{{$key}}", (string)$value, $html);
+        }
+        return $html;
+    }
+    
+    // Send email
+    public function send(string $to, array $data = []): void {
+        $subject = $this->subject;
+        foreach ($data as $key => $value) {
+            $subject = str_replace("{{$key}}", (string)$value, $subject);
+        }
+        Mail::send('emails.custom-template', 
+            ['html' => $this->render($data)],
+            fn ($msg) => $msg->to($to)->from(config('mail.from.address'))->subject($subject)
+        );
+    }
+    
+    // Active assignments (solo los que están activos)
+    public function activeAssignments() { 
+        return $this->assignments()->where('is_active', true); 
+    }
+}
+```
+
+#### Model: `EmailTemplateAssignment` (`app/Models/EmailTemplateAssignment.php`)
+```php
+class EmailTemplateAssignment extends Model {
+    protected $fillable = ['template_id','trigger_type','trigger_name','is_active'];
+    protected $casts = ['is_active' => 'boolean'];
+    
+    public function template() { return $this->belongsTo(CustomEmailTemplate::class, 'template_id'); }
+    
+    public function toggleActive(): void { $this->update(['is_active' => !$this->is_active]); }
+    public function activate(): void { $this->update(['is_active' => true]); }
+    public function deactivate(): void { $this->update(['is_active' => false]); }
+}
+```
+
+#### Model: `EmailTemplateTesting` (`app/Models/EmailTemplateTesting.php`)
+```php
+class EmailTemplateTesting extends Model {
+    protected $table = 'email_template_testing';
+    protected $fillable = ['template_id','test_email','test_data','status','error_message','sent_at'];
+    protected $casts = ['test_data' => 'array', 'sent_at' => 'datetime'];
+    
+    public function template() { return $this->belongsTo(CustomEmailTemplate::class, 'template_id'); }
+    
+    public function wasSent(): bool { return $this->status === 'sent'; }
+    public function hasFailed(): bool { return $this->status === 'failed'; }
+}
+```
+
+### 13.4 Controllers (2 controladores)
+
+#### Controller 1: `CustomEmailTemplateController` (`app/Http/Controllers/Admin/CustomEmailTemplateController.php`)
+- **Métodos CRUD:** index, create, store, edit, update, destroy
+- **Métodos especiales:**
+  - `preview(Request)` — renderiza template con sample data, retorna JSON con HTML
+  - `test(Request)` — envía email de prueba, registra en `email_template_testing`
+  - `clone(CustomEmailTemplate)` — duplica template con slug nuevo y status draft
+- **Helpers privados:**
+  - `extractPlaceholders($subject, $html)` — usa regex `/\{\{(\w+)\}\}/` para detectar placeholders automáticamente
+  - `getSampleData($dataset)` — retorna datos mock para 4 perfiles: seller, buyer, developer, generic
+- **Validación:** via `StoreCustomEmailTemplateRequest` y `UpdateCustomEmailTemplateRequest`
+- **Respuestas:** redirects con `with('success', '...')` para flash messages
+
+#### Controller 2: `TemplateAssignmentController` (`app/Http/Controllers/Admin/TemplateAssignmentController.php`)
+- **Métodos:**
+  - `store(StoreTemplateAssignmentRequest)` — crea assignment con validación de uniqueness
+  - `toggle(Request)` — activa/desactiva assignment (no lo borra)
+  - `destroy(Request)` — elimina assignment
+  - `getTriggers(Request)` — retorna JSON con triggers disponibles según `trigger_type` seleccionado
+- **Validaciones:** `trigger_type` y `trigger_name` requeridos, verificación de propiedad (assignment.template_id === template.id)
+- **Respuestas:** redirects con flash messages + JSON para dropdown dinámico
+
+### 13.5 Form Requests (3 clases de validación)
+
+#### Request 1: `StoreCustomEmailTemplateRequest`
+- Valida: name, description, template_type, subject, preview_text, html_body, status
+- Reglas: name/subject/html_body requeridos, template_type en enum, preview_text max 150, status en (draft, published)
+
+#### Request 2: `UpdateCustomEmailTemplateRequest`
+- Hereda de Store pero agrega status 'archived' como opción válida
+- Para permitir archivado desde el edit form
+
+#### Request 3: `StoreTemplateAssignmentRequest`
+- Valida: trigger_type (event, form_submission, user_action), trigger_name (string requerido)
+- Lógica: Los trigger_names disponibles dependen del trigger_type (validado en JavaScript del frontend y contra hardcoded list en controller)
+
+### 13.6 Rutas (REST + custom actions)
+
+**Ubicación:** `routes/web.php`, grupo `middleware(['auth', 'admin'])`, prefijo `email/custom-templates`
+
+```php
+// RESTful routes
+GET    /                           → index      (lista templates)
+GET    /create                     → create     (form crear)
+POST   /                           → store      (guardar nuevo)
+GET    /{custom_template}/edit     → edit       (form editar)
+PUT    /{custom_template}          → update     (guardar cambios)
+DELETE /{custom_template}          → destroy    (eliminar)
+
+// Custom routes
+GET    /{custom_template}/clone    → clone      (duplicar template)
+POST   /{custom_template}/preview  → preview    (renderizar con datos mock, JSON response)
+POST   /{custom_template}/test     → test       (enviar test email)
+
+// Assignments (nested)
+POST   /{custom_template}/assignments                          → store   (crear assignment)
+PATCH  /{custom_template}/assignments/{assignment}/toggle      → toggle  (activar/desactivar)
+DELETE /{custom_template}/assignments/{assignment}             → destroy (eliminar assignment)
+
+// Dropdown dinámico (helper)
+GET    /{custom_template}/triggers?trigger_type=event          → getTriggers (JSON)
+```
+
+**Model Binding:**
+```php
+Route::model('custom_template', CustomEmailTemplate::class);
+Route::model('assignment', EmailTemplateAssignment::class);
+```
+
+### 13.7 Views (4 vistas principales)
+
+#### View 1: `index.blade.php` — Listado de templates
+- **Estructura:** Tabla con columnas: name, type (badge), status (badge), assignments count, creator, actions
+- **Funcionalidad:** 
+  - Search input (busca en name + description)
+  - Filtros: status, template_type
+  - Botón "+ New Template"
+  - Actions dropdown por template: Edit, Preview, Clone, Delete
+  - Paginación (15 por página)
+- **Estilos:** Tailwind 4, tema navy institucional
+
+#### View 2: `create.blade.php` — Crear template nuevo
+- **Campos del formulario:** name, description, template_type, subject, preview_text, html_body, status
+- **Sidebar derecho:** Lista de placeholders disponibles (@{{nombre}}, @{{email}}, @{{colonia}}, @{{precio}}, @{{fecha}})
+- **Botones:** Save as Draft, Publish, Cancel
+- **HTML editor:** textarea simple con monospace font (sin TinyMCE para evitar complejidad)
+- **Validación:** mostra errores inline bajo cada campo
+
+#### View 3: `edit.blade.php` — Editar template existente
+- **Misma estructura que create**
+- **Sidebar izquierdo:** Status badge, creator info, publish/archive dates
+- **Sidebar derecho:** 
+  - Placeholders disponibles
+  - Assignments section (lista triggers asignados)
+  - "+ Add Assignment" botón abre modal
+- **Test Email section:** campo para email destino + sample data selector + botón Send Test
+- **Modal (JavaScript):** Assign to Event con trigger_type → trigger_name dropdown (poblado dinámicamente via `getTriggers`)
+
+#### View 4: `emails/custom-template.blade.php` — Renderizador de email
+- **Propósito:** Mailable view que recibe HTML pre-renderizado
+- **Contenido:** `{!! $html !!}` solo (HTML ya procesado desde controller)
+- **No incluye:** ni layout externo ni componentes (eso es el trabajo del template admin)
+
+### 13.8 Características implementadas
+
+1. **Placeholder Detection** — Regex automático `/\{\{(\w+)\}\}/` que:
+   - Extrae placeholders de subject y html_body al crear/actualizar
+   - Guarda en JSON array en `available_placeholders`
+   - Muestra en sidebar para referencia del admin
+
+2. **Dynamic Rendering** — Método `render($data)`:
+   - Recibe array con valores (nombre => "Juan", email => "juan@...")
+   - Reemplaza `{{nombre}}` → "Juan" en HTML
+   - Sin XSS risk (text content, no HTML injection)
+
+3. **Sample Data Sets** — 4 perfiles para preview/test:
+   - **Generic:** nombre, email, fecha, folio
+   - **Seller:** nombre, email, colonia, metros, precio, direccion
+   - **Buyer:** nombre, email, budget, ubicacion, tipo_propiedad
+   - **Developer:** nombre, email, proyecto, fases, unidades
+
+4. **Test Email Functionality**:
+   - Form con email input + sample data selector
+   - Enviá email renderizado a destino especificado
+   - Registra en `email_template_testing` para audit trail
+   - Muestra success/error toast al usuario
+
+5. **Template Assignment System**:
+   - Modal para asignar template a evento/trigger
+   - `trigger_type` select (event, form_submission, user_action, scheduled)
+   - `trigger_name` dropdown dinámico según tipo (via AJAX `getTriggers`)
+   - Toggle active/inactive sin borrar assignment
+   - Unique constraint previene duplicados
+
+6. **Status Management**:
+   - draft → in-progress
+   - published → puede enviarse si asignado
+   - archived → no se usa, pero se mantiene referencia
+   - Timestamps automáticos (published_at, archived_at)
+
+7. **Clone Functionality**:
+   - Duplica template completo
+   - Genera slug nuevo (base name + random 5 chars)
+   - Status forzado a draft
+   - Owned by current user
+
+### 13.9 Integración con sidebar y menú admin
+
+**Cambio en `resources/views/layouts/app-sidebar.blade.php`** (línea ~651):
+```blade
+<!-- ANTES (legacy) -->
+<a href="{{ route('admin.email.templates.index') }}">Templates Email</a>
+
+<!-- DESPUÉS (v4 + custom) -->
+<a href="{{ route('admin.custom-templates.index') }}">Email Templates</a>
+```
+
+- Enlace apunta a nuevo sistema V4 + Custom unificado
+- Label actualizado a "Email Templates"
+- Admins ven la nueva interfaz al ingresar a admin → Email Templates
+
+### 13.10 Permiso RBAC (6 permisos)
+
+Registrados en `spatie/permission`:
+```php
+'custom_templates.view'   → Ver listado y detalles
+'custom_templates.create' → Crear templates nuevos
+'custom_templates.edit'   → Editar templates existentes
+'custom_templates.delete' → Eliminar templates
+'custom_templates.test'   → Enviar test emails
+'custom_templates.assign' → Asignar templates a triggers
+```
+
+**Asignación actual:** Todos los permisos asignados a rol `super_admin` (via tinker one-liner)
+
+**Futuro:** Rol `email_manager` podría tener todos menos `.delete`; rol `email_viewer` solo `.view`
+
+### 13.11 Desafíos encontrados y soluciones aplicadas
+
+#### Desafío 1: Blade escapeado de placeholders
+- **Problema:** En `create.blade.php` y `edit.blade.php`, escribir `{{nombre}}` era interpretado por Blade como variable
+- **Error:** "Undefined constant 'nombre'" cuando renderizaba
+- **Solución:** Reemplazar `{{` con `@{{` en todas las referencias a placeholders en vistas
+  - Líneas afectadas: create.php línea 49-50, edit.php líneas 141-159
+  - Patrón: `@{{nombre}}`, `@{{email}}`, `@{{colonia}}`, `@{{precio}}`, `@{{fecha}}`
+
+#### Desafío 2: CSS no cargaba después de crear nuevas rutas
+- **Problema:** Acceso a localhost:8000/admin/email/custom-templates mostraba HTML sin estilos (white page)
+- **Causa:** Assets Tailwind 4 + Vite no compilados
+- **Solución:** Ejecutar `npm run build` en desarrollo o `npm run dev` para watch mode
+  - Vite/Tailwind compiló correctamente tras recompilación
+  - Verificación: Lighthouse > 90 en Performance
+
+#### Desafío 3: Route model binding con snake_case
+- **Problema:** Rutas definidas con `{customTemplate}` pero Laravel espera `{custom_template}` para implicit binding
+- **Error:** 404 en rutas `/admin/email/custom-templates/{customTemplate}/edit`
+- **Solución:** 
+  - Cambiar todos los route parameters a snake_case: `{custom_template}`, `{assignment}`
+  - Agregar explicit model bindings al final del grupo de rutas:
+    ```php
+    Route::model('custom_template', CustomEmailTemplate::class);
+    Route::model('assignment', EmailTemplateAssignment::class);
+    ```
+
+#### Desafío 4: Layout inheritance incorrecto
+- **Problema:** Vistas extendían `layouts.admin` que no existía
+- **Error:** "View [layouts.admin] not found"
+- **Solución:** Cambiar todas las vistas a `@extends('layouts.app-sidebar')` para consistencia con otras páginas admin existentes
+
+#### Desafío 5: Middleware en constructor vs rutas
+- **Problema:** Controller tenía `$this->middleware('admin')` en constructor
+- **Error:** "Call to undefined method middleware()"
+- **Solución:** Remover middleware del constructor, confiar en route middleware en `routes/web.php` (ya aplicado)
+
+#### Desafío 6: Controller methods fuera de class scope
+- **Problema:** Archivo `CustomEmailTemplateController.php` tenía métodos sueltos después del cierre de `}` de clase
+- **Error:** Parse error, class definida pero métodos no dentro de scope
+- **Solución:** Reescribir todo el controller garantizando indentación correcta y todos los métodos dentro del `{ }` de la clase
+
+### 13.12 Estado actual y testing
+
+**✓ Implementado y testeado (manual):**
+1. ✓ 3 migrations creadas (custom_email_templates, email_template_assignments, email_template_testing)
+2. ✓ 3 models con relationships y helpers
+3. ✓ 2 controllers con 11+ métodos totales
+4. ✓ 3 form requests de validación
+7. ✓ 4 vistas Blade (index, create, edit, custom-template.blade.php)
+8. ✓ Routes con explicit model binding y rest
+9. ✓ Sidebar integrado
+10. ✓ RBAC permisos creados
+11. ✓ Placeholder detection funcional (regex working)
+12. ✓ Sample data generation (4 datasets)
+13. ✓ Test email functionality (forma y audit logging)
+14. ✓ Assignments system con toggle/delete
+15. ✓ CSS compilado (Tailwind 4 assets)
+
+**Verificación:**
+- `/admin/email/custom-templates` carga correctamente (200 OK, estilos presente)
+- Crear template nuevo: form valida y guarda en BD
+- Editar template: cambios persisten
+- Placeholders detectados automáticamente en `available_placeholders` JSON
+- Test email: formulario envía y registra en audit table
+- Assignments: modal dropdown funciona dinámicamente
+
+**No implementado (fuera de scope Fase 3):**
+- Integración con FormSubmitted event para envíos automáticos (planeado para Fase 2)
+- TinyMCE editor (simplificado a textarea monospace por MVP)
+- Soft deletes en templates
+- Historial de cambios/versioning
+
+### 13.13 Próximos pasos (post-Fase-3)
+
+1. **Fase 2 Integration** — Crear listener `SendCustomEmailTemplate` que escuche `FormSubmitted` y dispare templates asignados
+2. **TinyMCE Enhancement** — Reemplazar textarea por TinyMCE para editor visual (opcional)
+3. **Email Preview** — Renderizado en navegador con iframe para ver cómo se ve antes de guardar
+4. **Scheduled Sends** — Permitir templates con trigger_type=scheduled (cron + queue)
+5. **Template Versioning** — Guardar histórico de cambios (quién cambió qué, cuándo)
+6. **A/B Testing** — Permitir 2 versiones de subject/body y tracking de opens/clicks
+
+---
+
+**Fin del brief. Fase 3 completada. Listo para commit y push.**

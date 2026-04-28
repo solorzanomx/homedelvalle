@@ -1,4 +1,4 @@
-@props(['tag' => null, 'tagColor' => 'blue'])
+@props(['tag' => null, 'tagColor' => 'blue', 'logoUrl' => null])
 
 <table role="presentation" width="100%">
     <tr>
@@ -6,13 +6,17 @@
             <table role="presentation" width="100%">
                 <tr>
                     <td align="left" style="vertical-align: middle;">
-                        <div style="display: inline-flex; align-items: center; gap: 10px;">
-                            <div style="width: 32px; height: 32px; border-radius: 50%; background-color: {{ \App\Mail\V4\Tokens::NAVY }}; color: {{ \App\Mail\V4\Tokens::WHITE }}; font-size: 14px; font-weight: 600; line-height: 32px; text-align: center;">HV</div>
-                            <div>
-                                <p style="margin: 0; font-size: {{ \App\Mail\V4\Tokens::FONT_SIZE_14 }}; font-weight: 600; color: {{ \App\Mail\V4\Tokens::INK }};">Home del Valle</p>
-                                <p style="margin: 0; font-size: {{ \App\Mail\V4\Tokens::FONT_SIZE_12 }}; color: {{ \App\Mail\V4\Tokens::MUTED }};">homedelvalle.mx</p>
+                        @if($logoUrl)
+                            <img src="{{ $logoUrl }}" alt="Home del Valle" width="120" height="40" style="display: block; max-width: 150px; height: auto;">
+                        @else
+                            <div style="display: inline-flex; align-items: center; gap: 10px;">
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: {{ \App\Mail\V4\Tokens::NAVY }}; color: {{ \App\Mail\V4\Tokens::WHITE }}; font-size: 14px; font-weight: 600; line-height: 32px; text-align: center;">HV</div>
+                                <div>
+                                    <p style="margin: 0; font-size: {{ \App\Mail\V4\Tokens::FONT_SIZE_14 }}; font-weight: 600; color: {{ \App\Mail\V4\Tokens::INK }};">Home del Valle</p>
+                                    <p style="margin: 0; font-size: {{ \App\Mail\V4\Tokens::FONT_SIZE_12 }}; color: {{ \App\Mail\V4\Tokens::MUTED }};">homedelvalle.mx</p>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                     </td>
                     @if ($tag)
                         <td align="right" style="vertical-align: middle;">

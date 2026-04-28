@@ -1,5 +1,5 @@
 <x-emails.v4.layout preheader="Nuevo lead de {{ $data->nombre }}">
-    <x-emails.v4.header tag="Nuevo lead" tagColor="blue" />
+    <x-emails.v4.header tag="Nuevo lead" tagColor="blue" :logoUrl="$logoUrl ?? null" />
 
     <x-emails.v4.body>
         <table role="presentation" width="100%" style="margin-bottom: {{ \App\Mail\V4\Tokens::SPACE_XL }};">

@@ -1,5 +1,5 @@
 <x-emails.v4.layout preheader="Propiedad en {{ $data->colonia }}: {{ $data->titulo }}">
-    <x-emails.v4.header />
+    <x-emails.v4.header :logoUrl="$logoUrl ?? null" />
 
     <x-emails.v4.body>
         <x-emails.v4.h1>Aquí tienes la propiedad</x-emails.v4.h1>

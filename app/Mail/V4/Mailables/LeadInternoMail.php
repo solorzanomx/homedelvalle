@@ -28,7 +28,24 @@ class LeadInternoMail extends Mailable
     {
         return new Content(
             view: 'emails.v4.lead-interno',
-            with: ['data' => $this->data]
+            with: [
+                'data' => $this->data,
+                'logoUrl' => $this->getLogoUrl(),
+            ]
         );
+    }
+
+    private function getLogoUrl(): ?string
+    {
+        try {
+            $settings = \App\Models\SiteSetting::current();
+            if ($settings?->logo_path) {
+                $url = \Illuminate\Support\Facades\Storage::url($settings->logo_path);
+                return url($url);
+            }
+        } catch (\Throwable $e) {
+            // Si hay error, retorna null y usa fallback
+        }
+        return null;
     }
 }

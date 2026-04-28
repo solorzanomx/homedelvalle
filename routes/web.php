@@ -307,6 +307,29 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/email/transactional-emails/{templateId}/send-test', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'sendTest'])->name('transactional-emails.send-test');
         Route::get('/email/transactional-emails/{templateId}/render', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'renderHtml'])->name('transactional-emails.render');
 
+        // Custom Email Templates
+        Route::prefix('email/custom-templates')->name('custom-templates.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'store'])->name('store');
+            Route::get('/{custom_template}/edit', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'edit'])->name('edit');
+            Route::put('/{custom_template}', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'update'])->name('update');
+            Route::delete('/{custom_template}', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'destroy'])->name('destroy');
+            Route::get('/{custom_template}/clone', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'clone'])->name('clone');
+            Route::post('/{custom_template}/preview', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'preview'])->name('preview');
+            Route::post('/{custom_template}/test', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'test'])->name('test');
+
+            // Assignments
+            Route::post('/{custom_template}/assignments', [\App\Http\Controllers\Admin\TemplateAssignmentController::class, 'store'])->name('assignments.store');
+            Route::patch('/{custom_template}/assignments/{assignment}/toggle', [\App\Http\Controllers\Admin\TemplateAssignmentController::class, 'toggle'])->name('assignments.toggle');
+            Route::delete('/{custom_template}/assignments/{assignment}', [\App\Http\Controllers\Admin\TemplateAssignmentController::class, 'destroy'])->name('assignments.destroy');
+            Route::get('/triggers', [\App\Http\Controllers\Admin\TemplateAssignmentController::class, 'getTriggers'])->name('triggers');
+        });
+
+        // Update route model bindings
+        Route::model('custom_template', \App\Models\CustomEmailTemplate::class);
+        Route::model('assignment', \App\Models\EmailTemplateAssignment::class);
+
         // Email assets (media gallery)
         Route::get('/email/assets/gallery', [EmailAssetController::class, 'gallery'])->name('email.assets.gallery');
         Route::resource('/email/assets', EmailAssetController::class)->names('email.assets')->only(['index', 'store', 'destroy'])->parameters(['assets' => 'asset']);

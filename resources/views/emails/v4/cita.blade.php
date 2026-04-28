@@ -1,5 +1,5 @@
 <x-emails.v4.layout preheader="Tu visita está agendada para {{ $data->dia_semana }}, {{ $data->dia }} de {{ $data->mes }}">
-    <x-emails.v4.header />
+    <x-emails.v4.header :logoUrl="$logoUrl ?? null" />
 
     <x-emails.v4.body>
         <x-emails.v4.h1>Tu visita está agendada</x-emails.v4.h1>

@@ -8,9 +8,24 @@ use App\Mail\V4\Data\CitaData;
 use App\Mail\V4\Data\CompradorData;
 use App\Mail\V4\Data\BienvenidaData;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
 
 class PreviewEmailV4Controller extends Controller
 {
+    private function getLogoUrl(): ?string
+    {
+        try {
+            $settings = \App\Models\SiteSetting::current();
+            if ($settings?->logo_path) {
+                $url = Storage::url($settings->logo_path);
+                return url($url);
+            }
+        } catch (\Throwable $e) {
+            // Si hay error, retorna null y usa fallback
+        }
+        return null;
+    }
+
     public function leadInterno(): View
     {
         $data = new LeadInternoData(
@@ -22,7 +37,10 @@ class PreviewEmailV4Controller extends Controller
             mensaje: 'Estoy muy interesado en vender mi propiedad en Benito Juárez. He visto que manejan pocos inmuebles y eso me atrae porque indica calidad.'
         );
 
-        return view('emails.v4.lead-interno', ['data' => $data]);
+        return view('emails.v4.lead-interno', [
+            'data' => $data,
+            'logoUrl' => $this->getLogoUrl(),
+        ]);
     }
 
     public function acuse(): View
@@ -32,7 +50,10 @@ class PreviewEmailV4Controller extends Controller
             email: 'cliente@example.com'
         );
 
-        return view('emails.v4.acuse', ['data' => $data]);
+        return view('emails.v4.acuse', [
+            'data' => $data,
+            'logoUrl' => $this->getLogoUrl(),
+        ]);
     }
 
     public function cita(): View
@@ -50,7 +71,10 @@ class PreviewEmailV4Controller extends Controller
             asesor: 'María García'
         );
 
-        return view('emails.v4.cita', ['data' => $data]);
+        return view('emails.v4.cita', [
+            'data' => $data,
+            'logoUrl' => $this->getLogoUrl(),
+        ]);
     }
 
     public function comprador(): View
@@ -67,7 +91,10 @@ class PreviewEmailV4Controller extends Controller
             foto_url: null
         );
 
-        return view('emails.v4.comprador', ['data' => $data]);
+        return view('emails.v4.comprador', [
+            'data' => $data,
+            'logoUrl' => $this->getLogoUrl(),
+        ]);
     }
 
     public function bienvenida(): View
@@ -79,6 +106,9 @@ class PreviewEmailV4Controller extends Controller
             url_acceso: 'https://app.homedelvalle.mx/login'
         );
 
-        return view('emails.v4.bienvenida', ['data' => $data]);
+        return view('emails.v4.bienvenida', [
+            'data' => $data,
+            'logoUrl' => $this->getLogoUrl(),
+        ]);
     }
 }

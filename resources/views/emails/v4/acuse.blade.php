@@ -1,5 +1,5 @@
 <x-emails.v4.layout preheader="Acuse de recibido - Folio {{ $data->folio }}">
-    <x-emails.v4.header />
+    <x-emails.v4.header :logoUrl="$logoUrl ?? null" />
 
     <x-emails.v4.body>
         <x-emails.v4.h1>Recibimos tu mensaje 👋</x-emails.v4.h1>
