@@ -138,6 +138,19 @@ class FormSubmissionResource extends Resource
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('phone')->label('Teléfono')->searchable(),
                 BadgeColumn::make('lead_tag')->label('Tag'),
+                BadgeColumn::make('client.lead_temperature')
+                    ->label('Temperatura')
+                    ->colors([
+                        'danger' => 'hot',
+                        'warning' => 'warm',
+                        'gray' => 'cold',
+                    ])
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'hot' => '🔥 Hot',
+                        'warm' => '🔆 Warm',
+                        'cold' => '❄️ Cold',
+                        default => $state ?? '—',
+                    }),
                 BadgeColumn::make('status')
                     ->colors([
                         'danger' => 'new',
