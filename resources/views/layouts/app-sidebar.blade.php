@@ -319,6 +319,7 @@
 
         @yield('styles')
     </style>
+    @livewireStyles
 </head>
 <body>
     @php
@@ -930,6 +931,7 @@
         loadNotifications();
         setInterval(function() { if (!notifOpen) loadNotifications(); }, 30000);
     </script>
+    @livewireScripts
     @yield('scripts')
 </body>
 </html>
