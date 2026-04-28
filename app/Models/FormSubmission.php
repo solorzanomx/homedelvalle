@@ -29,6 +29,7 @@ class FormSubmission extends Model implements HasMedia
         'ip',
         'user_agent',
         'contacted_at',
+        'seen_at',
         'assigned_to',
         'notes',
         // Keep legacy fields for backward compatibility
@@ -44,6 +45,7 @@ class FormSubmission extends Model implements HasMedia
             'payload' => 'array',
             'data' => 'array',
             'contacted_at' => 'datetime',
+            'seen_at'      => 'datetime',
             'is_read' => 'boolean',
         ];
     }

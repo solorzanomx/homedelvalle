@@ -73,7 +73,7 @@ class FormSubmissionsTable extends Component
 
         $counts = [
             'total'     => FormSubmission::count(),
-            'new'       => FormSubmission::where('status', 'new')->count(),
+            'unseen'    => FormSubmission::whereNull('seen_at')->count(),
             'vendedor'  => FormSubmission::where('form_type', 'vendedor')->count(),
             'comprador' => FormSubmission::where('form_type', 'comprador')->count(),
             'b2b'       => FormSubmission::where('form_type', 'b2b')->count(),

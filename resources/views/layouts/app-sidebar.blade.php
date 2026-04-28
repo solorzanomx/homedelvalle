@@ -353,9 +353,9 @@
                         </a>
                         <a href="{{ route('admin.form-submissions.index') }}" class="nav-item {{ request()->routeIs('admin.form-submissions*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Leads
-                            @php $newLeads = \App\Models\FormSubmission::where('status','new')->count(); @endphp
-                            @if($newLeads > 0)
-                            <span style="margin-left:auto;background:#f59e0b;color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:20px">{{ $newLeads > 99 ? '99+' : $newLeads }}</span>
+                            @php $unseenLeads = \App\Models\FormSubmission::whereNull('seen_at')->count(); @endphp
+                            @if($unseenLeads > 0)
+                            <span style="margin-left:auto;background:#f59e0b;color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:20px">{{ $unseenLeads > 99 ? '99+' : $unseenLeads }}</span>
                             @endif
                         </a>
                         <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">

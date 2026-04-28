@@ -21,8 +21,8 @@
     {{-- Stats --}}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1.5rem">
         @foreach([
-            ['label'=>'Total',     'val'=>$counts['total'],     'color'=>'#6366f1'],
-            ['label'=>'Nuevos',    'val'=>$counts['new'],       'color'=>'#f59e0b'],
+            ['label'=>'Total',        'val'=>$counts['total'],    'color'=>'#6366f1'],
+            ['label'=>'Sin revisar',  'val'=>$counts['unseen'],   'color'=>'#f59e0b'],
             ['label'=>'Vendedor',  'val'=>$counts['vendedor'],  'color'=>'#3b82f6'],
             ['label'=>'Comprador', 'val'=>$counts['comprador'], 'color'=>'#10b981'],
             ['label'=>'B2B',       'val'=>$counts['b2b'],       'color'=>'#8b5cf6'],
@@ -105,11 +105,19 @@
                         $statusColors = ['new'=>'badge-yellow','contacted'=>'badge-blue','qualified'=>'badge-green','won'=>'badge-green','lost'=>'badge-red'];
                         $statusLabels = ['new'=>'Nuevo','contacted'=>'Contactado','qualified'=>'Calificado','won'=>'Ganado','lost'=>'Perdido'];
                     @endphp
-                    <tr wire:key="sub-{{ $sub->id }}" style="{{ in_array((string)$sub->id, $selected) ? 'background:rgba(99,102,241,0.04)' : '' }}">
+                    @php $unseen = !$sub->seen_at; @endphp
+                    <tr wire:key="sub-{{ $sub->id }}" style="{{ in_array((string)$sub->id, $selected) ? 'background:rgba(99,102,241,0.06)' : ($unseen ? 'background:rgba(245,158,11,0.04)' : '') }}">
                         <td>
                             <input type="checkbox" wire:model.live="selected" value="{{ $sub->id }}" style="cursor:pointer">
                         </td>
-                        <td style="font-weight:600">{{ $sub->full_name }}</td>
+                        <td style="font-weight:{{ $unseen ? '700' : '600' }}">
+                            <div style="display:flex;align-items:center;gap:0.5rem">
+                                @if($unseen)
+                                <span title="No visto" style="width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;box-shadow:0 0 0 2px rgba(245,158,11,0.25)"></span>
+                                @endif
+                                {{ $sub->full_name }}
+                            </div>
+                        </td>
                         <td><span class="badge {{ $typeColors[$sub->form_type] ?? '' }}">{{ ucfirst($sub->form_type) }}</span></td>
                         <td><span class="badge {{ $statusColors[$sub->status] ?? '' }}">{{ $statusLabels[$sub->status] ?? $sub->status }}</span></td>
                         <td style="font-size:0.82rem">

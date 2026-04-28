@@ -48,6 +48,9 @@ class FormSubmissionController extends Controller
 
     public function show(FormSubmission $formSubmission)
     {
+        if (! $formSubmission->seen_at) {
+            $formSubmission->update(['seen_at' => now()]);
+        }
         return view('admin.form-submissions.show', ['submission' => $formSubmission]);
     }
 
