@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="{{ asset('storage/' . $siteSettings->favicon_path) }}">
     @endif
     <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700" rel="stylesheet" />
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine.js is included by Livewire/Filament, don't load it again --}}
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
