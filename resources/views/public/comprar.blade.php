@@ -4,7 +4,7 @@
 
 @section('meta')
     <x-public.seo-meta
-        :title="$page?->meta_title ?? 'Búsqueda asistida de inmuebles en Benito Juárez | Home del Valle'"
+        :title="$page?->meta_title ?? 'Búsqueda asistida de inmuebles en Benito Juárez'"
         :description="$page?->meta_description ?? 'Encuentra tu próximo hogar en Benito Juárez sin perder fines de semana en visitas. Asesoría personalizada de expertos.'"
     />
 @endsection

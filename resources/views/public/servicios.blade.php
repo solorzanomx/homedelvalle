@@ -61,7 +61,7 @@
 @endphp
 
 <x-public.seo-meta
-    :title="$heading . ' — ' . ($siteSettings?->site_name ?? 'Home del Valle')"
+    :title="$heading"
     :description="$subheading"
 />
 

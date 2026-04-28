@@ -4,7 +4,7 @@
 
 @section('meta')
     <x-public.seo-meta
-        :title="$page?->meta_title ?? 'Captación de predios e inversión inmobiliaria en Benito Juárez | Home del Valle'"
+        :title="$page?->meta_title ?? 'Captación de predios e inversión inmobiliaria en Benito Juárez'"
         :description="$page?->meta_description ?? 'Captación de terrenos y producto terminado en Benito Juárez bajo demanda activa. Red de inversionistas consolidada.'"
     />
 @endsection
