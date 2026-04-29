@@ -119,13 +119,30 @@
                             </button>
                         @endif
 
-                        {{-- Location tag --}}
-                        @if($t->location)
-                            <div class="mt-4 pt-3 border-t border-gray-100">
-                                <span class="inline-flex items-center gap-1 text-xs text-gray-400">
-                                    <x-icon name="map-pin" class="w-3 h-3" /> {{ $t->location }}
-                                </span>
-                            </div>
+                        {{-- Operation metadata bar --}}
+                        @if($t->location || $t->operation_type || $t->ticket || $t->time_in_market)
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex flex-wrap gap-x-4 gap-y-1.5">
+                            @if($t->location)
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-400">
+                                <x-icon name="map-pin" class="w-3 h-3 shrink-0" /> {{ $t->location }}
+                            </span>
+                            @endif
+                            @if($t->operation_type)
+                            <span class="inline-flex items-center gap-1 text-xs text-brand-600 font-medium">
+                                <x-icon name="tag" class="w-3 h-3 shrink-0" /> {{ $t->operation_type }}
+                            </span>
+                            @endif
+                            @if($t->ticket)
+                            <span class="inline-flex items-center gap-1 text-xs text-gray-500 font-medium">
+                                <x-icon name="banknote" class="w-3 h-3 shrink-0" /> {{ $t->ticket }}
+                            </span>
+                            @endif
+                            @if($t->time_in_market)
+                            <span class="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                                <x-icon name="clock" class="w-3 h-3 shrink-0" /> {{ $t->time_in_market }}
+                            </span>
+                            @endif
+                        </div>
                         @endif
                     </div>
                     @endforeach

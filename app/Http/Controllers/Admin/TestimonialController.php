@@ -27,17 +27,20 @@ class TestimonialController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'role' => 'nullable|string|max:255',
-            'content' => 'nullable|string',
-            'video_url' => 'nullable|url|max:500',
-            'avatar' => 'nullable|image|max:2048',
-            'rating' => 'required|integer|min:1|max:5',
-            'is_featured' => 'nullable|boolean',
-            'type' => 'required|in:text,video',
-            'location' => 'nullable|string|max:255',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
+            'name'            => 'required|string|max:255',
+            'role'            => 'nullable|string|max:255',
+            'content'         => 'nullable|string',
+            'video_url'       => 'nullable|url|max:500',
+            'avatar'          => 'nullable|image|max:2048',
+            'rating'          => 'required|integer|min:1|max:5',
+            'is_featured'     => 'nullable|boolean',
+            'type'            => 'required|in:text,video',
+            'location'        => 'nullable|string|max:255',
+            'sort_order'      => 'nullable|integer|min:0',
+            'is_active'       => 'nullable|boolean',
+            'operation_type'  => 'nullable|string|max:100',
+            'ticket'          => 'nullable|string|max:100',
+            'time_in_market'  => 'nullable|string|max:100',
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');
@@ -66,17 +69,20 @@ class TestimonialController extends Controller
     public function update(Request $request, Testimonial $testimonial)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'role' => 'nullable|string|max:255',
-            'content' => 'nullable|string',
-            'video_url' => 'nullable|url|max:500',
-            'avatar' => 'nullable|image|max:2048',
-            'rating' => 'required|integer|min:1|max:5',
-            'is_featured' => 'nullable|boolean',
-            'type' => 'required|in:text,video',
-            'location' => 'nullable|string|max:255',
-            'sort_order' => 'nullable|integer|min:0',
-            'is_active' => 'nullable|boolean',
+            'name'            => 'required|string|max:255',
+            'role'            => 'nullable|string|max:255',
+            'content'         => 'nullable|string',
+            'video_url'       => 'nullable|url|max:500',
+            'avatar'          => 'nullable|image|max:2048',
+            'rating'          => 'required|integer|min:1|max:5',
+            'is_featured'     => 'nullable|boolean',
+            'type'            => 'required|in:text,video',
+            'location'        => 'nullable|string|max:255',
+            'sort_order'      => 'nullable|integer|min:0',
+            'is_active'       => 'nullable|boolean',
+            'operation_type'  => 'nullable|string|max:100',
+            'ticket'          => 'nullable|string|max:100',
+            'time_in_market'  => 'nullable|string|max:100',
         ]);
 
         $data['is_featured'] = $request->boolean('is_featured');

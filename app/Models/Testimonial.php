@@ -9,6 +9,7 @@ class Testimonial extends Model
     protected $fillable = [
         'name', 'role', 'content', 'video_url', 'avatar',
         'rating', 'is_featured', 'type', 'location', 'sort_order', 'is_active',
+        'operation_type', 'ticket', 'time_in_market',
     ];
 
     protected $casts = [

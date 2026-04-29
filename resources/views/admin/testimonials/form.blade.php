@@ -49,6 +49,32 @@
                     <input type="text" name="location" class="form-input" value="{{ old('location', $testimonial->location ?? '') }}" placeholder="Ej: Del Valle, Narvarte">
                 </div>
 
+                {{-- Operation type --}}
+                <div class="form-group">
+                    <label class="form-label">Tipo de operación</label>
+                    <select name="operation_type" class="form-select">
+                        <option value="">— Sin especificar —</option>
+                        @foreach(['Compra','Venta','Renta','Desarrollo','Inversión','Captación'] as $op)
+                        <option value="{{ $op }}" {{ old('operation_type', $testimonial->operation_type ?? '') === $op ? 'selected' : '' }}>{{ $op }}</option>
+                        @endforeach
+                    </select>
+                    <div class="form-hint">Tipo de transacción del cliente.</div>
+                </div>
+
+                {{-- Ticket --}}
+                <div class="form-group">
+                    <label class="form-label">Ticket / Precio aproximado</label>
+                    <input type="text" name="ticket" class="form-input" value="{{ old('ticket', $testimonial->ticket ?? '') }}" placeholder="Ej: $3.5 MDP · $8 MDP">
+                    <div class="form-hint">Rango o valor aproximado de la operación.</div>
+                </div>
+
+                {{-- Time in market --}}
+                <div class="form-group">
+                    <label class="form-label">Tiempo en mercado</label>
+                    <input type="text" name="time_in_market" class="form-input" value="{{ old('time_in_market', $testimonial->time_in_market ?? '') }}" placeholder="Ej: 32 días · 6 semanas">
+                    <div class="form-hint">Cuánto tardó en cerrarse la operación.</div>
+                </div>
+
                 {{-- Sort order --}}
                 <div class="form-group">
                     <label class="form-label">Orden</label>
