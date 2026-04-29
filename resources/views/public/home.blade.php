@@ -88,7 +88,7 @@
                     {{ $siteSettings?->hero_heading ?? 'Pocos inmuebles. Más control. Mejores resultados.' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    {{ $siteSettings?->hero_subheading ?? 'Firma inmobiliaria boutique en la Alcaldía Benito Juárez. ¿Cómo podemos ayudarte?' }}
+                    {{ $siteSettings?->hero_subheading ?? 'Vendemos, rentamos y conseguimos inmuebles en Benito Juárez. Elige tu perfil y recibe asesoría personalizada en menos de 24 horas.' }}
                 </p>
             </div>
 
@@ -170,22 +170,20 @@
 
             {{-- Trust metrics --}}
             <div class="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm border-t border-white/8 pt-8">
+                @php
+                $trustMetrics = [
+                    '30+ años de experiencia senior',
+                    'Respuesta en menos de 24–72 horas',
+                    'Seguridad jurídica en cada operación',
+                    'Especialistas en Benito Juárez',
+                ];
+                @endphp
+                @foreach($trustMetrics as $metric)
                 <div class="flex items-center gap-2 text-brand-300/70">
                     <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Valuación profesional gratuita
+                    {{ $metric }}
                 </div>
-                <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Vendemos en 45 días promedio
-                </div>
-                <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Seguridad jurídica completa
-                </div>
-                <div class="flex items-center gap-2 text-brand-300/70">
-                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                    Especialistas en Benito Juárez
-                </div>
+                @endforeach
             </div>
         </div>
     </section>
