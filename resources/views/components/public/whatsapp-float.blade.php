@@ -15,7 +15,7 @@
 @endphp
 
 @if($waNumber)
-<div x-data="{ open: false }" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
+<div x-data="{ open: false }" class="fixed z-[9999]" style="position:fixed !important;bottom:1.5rem !important;right:1.5rem !important;z-index:9999 !important">
     {{-- Botón flotante --}}
     <button
         @click="open = !open"
