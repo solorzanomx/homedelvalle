@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Siembra plantillas de email del portal en la tabla email_templates.
- * Idempotente: sólo inserta si el slug no existe.
+ * Columnas reales: id, name, subject, body, body_text, created_at, updated_at
+ * Idempotente: sólo inserta si el name no existe.
  */
 class PortalEmailTemplatesSeeder extends Seeder
 {
@@ -15,46 +16,41 @@ class PortalEmailTemplatesSeeder extends Seeder
     {
         $templates = [
             [
-                'slug'     => 'portal_welcome',
-                'name'     => 'Portal — Bienvenida y activación de cuenta',
-                'subject'  => 'Tu portal de Home del Valle está listo, {{Nombre}}',
-                'body'     => $this->portalWelcomeBody(),
-                'variables'=> json_encode(['Nombre', 'ActivationLink', 'Email']),
+                'name'      => 'Portal — Bienvenida y activación de cuenta',
+                'subject'   => 'Tu portal de Home del Valle está listo, {{Nombre}}',
+                'body'      => $this->portalWelcomeBody(),
+                'body_text' => 'Hola {{Nombre}}, activa tu cuenta: {{ActivationLink}}',
             ],
             [
-                'slug'     => 'portal_new_message',
-                'name'     => 'Portal — Nuevo mensaje de tu asesor',
-                'subject'  => 'Tienes un mensaje nuevo en tu portal · Home del Valle',
-                'body'     => $this->portalNewMessageBody(),
-                'variables'=> json_encode(['Nombre', 'MensajeResumen', 'PortalLink']),
+                'name'      => 'Portal — Nuevo mensaje de tu asesor',
+                'subject'   => 'Tienes un mensaje nuevo en tu portal · Home del Valle',
+                'body'      => $this->portalNewMessageBody(),
+                'body_text' => 'Hola {{Nombre}}, tienes un nuevo mensaje. Entra a tu portal: {{PortalLink}}',
             ],
             [
-                'slug'     => 'portal_document_available',
-                'name'     => 'Portal — Nuevo documento disponible',
-                'subject'  => 'Hay un documento nuevo esperándote en tu portal',
-                'body'     => $this->portalDocumentBody(),
-                'variables'=> json_encode(['Nombre', 'DocumentoNombre', 'PortalLink']),
+                'name'      => 'Portal — Nuevo documento disponible',
+                'subject'   => 'Hay un documento nuevo esperándote en tu portal',
+                'body'      => $this->portalDocumentBody(),
+                'body_text' => 'Hola {{Nombre}}, hay un nuevo documento: {{DocumentoNombre}}. Entra: {{PortalLink}}',
             ],
             [
-                'slug'     => 'portal_stage_change',
-                'name'     => 'Portal — Cambio de etapa en tu operación',
-                'subject'  => 'Tu operación avanzó a una nueva etapa · Home del Valle',
-                'body'     => $this->portalStageChangeBody(),
-                'variables'=> json_encode(['Nombre', 'Etapa', 'Descripcion', 'PortalLink']),
+                'name'      => 'Portal — Cambio de etapa en tu operación',
+                'subject'   => 'Tu operación avanzó a una nueva etapa · Home del Valle',
+                'body'      => $this->portalStageChangeBody(),
+                'body_text' => 'Hola {{Nombre}}, tu operación avanzó a: {{Etapa}}. Entra: {{PortalLink}}',
             ],
         ];
 
         foreach ($templates as $tpl) {
-            $exists = DB::table('email_templates')->where('slug', $tpl['slug'])->exists();
+            $exists = DB::table('email_templates')->where('name', $tpl['name'])->exists();
             if (! $exists) {
                 DB::table('email_templates')->insert(array_merge($tpl, [
-                    'is_active'  => true,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]));
-                $this->command->info("  ✓ Plantilla '{$tpl['slug']}' creada.");
+                $this->command->info("  ✓ Plantilla '{$tpl['name']}' creada.");
             } else {
-                $this->command->line("  — Plantilla '{$tpl['slug']}' ya existe, omitida.");
+                $this->command->line("  — Plantilla '{$tpl['name']}' ya existe, omitida.");
             }
         }
     }

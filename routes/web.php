@@ -635,33 +635,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
 });
 
 // ===== PORTAL DE CLIENTE =====
-Route::middleware(['auth', 'client'])->prefix('portal')->name('portal.')->group(function () {
-    // Aceptación de términos — sin gate de legal
-    Route::get('/terminos', [\App\Http\Controllers\Portal\PortalLegalController::class, 'show'])->name('terminos');
-    Route::post('/terminos/aceptar', [\App\Http\Controllers\Portal\PortalLegalController::class, 'aceptar'])->name('terminos.aceptar');
-
-    // Rutas protegidas — requieren haber aceptado el aviso de privacidad
-    Route::middleware('portal.legal')->group(function () {
-        Route::get('/', [PortalDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/rentals', [PortalRentalController::class, 'index'])->name('rentals.index');
-        Route::get('/rentals/{id}', [PortalRentalController::class, 'show'])->name('rentals.show');
-        Route::get('/documents', [PortalDocumentController::class, 'index'])->name('documents.index');
-        Route::get('/documents/{id}/download', [PortalDocumentController::class, 'download'])->name('documents.download');
-        Route::post('/documents/upload', [PortalDocumentController::class, 'upload'])->name('documents.upload');
-        Route::get('/account', [PortalDashboardController::class, 'account'])->name('account');
-        Route::put('/account/password', [PortalDashboardController::class, 'updatePassword'])->name('account.password');
-
-        // Captación — funnel de evaluación de propiedad
-        Route::get('/captacion', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'show'])->name('captacion');
-        Route::post('/captacion/documentos', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'uploadDocument'])->name('captacion.upload');
-        Route::delete('/captacion/documentos/{document}', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'deleteDocument'])->name('captacion.document.delete');
-        Route::post('/captacion/confirmar-precio', [\App\Http\Controllers\Portal\PortalCaptacionController::class, 'confirmPriceAgreement'])->name('captacion.confirm-price');
-
-        // Mi Valuación — vista completa del análisis + acuerdo de precio
-        Route::get('/valuacion', [\App\Http\Controllers\Portal\PortalValuacionController::class, 'show'])->name('valuacion');
-        Route::post('/valuacion/confirmar-precio', [\App\Http\Controllers\Portal\PortalValuacionController::class, 'confirmPrice'])->name('valuacion.confirm-price');
-    });
-});
+// Las rutas del portal viven en routes/portal.php bajo el dominio miportal.homedelvalle.mx
+// homedelvalle.mx/portal/* se redirige al subdominio vía PortalRedirectLegacy middleware.
 
 // ── Firma pública — estado del proceso de firma ──────────────────────────────
 Route::get('/firma/{token}', [\App\Http\Controllers\ContratoPublicoController::class, 'show'])

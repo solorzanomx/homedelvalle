@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Middleware global para redirigir admin.homedelvalle.mx a /admin
         $middleware->append(\App\Http\Middleware\SubdomainRedirect::class);
+        // Redirige homedelvalle.mx/portal/* → miportal.homedelvalle.mx/*
+        $middleware->append(\App\Http\Middleware\PortalRedirectLegacy::class);
 
         $middleware->alias([
             'admin'        => \App\Http\Middleware\CheckAdminRole::class,
