@@ -20,7 +20,7 @@ class LeadInternoMail extends Mailable
     {
         return new Envelope(
             from: new Address(config('mail.from.address'), config('mail.from.name')),
-            subject: "Nuevo lead · {$this->data->nombre}"
+            subject: "Nuevo lead ({$this->data->origen}) · {$this->data->nombre}"
         );
     }
 

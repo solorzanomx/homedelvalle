@@ -31,6 +31,32 @@
             'cta_secondary' => ['url' => 'https://homedelvalle.mx/mercado',     'label' => 'Ver precios de mercado'],
             'nota'          => 'El servicio es gratuito para el comprador. La comisión la cubre el vendedor al cierre.',
         ],
+        'arrendatario' => [
+            'preheader' => 'Tu búsqueda de renta llegó — selección curada en 72 horas',
+            'titulo'    => 'Recibimos tu búsqueda de renta' . $saludo . ' 🔑',
+            'bajada'    => 'Vamos a curar las mejores opciones que coincidan con tu brief y te las enviamos en <strong>menos de 72 horas hábiles</strong>. Sin agentes que insisten, sin portales masivos.',
+            'pasos'     => [
+                ['icono' => '🔍', 'titulo' => 'Filtramos el inventario',     'desc' => 'Revisamos inmuebles propios y red privada que coincidan con tu zona, presupuesto y preferencias (incluidas opciones pet-friendly si aplica).'],
+                ['icono' => '📋', 'titulo' => 'Selección curada',            'desc' => 'Solo te enviamos 3–5 opciones que realmente cumplen tu brief. Sin catálogos masivos ni visitas innecesarias.'],
+                ['icono' => '✍️', 'titulo' => 'Te acompañamos a firmar',     'desc' => 'Revisamos contrato y póliza jurídica contigo antes de que firmes. Sin cláusulas escondidas, sin sorpresas.'],
+            ],
+            'cta_primary'   => ['url' => 'https://homedelvalle.mx/propiedades', 'label' => 'Ver inmuebles disponibles'],
+            'cta_secondary' => ['url' => 'https://homedelvalle.mx/mercado',     'label' => 'Ver precios de mercado'],
+            'nota'          => 'El servicio es gratuito para ti como inquilino. Nuestra comisión la cubre el propietario al cierre.',
+        ],
+        'propietario_renta' => [
+            'preheader' => 'Tu solicitud para rentar tu inmueble llegó — te contactamos en 24 horas',
+            'titulo'    => 'Recibimos tu solicitud' . $saludo . ' 🏠',
+            'bajada'    => 'Un asesor especializado en rentas te contactará en <strong>menos de 24 horas hábiles</strong> con un rango de renta orientativo y un plan personalizado para tu inmueble.',
+            'pasos'     => [
+                ['icono' => '🔍', 'titulo' => 'Analizamos tu inmueble',      'desc' => 'Revisamos ubicación, características y comparables de renta en tu colonia dentro de Benito Juárez.'],
+                ['icono' => '📊', 'titulo' => 'Te enviamos el rango de renta','desc' => 'Precio competitivo basado en datos reales del mercado, no estimados genéricos. Sin inflar para captar la firma.'],
+                ['icono' => '🤝', 'titulo' => 'Diseñamos tu plan',           'desc' => 'Calificación de inquilinos, póliza jurídica y, si lo deseas, administración integral. Tú eliges el nivel de servicio.'],
+            ],
+            'cta_primary'   => ['url' => 'https://homedelvalle.mx/mercado',  'label' => 'Ver precios de mercado en BJ'],
+            'cta_secondary' => null,
+            'nota'          => 'Sin costo por adelantado. Comisión solo al firmar contrato. Sin exclusividad obligatoria.',
+        ],
         'b2b' => [
             'preheader' => 'Recibimos tu brief calificador — llamada en menos de 48 horas',
             'titulo'    => 'Recibimos tu brief' . $saludo . '.',

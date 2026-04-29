@@ -21,10 +21,12 @@ class AcuseMail extends Mailable
         return new Envelope(
             from: new Address(config('mail.from.address'), config('mail.from.name')),
             subject: match($this->data->form_type) {
-                'vendedor'  => 'Recibimos tu solicitud de valuación · Home del Valle',
-                'comprador' => 'Recibimos tu búsqueda · Home del Valle',
-                'b2b'       => 'Recibimos tu brief calificador · Home del Valle',
-                default     => 'Recibimos tu mensaje · Home del Valle',
+                'vendedor'          => 'Recibimos tu solicitud de valuación · Home del Valle',
+                'comprador'         => 'Recibimos tu búsqueda · Home del Valle',
+                'b2b'               => 'Recibimos tu brief calificador · Home del Valle',
+                'arrendatario'      => 'Recibimos tu búsqueda de renta · Home del Valle',
+                'propietario_renta' => 'Recibimos tu solicitud para rentar · Home del Valle',
+                default             => 'Recibimos tu mensaje · Home del Valle',
             }
         );
     }
