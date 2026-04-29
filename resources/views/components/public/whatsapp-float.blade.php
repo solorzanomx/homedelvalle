@@ -1,11 +1,16 @@
 @props(['siteSettings' => null])
 
 @php
-    // Tomar el número de WhatsApp, preferir whatsapp_number pero fallback a contact_phone
-    $whatsappNumber = $siteSettings?->whatsapp_number ?: $siteSettings?->contact_phone;
+    // Prioridad: whatsapp_number → contact_phone → null (oculto)
+    $whatsappNumber = $siteSettings?->whatsapp_number
+        ?: $siteSettings?->contact_phone
+        ?: null;
+
+    // Limpiar el número — solo dígitos para wa.me
+    $waNumber = $whatsappNumber ? preg_replace('/[^0-9]/', '', $whatsappNumber) : null;
 @endphp
 
-@if($whatsappNumber)
+@if($waNumber)
 <div x-data="{ open: false }" class="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-40">
     {{-- Botón flotante --}}
     <button
@@ -46,7 +51,7 @@
         <div class="space-y-1 p-2 max-h-96 overflow-y-auto">
             @foreach(getWhatsAppOptions() as $option)
             <a
-                href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $whatsappNumber) }}?text={{ urlencode($option['message']) }}"
+                href="https://wa.me/{{ $waNumber }}?text={{ urlencode($option['message']) }}"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="flex items-start gap-3 p-3 rounded-xl hover:bg-green-50 transition-colors group cursor-pointer"
