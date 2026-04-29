@@ -400,6 +400,9 @@
 
         @yield('styles')
     </style>
+    {{-- Portal Tailwind 4 + Livewire --}}
+    @vite(['resources/css/portal.css', 'resources/js/portal.js'])
+    @livewireStyles
 </head>
 <body>
 @php
@@ -663,5 +666,7 @@
     </div>
     <script>document.body.style.overflow='hidden';</script>
     @endif
+    @livewireScripts
+    @stack('scripts')
 </body>
 </html>
