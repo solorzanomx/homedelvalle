@@ -12,6 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Middleware global para redirigir admin.homedelvalle.mx a /admin
+        $middleware->append(\App\Http\Middleware\SubdomainRedirect::class);
+
         $middleware->alias([
             'admin'        => \App\Http\Middleware\CheckAdminRole::class,
             'broker'       => \App\Http\Middleware\CheckBrokerRole::class,

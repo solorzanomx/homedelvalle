@@ -29,6 +29,7 @@ Antes de tocar código, lee también `IMPLEMENTATION_RULES.md` (raíz del repo) 
 14. Cómo deployar a producción
 15. Patrones a evitar y errores comunes
 16. Convenciones de git y nombrado
+17. Portal del Cliente — qué considerar al construir cualquier feature
 
 ---
 
@@ -38,9 +39,9 @@ Antes de tocar código, lee también `IMPLEMENTATION_RULES.md` (raíz del repo) 
 |---|---|
 | PHP | 8.3.30 (require ^8.2) |
 | Laravel | 13.6.0 |
-| Livewire | 4.2.4 (instalado, uso parcial — el sitio público usa Alpine.js como motor reactivo principal) |
+| Livewire | 4.2.4 (sitio público usa Alpine.js; **el Portal del Cliente sí usa Livewire** para componentes reactivos autenticados) |
 | Filament | 5.6.1 (instalado pero **no** es el admin principal; el admin custom vive en `layouts/app-sidebar.blade.php`) |
-| Tailwind CSS | 4.2.2 (sólo sitio público; el CRM usa CSS puro con variables CSS) |
+| Tailwind CSS | 4.2.2 (sitio público y portal del cliente; el CRM admin usa CSS puro con variables CSS) |
 | Vite | 8.0.3 |
 | TinyMCE | 8.3.2 (self-hosted GPL en `public/vendor/tinymce/`) |
 | Alpine.js | CDN (sitio público) |
@@ -53,16 +54,19 @@ Antes de tocar código, lee también `IMPLEMENTATION_RULES.md` (raíz del repo) 
 | Base de datos | SQLite local · MySQL producción (`sql_homedelvalle_mx`) |
 | Hosting | cPanel compartido — sin queue worker (jobs corren síncronos) |
 | Timezone | `America/Mexico_City` |
+| Subdominios productivos | `homedelvalle.mx` (sitio público + CRM admin) · `miportal.homedelvalle.mx` (Portal del Cliente — ver `06-PORTAL-DEL-CLIENTE.md`) |
 
 **Convenciones del repo:**
 
-- Layouts: `layouts/public.blade.php` (sitio), `layouts/app-sidebar.blade.php` (CRM admin), `layouts/landing.blade.php` (landings de captación), `layouts/app.blade.php` (legacy).
-- El CRM se renderiza con **Blade + CSS puro + variables CSS**, no con Tailwind ni con Filament.
-- El sitio público se renderiza con **Blade + Tailwind 4 + Alpine.js**.
-- Iconos en sitio público: componente Blade que inyecta SVG inline desde Lucide-static.
+- Layouts: `layouts/public.blade.php` (sitio público), `layouts/app-sidebar.blade.php` (CRM admin), `layouts/landing.blade.php` (landings de captación), `layouts/portal.blade.php` (**Portal del Cliente**), `layouts/app.blade.php` (legacy).
+- El CRM admin se renderiza con **Blade + CSS puro + variables CSS**, no con Tailwind ni con Filament.
+- El sitio público se renderiza con **Blade + Tailwind 4 + Alpine.js** (formularios públicos = Alpine + controlador, no Livewire).
+- **El Portal del Cliente** (`miportal.homedelvalle.mx`) se renderiza con **Blade + Tailwind 4 + Livewire 4** (es app autenticada, no SEO; los componentes reactivos son la regla).
+- Iconos: componente Blade que inyecta SVG inline desde Lucide-static (igual en sitio, CRM y portal).
 - Jobs **NO** usan `ShouldQueue` — corren síncronos vía `php artisan schedule:run` cada minuto en cron de cPanel.
 - Cache no almacena objetos Eloquent — sólo arrays (evita `__PHP_Incomplete_Class`).
 - Autenticación es manual con `Auth::attempt()` (no Breeze ni Jetstream).
+- **Cada cliente que firma con HDV recibe cuenta de portal automáticamente.** No es opcional. Ver sección 17 abajo y `06-PORTAL-DEL-CLIENTE.md` sección 5.
 
 ---
 
@@ -90,8 +94,9 @@ resources/
     auth/                           # Vistas de login y reset
 
 routes/
-  web.php                           # ~230 declaraciones de rutas, agrupadas por sección
-  console.php                       # Scheduler con 4 jobs
+  web.php                           # ~230 declaraciones de rutas (sitio público + CRM admin)
+  portal.php                        # Rutas del Portal del Cliente (subdominio miportal.*)
+  console.php                       # Scheduler con jobs (incl. cobranza, renovaciones)
 
 database/
   migrations/                       # 164 migraciones, ordenadas por fecha
@@ -638,9 +643,88 @@ ssh ... && bash cpanel-deploy.sh
 
 - Modelos: PascalCase singular (`Property`, `Operation`).
 - Tablas: snake_case plural (`properties`, `operations`).
-- Rutas con nombre: `seccion.accion` (`public.contact`, `admin.properties.index`).
+- Rutas con nombre: `seccion.accion` (`public.contact`, `admin.properties.index`, `portal.dashboard`).
 - Vistas Blade: kebab-case (`vende-tu-propiedad.blade.php`).
-- Controladores: PascalCase + `Controller` (`PropertyController`, `Admin\PageController`).
+- Controladores: PascalCase + `Controller` (`PropertyController`, `Admin\PageController`, `Portal\DashboardController`).
+
+---
+
+## 17. Portal del Cliente — qué considerar al construir cualquier feature
+
+> Documento de referencia completo: [`06-PORTAL-DEL-CLIENTE.md`](./06-PORTAL-DEL-CLIENTE.md). Esta sección lista lo que **cualquier feature nueva** debe contemplar para que el portal siga siendo coherente con el resto del sistema.
+
+El portal del cliente (`miportal.homedelvalle.mx`) es la pieza central de cara al cliente. Toda la lógica de negocio que generes en el sitio público o en el CRM admin **tiene que pensar en cómo se refleja en el portal**. La regla operativa es simple: si un cliente debería verlo, el portal lo muestra.
+
+### 17.1 Cuándo se crea automáticamente la cuenta de portal
+
+| Trigger | Perfil que se activa |
+|---|---|
+| `Operation type='captacion'` pasa a `agreement_signed` | Propietario |
+| Contrato de arrendamiento firmado | Inquilino |
+| `Operation type='venta'` pasa a `offer_presented` o `signed` | Comprador y/o vendedor |
+
+La creación pasa por `ClientPortalService::createAccount(Client $client)` y dispara email transaccional `portal_welcome`. Si vas a implementar un nuevo tipo de operación o de relación cliente-HDV, agregar el listener correspondiente.
+
+### 17.2 Cuándo se debe notificar al portal
+
+Cualquier evento operativo que el cliente debería saber genera una entrada en `notifications` con `portal_visible=true`. Eventos típicos:
+
+- Cambio de stage en operación.
+- Subida de documento por HDV (contrato, propuesta, recibo).
+- Pago recibido o pendiente (renta).
+- Mensaje de HDV.
+- Visita agendada.
+- Renovación próxima (60 días antes).
+- Reporte mensual disponible.
+
+Si construyes una feature nueva que cambia el estado visible al cliente, **debe disparar notificación al portal**, no sólo email.
+
+### 17.3 Documentos: regla de oro
+
+Cualquier `Document` que se genere dentro de una operación con un cliente identificado **debe ser visible para ese cliente en el portal**, salvo excepción explícita marcada con `documents.portal_visible=false`.
+
+Esto cambia el flujo de generación de contratos, recibos, reportes mensuales y cualquier PDF: en el momento de guardar el `Document`, también se persiste con flag de visibilidad y `client_id` correctamente vinculado.
+
+### 17.4 Mensajes: el thread es el canal primario
+
+Toda comunicación HDV ↔ cliente que no sea WhatsApp o llamada se centraliza en el `MessageThread` del cliente. El admin tiene UI para responder; el cliente la ve dentro del portal. Si construyes un email transaccional nuevo, considera si la respuesta debería entrar al thread (la mayoría sí).
+
+### 17.5 Privacidad entre partes
+
+Cuando una feature involucra a más de un cliente (típicamente: propietario e inquilino en la misma operación de renta), respeta las reglas de privacidad documentadas en `06-PORTAL-DEL-CLIENTE.md` sección 9.3:
+
+- Inquilino no ve datos personales completos del propietario y viceversa.
+- Toda comunicación pasa por HDV.
+- Excepción: contacto de emergencia si hay autorización explícita.
+
+Esto se traduce en: **policies a nivel de modelo** (`PortalPolicy::viewProperty()`, `PortalPolicy::viewRental()`), y en **scopes de query** que filtran por `client_id`.
+
+### 17.6 Vista "preview as client"
+
+Toda nueva vista del portal debe ser navegable cuando un admin entra como impersonator. El banner amarillo de impersonación debe ser visible y la escritura (subida de docs, envío de mensajes, pagos) debe estar **deshabilitada** durante la sesión impersonada.
+
+### 17.7 Integración en cada feature nueva
+
+Antes de declarar terminada cualquier feature que toque a clientes, responder estas 5 preguntas:
+
+1. ¿El cliente debería ver esto en el portal?
+2. Si sí, ¿en qué sección del portal? (Dashboard, Mi renta, Documentos, Mensajes, etc.)
+3. ¿Qué notificación se dispara y por qué canal? (in-portal, email, WhatsApp)
+4. ¿Hay datos sensibles a filtrar entre las partes?
+5. ¿La vista funciona en mobile y bajo impersonación?
+
+Si alguna respuesta es ambigua, consulta `06-PORTAL-DEL-CLIENTE.md` o pregunta antes de implementar.
+
+### 17.8 Email transaccional: incluir link al portal
+
+Toda plantilla de email enviada a un cliente con cuenta activa debe incluir un CTA al portal:
+
+```
+[CTA primario]
+   Entra a tu portal: miportal.homedelvalle.mx
+```
+
+Esto refuerza el hábito y reduce dependencia del email para encontrar información histórica.
 
 ---
 

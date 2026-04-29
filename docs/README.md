@@ -55,6 +55,24 @@ Ambas capas son fuente de verdad. La de `.claude/` se actualiza cuando cambia el
 
 **Mantenedor:** Alex.
 
+### 5. Proceso de Renta
+[`docs/05-PROCESO-DE-RENTA.md`](./05-PROCESO-DE-RENTA.md)
+
+**Cuándo usarlo:** para diseñar, implementar y operar el funnel de renta como un proceso de tres fases (Captación / Colocación / Gestión post-cierre). Documento operativo + técnico que sirve como blueprint para el CRM (`/admin/rentas`) y para el equipo. Incluye stages detallados, SLAs, documentos por etapa, automatizaciones, comisiones y casos especiales.
+
+**Audiencia:** Alex, Ana Laura, agentes de captación y corretaje, administradores, Claude Code.
+
+**Mantenedor:** Alex (revisado por Ana Laura).
+
+### 6. Portal del Cliente
+[`docs/06-PORTAL-DEL-CLIENTE.md`](./06-PORTAL-DEL-CLIENTE.md)
+
+**Cuándo usarlo:** para diseñar, implementar y operar `miportal.homedelvalle.mx` — el subdominio dedicado donde cada cliente (propietario, inquilino, comprador, vendedor) puede acceder en cualquier momento a su operación, documentos, pagos y comunicaciones con HDV. Es la pieza diferenciadora del producto. Incluye 4 perfiles de usuario con qué ve cada uno, alta de cuenta, comunicaciones bidireccionales, notificaciones, seguridad, vista "preview as client" desde el admin, y roadmap de implementación en 6 fases.
+
+**Audiencia:** Alex, Ana Laura, agentes, administradores, Claude Code.
+
+**Mantenedor:** Alex (revisado por Ana Laura).
+
 ---
 
 ## Documentación complementaria existente en el repo
@@ -93,8 +111,15 @@ Antes de leer los manuales nuevos, conviene tener presente lo que ya estaba docu
 | Editar el navbar o footer | Manual de Implementación, sección 6 | — |
 | Modificar el chatbot calificador | Manual de Implementación, sección 7 | Manual de Marca y Voz (preguntas y tono) |
 | Crear un nuevo template de email | Manual de Implementación, sección 10 | Manual de Marca y Voz (tono) |
+| Diseñar o ajustar el flujo de renta (captación, colocación, gestión) | Proceso de Renta | Manual de Operaciones (SLAs generales) |
+| Implementar `/admin/rentas` o vistas separadas del CRM | Proceso de Renta sección 6 y 13 | Manual de Implementación |
+| Configurar cobranza mensual o renovación automática | Proceso de Renta sección 10 | Manual de Implementación, sección 10 |
+| Implementar o ajustar el portal del cliente (`miportal.homedelvalle.mx`) | Portal del Cliente | Manual de Implementación |
+| Activar acceso de portal a un cliente específico | Portal del Cliente sección 5 | Manual de Operaciones |
+| Diseñar UX o pantalla nueva del portal | Portal del Cliente sección 8 | Manual de Marca y Voz |
+| Resolver acceso o privacidad entre cliente A y cliente B en el portal | Portal del Cliente sección 9 | — |
 | Resolver un bug en QR | `QR_IMPLEMENTATION.md` + `CRITICAL_VERSIONS.md` | — |
-| Onboarding de un agente nuevo | Manual de Operaciones (proceso) + Manual de Marca (cómo hablamos) | — |
+| Onboarding de un agente nuevo | Manual de Operaciones (proceso) + Manual de Marca (cómo hablamos) | Proceso de Renta si trabajará rentas |
 | Onboarding de un dev nuevo | Este README + Manual de Implementación + `.claude/SCHEMA_QUICK_REFERENCE.md` | — |
 
 ---
