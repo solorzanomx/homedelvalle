@@ -23,7 +23,7 @@ class SettingsController extends Controller
             'primary_color' => 'required|string',
             'secondary_color' => 'required|string',
             'home_welcome_text' => 'nullable|string',
-            'whatsapp_number' => 'nullable|string|max:20',
+            'whatsapp_number' => 'nullable|string|max:30',
             'contact_phone' => 'nullable|string|max:30',
             'contact_email' => 'nullable|string|email|max:255',
             'address' => 'nullable|string|max:500',

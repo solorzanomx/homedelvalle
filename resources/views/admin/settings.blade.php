@@ -153,11 +153,8 @@
                         <input type="text" class="form-input" style="max-width:120px" id="secondaryText" value="{{ old('secondary_color', $settings->secondary_color ?? '#764ba2') }}" onchange="document.getElementById('secondaryColor').value=this.value">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">WhatsApp</label>
-                    <input type="text" name="whatsapp_number" class="form-input" value="{{ old('whatsapp_number', $settings->whatsapp_number ?? '') }}" placeholder="+52 1 999 123 4567">
-                    <p class="form-hint">Numero con clave de pais. Activa el boton flotante de WhatsApp en el sitio publico.</p>
-                </div>
+                {{-- Preserve whatsapp_number so Form 1 doesn't clear it --}}
+                <input type="hidden" name="whatsapp_number" value="{{ $settings->whatsapp_number ?? '' }}">
                 <div class="form-group">
                     <label class="form-label">Texto de Bienvenida</label>
                     <textarea name="home_welcome_text" class="form-textarea">{{ old('home_welcome_text', $settings->home_welcome_text ?? '') }}</textarea>
@@ -192,9 +189,9 @@
                     <input type="email" name="contact_email" class="form-input" value="{{ old('contact_email', $settings->contact_email ?? '') }}" placeholder="contacto@homedelvalle.mx">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">WhatsApp</label>
-                    <input type="text" name="whatsapp_number" class="form-input" value="{{ old('whatsapp_number', $settings->whatsapp_number ?? '') }}" placeholder="+52 55 1345 0978">
-                    <p class="form-hint">Numero con clave de pais para el boton flotante.</p>
+                    <label class="form-label">WhatsApp <span style="color:var(--primary);font-size:0.75rem;font-weight:600">★ Activa el botón flotante</span></label>
+                    <input type="text" name="whatsapp_number" class="form-input" value="{{ old('whatsapp_number', $settings->whatsapp_number ?? '') }}" placeholder="5571944188">
+                    <p class="form-hint">Solo dígitos, sin espacios ni +. Ejemplo: 5571944188. Este número activa el botón verde de WhatsApp en el sitio público.</p>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Direccion</label>
