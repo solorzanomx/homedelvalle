@@ -173,7 +173,7 @@
             {{-- Submit --}}
             <button type="submit"
                     wire:loading.attr="disabled"
-                    class="w-full flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold py-4 px-6 transition-all duration-300 hover:-translate-y-0.5 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0">
+                    class="w-full flex items-center justify-center gap-2 rounded-xl gradient-brand px-6 py-4 text-sm font-bold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:translate-y-0">
                 <span wire:loading.remove>Recibir mi selección curada</span>
                 <span wire:loading>Enviando...</span>
                 <x-icon name="arrow-right" class="w-4 h-4" wire:loading.remove />
