@@ -195,7 +195,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">Direccion</label>
-                    <input type="text" name="address" class="form-input" value="{{ old('address', $settings->address ?? '') }}" placeholder="Heriberto Frias 903 C, Col. del Valle, CDMX">
+                    <input type="text" name="address" class="form-input" value="{{ old('address', $settings->address ?? '') }}" placeholder="Heriberto Frías 903 C, Col. del Valle, CDMX">
                 </div>
             </div>
 
