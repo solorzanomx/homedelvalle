@@ -65,15 +65,18 @@
                         <li><a href="{{ $item->resolveUrl() }}" class="hover:text-brand-400 transition-colors duration-200" @if($item->target === '_blank') target="_blank" rel="noopener noreferrer" @endif>{{ $item->label }}</a></li>
                         @endforeach
                     @else
-                    <li><a href="{{ url('/comprar') }}" class="hover:text-brand-400 transition-colors duration-200">Comprar</a></li>
-                    <li><a href="{{ url('/vende-tu-propiedad') }}" class="hover:text-brand-400 transition-colors duration-200">Vender</a></li>
+                    <li><a href="{{ url('/comprar') }}" class="hover:text-brand-400 transition-colors duration-200">Comprar propiedad</a></li>
+                    <li><a href="{{ url('/vende-tu-propiedad') }}" class="hover:text-brand-400 transition-colors duration-200">Vender propiedad</a></li>
+                    <li><a href="{{ url('/rentar') }}" class="hover:text-brand-400 transition-colors duration-200">Rentar para vivir</a></li>
+                    <li><a href="{{ url('/renta-tu-propiedad') }}" class="hover:text-brand-400 transition-colors duration-200">Rentar mi inmueble</a></li>
                     <li><a href="{{ url('/desarrolladores-e-inversionistas') }}" class="hover:text-brand-400 transition-colors duration-200">Inversión & Desarrollo</a></li>
+                    <li><a href="{{ route('propiedades.index') }}" class="hover:text-brand-400 transition-colors duration-200">Propiedades</a></li>
                     <li><a href="{{ url('/mercado') }}" class="hover:text-brand-400 transition-colors duration-200">Precios de Mercado</a></li>
-                    <li><a href="{{ url('/servicios') }}" class="hover:text-brand-400 transition-colors duration-200">Servicios</a></li>
                     <li><a href="{{ route('nosotros') }}" class="hover:text-brand-400 transition-colors duration-200">Nosotros</a></li>
                     @if(Route::has('blog.index'))
                     <li><a href="{{ route('blog.index') }}" class="hover:text-brand-400 transition-colors duration-200">Blog</a></li>
                     @endif
+                    <li><a href="{{ route('contacto') }}" class="hover:text-brand-400 transition-colors duration-200">Contacto</a></li>
                     @endif
                 </ul>
             </div>
