@@ -372,9 +372,9 @@
                     </div>
                 </div>
 
-                {{-- ===== PROCESOS ===== --}}
+                {{-- ===== PROCESOS (venta) ===== --}}
                 <div class="nav-section" data-section="procesos">
-                    <span class="nav-label" onclick="toggleSection(this)">Procesos <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <span class="nav-label" onclick="toggleSection(this)">Procesos Venta <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
                     <div class="nav-items">
                         @if(Route::has('admin.captaciones.index'))
                         <a href="{{ route('admin.captaciones.index') }}" class="nav-item {{ request()->routeIs('admin.captaciones.*') ? 'active' : '' }}">
@@ -393,6 +393,24 @@
                         @endif
                     </div>
                 </div>
+
+                {{-- ===== RENTAS (Track B) ===== --}}
+                @if(Route::has('admin.rentas.captaciones'))
+                <div class="nav-section {{ request()->routeIs('admin.rentas.*') ? '' : '' }}" data-section="rentas">
+                    <span class="nav-label" onclick="toggleSection(this)">Rentas <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
+                        <a href="{{ route('admin.rentas.captaciones') }}" class="nav-item {{ request()->routeIs('admin.rentas.captaciones') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="search" class="w-4 h-4" /></span> Captaciones de Renta
+                        </a>
+                        <a href="{{ route('admin.rentas.activas') }}" class="nav-item {{ request()->routeIs('admin.rentas.activas') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="key" class="w-4 h-4" /></span> Colocación Activa
+                        </a>
+                        <a href="{{ route('admin.rentas.gestion') }}" class="nav-item {{ request()->routeIs('admin.rentas.gestion*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Gestión Post-Cierre
+                        </a>
+                    </div>
+                </div>
+                @endif
 
                 {{-- ===== HISTORICO (collapsed by default) ===== --}}
                 @if(Route::has('deals.index') || Route::has('rentals.index'))
