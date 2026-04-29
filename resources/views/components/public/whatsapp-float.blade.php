@@ -1,12 +1,16 @@
 @props(['siteSettings' => null])
 
 @php
-    // Prioridad: whatsapp_number → contact_phone → null (oculto)
-    $whatsappNumber = $siteSettings?->whatsapp_number
+    // Query directo a BD para evitar cache stale — es un campo crítico
+    $freshSettings = \App\Models\SiteSetting::select('whatsapp_number', 'contact_phone')->first();
+
+    $whatsappNumber = $freshSettings?->whatsapp_number
+        ?: $freshSettings?->contact_phone
+        ?: $siteSettings?->whatsapp_number
         ?: $siteSettings?->contact_phone
         ?: null;
 
-    // Limpiar el número — solo dígitos para wa.me
+    // Solo dígitos para wa.me
     $waNumber = $whatsappNumber ? preg_replace('/[^0-9]/', '', $whatsappNumber) : null;
 @endphp
 
