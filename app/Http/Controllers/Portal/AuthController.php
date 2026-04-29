@@ -19,7 +19,30 @@ class AuthController extends Controller
 
     public function showLogin()
     {
+        // Si ya está autenticado como cliente, ir al dashboard
+        if (auth()->check() && auth()->user()?->role === 'client') {
+            return redirect()->route('portal.dashboard');
+        }
+        // Si está autenticado pero NO es cliente (admin), cerrar sesión primero
+        if (auth()->check()) {
+            auth()->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+        }
         return view('portal.auth.login');
+    }
+
+    public function showRecover()
+    {
+        if (auth()->check() && auth()->user()?->role === 'client') {
+            return redirect()->route('portal.dashboard');
+        }
+        return view('portal.auth.recover');
+    }
+
+    public function showReset(string $token)
+    {
+        return view('portal.auth.reset', ['token' => $token]);
     }
 
     public function login(Request $request)
@@ -68,11 +91,6 @@ class AuthController extends Controller
 
     // ── Recuperar contraseña ─────────────────────────────────────────────────
 
-    public function showRecover()
-    {
-        return view('portal.auth.recover');
-    }
-
     public function recover(Request $request)
     {
         $request->validate(['email' => ['required', 'email']]);
@@ -87,11 +105,6 @@ class AuthController extends Controller
     }
 
     // ── Restablecer contraseña ───────────────────────────────────────────────
-
-    public function showReset(string $token)
-    {
-        return view('portal.auth.reset', ['token' => $token]);
-    }
 
     public function reset(Request $request)
     {

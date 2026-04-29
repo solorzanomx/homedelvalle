@@ -15,8 +15,8 @@ use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalCaptacionController;
 use App\Http\Controllers\Portal\PortalValuacionController;
 
-// ── Auth (invitados) ─────────────────────────────────────────────────────────
-Route::middleware('guest')->name('portal.')->group(function () {
+// ── Auth (sin middleware guest — se maneja en el controller para evitar loops) ─
+Route::name('portal.')->group(function () {
     Route::get('/',                  [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login',            [AuthController::class, 'login'])->name('login.submit');
     Route::get('/recuperar',         [AuthController::class, 'showRecover'])->name('recover');
