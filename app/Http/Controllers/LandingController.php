@@ -142,6 +142,22 @@ class LandingController extends Controller
     }
 
     /**
+     * Show the renter search landing page.
+     */
+    public function rentar(Request $request)
+    {
+        return view('public.rentar');
+    }
+
+    /**
+     * Show the rental owner landing page.
+     */
+    public function rentaTuPropiedad(Request $request)
+    {
+        return view('public.renta-tu-propiedad');
+    }
+
+    /**
      * Handle lead form submission.
      */
     public function submit(LandingFormRequest $request, SpamProtectionService $spam, AutomationEngine $engine)

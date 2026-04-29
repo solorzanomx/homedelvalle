@@ -129,6 +129,8 @@ Route::get('/comprar', [LandingController::class, 'compra'])->name('landing.comp
 Route::post('/comprar', [LandingController::class, 'storeComprador'])->middleware('throttle:public-form')->name('landing.compra.store');
 Route::get('/desarrolladores-e-inversionistas', [LandingController::class, 'desarrolladores'])->name('landing.desarrolladores');
 Route::post('/desarrolladores-e-inversionistas', [LandingController::class, 'storeDesarrollador'])->middleware('throttle:public-form')->name('landing.desarrolladores.store');
+Route::get('/rentar', [LandingController::class, 'rentar'])->name('landing.rentar');
+Route::get('/renta-tu-propiedad', [LandingController::class, 'rentaTuPropiedad'])->name('landing.renta-tu-propiedad');
 Route::post('/landing/submit', [LandingController::class, 'submit'])->middleware('throttle:public-form')->name('landing.submit');
 
 // Documentos legales públicos
