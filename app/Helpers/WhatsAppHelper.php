@@ -13,13 +13,15 @@ class WhatsAppHelper
         $currentPath = request()->path();
 
         return match (true) {
-            str_contains($currentPath, '/comprar') => self::buyerOptions(),
-            str_contains($currentPath, '/vende-tu-propiedad') => self::sellerOptions(),
-            str_contains($currentPath, '/desarrolladores') => self::investorOptions(),
-            str_contains($currentPath, '/contacto') => self::generalOptions(),
-            str_contains($currentPath, '/mercado') => self::marketOptions(),
-            str_contains($currentPath, '/servicios') => self::servicesOptions(),
-            default => self::homeOptions(),
+            str_contains($currentPath, 'vende-tu-propiedad')   => self::sellerOptions(),
+            str_contains($currentPath, 'renta-tu-propiedad')   => self::rentalOwnerOptions(),
+            str_contains($currentPath, '/comprar')             => self::buyerOptions(),
+            str_contains($currentPath, '/rentar')              => self::renterOptions(),
+            str_contains($currentPath, '/desarrolladores')     => self::investorOptions(),
+            str_contains($currentPath, '/mercado')             => self::marketOptions(),
+            str_contains($currentPath, '/servicios')           => self::servicesOptions(),
+            str_contains($currentPath, '/contacto')            => self::generalOptions(),
+            default                                            => self::homeOptions(),
         };
     }
 
@@ -123,34 +125,106 @@ class WhatsAppHelper
     }
 
     /**
-     * Opciones generales (home, etc)
+     * Opciones generales (home, etc) — 4 funnels + consulta
      */
     private static function homeOptions(): array
     {
         return [
             [
-                'icon' => '🛒',
-                'label' => 'Quiero comprar',
-                'subtitle' => 'Búsqueda asistida de propiedades',
-                'message' => 'Hola! Estoy buscando una propiedad en Benito Juárez.',
+                'icon'     => '🏠',
+                'label'    => 'Quiero vender mi propiedad',
+                'subtitle' => 'Valuación gratuita y venta en 45 días',
+                'message'  => 'Hola! Tengo una propiedad en Benito Juárez y quisiera venderla. ¿Pueden hacer una valuación?',
             ],
             [
-                'icon' => '💳',
-                'label' => 'Quiero vender',
-                'subtitle' => 'Valuación y venta en 45 días',
-                'message' => 'Hola! Tengo una propiedad y quisiera venderla.',
+                'icon'     => '🔍',
+                'label'    => 'Estoy buscando dónde comprar',
+                'subtitle' => 'Búsqueda curada en Benito Juárez',
+                'message'  => 'Hola! Estoy buscando una propiedad para comprar en Benito Juárez. ¿Pueden ayudarme?',
             ],
             [
-                'icon' => '💰',
-                'label' => 'Soy inversionista',
-                'subtitle' => 'Oportunidades de inversión',
-                'message' => 'Hola! Soy inversionista/desarrollador y me interesa explorar oportunidades.',
+                'icon'     => '🔑',
+                'label'    => 'Quiero rentar para vivir',
+                'subtitle' => 'Curación personalizada en 72 horas',
+                'message'  => 'Hola! Estoy buscando un inmueble en renta en Benito Juárez. ¿Pueden enviarme opciones curadas?',
             ],
             [
-                'icon' => '❓',
-                'label' => 'Consulta general',
+                'icon'     => '🏢',
+                'label'    => 'Quiero rentar mi inmueble',
+                'subtitle' => 'Inquilino calificado + póliza jurídica',
+                'message'  => 'Hola! Tengo un inmueble y quisiera ponerlo en renta. ¿Cómo funciona el proceso?',
+            ],
+            [
+                'icon'     => '❓',
+                'label'    => 'Consulta general',
                 'subtitle' => 'Pregunta lo que necesites',
-                'message' => 'Hola! Tengo una pregunta sobre servicios inmobiliarios.',
+                'message'  => 'Hola! Tengo una consulta sobre servicios inmobiliarios en Benito Juárez.',
+            ],
+        ];
+    }
+
+    /**
+     * Opciones para /rentar (arrendatarios buscando dónde vivir)
+     */
+    private static function renterOptions(): array
+    {
+        return [
+            [
+                'icon'     => '🔑',
+                'label'    => 'Quiero rentar un inmueble',
+                'subtitle' => 'Envíame opciones curadas en 72 horas',
+                'message'  => 'Hola! Estoy buscando un inmueble en renta en Benito Juárez. ¿Pueden enviarme opciones que coincidan con mi perfil?',
+            ],
+            [
+                'icon'     => '📋',
+                'label'    => 'Enviar mi brief de búsqueda',
+                'subtitle' => 'Zona, presupuesto y preferencias',
+                'message'  => 'Hola! Quisiera enviarles mis requerimientos para que me busquen opciones de renta: zona, presupuesto, recámaras y si acepto mascotas.',
+            ],
+            [
+                'icon'     => '🛡️',
+                'label'    => 'Preguntar sobre garantías',
+                'subtitle' => 'Póliza jurídica, aval o depósito',
+                'message'  => 'Hola! ¿Qué opciones de garantía manejan para rentar (póliza jurídica, aval, depósito ampliado)?',
+            ],
+            [
+                'icon'     => '📅',
+                'label'    => 'Ver opciones esta semana',
+                'subtitle' => 'Listo para visitar y decidir',
+                'message'  => 'Hola! Estoy listo para ver opciones de renta esta semana. ¿Pueden contactarme para agendar visitas?',
+            ],
+        ];
+    }
+
+    /**
+     * Opciones para /renta-tu-propiedad (propietarios que quieren rentar su inmueble)
+     */
+    private static function rentalOwnerOptions(): array
+    {
+        return [
+            [
+                'icon'     => '🏠',
+                'label'    => 'Quiero rentar mi inmueble',
+                'subtitle' => 'Asesoría gratuita en menos de 24 horas',
+                'message'  => 'Hola! Tengo un inmueble en Benito Juárez y quisiera ponerlo en renta. ¿Pueden contactarme?',
+            ],
+            [
+                'icon'     => '📊',
+                'label'    => '¿Cuánto puedo pedir de renta?',
+                'subtitle' => 'Rango de renta basado en datos reales',
+                'message'  => 'Hola! ¿Pueden decirme cuánto podría pedir de renta por mi inmueble en Benito Juárez?',
+            ],
+            [
+                'icon'     => '🛡️',
+                'label'    => 'Quiero póliza jurídica',
+                'subtitle' => 'Protección ante incumplimiento',
+                'message'  => 'Hola! Me interesa contratar póliza jurídica para mi inmueble en renta. ¿Cómo funciona?',
+            ],
+            [
+                'icon'     => '⚙️',
+                'label'    => 'Administración integral',
+                'subtitle' => 'Cobranza, mantenimiento y reportes',
+                'message'  => 'Hola! Me interesa la administración integral de mi inmueble en renta. ¿Qué incluye el servicio?',
             ],
         ];
     }
