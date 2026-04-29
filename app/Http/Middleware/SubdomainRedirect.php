@@ -15,9 +15,18 @@ class SubdomainRedirect
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Si accede a admin.homedelvalle.mx, redirige a /admin
-        if ($request->getHost() === 'admin.homedelvalle.mx' && !str_starts_with($request->path(), '/admin')) {
-            return redirect('/admin');
+        // Si accede a admin.homedelvalle.mx
+        if (str_contains($request->getHost(), 'admin.homedelvalle.mx')) {
+            $path = $request->path();
+
+            // Si NO está en /admin, /login, /forgot-password, /reset-password o /register
+            $allowedPaths = ['/login', '/forgot-password', '/reset-password', '/register'];
+            $isAllowed = in_array($path, $allowedPaths) || str_starts_with($path, '/admin');
+
+            // Redirige a /admin solo si no está en rutas permitidas
+            if (!$isAllowed) {
+                return redirect('/admin');
+            }
         }
 
         return $next($request);
