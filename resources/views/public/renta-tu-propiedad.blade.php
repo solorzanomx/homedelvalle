@@ -66,7 +66,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             @foreach([
-                ['user-check','Calificación seria del inquilino','Verificamos identidad, ingresos, historial crediticio (cuando aplica) y referencias. Si no pasa, no firma. Tu inmueble no entra en riesgo por presión de cerrar.'],
+                ['users','Calificación seria del inquilino','Verificamos identidad, ingresos, historial crediticio (cuando aplica) y referencias. Si no pasa, no firma. Tu inmueble no entra en riesgo por presión de cerrar.'],
                 ['shield','Póliza jurídica profesional','Trabajamos con afianzadoras reconocidas. La póliza protege tu ingreso ante incumplimiento, daños o juicios. Si lo prefieres, estructuramos aval con propiedad.'],
                 ['settings','Administración integral si la necesitas','Si no quieres preocuparte por cobranza, mantenimiento o trámites, nosotros lo hacemos. Reportes mensuales, cuenta clara, intervención inmediata cuando algo falla.'],
                 ['target','Marketing y matching dirigidos','No publicamos en portales saturados. Tu inmueble llega sólo a inquilinos calificados que ya pasaron filtro por nuestro brief. Menos visitas, mejor calidad.'],

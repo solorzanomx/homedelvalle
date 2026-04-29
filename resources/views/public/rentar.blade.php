@@ -98,7 +98,7 @@
                 ['key','Inventario fuera de portales','Trabajamos con propietarios que prefieren publicar discretamente. Una parte del inventario sólo se ofrece a través de nosotros.'],
                 ['shield-check','Pólizas jurídicas claras','Si optas por póliza, te explicamos qué cubre, qué cuesta y cuál es la cobertura. Trabajamos sólo con afianzadoras autorizadas y reconocidas.'],
                 ['heart','Pet-friendly cuando aplica','Tenemos propietarios que aceptan mascotas. Te matcheamos sólo con inmuebles donde tu mascota es bienvenida desde el día uno.'],
-                ['ban','Sin "comisión por hablar"','No cobramos al inquilino por buscar ni por mostrar. Nuestra remuneración la cubre el propietario al cierre.'],
+                ['handshake','Sin "comisión por hablar"','No cobramos al inquilino por buscar ni por mostrar. Nuestra remuneración la cubre el propietario al cierre.'],
             ] as [$icon,$title,$desc])
             <div class="flex items-start gap-5 p-6 rounded-2xl bg-white border border-gray-200/60 hover:shadow-lg transition-all duration-300" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-50 flex-shrink-0">
