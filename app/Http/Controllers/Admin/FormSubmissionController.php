@@ -78,9 +78,8 @@ class FormSubmissionController extends Controller
             return back()->with('success', 'Este lead ya tiene un cliente asociado.');
         }
 
-        $client = Client::create([
+        $data = [
             'name'             => $formSubmission->full_name,
-            'email'            => $formSubmission->email,
             'phone'            => $formSubmission->phone,
             'whatsapp'         => $formSubmission->phone,
             'client_type'      => $formSubmission->client_type,
@@ -94,8 +93,17 @@ class FormSubmissionController extends Controller
             'utm_campaign'     => $formSubmission->utm_campaign,
             'lead_source'      => 'form_' . $formSubmission->form_type,
             'initial_notes'    => $formSubmission->payload['mensaje'] ?? null,
-        ]);
+        ];
 
+        // Si ya existe un cliente con ese email, vincularlo sin duplicar
+        $existing = Client::where('email', $formSubmission->email)->first();
+
+        if ($existing) {
+            $formSubmission->update(['client_id' => $existing->id]);
+            return back()->with('success', "Lead vinculado al cliente existente «{$existing->name}».");
+        }
+
+        $client = Client::create(array_merge($data, ['email' => $formSubmission->email]));
         $formSubmission->update(['client_id' => $client->id]);
 
         return back()->with('success', "Cliente «{$client->name}» creado exitosamente.");

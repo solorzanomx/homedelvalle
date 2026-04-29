@@ -64,9 +64,8 @@ class FormSubmissionsTable extends Component
             return;
         }
 
-        $client = Client::create([
+        $data = [
             'name'             => $submission->full_name,
-            'email'            => $submission->email,
             'phone'            => $submission->phone,
             'whatsapp'         => $submission->phone,
             'client_type'      => $submission->client_type,
@@ -79,11 +78,19 @@ class FormSubmissionsTable extends Component
             'utm_medium'       => $submission->utm_medium,
             'utm_campaign'     => $submission->utm_campaign,
             'lead_source'      => 'form_' . $submission->form_type,
-            'initial_notes'    => isset($submission->payload['mensaje'])
-                                    ? $submission->payload['mensaje']
-                                    : null,
-        ]);
+            'initial_notes'    => $submission->payload['mensaje'] ?? null,
+        ];
 
+        // Si ya existe un cliente con ese email, vincularlo sin duplicar
+        $existing = Client::where('email', $submission->email)->first();
+
+        if ($existing) {
+            $submission->update(['client_id' => $existing->id]);
+            session()->flash('success', "Lead vinculado al cliente existente «{$existing->name}».");
+            return;
+        }
+
+        $client = Client::create(array_merge($data, ['email' => $submission->email]));
         $submission->update(['client_id' => $client->id]);
 
         session()->flash('success', "Cliente «{$client->name}» creado exitosamente.");
