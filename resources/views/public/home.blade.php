@@ -307,78 +307,110 @@
     @endif
 
     {{-- ============================================ --}}
-    {{-- 5. SERVICIOS (5 lineas de negocio) --}}
+    {{-- 5. LÍNEAS DE NEGOCIO (4 funnels) --}}
     {{-- ============================================ --}}
     @php
         $defaultServices = [
-            ['title' => 'Vende tu propiedad', 'description' => 'Valuación profesional gratuita, compradores calificados y cierre seguro. Sin catálogo masivo, con atención personalizada.', 'features' => ['Valuación gratuita en 24 h', 'Venta en 45 días promedio', 'Seguridad jurídica completa'], 'link_text' => 'Solicitar valuación', 'link_url' => '/vende-tu-propiedad', 'highlighted' => true],
-            ['title' => 'Compra o renta', 'description' => 'Búsqueda asistida con propiedades verificadas en la Benito Juárez. Te acompañamos desde el primer recorrido hasta el cierre.', 'features' => ['Propiedades verificadas', 'Asesoría personalizada', 'Negociación y cierre'], 'link_text' => 'Iniciar búsqueda', 'link_url' => '/comprar', 'highlighted' => false],
-            ['title' => 'Inversión & Desarrollo', 'description' => 'Captación de terrenos y producto terminado bajo demanda activa. Para desarrolladores e inversionistas con proyectos en Benito Juárez.', 'features' => ['Terrenos en zonas clave', 'Análisis de potencial de inversión', 'Red consolidada de desarrolladores'], 'link_text' => 'Solicitar brief', 'link_url' => '/desarrolladores-e-inversionistas', 'highlighted' => false],
-            ['title' => 'Administración', 'description' => 'Gestión profesional de activos inmobiliarios para maximizar tu inversión.', 'features' => ['Gestión de inquilinos', 'Reportes financieros', 'Mantenimiento integral'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#administracion', 'highlighted' => false],
-            ['title' => 'Legal y Gestoría', 'description' => 'Regularización documental, sucesiones y blindaje jurídico en escrituración.', 'features' => ['Regularización de escrituras', 'Trámites de sucesión', 'Blindaje jurídico'], 'link_text' => 'Conocer más', 'link_url' => '/servicios#legal-gestoria', 'highlighted' => false],
+            [
+                'title'       => 'Vende tu propiedad',
+                'label'       => 'Propietarios',
+                'description' => 'Valuación profesional gratuita, compradores calificados y cierre seguro. Sin catálogo masivo, con atención personalizada.',
+                'features'    => ['Valuación gratuita en 24 h', 'Venta en 45 días promedio', 'Seguridad jurídica completa'],
+                'link_text'   => 'Solicitar valuación',
+                'link_url'    => '/vende-tu-propiedad',
+                'highlighted' => true,
+                'icon'        => 'home',
+            ],
+            [
+                'title'       => 'Compra tu propiedad',
+                'label'       => 'Compradores',
+                'description' => 'Búsqueda curada con propiedades verificadas en Benito Juárez. Te acompañamos desde el primer recorrido hasta la escritura.',
+                'features'    => ['Solo opciones que coinciden con tu brief', 'Negociación y due diligence', 'Acompañamiento hasta el cierre'],
+                'link_text'   => 'Iniciar búsqueda',
+                'link_url'    => '/comprar',
+                'highlighted' => false,
+                'icon'        => 'search',
+            ],
+            [
+                'title'       => 'Renta tu inmueble',
+                'label'       => 'Propietarios en renta',
+                'description' => 'Colocamos tu inmueble con el inquilino correcto, póliza jurídica activa y, si lo prefieres, administración integral incluida.',
+                'features'    => ['Calificación rigurosa del inquilino', 'Póliza jurídica profesional', 'Administración integral opcional'],
+                'link_text'   => 'Solicitar asesoría',
+                'link_url'    => '/renta-tu-propiedad',
+                'highlighted' => false,
+                'icon'        => 'building-2',
+            ],
+            [
+                'title'       => 'Renta para vivir',
+                'label'       => 'Arrendatarios',
+                'description' => 'Curación personalizada sin catálogos masivos. Te enviamos 3–5 opciones que realmente coinciden con tu perfil en menos de 72 horas.',
+                'features'    => ['Sin spam ni portales masivos', 'Filtrado por zona, presupuesto y mascota', 'Acompañamiento en contrato y firma'],
+                'link_text'   => 'Ver opciones',
+                'link_url'    => '/rentar',
+                'highlighted' => false,
+                'icon'        => 'key',
+            ],
         ];
         $services = $siteSettings?->services_section ?? $defaultServices;
-        $serviceIcons = [
-            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',
-            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>',
-            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>',
-            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
-            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>',
-        ];
     @endphp
     <section class="py-24 sm:py-32 bg-gray-50/60" id="servicios">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="text-center max-w-2xl mx-auto" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Servicio integral</p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->services_heading ?? 'Líneas de negocio' }}</h2>
-                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->services_subheading ?? 'Soluciones completas para cada etapa del ciclo inmobiliario.' }}</p>
+                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->services_subheading ?? 'Cuatro funnels especializados para cada perfil del mercado inmobiliario.' }}</p>
             </div>
 
-            <div class="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($services as $si => $service)
-                <div x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $si * 100 }}ms">
+                <div x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $si * 80 }}ms">
                 @if(!empty($service['highlighted']))
-                <div class="relative rounded-2xl p-8 lg:p-10 gradient-brand text-white shadow-brand-lg overflow-hidden h-full">
-                    <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-                    <div class="absolute -top-3 right-6">
-                        <span class="inline-flex items-center rounded-full bg-white px-3.5 py-1 text-xs font-bold text-brand-700 shadow-premium">Más solicitado</span>
+                {{-- Card destacada --}}
+                <div class="relative rounded-2xl p-7 gradient-brand text-white shadow-brand-lg overflow-hidden h-full flex flex-col">
+                    <div class="absolute top-0 right-0 w-36 h-36 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                    <div class="absolute -top-3 right-5">
+                        <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-[0.65rem] font-bold text-brand-700 shadow-premium">★ Más solicitado</span>
                     </div>
-                    <div class="relative">
-                        <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm">
-                            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">{!! $serviceIcons[$si] ?? $serviceIcons[0] !!}</svg>
+                    <div class="relative flex flex-col flex-1">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-white/15 backdrop-blur-sm mb-6">
+                            <x-icon name="{{ $service['icon'] ?? 'home' }}" class="w-6 h-6 text-white" />
                         </div>
-                        <h3 class="mt-7 text-xl font-bold">{{ $service['title'] ?? '' }}</h3>
-                        <p class="mt-3 text-sm text-white/70 leading-relaxed">{{ $service['description'] ?? '' }}</p>
-                        <ul class="mt-7 space-y-3">
+                        <p class="text-[0.6rem] font-bold tracking-[0.12em] uppercase text-white/60 mb-1">{{ $service['label'] ?? '' }}</p>
+                        <h3 class="text-lg font-bold leading-snug">{{ $service['title'] ?? '' }}</h3>
+                        <p class="mt-3 text-sm text-white/70 leading-relaxed flex-1">{{ $service['description'] ?? '' }}</p>
+                        <ul class="mt-6 space-y-2.5">
                             @foreach(($service['features'] ?? []) as $feature)
-                            <li class="flex items-start gap-3 text-sm text-white/80">
-                                <x-icon name="check" class="w-5 h-5 mt-0.5 text-white/50 shrink-0" />
+                            <li class="flex items-start gap-2.5 text-sm text-white/80">
+                                <x-icon name="check" class="w-4 h-4 mt-0.5 text-white/50 shrink-0" />
                                 {{ $feature }}
                             </li>
                             @endforeach
                         </ul>
-                        <a href="{{ $service['link_url'] ?? '/servicios' }}" class="group/link mt-8 inline-flex items-center gap-2 text-sm font-semibold text-white hover:underline underline-offset-4">
+                        <a href="{{ $service['link_url'] ?? '/servicios' }}" class="group/link mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white hover:underline underline-offset-4">
                             {{ $service['link_text'] ?? 'Conocer más' }}
                             <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover/link:translate-x-1" />
                         </a>
                     </div>
                 </div>
                 @else
-                <div class="group relative rounded-2xl border border-gray-200/80 p-8 lg:p-10 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 bg-white h-full">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105">
-                        <svg class="w-7 h-7 text-brand-500 group-hover:text-white transition-colors duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">{!! $serviceIcons[$si] ?? $serviceIcons[0] !!}</svg>
+                {{-- Card normal --}}
+                <div class="group relative rounded-2xl border border-gray-200/80 p-7 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 bg-white h-full flex flex-col">
+                    <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-50 group-hover:bg-brand-500 transition-all duration-500 group-hover:shadow-brand group-hover:scale-105 mb-6">
+                        <x-icon name="{{ $service['icon'] ?? 'home' }}" class="w-6 h-6 text-brand-500 group-hover:text-white transition-colors duration-500" />
                     </div>
-                    <h3 class="mt-7 text-xl font-bold text-gray-900">{{ $service['title'] ?? '' }}</h3>
-                    <p class="mt-3 text-sm text-gray-500 leading-relaxed">{{ $service['description'] ?? '' }}</p>
-                    <ul class="mt-7 space-y-3">
+                    <p class="text-[0.6rem] font-bold tracking-[0.12em] uppercase text-brand-400 mb-1">{{ $service['label'] ?? '' }}</p>
+                    <h3 class="text-lg font-bold text-gray-900 leading-snug">{{ $service['title'] ?? '' }}</h3>
+                    <p class="mt-3 text-sm text-gray-500 leading-relaxed flex-1">{{ $service['description'] ?? '' }}</p>
+                    <ul class="mt-6 space-y-2.5">
                         @foreach(($service['features'] ?? []) as $feature)
-                        <li class="flex items-start gap-3 text-sm text-gray-600">
-                            <x-icon name="check" class="w-5 h-5 mt-0.5 text-brand-400 shrink-0" />
+                        <li class="flex items-start gap-2.5 text-sm text-gray-600">
+                            <x-icon name="check" class="w-4 h-4 mt-0.5 text-brand-400 shrink-0" />
                             {{ $feature }}
                         </li>
                         @endforeach
                     </ul>
-                    <a href="{{ $service['link_url'] ?? '/servicios' }}" class="group/link mt-8 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
+                    <a href="{{ $service['link_url'] ?? '/servicios' }}" class="group/link mt-7 inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
                         {{ $service['link_text'] ?? 'Conocer más' }}
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover/link:translate-x-1" />
                     </a>
@@ -388,7 +420,7 @@
                 @endforeach
             </div>
 
-            <div class="mt-12 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+            <div class="mt-10 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <a href="{{ route('servicios') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
                     Ver todos los servicios
                     <x-icon name="arrow-right" class="w-4 h-4" />
