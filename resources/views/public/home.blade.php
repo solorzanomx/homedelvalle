@@ -93,7 +93,7 @@
             </div>
 
             {{-- ── Tarjetas de intención ── --}}
-            <div class="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                 {{-- Propietarios — destacado --}}
                 <a href="{{ route('landing.vende') }}"
@@ -128,6 +128,23 @@
                     </div>
                     <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 group-hover:text-white transition-colors duration-300">
                         Iniciar búsqueda
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                </a>
+
+                {{-- Rentar para vivir --}}
+                <a href="{{ route('landing.rentar') }}"
+                   class="group relative flex flex-col justify-between bg-white/8 backdrop-blur-sm border border-white/12 rounded-2xl p-6 hover:bg-white/14 hover:border-white/25 hover:shadow-2xl transition-all duration-300 text-left">
+                    <div>
+                        <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 group-hover:bg-brand-500 transition-all duration-300 mb-5">
+                            <x-icon name="key" class="w-5 h-5 text-white" />
+                        </div>
+                        <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Arrendatarios</p>
+                        <p class="text-white font-semibold text-base leading-snug">Quiero rentar un inmueble</p>
+                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Curación personalizada sin catálogos masivos. Solo opciones que coinciden con tu brief.</p>
+                    </div>
+                    <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 group-hover:text-white transition-colors duration-300">
+                        Ver opciones
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>
