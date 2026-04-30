@@ -1,4 +1,5 @@
 <div>
+<style>@keyframes livewire-spin { to { transform: rotate(360deg); } }</style>
 
 {{-- ── Mensajes ──────────────────────────────────────────────────────────────── --}}
 @if($successMsg)
@@ -73,9 +74,9 @@
                  style="border:2px dashed #e2e8f0;border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:all .2s;"
                  onclick="document.getElementById('doc-file-input-{{ $this->getId() }}').click()">
 
-                <div wire:loading wire:target="file" style="color:#1D4ED8;">
-                    <svg style="width:24px;height:24px;display:inline-block;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/></svg>
-                    <p style="font-size:.82rem;color:#1D4ED8;margin-top:.5rem;">Subiendo...</p>
+                <div wire:loading wire:target="file" style="color:#1D4ED8;padding:1rem 0;">
+                    <div style="width:24px;height:24px;border:3px solid #bfdbfe;border-top-color:#1D4ED8;border-radius:50%;display:inline-block;animation:livewire-spin .7s linear infinite;"></div>
+                    <p style="font-size:.82rem;color:#1D4ED8;margin-top:.5rem;">Procesando...</p>
                 </div>
 
                 <div wire:loading.remove wire:target="file">
@@ -206,8 +207,3 @@
 </script>
 @endscript
 
-@style
-<style>
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
-@endstyle
