@@ -5,34 +5,26 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Operation;
 use App\Models\RentalProcess;
+use Illuminate\Support\Facades\Schema;
 
-/**
- * Track B — Funnel de Rentas
- * Vistas dedicadas /admin/rentas/* separadas del genérico /admin/operations
- *
- * PR Rentas-1: vistas placeholder con datos reales.
- * PR Rentas-2: kanban interactivo Fase 1 (captación).
- * PR Rentas-3: kanban interactivo Fase 2 (colocación).
- * PR Rentas-4: gestión post-cierre completa.
- */
 class RentalsAdminController extends Controller
 {
     // ── Fase 1 — Captación de renta ────────────────────────────────────────────
 
     public function captaciones()
     {
-        // Captaciones con intent='renta' O type='captacion' de rentas
+        $hasIntent = Schema::hasColumn('operations', 'intent');
+
         $captaciones = Operation::where('type', 'captacion')
-            ->where(function ($q) {
-                $q->where('intent', 'renta')
-                  ->orWhereNull('intent'); // incluir genéricas hasta que se etiqueten
-            })
-            ->with(['client', 'property', 'assignedUser'])
+            ->when($hasIntent, fn($q) => $q->where(function ($q) {
+                $q->where('intent', 'renta')->orWhereNull('intent');
+            }))
+            ->with(['client', 'property', 'user'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('stage');
 
-        $stages = \App\Models\Operation::CAPTACION_STAGES;
+        $stages = Operation::CAPTACION_STAGES;
 
         $stats = [
             'total'    => $captaciones->flatten()->count(),
@@ -47,18 +39,19 @@ class RentalsAdminController extends Controller
         return view('admin.rentas.captaciones', compact('captaciones', 'stages', 'stats'));
     }
 
-    // ── Fase 2 — Colocación (rentas activas en mercado) ───────────────────────
+    // ── Fase 2 — Colocación ───────────────────────────────────────────────────
 
     public function activas()
     {
+        // 'active' puede no existir como status — incluir sin status también
         $operaciones = Operation::where('type', 'renta')
-            ->where('status', 'active')
-            ->with(['client', 'property', 'assignedUser'])
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->with(['client', 'property', 'user'])   // 'user' es la relación definida
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('stage');
 
-        $stages = \App\Models\Operation::RENTA_STAGES;
+        $stages = Operation::RENTA_STAGES;
 
         $stats = [
             'total'       => $operaciones->flatten()->count(),
@@ -74,22 +67,27 @@ class RentalsAdminController extends Controller
 
     public function gestion()
     {
-        $activas = RentalProcess::where('status', 'active')
-            ->with(['property', 'ownerClient', 'tenantClient', 'assignedUser'])
+        $activas = RentalProcess::whereNotIn('status', ['completed', 'cancelled'])
+            ->with(['property', 'ownerClient', 'tenantClient'])
             ->orderBy('lease_end_date')
             ->get();
 
         $renovacion = $activas->filter(function ($r) {
-            return $r->lease_end_date
-                && now()->diffInDays($r->lease_end_date, false) <= 60
-                && now()->diffInDays($r->lease_end_date, false) > 0;
+            if (! $r->lease_end_date) return false;
+            $days = now()->diffInDays($r->lease_end_date, false);
+            return $days > 0 && $days <= 60;
         });
 
-        $moveout = RentalProcess::whereNotNull('move_out_scheduled_at')
-            ->where('status', 'active')
-            ->with(['property', 'tenantClient'])
-            ->orderBy('move_out_scheduled_at')
-            ->get();
+        // move_out_scheduled_at es columna de Fase 1 schema — guardar si no existe
+        if (Schema::hasColumn('rental_processes', 'move_out_scheduled_at')) {
+            $moveout = RentalProcess::whereNotNull('move_out_scheduled_at')
+                ->whereNotIn('status', ['completed', 'cancelled'])
+                ->with(['property', 'tenantClient'])
+                ->orderBy('move_out_scheduled_at')
+                ->get();
+        } else {
+            $moveout = collect();
+        }
 
         $cerradas = RentalProcess::where('status', 'completed')
             ->with(['property', 'ownerClient', 'tenantClient'])
@@ -112,15 +110,15 @@ class RentalsAdminController extends Controller
 
     public function show(RentalProcess $rental)
     {
-        $rental->load([
-            'property',
-            'ownerClient',
-            'tenantClient',
-            'assignedUser',
-            'stageLogs.user',
-            'documents',
-            'polizaJuridica',
-        ]);
+        // Cargar solo relaciones que existen definitivamente
+        $relations = ['property', 'ownerClient', 'tenantClient', 'stageLogs.user', 'documents'];
+
+        // polizaJuridica: cargar solo si la relación está definida en el modelo
+        if (method_exists($rental, 'polizaJuridica')) {
+            $relations[] = 'polizaJuridica';
+        }
+
+        $rental->load($relations);
 
         return view('admin.rentas.show', compact('rental'));
     }
