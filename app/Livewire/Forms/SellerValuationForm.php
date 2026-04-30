@@ -63,10 +63,9 @@ class SellerValuationForm extends Component
 
     public function submit(): void
     {
+        $data = $this->validate(); // valida primero — si falla, isProcessing nunca se bloquea
         if ($this->isProcessing) return;
         $this->isProcessing = true;
-
-        $data = $this->validate();
 
         $lockKey = 'form_submit_vendedor_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
@@ -118,6 +117,14 @@ class SellerValuationForm extends Component
 
         return 'warm';
     }
+    // Limpia el error del campo en cuanto el usuario lo corrige
+    public function updated(string $propertyName): void
+    {
+        if ($this->getErrorBag()->has($propertyName)) {
+            $this->validateOnly($propertyName);
+        }
+    }
+
 
     public function render()
     {
