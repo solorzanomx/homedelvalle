@@ -174,7 +174,6 @@
 </div>
 
 {{-- ── SortableJS + Livewire bridge ────────────────────────────────────────── --}}
-@endpush
 <script>
 document.addEventListener('livewire:initialized', () => { initKanban(); });
 document.addEventListener('livewire:updated',     () => { initKanban(); });
