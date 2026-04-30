@@ -64,6 +64,7 @@ class RentalProcess extends Model
     public function tasks() { return $this->hasMany(Task::class); }
     public function poliza() { return $this->hasOne(PolizaJuridica::class); }
     public function contracts() { return $this->hasMany(Contract::class); }
+    public function payments()  { return $this->hasMany(RentalPayment::class)->orderBy('period'); }
 
     // Scopes
     public function scopeActive($q) { return $q->where('status', 'active'); }
