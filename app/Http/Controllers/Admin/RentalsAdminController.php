@@ -39,28 +39,13 @@ class RentalsAdminController extends Controller
         return view('admin.rentas.captaciones', compact('captaciones', 'stages', 'stats'));
     }
 
-    // ── Fase 2 — Colocación ───────────────────────────────────────────────────
+    // ── Fase 2 — Colocación (kanban Livewire RentasKanbanFase2) ──────────────
 
     public function activas()
     {
-        // 'active' puede no existir como status — incluir sin status también
-        $operaciones = Operation::where('type', 'renta')
-            ->whereNotIn('status', ['cancelled', 'completed'])
-            ->with(['client', 'property', 'user'])   // 'user' es la relación definida
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->groupBy('stage');
-
-        $stages = Operation::RENTA_STAGES;
-
-        $stats = [
-            'total'       => $operaciones->flatten()->count(),
-            'en_busqueda' => Operation::where('type', 'renta')->where('stage', 'busqueda')->count(),
-            'con_oferta'  => Operation::where('type', 'renta')->where('stage', 'investigacion')->count(),
-            'por_firmar'  => Operation::where('type', 'renta')->where('stage', 'contrato')->count(),
-        ];
-
-        return view('admin.rentas.activas', compact('operaciones', 'stages', 'stats'));
+        // El kanban Livewire maneja toda la lógica de datos y filtros.
+        // Esta acción solo renderiza el layout con el componente.
+        return view('admin.rentas.activas');
     }
 
     // ── Fase 3 — Gestión post-cierre ──────────────────────────────────────────
