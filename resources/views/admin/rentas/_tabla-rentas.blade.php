@@ -1,7 +1,7 @@
 {{-- Partial reutilizable para tablas de RentalProcess --}}
 @if($rentas->isEmpty())
 <div style="text-align:center;padding:3rem;color:#94a3b8;">
-    <x-icon name="inbox" class="w-10 h-10" style="margin:0 auto .75rem;display:block;color:#cbd5e1;" />
+    <x-icon name="archive" class="w-10 h-10" style="margin:0 auto .75rem;display:block;color:#cbd5e1;" />
     <p style="font-size:.85rem;">{{ $empty }}</p>
 </div>
 @else
