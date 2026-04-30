@@ -620,7 +620,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     });
 
     // ===== FUNNEL DE RENTAS (Track B) =====
-    Route::prefix('rentas')->name('admin.rentas.')->group(function () {
+    Route::prefix('rentas')->name('rentas.')->group(function () {
         Route::get('/captaciones',          [\App\Http\Controllers\Admin\RentalsAdminController::class, 'captaciones'])->name('captaciones');
         Route::get('/activas',              [\App\Http\Controllers\Admin\RentalsAdminController::class, 'activas'])->name('activas');
         Route::get('/gestion',              [\App\Http\Controllers\Admin\RentalsAdminController::class, 'gestion'])->name('gestion');
