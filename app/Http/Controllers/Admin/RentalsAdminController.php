@@ -21,13 +21,14 @@ class RentalsAdminController extends Controller
 
     public function captaciones()
     {
-        // Captaciones con intent='renta' O type='captacion' de rentas
+        // intent es columna opcional (Fase 1 schema). Si no existe, mostrar todas las captaciones.
+        $hasIntent = \Illuminate\Support\Facades\Schema::hasColumn('operations', 'intent');
+
         $captaciones = Operation::where('type', 'captacion')
-            ->where(function ($q) {
-                $q->where('intent', 'renta')
-                  ->orWhereNull('intent'); // incluir genéricas hasta que se etiqueten
-            })
-            ->with(['client', 'property', 'assignedUser'])
+            ->when($hasIntent, fn($q) => $q->where(function ($q) {
+                $q->where('intent', 'renta')->orWhereNull('intent');
+            }))
+            ->with(['client', 'property', 'user'])
             ->orderBy('created_at', 'desc')
             ->get()
             ->groupBy('stage');

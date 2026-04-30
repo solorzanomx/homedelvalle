@@ -58,11 +58,16 @@ class RentasKanbanFase1 extends Component
 
         if ($stageIndex > $oldIndex) {
             // Solo validar avance, no retroceso
-            $pendingChecklist = $op->checklistItems()
+            $checklistQuery = $op->checklistItems()
                 ->where('stage', $oldStage)
-                ->where('is_completed', false)
-                ->where('is_required', true)
-                ->count();
+                ->where('is_completed', false);
+
+            // is_required es opcional — solo filtrar si la columna existe
+            if (\Illuminate\Support\Facades\Schema::hasColumn('operation_checklist_items', 'is_required')) {
+                $checklistQuery->where('is_required', true);
+            }
+
+            $pendingChecklist = $checklistQuery->count();
 
             if ($pendingChecklist > 0) {
                 $this->dispatch('kanban-error', [
@@ -152,10 +157,13 @@ class RentasKanbanFase1 extends Component
 
     public function render()
     {
+        // Filtro por intent — columna opcional (Fase 1 schema, puede no existir aún)
+        $hasIntent = \Illuminate\Support\Facades\Schema::hasColumn('operations', 'intent');
+
         $query = Operation::where('type', 'captacion')
-            ->where(function ($q) {
+            ->when($hasIntent, fn($q) => $q->where(function ($q) {
                 $q->where('intent', 'renta')->orWhereNull('intent');
-            })
+            }))
             ->where('status', '!=', 'cancelled')
             ->with(['client', 'property', 'user'])
             ->orderBy('updated_at', 'desc');
