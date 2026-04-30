@@ -619,7 +619,15 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::delete('/{valuation}',                [\App\Http\Controllers\Admin\ValuationController::class, 'destroy'])->name('destroy');
     });
 
-    // ===== CAPTACIONES =====
+    // ===== FUNNEL DE RENTAS (Track B) =====
+    Route::prefix('rentas')->name('admin.rentas.')->group(function () {
+        Route::get('/captaciones',          [\App\Http\Controllers\Admin\RentalsAdminController::class, 'captaciones'])->name('captaciones');
+        Route::get('/activas',              [\App\Http\Controllers\Admin\RentalsAdminController::class, 'activas'])->name('activas');
+        Route::get('/gestion',              [\App\Http\Controllers\Admin\RentalsAdminController::class, 'gestion'])->name('gestion');
+        Route::get('/gestion/{rental}',     [\App\Http\Controllers\Admin\RentalsAdminController::class, 'show'])->name('gestion.show');
+    });
+
+    // ===== CAPTACIONES (venta) =====
     Route::prefix('captaciones')->name('captaciones.')->group(function () {
         Route::get('/',                                                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'index'])->name('index');
         Route::get('/{captacion}',                                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
