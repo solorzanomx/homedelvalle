@@ -5,7 +5,7 @@
     $address = $siteSettings?->address;
     $facebook = $siteSettings?->facebook_url;
     $instagram = $siteSettings?->instagram_url;
-    $tiktok = $siteSettings?->tiktok_url;
+    $xTwitter = $siteSettings?->tiktok_url; // columna reutilizada para X (Twitter)
     $footerAbout = $siteSettings?->footer_about;
     $footerBottomText = $siteSettings?->footer_bottom_text;
     $footerBottomLinks = $siteSettings?->footer_bottom_links ?? [];
@@ -43,9 +43,9 @@
                         <x-icon name="brands/instagram" class="w-4.5 h-4.5" />
                     </a>
                     @endif
-                    @if($tiktok)
-                    <a href="{{ $tiktok }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 hover:bg-brand-500/20 text-gray-500 hover:text-brand-400 transition-all duration-300" aria-label="TikTok">
-                        <x-icon name="brands/tiktok" class="w-4.5 h-4.5" />
+                    @if($xTwitter)
+                    <a href="{{ $xTwitter }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-10 h-10 rounded-xl bg-white/5 hover:bg-brand-500/20 text-gray-500 hover:text-brand-400 transition-all duration-300" aria-label="X (Twitter)">
+                        <x-icon name="brands/x" class="w-4 h-4" />
                     </a>
                     @endif
                     @if($siteSettings?->whatsapp_number)

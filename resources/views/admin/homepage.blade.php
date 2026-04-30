@@ -411,8 +411,8 @@
                     <input type="url" name="instagram_url" class="form-control" value="{{ old('instagram_url', $settings->instagram_url ?? '') }}" placeholder="https://instagram.com/...">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">TikTok URL</label>
-                    <input type="url" name="tiktok_url" class="form-control" value="{{ old('tiktok_url', $settings->tiktok_url ?? '') }}" placeholder="https://tiktok.com/...">
+                    <label class="form-label">X (Twitter) URL</label>
+                    <input type="url" name="tiktok_url" class="form-control" value="{{ old('tiktok_url', $settings->tiktok_url ?? '') }}" placeholder="https://x.com/homedelvalle">
                 </div>
             </div>
         </div>
