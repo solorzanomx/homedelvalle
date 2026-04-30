@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 #[ObservedBy(OperationObserver::class)]
 class Operation extends Model
 {
-    protected $fillable = ['type', 'target_type', 'phase', 'stage', 'status', 'property_id', 'client_id', 'secondary_client_id', 'broker_id', 'user_id', 'source_operation_id', 'amount', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'guarantee_type', 'expected_close_date', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'notes', 'closed_at', 'completed_at', 'cancelled_at',];
+    protected $fillable = ['type', 'intent', 'target_type', 'phase', 'stage', 'status', 'property_id', 'client_id', 'secondary_client_id', 'broker_id', 'user_id', 'source_operation_id', 'amount', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'guarantee_type', 'expected_close_date', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'notes', 'closed_at', 'completed_at', 'cancelled_at',];
     const STAGES = [
         'lead' => 'Lead',
         'contacto' => 'Contacto',
