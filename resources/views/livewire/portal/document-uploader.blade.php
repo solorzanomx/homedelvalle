@@ -15,7 +15,7 @@
 </div>
 @endif
 
-{{-- Botón abrir --}}
+{{-- Botón abrir form --}}
 @if(!$showForm)
 <div style="margin-bottom:1.25rem;">
     <button wire:click="$set('showForm', true)"
@@ -25,7 +25,7 @@
 </div>
 @endif
 
-{{-- Formulario --}}
+{{-- Formulario — POST estándar al controlador --}}
 @if($showForm)
 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
@@ -33,70 +33,92 @@
         <button wire:click="$set('showForm', false)" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#94a3b8;">&times;</button>
     </div>
 
-    {{-- Categoría --}}
-    <div style="margin-bottom:1rem;">
-        <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">Categoría *</label>
-        <select wire:model="category" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .75rem;font-size:.85rem;color:#0f172a;background:#fff;">
-            <option value="">Selecciona una categoría...</option>
-            @foreach($availableCategories as $val => $lbl)
-            <option value="{{ $val }}">{{ $lbl }}</option>
-            @endforeach
-        </select>
-        @error('category')<p style="font-size:.72rem;color:#ef4444;margin-top:.3rem;">{{ $message }}</p>@enderror
+    @if(session('error'))
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.65rem 1rem;margin-bottom:1rem;font-size:.83rem;color:#991b1b;">
+        ⚠ {{ session('error') }}
     </div>
+    @endif
 
-    {{-- Nombre --}}
-    <div style="margin-bottom:1rem;">
-        <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">Nombre del documento *</label>
-        <input wire:model="label" type="text" placeholder="Ej: INE Frente, Contrato firmado..."
-               style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .75rem;font-size:.85rem;color:#0f172a;">
-        @error('label')<p style="font-size:.72rem;color:#ef4444;margin-top:.3rem;">{{ $message }}</p>@enderror
-    </div>
+    <form method="POST"
+          action="{{ route('portal.documents.upload') }}"
+          enctype="multipart/form-data">
+        @csrf
 
-    {{-- Archivo --}}
-    <div style="margin-bottom:1.25rem;">
-        <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">Archivo *</label>
-        <div onclick="document.getElementById('fi-{{ $this->getId() }}').click()"
-             style="border:2px dashed #e2e8f0;border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:border-color .2s;"
-             id="dz-{{ $this->getId() }}">
-            <div wire:loading wire:target="file" style="padding:.5rem 0;">
-                <div style="width:22px;height:22px;border:3px solid #bfdbfe;border-top-color:#1D4ED8;border-radius:50%;display:inline-block;animation:lw-spin .7s linear infinite;margin-bottom:.4rem;"></div>
-                <p style="font-size:.82rem;color:#1D4ED8;">Procesando...</p>
-            </div>
-            <div wire:loading.remove wire:target="file">
-                @if($file)
-                <p style="font-size:.85rem;font-weight:600;color:#0f172a;">📄 {{ $file->getClientOriginalName() }}</p>
-                <p style="font-size:.72rem;color:#64748b;">{{ round($file->getSize()/1024) }} KB</p>
-                @else
-                <p style="font-size:.83rem;color:#64748b;"><strong style="color:#1D4ED8;">Haz clic</strong> o arrastra aquí<br><span style="font-size:.72rem;color:#94a3b8;">PDF, JPG, PNG, DOC — máx. 10 MB</span></p>
-                @endif
-            </div>
+        {{-- Contexto de renta --}}
+        @if($rentalProcessId)
+        <input type="hidden" name="rental_process_id" value="{{ $rentalProcessId }}">
+        @endif
+
+        {{-- Categoría --}}
+        <div style="margin-bottom:1rem;">
+            <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">
+                Categoría *
+            </label>
+            <select name="category" required
+                    style="width:100%;border:1px solid {{ $errors->has('category') ? '#ef4444' : '#e2e8f0' }};border-radius:8px;padding:.5rem .75rem;font-size:.85rem;color:#0f172a;background:#fff;">
+                <option value="">Selecciona una categoría...</option>
+                @foreach($availableCategories as $val => $lbl)
+                <option value="{{ $val }}" {{ old('category') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                @endforeach
+            </select>
+            @error('category')<p style="font-size:.72rem;color:#ef4444;margin-top:.3rem;">{{ $message }}</p>@enderror
         </div>
-        <input id="fi-{{ $this->getId() }}" type="file" wire:model="file"
-               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;">
-        @error('file')<p style="font-size:.72rem;color:#ef4444;margin-top:.3rem;">{{ $message }}</p>@enderror
-    </div>
 
-    {{-- Botones --}}
-    <div style="display:flex;gap:.75rem;justify-content:flex-end;">
-        <button type="button" wire:click="$set('showForm', false)"
-                style="padding:.5rem 1rem;font-size:.82rem;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;">
-            Cancelar
-        </button>
-        <button type="button" wire:click="upload"
-                wire:loading.attr="disabled" wire:target="upload"
-                style="padding:.5rem 1.25rem;font-size:.82rem;font-weight:600;background:#1D4ED8;color:#fff;border:none;border-radius:8px;cursor:pointer;min-width:130px;">
-            <span wire:loading.remove wire:target="upload">Subir documento</span>
-            <span wire:loading wire:target="upload" style="display:inline-flex;align-items:center;gap:.4rem;">
-                <span style="width:12px;height:12px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:lw-spin .7s linear infinite;"></span>
-                Subiendo...
-            </span>
-        </button>
-    </div>
+        {{-- Nombre --}}
+        <div style="margin-bottom:1rem;">
+            <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">
+                Nombre del documento
+            </label>
+            <input name="label" type="text"
+                   value="{{ old('label') }}"
+                   placeholder="Ej: INE Frente, Contrato firmado... (opcional)"
+                   style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem .75rem;font-size:.85rem;color:#0f172a;">
+        </div>
+
+        {{-- Archivo --}}
+        <div style="margin-bottom:1.25rem;">
+            <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">
+                Archivo *
+            </label>
+            <div id="dz-{{ $this->getId() }}"
+                 onclick="document.getElementById('fi-{{ $this->getId() }}').click()"
+                 style="border:2px dashed {{ $errors->has('file') ? '#ef4444' : '#e2e8f0' }};border-radius:10px;padding:1.75rem;text-align:center;cursor:pointer;transition:border-color .2s;">
+                <div id="dz-placeholder-{{ $this->getId() }}">
+                    <p style="font-size:.83rem;color:#64748b;">
+                        <strong style="color:#1D4ED8;">Haz clic para seleccionar</strong> o arrastra aquí
+                    </p>
+                    <p style="font-size:.72rem;color:#94a3b8;margin-top:.25rem;">PDF, JPG, PNG, DOC — máx. 10 MB</p>
+                </div>
+                <div id="dz-preview-{{ $this->getId() }}" style="display:none;">
+                    <p id="dz-fname-{{ $this->getId() }}" style="font-size:.85rem;font-weight:600;color:#0f172a;">📄 archivo</p>
+                    <p id="dz-fsize-{{ $this->getId() }}" style="font-size:.72rem;color:#64748b;"></p>
+                </div>
+            </div>
+            <input id="fi-{{ $this->getId() }}"
+                   name="file"
+                   type="file"
+                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                   style="display:none;"
+                   required>
+            @error('file')<p style="font-size:.72rem;color:#ef4444;margin-top:.3rem;">{{ $message }}</p>@enderror
+        </div>
+
+        {{-- Acciones --}}
+        <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+            <button type="button" wire:click="$set('showForm', false)"
+                    style="padding:.5rem 1rem;font-size:.82rem;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;">
+                Cancelar
+            </button>
+            <button type="submit"
+                    style="padding:.5rem 1.25rem;font-size:.82rem;font-weight:600;background:#1D4ED8;color:#fff;border:none;border-radius:8px;cursor:pointer;">
+                Subir documento
+            </button>
+        </div>
+    </form>
 </div>
 @endif
 
-{{-- Lista --}}
+{{-- Lista de documentos --}}
 @if(count($documents) > 0)
 <div style="display:flex;flex-direction:column;gap:.5rem;">
     @foreach($documents as $doc)
@@ -127,24 +149,40 @@
 </div>
 @endif
 
-{{-- Drag & drop JS — dentro del root div --}}
+{{-- JS: preview de archivo seleccionado + drag & drop --}}
 <script>
 (function(){
-    function initDz(){
-        var dz = document.getElementById('dz-{{ $this->getId() }}');
-        var fi = document.getElementById('fi-{{ $this->getId() }}');
-        if(!dz || dz._ready) return;
-        dz._ready = true;
-        dz.addEventListener('dragover',function(e){e.preventDefault();dz.style.borderColor='#1D4ED8';dz.style.background='#eff6ff';});
-        dz.addEventListener('dragleave',function(){dz.style.borderColor='#e2e8f0';dz.style.background='';});
-        dz.addEventListener('drop',function(e){
-            e.preventDefault();dz.style.borderColor='#e2e8f0';dz.style.background='';
-            if(fi&&e.dataTransfer.files.length){var dt=new DataTransfer();dt.items.add(e.dataTransfer.files[0]);fi.files=dt.files;fi.dispatchEvent(new Event('change'));}
+    var uid   = '{{ $this->getId() }}';
+    var fi    = document.getElementById('fi-'    + uid);
+    var dz    = document.getElementById('dz-'    + uid);
+    var ph    = document.getElementById('dz-placeholder-' + uid);
+    var prev  = document.getElementById('dz-preview-'     + uid);
+    var fname = document.getElementById('dz-fname-'       + uid);
+    var fsize = document.getElementById('dz-fsize-'       + uid);
+
+    function showPreview(file) {
+        if (!file || !ph || !prev) return;
+        ph.style.display   = 'none';
+        prev.style.display = 'block';
+        fname.textContent  = '📄 ' + file.name;
+        fsize.textContent  = Math.round(file.size / 1024) + ' KB';
+    }
+
+    if (fi) fi.addEventListener('change', function(){ showPreview(this.files[0]); });
+
+    if (dz) {
+        dz.addEventListener('dragover',  function(e){ e.preventDefault(); dz.style.borderColor='#1D4ED8'; dz.style.background='#eff6ff'; });
+        dz.addEventListener('dragleave', function()  { dz.style.borderColor='#e2e8f0'; dz.style.background=''; });
+        dz.addEventListener('drop',      function(e) {
+            e.preventDefault(); dz.style.borderColor='#e2e8f0'; dz.style.background='';
+            if (fi && e.dataTransfer.files.length) {
+                var dt = new DataTransfer();
+                dt.items.add(e.dataTransfer.files[0]);
+                fi.files = dt.files;
+                showPreview(e.dataTransfer.files[0]);
+            }
         });
     }
-    document.addEventListener('DOMContentLoaded',initDz);
-    document.addEventListener('livewire:initialized',initDz);
-    document.addEventListener('livewire:updated',initDz);
 })();
 </script>
 

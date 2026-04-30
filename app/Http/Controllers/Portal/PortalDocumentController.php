@@ -88,23 +88,27 @@ class PortalDocumentController extends Controller
         if (!$client) abort(403);
 
         $validated = $request->validate([
-            'category' => 'required|string',
-            'file'     => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
+            'category'          => 'required|string',
+            'label'             => 'nullable|string|max:120',
+            'rental_process_id' => 'nullable|integer',
+            'file'              => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
         ]);
 
-        $file = $request->file('file');
-        $path = $file->store('documents/client-' . $client->id, 'public');
+        $file  = $request->file('file');
+        $path  = $file->store('documents/client-' . $client->id, 'public');
+        $label = !empty($validated['label']) ? $validated['label'] : $file->getClientOriginalName();
 
         Document::create([
-            'client_id'   => $client->id,
-            'uploaded_by' => Auth::id(),
-            'category'    => $validated['category'],
-            'label'       => $file->getClientOriginalName(),
-            'file_path'   => $path,
-            'file_name'   => $file->getClientOriginalName(),
-            'mime_type'   => $file->getMimeType(),
-            'file_size'   => $file->getSize(),
-            'status'      => 'received',
+            'client_id'         => $client->id,
+            'rental_process_id' => $validated['rental_process_id'] ?? null,
+            'uploaded_by'       => Auth::id(),
+            'category'          => $validated['category'],
+            'label'             => $label,
+            'file_path'         => $path,
+            'file_name'         => $file->getClientOriginalName(),
+            'mime_type'         => $file->getMimeType(),
+            'file_size'         => $file->getSize(),
+            'status'            => 'received',
         ]);
 
         return back()->with('success', 'Documento subido correctamente.');
