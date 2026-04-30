@@ -18,19 +18,19 @@ Este documento responde tres preguntas: **¿qué tenemos hoy?, ¿hacia dónde va
 | **Marketing automation** | 🟡 Motor instalado, uso parcial | Automations, segments, lead scoring existen como tablas/clases. Lead scoring se recalcula a diario pero las reglas no están todas configuradas. |
 | **Carousel de Instagram** | 🟢 Excelente | Sistema robusto con templates, versiones, AI prompts y publicación multi-canal. |
 | **Legal y contratos** | 🟢 Bien | DomPDF + templates con variables, Mifiel, tracking de aceptaciones. |
-| **Portal de clientes** | 🟡 Funcional | Dashboard, rentas, documentos. Falta acceso para compradores activos. |
+| **Portal del Cliente** | 🟠 Funcional pero subutilizado | Existe `/portal` (dashboard básico, rentas, documentos, cuenta). **Decisión abr 2026: migrar a `miportal.homedelvalle.mx` como pieza diferenciadora del producto.** No tiene mensajería bidireccional, ni notificaciones in-portal robustas, ni vista "preview as client" desde el admin, ni cobertura para los 4 perfiles (propietario / inquilino / comprador / vendedor). Spec en `05-PROCESO-DE-RENTA.md` y `06-PORTAL-DEL-CLIENTE.md`. |
 | **Help center / Onboarding** | 🔴 Vacío | Tablas creadas, sin contenido. |
 | **Referidos / partners** | 🔴 Esqueleto | Tabla `referrers` y `referrals` sin integración productiva. |
 | **Analítica / atribución** | 🟠 Parcial | UTM se capturan en `clients` pero no se conectan con campañas. ROI es null. |
-| **Documentación** | 🟢 Madurando | `.claude/` con DATABASE_SCHEMA, SCHEMA_QUICK_REFERENCE, ARCHITECTURE_ANALYSIS. `/docs/` arrancando. |
+| **Documentación** | 🟢 Madurando | `.claude/` con DATABASE_SCHEMA, SCHEMA_QUICK_REFERENCE, ARCHITECTURE_ANALYSIS. `/docs/` con 6 manuales maestros + índice. |
 
-**Lectura corta:** la maquinaria está construida y funciona. La fricción está en la capa de **discurso, captación y atribución** — exactamente lo que la Opción C resuelve.
+**Lectura corta:** la maquinaria está construida y funciona. La fricción está en tres capas: **discurso, captación y atribución** (Opción C), y **experiencia del cliente post-firma** (Portal del Cliente). El portal es el activo digital que más nos diferencia y debe ascender a pieza fundacional, no a feature secundario.
 
 ---
 
-## 2. Visión objetivo (Opción C)
+## 2. Visión objetivo (Opción C + Portal)
 
-Tres funnels paralelos con narrativa propia, todos alimentando el mismo CRM operacional.
+Cuatro funnels paralelos al frente, un CRM operacional al centro y un portal del cliente como destino terminal de cada relación.
 
 ```
                     ┌──────────────────────────────────────┐
@@ -39,28 +39,40 @@ Tres funnels paralelos con narrativa propia, todos alimentando el mismo CRM oper
                     │  Mejores resultados.                 │
                     └──────────────┬───────────────────────┘
                                    │
-        ┌──────────────────────────┼──────────────────────────┐
-        │                          │                          │
-        ▼                          ▼                          ▼
-┌───────────────┐         ┌────────────────┐         ┌────────────────────┐
-│ /vende-tu-    │         │ /comprar       │         │ /desarrolladores-  │
-│  propiedad    │         │                │         │  e-inversionistas  │
-│ Vendedor      │         │ Comprador      │         │ B2B                │
-│ residencial   │         │ residencial    │         │                    │
-└───────┬───────┘         └────────┬───────┘         └─────────┬──────────┘
-        │                          │                           │
-        ▼                          ▼                           ▼
-   Client                     Client                       Client
-   (owner, warm)              (buyer, warm)                (investor, hot)
-   + Operation                 + Lead Event                 + Operation_comments
-   (captacion, inquiry)                                      + Asignación dirección
-        │                          │                           │
-        └──────────────┬───────────┴───────────┬───────────────┘
-                       │                       │
-                       ▼                       ▼
-               Pipeline operacional    Marketing automation
-               (kanban, stages,        (segments, scoring,
-               checklists)             nurturing emails)
+   ┌──────────────────┬────────────┼────────────┬──────────────────┐
+   │                  │            │            │                  │
+   ▼                  ▼            ▼            ▼                  ▼
+┌──────────┐  ┌──────────────┐ ┌─────────┐ ┌──────────┐ ┌────────────────────┐
+│ /vende-  │  │ /renta-tu-   │ │/comprar │ │ /rentar  │ │ /desarrolladores-  │
+│ tu-prop. │  │ propiedad    │ │         │ │          │ │ e-inversionistas   │
+│ Vendedor │  │ Propietario  │ │Comprador│ │Inquilino │ │ B2B                │
+│          │  │ que renta    │ │         │ │          │ │                    │
+└────┬─────┘  └──────┬───────┘ └────┬────┘ └────┬─────┘ └──────┬─────────────┘
+     │               │               │            │               │
+     └───────────────┴───────┬───────┴────────────┴───────────────┘
+                             │
+                             ▼
+                   ┌─────────────────────┐
+                   │   CRM operacional   │  ← agentes, dirección, automations
+                   │   (operations,      │
+                   │   clients,          │
+                   │   rental_processes) │
+                   └──────────┬──────────┘
+                              │
+                              │ al firmar el primer hito (captación,
+                              │  contrato, oferta), se crea cuenta de
+                              │  portal automáticamente
+                              ▼
+                   ┌──────────────────────────────────┐
+                   │  miportal.homedelvalle.mx        │
+                   │                                  │
+                   │  Mi inmueble · Mis pagos ·       │
+                   │  Mis documentos · Mensajes ·     │
+                   │  Mi operación · Mi cuenta        │
+                   │                                  │
+                   │  Acceso continuo del cliente     │
+                   │  durante toda la relación con HDV│
+                   └──────────────────────────────────┘
 ```
 
 ### Principios que esto respeta
@@ -70,6 +82,7 @@ Tres funnels paralelos con narrativa propia, todos alimentando el mismo CRM oper
 3. **Atribución desde el primer toque.** Cada formulario captura UTM, source, referrer, must-have del lead.
 4. **Calificación inmediata.** Los formularios B2B llegan al CRM como `hot` con asignación a dirección general; los residenciales como `warm`.
 5. **El home es el filtro.** Un visitante decide en 3 segundos por dónde entrar, no recibe el mismo mensaje genérico todos.
+6. **El portal es el destino terminal.** Cada cliente que firma el primer hito recibe acceso al portal automáticamente. La relación HDV ↔ cliente se vuelve continua y trazable, no episódica. El portal es el activo digital que más nos diferencia: si un cliente debería verlo, el portal lo muestra.
 
 ---
 
@@ -126,6 +139,19 @@ Mayor ticket potencial, requiere casos y cuidado.
 
 **Criterio de hecho:** Dirección puede responder "qué canal trajo el lead que cerró este mes" en una sola pantalla de admin.
 
+### Fase 3.5 — Portal del Cliente (8–12 semanas, paralelo con fase 1 y 2 una vez arranque la 1)
+
+Construir `miportal.homedelvalle.mx` como subdominio dedicado y migrar el actual `/portal`. Esto es la primera vez que un cliente nuevo de HDV entra a un destino digital propio el mismo día que firma. Spec completo en `06-PORTAL-DEL-CLIENTE.md`.
+
+- [ ] **Sub-fase A (2 sem):** subdominio en cPanel con SSL, layout Blade nuevo, auth + login + recuperar contraseña, dashboard básico para inquilino y propietario.
+- [ ] **Sub-fase B (2 sem):** documentos descargables, subida de docs por el cliente, threads de mensajes con HDV (Livewire), notificaciones in-portal, plantilla `portal_welcome` y trigger automático al firmar captación o arrendamiento.
+- [ ] **Sub-fase C (3 sem):** vistas detalladas de "Mi renta" (inquilino), reportes mensuales descargables (propietario), recibos PDF, recordatorios de pago automáticos, banner de pago vencido.
+- [ ] **Sub-fase D (2 sem):** timelines de operación de venta y captación, reportar incidente con upload de fotos, onboarding del primer login.
+- [ ] **Sub-fase E (1 sem):** vista "preview as client" desde el admin con audit log, centro de preferencias de notificación, búsqueda global, pruebas de accesibilidad y mobile.
+- [ ] **Sub-fase F (continuo):** pasarela de pago, firma electrónica integrada vía Mifiel, calendario de visitas, push notifications.
+
+**Criterio de hecho de la fase:** un cliente que firma captación recibe email a los pocos segundos, activa cuenta, entra al portal, descarga su contrato, ve su agente, manda un mensaje y recibe respuesta — todo desde mobile y sin llamar.
+
 ### Fase 4 — Refactor y escalabilidad (Q3–Q4 2026)
 
 Cuando el negocio crezca, atender la deuda técnica documentada en `.claude/ARCHITECTURE_ANALYSIS.md`.
@@ -153,20 +179,21 @@ Cuando el negocio crezca, atender la deuda técnica documentada en `.claude/ARCH
 ```
 Fase 0 (hygiene) ───┐
                     ▼
-              Fase 1 (comprador) ───┐
-                    │               │
-                    ▼               ▼
-           Fase 2 (B2B)        Fase 3 (atribución)
-                    │               │
-                    └───────┬───────┘
-                            ▼
-                    Fase 4 (refactor)
-                            │
-                            ▼
-                    Fase 5 (escalamiento)
+              Fase 1 (comprador) ───┬─────────────────┐
+                    │               │                 │
+                    ▼               ▼                 ▼
+           Fase 2 (B2B)        Fase 3 (atribución)   Fase 3.5 (Portal del Cliente)
+                    │               │                 │
+                    └───────┬───────┴─────────┬───────┘
+                            ▼                 │
+                    Fase 4 (refactor)         │
+                            │                 │
+                            └────────┬────────┘
+                                     ▼
+                            Fase 5 (escalamiento)
 ```
 
-Fase 1 y Fase 2 pueden correr en paralelo si hay capacidad de implementación. Fase 3 requiere tener al menos Fase 1 publicada porque sin tráfico al funnel no hay datos para atribuir. Fase 4 y 5 esperan crecimiento real (>5,000 ops, >300 MB de DB).
+Fase 1 y Fase 2 pueden correr en paralelo si hay capacidad de implementación. Fase 3 requiere tener al menos Fase 1 publicada porque sin tráfico al funnel no hay datos para atribuir. **Fase 3.5 (Portal del Cliente) puede arrancar en cuanto Fase 1 publica los primeros formularios** — el portal se enriquece de los datos que generan los funnels nuevos. Fase 4 y 5 esperan crecimiento real (>5,000 ops, >300 MB de DB).
 
 ---
 
@@ -184,6 +211,10 @@ Estas decisiones están cerradas. Si alguna se cuestiona, traerla a discusión e
 | 6 | Los leads del sitio se persisten como `Client` directamente, **no** en una tabla intermedia tipo `form_submissions`. | El CRM ya está diseñado para que `Client` sea la entidad de lead. Crear una tabla intermedia duplicaría datos y rompería automatizaciones existentes. | Si los formularios crecen tanto que necesitamos staging antes de calificar. |
 | 7 | El slogan oficial **no** se traduce. Se mantiene en español neutro. | Marca operando en CDMX. Mensaje pierde fuerza traducido. | Si abrimos a otros mercados hispanohablantes (es-AR, es-ES). |
 | 8 | Tabla `clients` absorbe vendedores, compradores e inversionistas con campo `client_type`. | Coherencia con el modelo actual. Splittear ahora rompería operaciones en curso. | Cuando `clients` > 50,000 filas. |
+| 9 | Portal del Cliente vive en subdominio dedicado `miportal.homedelvalle.mx`, no en sub-ruta del sitio. | Marca y memorabilidad, separación visual app vs sitio web, políticas de cookies/seguridad independientes. | Si Google penaliza subdominios de SEO o si decidimos consolidar a un solo dominio por costos de SSL/DNS. |
+| 10 | Cuenta de portal se crea automáticamente al firmar el primer hito (captación, contrato, oferta). No es opcional ni manual. | La promesa "Más control" exige que el cliente tenga acceso desde día 1. La activación manual genera fricción y desuso. | Si los costos operativos de cuentas inactivas se vuelven relevantes (>10,000 cuentas dormidas). |
+| 11 | Toda comunicación HDV ↔ cliente que no sea WhatsApp o llamada se centraliza en `MessageThread` del portal. Email se usa como notificación, no como canal primario. | Centraliza historial, evita "yo nunca recibí ese mensaje", reduce dependencia del email del cliente. | Si una integración (ej. Slack Connect, WhatsApp Business API formal) cambia el balance. |
+| 12 | Privacidad estricta entre las partes en el portal: inquilino no ve datos completos del propietario y viceversa. Toda comunicación pasa por HDV. | Refuerza el rol de HDV como intermediario profesional y evita conflictos directos. | No aplica revisar; es una política permanente. |
 
 ---
 
@@ -216,6 +247,10 @@ Estas necesitan resolución antes de cerrar las fases correspondientes.
 | ROI atribuible por canal (% campañas con dato) | 0% | ≥80% | 100% |
 | Tráfico orgánico mensual a `/mercado` | n/d (baseline pendiente) | +40% | +150% |
 | NPS interno del equipo (qué tan útil es el CRM) | n/d | 8/10 | 9/10 |
+| **% de clientes activos que entran al portal mensualmente** | n/d (baseline al lanzar) | ≥ 60% | ≥ 80% |
+| **% de mensajes HDV ↔ cliente vía portal vs WhatsApp/email** | n/d | ≥ 40% portal | ≥ 60% portal |
+| **% de documentos descargados por el cliente desde el portal vs reenvío manual** | n/d | ≥ 70% portal | ≥ 90% portal |
+| **NPS del cliente sobre el portal** | n/d (preguntar al cierre y a 90 días) | ≥ 8/10 | ≥ 9/10 |
 
 Estos KPIs viven en `/admin/analytics` (parte de la fase 3 cuando se conecte la atribución).
 

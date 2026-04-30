@@ -18,18 +18,18 @@ class CheckClientRole
         }
 
         // Authenticated as non-client (e.g. admin testing the portal link).
-        // Log out and redirect to login so they can sign in with the client account.
+        // Log out and redirect to portal login.
         if ($user) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
-            return redirect()->route('login')
+            return redirect()->route('portal.login')
                 ->with('info', 'Esta sección es exclusiva para clientes del portal. Inicia sesión con tu cuenta de cliente.');
         }
 
-        // Not authenticated — let the auth middleware handle the redirect.
-        return redirect()->route('login')
+        // Not authenticated — redirect to portal login.
+        return redirect()->route('portal.login')
             ->with('url.intended', $request->url());
     }
 }
