@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\FormSubmitted;
+use App\Listeners\CreateOperationFromLead;
 use App\Listeners\NotifyAdminsNewLead;
 use App\Listeners\SendAcuseMail;
 use App\Listeners\SendLeadInternoMail;
@@ -15,6 +16,7 @@ class EventServiceProvider extends ServiceProvider
             SendAcuseMail::class,
             SendLeadInternoMail::class,
             NotifyAdminsNewLead::class,
+            CreateOperationFromLead::class,
         ],
     ];
 
