@@ -1,7 +1,7 @@
 {{-- Partial reutilizable para tablas de RentalProcess --}}
 @if($rentas->isEmpty())
 <div style="text-align:center;padding:3rem;color:#94a3b8;">
-    <x-icon name="archive" class="w-10 h-10" style="margin:0 auto .75rem;display:block;color:#cbd5e1;" />
+    <svg style="width:2.5rem;height:2.5rem;margin:0 auto .75rem;display:block;color:#cbd5e1;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16 3H8l-1 4h10l-1-4z"/></svg>
     <p style="font-size:.85rem;">{{ $empty }}</p>
 </div>
 @else
