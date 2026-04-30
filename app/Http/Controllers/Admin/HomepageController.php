@@ -60,6 +60,7 @@ class HomepageController extends Controller
             'services_section.*.link_text' => 'nullable|string|max:100',
             'services_section.*.link_url' => 'nullable|string|max:255',
             'services_section.*.highlighted' => 'nullable',
+            'services_section.*.badge_text'  => 'nullable|string|max:60',
 
             // Stats
             'stats_heading' => 'nullable|string|max:255',

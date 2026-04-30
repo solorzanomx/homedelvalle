@@ -365,11 +365,15 @@
                 <div x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $si * 80 }}ms">
                 @if(!empty($service['highlighted']))
                 {{-- Card destacada --}}
+                {{-- Wrapper sin overflow-hidden para que el badge no se recorte --}}
+                <div class="relative h-full" style="padding-top: 0.6rem;">
+                    <div class="absolute top-0 right-4 z-10">
+                        <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-[0.65rem] font-bold text-brand-700 shadow-premium">
+                            {{ !empty($service['badge_text']) ? $service['badge_text'] : '★ Más solicitado' }}
+                        </span>
+                    </div>
                 <div class="relative rounded-2xl p-7 gradient-brand text-white shadow-brand-lg overflow-hidden h-full flex flex-col">
                     <div class="absolute top-0 right-0 w-36 h-36 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
-                    <div class="absolute -top-3 right-5">
-                        <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-[0.65rem] font-bold text-brand-700 shadow-premium">★ Más solicitado</span>
-                    </div>
                     <div class="relative flex flex-col flex-1">
                         <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-white/15 backdrop-blur-sm mb-6">
                             <x-icon name="{{ $service['icon'] ?? 'home' }}" class="w-6 h-6 text-white" />
@@ -391,6 +395,7 @@
                         </a>
                     </div>
                 </div>
+                </div>{{-- /wrapper badge --}}
                 @else
                 {{-- Card normal --}}
                 <div class="group relative rounded-2xl border border-gray-200/80 p-7 hover:border-brand-200 hover:shadow-premium-lg transition-all duration-500 bg-white h-full flex flex-col">

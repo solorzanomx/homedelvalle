@@ -223,10 +223,20 @@
             <div style="background:var(--bg); border-radius:var(--radius); padding:1rem; margin-bottom:0.75rem;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
                     <span style="font-weight:600; font-size:0.85rem; color:var(--text-muted);">Servicio {{ $i + 1 }}</span>
-                    <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; cursor:pointer;">
-                        <input type="checkbox" name="services_section[{{ $i }}][highlighted]" value="1" {{ !empty($service['highlighted']) ? 'checked' : '' }}>
-                        Destacado
-                    </label>
+                    <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+                        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; cursor:pointer;">
+                            <input type="checkbox" name="services_section[{{ $i }}][highlighted]" value="1" {{ !empty($service['highlighted']) ? 'checked' : '' }}>
+                            Destacado
+                        </label>
+                        <div style="display:flex;align-items:center;gap:.4rem;">
+                            <label style="font-size:.78rem;color:var(--text-muted);white-space:nowrap;">Texto badge:</label>
+                            <input type="text"
+                                   name="services_section[{{ $i }}][badge_text]"
+                                   value="{{ $service['badge_text'] ?? '' }}"
+                                   placeholder="★ Más solicitado"
+                                   style="border:1px solid var(--border);border-radius:5px;padding:.25rem .5rem;font-size:.78rem;width:160px;">
+                        </div>
+                    </div>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                     <div class="form-group">
