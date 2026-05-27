@@ -7,11 +7,78 @@ use App\Models\Captacion;
 use App\Models\Document;
 use App\Models\PropertyValuation;
 use App\Services\CaptacionService;
+use App\Services\PresentationGeneratorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Response;
 
 class CaptacionAdminController extends Controller
 {
     public function __construct(protected CaptacionService $service) {}
+
+    public function createFromCall()
+    {
+        return view('admin.captaciones.create-from-call');
+    }
+
+    public function presentation(Captacion $captacion)
+    {
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        // Generar PDF si aún no existe
+        if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {
+            try {
+                app(PresentationGeneratorService::class)->generatePdf($captacion);
+                $captacion->refresh();
+            } catch (\Throwable $e) {
+                return redirect()->route('admin.captaciones.show', $captacion)
+                    ->with('error', 'Error al generar PDF: ' . $e->getMessage());
+            }
+        }
+
+        return view('admin.captaciones.presentation', compact('captacion'));
+    }
+
+    public function presentationPdf(Captacion $captacion)
+    {
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {
+            app(PresentationGeneratorService::class)->generatePdf($captacion);
+            $captacion->refresh();
+        }
+
+        return Response::make(file_get_contents($captacion->last_presentation_pdf_path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="presentacion-hdv.pdf"',
+        ]);
+    }
+
+    public function presentationRegenerate(Captacion $captacion)
+    {
+        try {
+            app(PresentationGeneratorService::class)->generatePdf($captacion);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error al regenerar: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Presentación regenerada correctamente.');
+    }
+
+    public function presentationDownload(Captacion $captacion)
+    {
+        $captacion->loadMissing(['client']);
+
+        if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {
+            app(PresentationGeneratorService::class)->generatePdf($captacion);
+            $captacion->refresh();
+        }
+
+        $filename = 'HDV-Presentacion-' . str_replace(' ', '-', $captacion->client->name) . '.pdf';
+
+        return Response::download($captacion->last_presentation_pdf_path, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
 
     public function index()
     {

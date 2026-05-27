@@ -741,8 +741,18 @@
             <div class="topbar">
                 <button class="topbar-toggle" onclick="toggleSidebar()"><x-icon name="menu" class="w-5 h-5" /></button>
                 <span class="topbar-title">@yield('title', 'Panel')</span>
+                {{-- Botón global Nueva Captación (Ctrl/Cmd+Shift+N) --}}
+                <a href="{{ route('admin.captaciones.create-from-call') }}"
+                   id="btn-nueva-captacion"
+                   title="Nueva captación desde llamada (Ctrl+Shift+N)"
+                   style="margin-left:auto;white-space:nowrap;display:inline-flex;align-items:center;gap:.35rem;
+                          padding:.35rem .8rem;font-size:.8rem;font-weight:600;border-radius:var(--radius);
+                          background:var(--primary);color:#fff;text-decoration:none;transition:opacity .15s;">
+                    <x-icon name="phone" class="w-[14px] h-[14px]" />
+                    Nueva captación
+                </a>
                 {{-- Notification Bell --}}
-                <div style="position:relative; margin-left:auto;" id="notifContainer">
+                <div style="position:relative;" id="notifContainer">
                     <button onclick="toggleNotifications()" style="background:none; border:none; cursor:pointer; padding:0.4rem; color:var(--text-muted); position:relative; display:inline-flex; align-items:center;">
                         <x-icon name="bell" class="w-[18px] h-[18px]" />
                         <span id="notifBadge" style="display:none; position:absolute; top:2px; right:0; min-width:16px; height:16px; background:var(--danger); color:#fff; font-size:0.6rem; font-weight:700; border-radius:50%; line-height:16px; text-align:center;"></span>
@@ -951,5 +961,20 @@
     </script>
     @livewireScripts
     @yield('scripts')
+    {{-- Atajo de teclado: Ctrl/Cmd + Shift + N → Nueva captación --}}
+    <script>
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'N') {
+            e.preventDefault();
+            window.location.href = '{{ route("admin.captaciones.create-from-call") }}';
+        }
+    });
+    document.getElementById('btn-nueva-captacion')?.addEventListener('mouseover', function() {
+        this.style.opacity = '.85';
+    });
+    document.getElementById('btn-nueva-captacion')?.addEventListener('mouseout', function() {
+        this.style.opacity = '1';
+    });
+    </script>
 </body>
 </html>

@@ -629,8 +629,15 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
 
     // ===== CAPTACIONES (venta) =====
     Route::prefix('captaciones')->name('captaciones.')->group(function () {
-        Route::get('/',                                                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'index'])->name('index');
-        Route::get('/{captacion}',                                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
+        Route::get('/',                  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'index'])->name('index');
+        // Rutas estáticas ANTES de /{captacion} para evitar conflictos
+        Route::get('/create-from-call',  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'createFromCall'])->name('create-from-call');
+        Route::get('/{captacion}',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
+        // Presentación
+        Route::get('/{captacion}/presentacion',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentation'])->name('presentation');
+        Route::get('/{captacion}/presentacion/pdf',      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationPdf'])->name('presentation.pdf');
+        Route::post('/{captacion}/presentacion/regenerar', [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationRegenerate'])->name('presentation.regenerate');
+        Route::get('/{captacion}/presentacion/descargar', [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationDownload'])->name('presentation.download');
         Route::post('/{captacion}/documentos/{document}/status',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'updateDocStatus'])->name('doc-status');
         Route::post('/{captacion}/link-valuation',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'linkValuation'])->name('link-valuation');
         Route::post('/{captacion}/unlink-valuation',                      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'unlinkValuation'])->name('unlink-valuation');

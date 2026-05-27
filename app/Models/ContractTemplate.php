@@ -6,11 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContractTemplate extends Model
 {
-    protected $fillable = ['name', 'type', 'body', 'variables', 'is_active'];
+    protected $fillable = ['name', 'type', 'intent_target', 'body', 'variables', 'is_active'];
+
     const TYPES = [
-        'rental' => 'Contrato de Arrendamiento',
-        'commission' => 'Contrato de Comision',
-        'renewal' => 'Renovacion de Contrato',
+        'rental'       => 'Contrato de Arrendamiento',
+        'commission'   => 'Contrato de Comision',
+        'renewal'      => 'Renovacion de Contrato',
+        'presentation' => 'Presentación Inicial',
+    ];
+
+    const PRESENTATION_INTENTS = [
+        'general'           => 'General',
+        'venta_constructor' => 'Venta a constructor',
+        'venta_residencial' => 'Venta residencial',
+        'venta_comercial'   => 'Venta comercial',
+        'renta_residencial' => 'Renta residencial',
+        'renta_comercial'   => 'Renta comercial',
     ];
 
     // Default variables available for all templates
@@ -54,4 +65,6 @@ class ContractTemplate extends Model
 
     public function scopeActive($q) { return $q->where('is_active', true); }
     public function scopeOfType($q, string $type) { return $q->where('type', $type); }
+    public function scopePresentations($q) { return $q->where('type', 'presentation'); }
+    public function scopeForIntent($q, string $intent) { return $q->where('intent_target', $intent); }
 }

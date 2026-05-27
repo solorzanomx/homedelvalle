@@ -3,15 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Captacion extends Model
+class Captacion extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $table = 'captaciones';
 
     protected $fillable = [
-        'client_id', 'property_address', 'portal_etapa',
+        'client_id', 'property_id', 'operation_id', 'property_address', 'portal_etapa',
         'etapa1_completed_at', 'etapa2_completed_at', 'etapa3_completed_at', 'etapa4_completed_at',
         'etapa3_valuation_id', 'etapa4_signature_id', 'precio_acordado', 'status',
+        'intent', 'commission_pct', 'marketing_plan', 'notes_from_call', 'source',
+        'created_by_user_id', 'declined_at', 'declined_reason',
+        'last_presentation_pdf_path',
     ];
 
     protected function casts(): array
@@ -21,9 +28,28 @@ class Captacion extends Model
             'etapa2_completed_at' => 'datetime',
             'etapa3_completed_at' => 'datetime',
             'etapa4_completed_at' => 'datetime',
-            'precio_acordado' => 'decimal:2',
+            'precio_acordado'     => 'decimal:2',
+            'commission_pct'      => 'decimal:2',
+            'declined_at'         => 'datetime',
         ];
     }
+
+    const INTENTS = [
+        'general'            => 'General',
+        'venta_constructor'  => 'Venta a constructor',
+        'venta_residencial'  => 'Venta residencial',
+        'venta_comercial'    => 'Venta comercial',
+        'renta_residencial'  => 'Renta residencial',
+        'renta_comercial'    => 'Renta comercial',
+    ];
+
+    const SOURCES = [
+        'phone_call'        => 'Llamada telefónica',
+        'whatsapp_inbound'  => 'WhatsApp entrante',
+        'web_form'          => 'Formulario web',
+        'referral'          => 'Referido',
+        'other'             => 'Otro',
+    ];
 
     // Documentos requeridos para avanzar de etapa 1 (categorías)
     const REQUIRED_DOCS_ETAPA1 = ['identificacion', 'curp', 'comprobante_domicilio'];
@@ -36,6 +62,26 @@ class Captacion extends Model
     public function client()
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function property()
+    {
+        return $this->belongsTo(Property::class);
+    }
+
+    public function operation()
+    {
+        return $this->belongsTo(Operation::class);
+    }
+
+    public function sends()
+    {
+        return $this->hasMany(PresentationSend::class);
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
     public function valuation()
@@ -114,5 +160,51 @@ class Captacion extends Model
             ->toArray();
 
         return array_filter(self::REQUIRED_DOCS_ETAPA1, fn($cat) => !in_array($cat, $approvedCategories));
+    }
+
+    // ─── Media Library ───────────────────────────────────────────────────────
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('property_photos')
+             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+    }
+
+    // ─── Presentation helpers ─────────────────────────────────────────────────
+
+    public function getIntentLabelAttribute(): string
+    {
+        return self::INTENTS[$this->intent ?? 'general'] ?? 'General';
+    }
+
+    public function getSourceLabelAttribute(): string
+    {
+        return self::SOURCES[$this->source ?? 'phone_call'] ?? 'Llamada telefónica';
+    }
+
+    /** Minutos desde created_at hasta el primer envío de presentación. */
+    public function timeToFirstSend(): ?int
+    {
+        $first = $this->sends()->orderBy('sent_at')->first();
+        return $first ? (int) $this->created_at->diffInMinutes($first->sent_at) : null;
+    }
+
+    public function isDeclined(): bool
+    {
+        return $this->status === 'declinado' || !is_null($this->declined_at);
+    }
+
+    public function hasPresentationSent(): bool
+    {
+        return $this->sends()->whereIn('channel', ['email', 'whatsapp'])->exists();
+    }
+
+    /** Dirección legible: prioriza la propiedad vinculada, luego property_address legacy. */
+    public function getPropertyAddressDisplayAttribute(): string
+    {
+        if ($this->property && $this->property->colony) {
+            return trim($this->property->title . ' · ' . $this->property->colony);
+        }
+        return $this->property_address ?? '—';
     }
 }
