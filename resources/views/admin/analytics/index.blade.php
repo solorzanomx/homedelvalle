@@ -342,4 +342,55 @@
     </div>
 </div>
 
+{{-- ===== KPIs de Captación + Presentaciones ===== --}}
+<div class="card" style="margin-top:1.5rem;">
+    <div class="card-header">
+        <h3>Captación + Presentaciones — últimos 30 días</h3>
+        <a href="{{ route('admin.captaciones.index') }}" style="font-size:.78rem;color:var(--primary);">Ver todas →</a>
+    </div>
+    <div class="card-body">
+        <div class="task-grid">
+            <div class="task-mini">
+                <div class="task-mini-value" style="color:var(--primary);">{{ $captacionKpis['captaciones_30d'] }}</div>
+                <div class="task-mini-label">Captaciones creadas</div>
+            </div>
+            <div class="task-mini">
+                <div class="task-mini-value" style="color:#8b5cf6;">{{ $captacionKpis['sends_30d'] }}</div>
+                <div class="task-mini-label">Presentaciones enviadas</div>
+            </div>
+            <div class="task-mini">
+                <div class="task-mini-value" style="color:{{ ($captacionKpis['avg_minutos_envio'] ?? 99) <= 10 ? '#10b981' : '#f59e0b' }};">
+                    {{ $captacionKpis['avg_minutos_envio'] !== null ? $captacionKpis['avg_minutos_envio'].' min' : '—' }}
+                </div>
+                <div class="task-mini-label">Promedio llamada → envío</div>
+            </div>
+            <div class="task-mini">
+                <div class="task-mini-value" style="color:#10b981;">
+                    {{ $captacionKpis['tasa_apertura'] !== null ? $captacionKpis['tasa_apertura'].'%' : '—' }}
+                </div>
+                <div class="task-mini-label">Tasa apertura email</div>
+            </div>
+            <div class="task-mini">
+                <div class="task-mini-value" style="color:#3b82f6;">
+                    {{ $captacionKpis['tasa_view_pdf'] !== null ? $captacionKpis['tasa_view_pdf'].'%' : '—' }}
+                </div>
+                <div class="task-mini-label">Tasa view PDF</div>
+            </div>
+            <div class="task-mini">
+                <div class="task-mini-value" style="color:#64748b;">{{ $captacionKpis['pdf_descargados'] }}</div>
+                <div class="task-mini-label">PDFs descargados</div>
+            </div>
+        </div>
+        @if($captacionKpis['avg_minutos_envio'] !== null)
+        <div style="margin-top:1rem;padding:.75rem 1rem;background:{{ $captacionKpis['avg_minutos_envio'] <= 10 ? '#ecfdf5' : '#fefce8' }};border-radius:8px;font-size:.82rem;color:{{ $captacionKpis['avg_minutos_envio'] <= 10 ? '#065f46' : '#78350f' }};">
+            @if($captacionKpis['avg_minutos_envio'] <= 10)
+                ✅ <strong>SLA cumplido:</strong> promedio de {{ $captacionKpis['avg_minutos_envio'] }} min (objetivo: &lt;10 min).
+            @else
+                ⚠️ <strong>SLA por encima:</strong> promedio de {{ $captacionKpis['avg_minutos_envio'] }} min (objetivo: &lt;10 min). Revisar flujo del wizard.
+            @endif
+        </div>
+        @endif
+    </div>
+</div>
+
 @endsection

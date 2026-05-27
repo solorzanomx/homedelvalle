@@ -92,6 +92,9 @@ class AnalyticsController extends Controller
                                     ->count(),
         ];
 
+        // ── KPIs de Captación + Presentaciones (últimos 30 días) ────────────
+        $captacionKpis = $this->captacionKpis();
+
         return view('admin.analytics.index', compact(
             'kpis',
             'dealsByStage',
@@ -100,8 +103,48 @@ class AnalyticsController extends Controller
             'topProperties',
             'clientsMonthly',
             'propertyTypes',
-            'taskStats'
+            'taskStats',
+            'captacionKpis'
         ));
+    }
+
+    private function captacionKpis(): array
+    {
+        $sends30 = \App\Models\PresentationSend::where('sent_at', '>=', now()->subDays(30));
+
+        $totalSends    = (clone $sends30)->count();
+        $emailOpened   = (clone $sends30)->whereNotNull('email_opened_at')->count();
+        $pdfViewed     = (clone $sends30)->whereNotNull('pdf_viewed_at')->count();
+        $pdfDownloaded = (clone $sends30)->whereNotNull('pdf_downloaded_at')->count();
+
+        // Tiempo promedio llamada → primer envío (captaciones con al menos 1 send)
+        $avgMinutes = null;
+        $captacionesConSend = \App\Models\Captacion::with(['sends' => fn($q) => $q->orderBy('sent_at')])->get()
+            ->filter(fn($c) => $c->sends->isNotEmpty())
+            ->map(fn($c) => $c->created_at->diffInMinutes($c->sends->first()->sent_at));
+        if ($captacionesConSend->isNotEmpty()) {
+            $avgMinutes = round($captacionesConSend->avg());
+        }
+
+        // Tasa de apertura email
+        $emailTotal = (clone $sends30)->where('channel', 'email')->count();
+        $emailApertura = $emailTotal > 0
+            ? round($emailOpened / $emailTotal * 100)
+            : null;
+
+        // Tasa de view PDF
+        $viewRate = $totalSends > 0
+            ? round($pdfViewed / $totalSends * 100)
+            : null;
+
+        return [
+            'captaciones_30d'    => \App\Models\Captacion::where('created_at', '>=', now()->subDays(30))->count(),
+            'sends_30d'          => $totalSends,
+            'avg_minutos_envio'  => $avgMinutes,
+            'tasa_apertura'      => $emailApertura,
+            'tasa_view_pdf'      => $viewRate,
+            'pdf_descargados'    => $pdfDownloaded,
+        ];
     }
 
     private function conversionRate(): float

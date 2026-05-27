@@ -654,6 +654,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/{captacion}/confirmar-exclusiva',                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'markExclusivaSigned'])->name('confirmar-exclusiva');
         Route::post('/{captacion}/upload',                                [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'uploadDocument'])->name('upload');
         Route::delete('/{captacion}/documentos/{document}',              [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'deleteDocument'])->name('document.delete');
+        Route::post('/{captacion}/declinar',                             [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'declineCaptacion'])->name('declinar');
     });
 });
 

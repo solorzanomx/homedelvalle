@@ -177,7 +177,14 @@
             @if($captacion->precio_acordado)
             <span class="badge badge-green" style="font-weight:700;">${{ number_format($captacion->precio_acordado,0) }}</span>
             @endif
-            <span class="badge badge-{{ $captacion->status === 'completado' ? 'green' : ($captacion->status === 'cancelado' ? 'red' : 'yellow') }}">
+            @php
+                $statusColor = match($captacion->status) {
+                    'completado','convertido' => 'green',
+                    'cancelado','declinado'   => 'red',
+                    default                   => 'yellow',
+                };
+            @endphp
+            <span class="badge badge-{{ $statusColor }}">
                 {{ ucfirst($captacion->status) }}
             </span>
         </div>
@@ -191,6 +198,9 @@
         <a href="{{ $telLink }}" class="action-btn phone">&#128222; Llamar</a>
         @endif
         <a href="{{ route('clients.show', $client->id) }}" class="action-btn">&#128100; Perfil</a>
+        @if($captacion->status !== 'declinado' && $captacion->status !== 'completado')
+        <button type="button" onclick="openDecline()" class="action-btn" style="border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.04);">&#10005; Declinar</button>
+        @endif
     </div>
 
     {{-- Stage Stepper --}}
@@ -594,6 +604,28 @@
     </div>
 </div>
 
+{{-- Decline Modal --}}
+<div id="decline-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;max-width:460px;width:90%;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <h3 style="font-size:1rem;margin-bottom:.4rem;color:#dc2626;">&#10005; Declinar captación amistosamente</h3>
+        <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;">Se marcará el caso como declinado, se cancelará la operación y se enviará un email amistoso al propietario (si tiene email registrado).</p>
+        <form method="POST" action="{{ route('admin.captaciones.declinar', $captacion) }}">
+            @csrf
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.35rem;">Motivo del declive <span style="color:#dc2626;">*</span></label>
+                <textarea name="reason" rows="4" required minlength="10" maxlength="1000"
+                          style="width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.85rem;resize:vertical;"
+                          placeholder="Ej. Las condiciones económicas del propietario no se alinean con el mercado actual..."></textarea>
+                <p style="font-size:.72rem;color:var(--text-muted);margin-top:.25rem;">Mínimo 10 caracteres. Este mensaje no se muestra al propietario.</p>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;">
+                <button type="button" class="btn btn-outline" onclick="closeDecline()">Cancelar</button>
+                <button type="submit" class="btn btn-sm" style="background:#dc2626;color:#fff;border-color:#dc2626;">Declinar caso</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Reject Modal --}}
 <div id="reject-modal">
     <div style="background:#fff;border-radius:12px;max-width:420px;width:90%;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.2);">
@@ -622,6 +654,15 @@ function switchTab(id, btn) {
     document.getElementById('tab-' + id).classList.add('active');
     btn.classList.add('active');
 }
+function openDecline() {
+    document.getElementById('decline-modal').style.display = 'flex';
+}
+function closeDecline() {
+    document.getElementById('decline-modal').style.display = 'none';
+}
+document.getElementById('decline-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDecline();
+});
 function openReject(action) {
     document.getElementById('reject-form').action = action;
     document.getElementById('reject-modal').classList.add('open');

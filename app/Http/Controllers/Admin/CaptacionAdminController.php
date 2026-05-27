@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Captacion;
 use App\Models\Document;
 use App\Models\PropertyValuation;
+use App\Services\CaptacionDeclineService;
 use App\Services\CaptacionService;
 use App\Services\PresentationGeneratorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
 class CaptacionAdminController extends Controller
@@ -302,5 +304,18 @@ class CaptacionAdminController extends Controller
         $this->service->recalculateStage($captacion);
 
         return back()->with('success', 'Documento eliminado.');
+    }
+
+    public function declineCaptacion(Request $request, Captacion $captacion)
+    {
+        if ($captacion->status === 'declinado') {
+            return back()->with('error', 'Este caso ya fue declinado.');
+        }
+
+        $request->validate(['reason' => 'required|string|min:10|max:1000']);
+
+        app(CaptacionDeclineService::class)->decline($captacion, $request->reason, Auth::user());
+
+        return back()->with('success', 'Caso declinado. ' . ($captacion->client?->email ? 'Se envió un email amistoso al propietario.' : 'No se envió email (propietario sin email registrado).'));
     }
 }
