@@ -64,6 +64,23 @@
   <div class="card-header"><h3>Enviar</h3></div>
   <div class="card-body" style="display:flex;flex-direction:column;gap:.75rem;">
 
+  @if($captacion->status === 'declinado')
+    {{-- Caso declinado: bloquear envíos --}}
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.9rem 1rem;text-align:center;">
+      <div style="font-size:1.3rem;margin-bottom:.25rem;">&#10005;</div>
+      <p style="font-size:.83rem;font-weight:700;color:#dc2626;margin:0 0 .2rem;">Caso declinado</p>
+      <p style="font-size:.75rem;color:#991b1b;margin:0;">No se puede enviar la presentación a un caso declinado.</p>
+      @if($captacion->declined_reason)
+      <p style="font-size:.72rem;color:#b91c1c;margin:.5rem 0 0;font-style:italic;">"{{ Str::limit($captacion->declined_reason, 80) }}"</p>
+      @endif
+    </div>
+    <a href="{{ route('admin.captaciones.presentation.admin.download', $captacion) }}"
+       class="btn btn-outline" style="width:100%;justify-content:center;opacity:.7;">
+      <x-icon name="arrow-right" class="w-4 h-4" />
+      Descargar PDF (solo admin)
+    </a>
+  @else
+
     @if($captacion->client->email)
     <form method="POST" action="{{ route('admin.captaciones.presentation.send.email', $captacion) }}">
       @csrf
@@ -106,6 +123,8 @@
       Ver como propietario
     </a>
     @endif
+
+  @endif
 
   </div>
 </div>
