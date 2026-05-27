@@ -173,12 +173,14 @@ class ClientController extends Controller
         }
 
         $typeConfig = [
-            'note' => ['dot' => 'note', 'color' => '#8b5cf6', 'label' => 'Nota'],
-            'call' => ['dot' => 'call', 'color' => '#10b981', 'label' => 'Llamada'],
-            'visit' => ['dot' => 'visit', 'color' => '#f59e0b', 'label' => 'Visita'],
-            'meeting' => ['dot' => 'meeting', 'color' => '#ef4444', 'label' => 'Reunion'],
-            'whatsapp' => ['dot' => 'whatsapp', 'color' => '#25d366', 'label' => 'WhatsApp'],
-            'email' => ['dot' => 'email', 'color' => '#3b82f6', 'label' => 'Correo'],
+            'note'                  => ['dot' => 'note',         'color' => '#8b5cf6', 'label' => 'Nota'],
+            'call'                  => ['dot' => 'call',         'color' => '#10b981', 'label' => 'Llamada'],
+            'visit'                 => ['dot' => 'visit',        'color' => '#f59e0b', 'label' => 'Visita'],
+            'meeting'               => ['dot' => 'meeting',      'color' => '#ef4444', 'label' => 'Reunión'],
+            'whatsapp'              => ['dot' => 'whatsapp',     'color' => '#25d366', 'label' => 'WhatsApp'],
+            'email'                 => ['dot' => 'email',        'color' => '#3b82f6', 'label' => 'Correo'],
+            'presentation_email'    => ['dot' => 'presentation', 'color' => '#667eea', 'label' => 'Presentación Email'],
+            'presentation_whatsapp' => ['dot' => 'presentation', 'color' => '#667eea', 'label' => 'Presentación WhatsApp'],
         ];
 
         foreach ($interactions as $interaction) {
@@ -192,6 +194,37 @@ class ClientController extends Controller
                 'body' => MentionHelper::render($interaction->description),
                 'meta' => 'Por ' . e($interaction->user->name ?? ''),
             ]);
+        }
+
+        // Presentación sends → también al timeline
+        try {
+            $presentationSends = \App\Models\PresentationSend::whereHas(
+                'captacion', fn($q) => $q->where('client_id', $client->id)
+            )->with(['captacion', 'sentBy'])->latest('sent_at')->get();
+
+            foreach ($presentationSends as $ps) {
+                $trackingBadges = '';
+                if ($ps->email_opened_at)    $trackingBadges .= '<span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:3px;font-size:.7rem;font-weight:600;margin-left:4px;">✓ Abierto</span>';
+                if ($ps->pdf_viewed_at)      $trackingBadges .= '<span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:3px;font-size:.7rem;font-weight:600;margin-left:4px;">✓ PDF visto ×' . $ps->pdf_view_count . '</span>';
+                if ($ps->pdf_downloaded_at)  $trackingBadges .= '<span style="background:#ecfdf5;color:#065f46;padding:1px 6px;border-radius:3px;font-size:.7rem;font-weight:600;margin-left:4px;">✓ Descargado</span>';
+
+                $channelLabel = $ps->channel === 'email' ? 'por email' : 'por WhatsApp';
+                $addressDisplay = $ps->captacion?->property_address_display ?? '';
+
+                $timeline->push([
+                    'date'       => $ps->sent_at,
+                    'dot'        => 'presentation',
+                    'color'      => '#667eea',
+                    'type_label' => 'Presentación',
+                    'body'       => 'Presentación inicial enviada ' . $channelLabel
+                                    . ($addressDisplay ? ' · <em>' . e($addressDisplay) . '</em>' : '')
+                                    . $trackingBadges,
+                    'meta'       => 'Por ' . e($ps->sentBy->name ?? 'Sistema')
+                                    . ' &middot; <a href="' . route('admin.captaciones.presentation', $ps->captacion_id) . '" style="color:var(--primary);">Ver presentación</a>',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            // silencioso si la tabla aún no existe
         }
 
         $timeline = $timeline->sortByDesc('date')->values();
@@ -220,9 +253,13 @@ class ClientController extends Controller
             $hasCaptacionCol = \Illuminate\Support\Facades\Schema::hasColumn('documents', 'captacion_id');
             $clientDocsQuery = \App\Models\Document::where('client_id', $client->id);
             if ($hasCaptacionCol) {
-                $clientDocsQuery->whereNull('captacion_id');
+                // Excluir docs de captación excepto las presentaciones PDF (que queremos mostrar aquí)
+                $clientDocsQuery->where(function ($q) {
+                    $q->whereNull('captacion_id')
+                      ->orWhere('category', 'presentation_pdf');
+                });
             }
-            $clientDocs = $clientDocsQuery->with('uploader')->latest()->get();
+            $clientDocs = $clientDocsQuery->with(['uploader', 'captacion'])->latest()->get();
         } catch (\Throwable $e) {
             $clientDocs = collect();
         }

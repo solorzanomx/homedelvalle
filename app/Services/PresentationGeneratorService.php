@@ -4,8 +4,11 @@ namespace App\Services;
 
 use App\Models\Captacion;
 use App\Models\ContractTemplate;
+use App\Models\Document;
+use App\Models\Interaction;
 use App\Models\PresentationSend;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Spatie\Browsershot\Browsershot;
@@ -82,7 +85,44 @@ class PresentationGeneratorService
         // Guardar el path en la captación para acceso rápido
         $captacion->update(['last_presentation_pdf_path' => $path]);
 
+        // Registrar / actualizar el Document en el perfil del cliente
+        $this->registerPdfDocument($captacion, $path);
+
         return $path;
+    }
+
+    /**
+     * Crea o actualiza el registro Document vinculado al cliente,
+     * para que aparezca en la pestaña Documentos del perfil.
+     */
+    private function registerPdfDocument(Captacion $captacion, string $path): void
+    {
+        try {
+            $captacion->loadMissing('client');
+
+            Document::updateOrCreate(
+                [
+                    'captacion_id' => $captacion->id,
+                    'category'     => 'presentation_pdf',
+                ],
+                [
+                    'client_id'   => $captacion->client_id,
+                    'label'       => 'Presentación inicial — ' . ($captacion->intent_label ?? 'Captación'),
+                    'file_path'   => $path,            // ruta absoluta en storage/app/presentations/
+                    'file_name'   => 'HDV-Presentacion-' . Str::slug($captacion->client->name ?? 'propietario') . '.pdf',
+                    'mime_type'   => 'application/pdf',
+                    'file_size'   => file_exists($path) ? filesize($path) : null,
+                    'status'      => 'verified',
+                    'uploaded_by' => Auth::id(),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // No romper el flujo de generación si el registro falla
+            \Illuminate\Support\Facades\Log::warning('PresentationGeneratorService: no se pudo registrar Document', [
+                'captacion_id' => $captacion->id,
+                'error'        => $e->getMessage(),
+            ]);
+        }
     }
 
     // ─── Envío ────────────────────────────────────────────────────────────────
@@ -124,6 +164,14 @@ class PresentationGeneratorService
             attachments: [$friendlyPath],
         );
 
+        // Registrar en historial del cliente
+        $this->logInteraction(
+            $captacion,
+            $agent,
+            'presentation_email',
+            "Presentación inicial enviada por email a {$email} · " . $captacion->property_address_display
+        );
+
         return $send;
     }
 
@@ -158,11 +206,36 @@ class PresentationGeneratorService
             $phoneClean = '52' . $phoneClean;
         }
 
+        // Registrar en historial del cliente
+        $this->logInteraction(
+            $captacion,
+            $agent,
+            'presentation_whatsapp',
+            "Presentación inicial enviada por WhatsApp al {$phone} · " . $captacion->property_address_display
+        );
+
         return [
             'send_id'    => $send->id,
             'wa_me_url'  => 'https://wa.me/' . $phoneClean . '?text=' . urlencode($message),
             'public_url' => $publicUrl,
         ];
+    }
+
+    private function logInteraction(Captacion $captacion, User $agent, string $type, string $description): void
+    {
+        try {
+            Interaction::create([
+                'client_id'   => $captacion->client_id,
+                'user_id'     => $agent->id,
+                'type'        => $type,
+                'description' => $description,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('PresentationGeneratorService: no se pudo registrar Interaction', [
+                'captacion_id' => $captacion->id,
+                'error'        => $e->getMessage(),
+            ]);
+        }
     }
 
     // ─── Privados ─────────────────────────────────────────────────────────────

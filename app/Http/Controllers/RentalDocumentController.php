@@ -96,6 +96,14 @@ class RentalDocumentController extends Controller
     {
         $document = Document::findOrFail($documentId);
 
+        // Presentaciones PDF se almacenan con ruta absoluta fuera del disco público
+        if (str_starts_with($document->file_path, '/') || str_starts_with($document->file_path, storage_path())) {
+            if (!file_exists($document->file_path)) {
+                return back()->with('error', 'Archivo no encontrado.');
+            }
+            return response()->download($document->file_path, $document->file_name ?? basename($document->file_path));
+        }
+
         if (!Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'Archivo no encontrado.');
         }

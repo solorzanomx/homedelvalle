@@ -26,6 +26,7 @@ class Document extends Model
         'rental_contract' => 'Contrato de Arrendamiento',
         'poliza_contract' => 'Poliza Juridica',
         'other' => 'Otro',
+        'presentation_pdf' => 'Presentación Inicial PDF',
     ];
 
     const STATUSES = [

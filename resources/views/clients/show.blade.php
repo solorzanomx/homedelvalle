@@ -414,11 +414,54 @@
         </div>
         @endif
 
+        {{-- Presentaciones PDF --}}
+        @php $presentacionDocs = $clientDocsAll->where('category', 'presentation_pdf'); @endphp
+        @if($presentacionDocs->isNotEmpty())
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;margin-top:.25rem;">Presentaciones enviadas</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;">
+            @foreach($presentacionDocs as $doc)
+            @php
+                $sends = $doc->captacion ? $doc->captacion->sends()->latest()->get() : collect();
+                $lastSend = $sends->first();
+            @endphp
+            <div style="padding:.65rem .85rem;background:linear-gradient(135deg,#f0f4ff 0%,#f8f9ff 100%);border:1px solid #c7d2fe;border-radius:var(--radius);">
+                <div style="display:flex;align-items:center;gap:.6rem;">
+                    <span style="font-size:1.1rem;">&#128196;</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;font-size:.85rem;">{{ $doc->label ?? 'Presentación inicial' }}</div>
+                        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.1rem;">
+                            Generada el {{ $doc->updated_at->format('d/m/Y H:i') }}
+                            @if($doc->uploader) · por {{ $doc->uploader->name }} @endif
+                            @if($doc->captacion) · <a href="{{ route('admin.captaciones.presentation', $doc->captacion_id) }}" style="color:var(--primary);">Ver presentación →</a> @endif
+                        </div>
+                    </div>
+                    <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" style="flex-shrink:0;border-color:#667eea;color:#667eea;" title="Descargar PDF">&#8615; PDF</a>
+                </div>
+                @if($sends->isNotEmpty())
+                <div style="margin-top:.5rem;display:flex;flex-wrap:wrap;gap:.35rem;">
+                    @foreach($sends as $s)
+                    <span style="background:#fff;border:1px solid #e0e7ff;padding:2px 8px;border-radius:4px;font-size:.7rem;color:#4338ca;">
+                        {{ $s->channel === 'email' ? '📧' : ($s->channel === 'whatsapp' ? '💬' : '⬇') }}
+                        {{ $s->channel_label }} {{ $s->sent_at->format('d/m H:i') }}
+                        @if($s->email_opened_at) <span style="color:#059669;font-weight:700;">✓ Abierto</span> @endif
+                        @if($s->pdf_viewed_at) <span style="color:#059669;font-weight:700;">· PDF visto ×{{ $s->pdf_view_count }}</span> @endif
+                    </span>
+                    @endforeach
+                </div>
+                @else
+                <div style="font-size:.72rem;color:#94a3b8;margin-top:.4rem;">Sin envíos registrados</div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+        @endif
+
         {{-- General docs --}}
-        @if($clientDocsAll->isNotEmpty())
+        @php $otrosDocs = $clientDocsAll->where('category', '!=', 'presentation_pdf'); @endphp
+        @if($otrosDocs->isNotEmpty())
         <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;">Otros documentos</div>
         <div style="display:flex;flex-direction:column;gap:.4rem;">
-            @foreach($clientDocsAll as $doc)
+            @foreach($otrosDocs as $doc)
             @php
                 $sc = match($doc->status ?? 'pending') { 'verified' => '#10b981', 'rejected' => '#ef4444', 'received' => '#3b82f6', default => '#f59e0b' };
                 $sl = match($doc->status ?? 'pending') { 'verified' => 'Verificado', 'rejected' => 'Rechazado', 'received' => 'Recibido', default => 'Pendiente' };
