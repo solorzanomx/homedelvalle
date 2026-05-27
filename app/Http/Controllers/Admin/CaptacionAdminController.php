@@ -80,6 +80,45 @@ class CaptacionAdminController extends Controller
         ]);
     }
 
+    public function sendPresentationEmail(Request $request, Captacion $captacion)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        try {
+            app(PresentationGeneratorService::class)->sendByEmail(
+                captacion: $captacion,
+                email:     $request->input('email'),
+                agent:     Auth::user(),
+            );
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error al enviar email: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Presentación enviada por email a ' . $request->input('email'));
+    }
+
+    public function sendPresentationWhatsApp(Request $request, Captacion $captacion)
+    {
+        $request->validate(['phone' => 'required|string|max:30']);
+
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        try {
+            $result = app(PresentationGeneratorService::class)->sendByWhatsApp(
+                captacion: $captacion,
+                phone:     $request->input('phone'),
+                agent:     Auth::user(),
+            );
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+
+        // Redirigir al wa.me — el agente envía desde su WhatsApp Desktop
+        return redirect($result['wa_me_url']);
+    }
+
     public function index()
     {
         $etapaLabels = [1 => 'Documentación', 2 => 'Valuación', 3 => 'Precio', 4 => 'Exclusiva'];

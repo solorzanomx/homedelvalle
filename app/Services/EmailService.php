@@ -88,7 +88,10 @@ class EmailService
      * sends from their personal @homedelvalle.mx email.
      * Otherwise uses global system email.
      */
-    public function send(string $to, string $subject, string $htmlBody, ?string $toName = null, ?string $textBody = null, ?User $sender = null): bool
+    /**
+     * @param array $attachments  Rutas absolutas de archivos a adjuntar, ej. ['/storage/app/file.pdf']
+     */
+    public function send(string $to, string $subject, string $htmlBody, ?string $toName = null, ?string $textBody = null, ?User $sender = null, array $attachments = []): bool
     {
         $config = $this->resolveSmtpConfig($sender);
 
@@ -109,6 +112,12 @@ class EmailService
             $mail->Body = $htmlBody;
             $mail->AltBody = $textBody ?? strip_tags($htmlBody);
 
+            foreach ($attachments as $path) {
+                if (file_exists($path)) {
+                    $mail->addAttachment($path, basename($path));
+                }
+            }
+
             $mail->send();
 
             Log::info('EmailService: Correo enviado a ' . $to . ' desde ' . $config->from_email . ' - Asunto: ' . $subject);
@@ -122,7 +131,7 @@ class EmailService
     /**
      * Send an email using a named template with variable replacement.
      */
-    public function sendTemplate(string $templateName, string $to, array $variables, ?string $toName = null, ?User $sender = null): bool
+    public function sendTemplate(string $templateName, string $to, array $variables, ?string $toName = null, ?User $sender = null, array $attachments = []): bool
     {
         $template = EmailTemplate::where('name', $templateName)->first();
 
@@ -133,7 +142,7 @@ class EmailService
 
         $rendered = $template->render($variables);
 
-        return $this->send($to, $rendered['subject'], $rendered['body'], $toName, $rendered['body_text'] ?? null, $sender);
+        return $this->send($to, $rendered['subject'], $rendered['body'], $toName, $rendered['body_text'] ?? null, $sender, $attachments);
     }
 
     /**

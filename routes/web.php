@@ -122,6 +122,12 @@ Route::post('/form/{slug}', [PublicFormController::class, 'submit'])->middleware
 // Email open tracking (public, no auth)
 Route::get('/track/{trackingId}.gif', [ClientEmailController::class, 'track'])->name('email.track');
 
+// ── Presentaciones públicas (sin auth — propietario las abre desde WhatsApp/email) ──
+Route::get('/presentaciones/{token}',          [\App\Http\Controllers\PresentationPublicController::class, 'show'])->name('presentation.public');
+Route::get('/presentaciones/{token}/descargar',[\App\Http\Controllers\PresentationPublicController::class, 'download'])->name('presentation.download');
+Route::get('/presentaciones/{token}/pdf',      [\App\Http\Controllers\PresentationPublicController::class, 'pdfInline'])->name('presentation.pdf.inline');
+Route::get('/presentaciones/tracking/{token}.gif', [\App\Http\Controllers\PresentationPublicController::class, 'emailTracking'])->name('presentation.email.tracking');
+
 // Landing pages (campañas de conversión)
 Route::get('/vende-tu-propiedad', [LandingController::class, 'show'])->name('landing.vende');
 Route::post('/vende-tu-propiedad', [LandingController::class, 'storeVendedor'])->middleware('throttle:public-form')->name('landing.vende.store');
@@ -634,10 +640,12 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/create-from-call',  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'createFromCall'])->name('create-from-call');
         Route::get('/{captacion}',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
         // Presentación
-        Route::get('/{captacion}/presentacion',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentation'])->name('presentation');
-        Route::get('/{captacion}/presentacion/pdf',      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationPdf'])->name('presentation.pdf');
-        Route::post('/{captacion}/presentacion/regenerar', [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationRegenerate'])->name('presentation.regenerate');
-        Route::get('/{captacion}/presentacion/descargar', [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationDownload'])->name('presentation.download');
+        Route::get('/{captacion}/presentacion',              [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentation'])->name('presentation');
+        Route::get('/{captacion}/presentacion/pdf',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationPdf'])->name('presentation.pdf');
+        Route::post('/{captacion}/presentacion/regenerar',   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationRegenerate'])->name('presentation.regenerate');
+        Route::get('/{captacion}/presentacion/descargar',    [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationDownload'])->name('presentation.admin.download');
+        Route::post('/{captacion}/presentacion/enviar-email',[\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendPresentationEmail'])->name('presentation.send.email');
+        Route::post('/{captacion}/presentacion/whatsapp',    [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendPresentationWhatsApp'])->name('presentation.send.whatsapp');
         Route::post('/{captacion}/documentos/{document}/status',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'updateDocStatus'])->name('doc-status');
         Route::post('/{captacion}/link-valuation',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'linkValuation'])->name('link-valuation');
         Route::post('/{captacion}/unlink-valuation',                      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'unlinkValuation'])->name('unlink-valuation');

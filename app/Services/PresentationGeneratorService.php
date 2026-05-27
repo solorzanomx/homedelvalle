@@ -4,8 +4,10 @@ namespace App\Services;
 
 use App\Models\Captacion;
 use App\Models\ContractTemplate;
+use App\Models\PresentationSend;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Spatie\Browsershot\Browsershot;
 
 class PresentationGeneratorService
@@ -81,6 +83,86 @@ class PresentationGeneratorService
         $captacion->update(['last_presentation_pdf_path' => $path]);
 
         return $path;
+    }
+
+    // ─── Envío ────────────────────────────────────────────────────────────────
+
+    public function sendByEmail(Captacion $captacion, string $email, User $agent, array $overrides = []): PresentationSend
+    {
+        set_time_limit(120);
+
+        $pdfPath = $this->generatePdf($captacion, $overrides);
+        $captacion->loadMissing(['client', 'property']);
+
+        $send = PresentationSend::create([
+            'captacion_id'    => $captacion->id,
+            'channel'         => 'email',
+            'sent_by_user_id' => $agent->id,
+            'recipient_email' => $email,
+            'tracking_token'  => Str::random(48),
+            'sent_at'         => now(),
+        ]);
+
+        $pdfFileName = 'HDV-Presentacion-' . Str::slug($captacion->client->name ?? 'propietario') . '.pdf';
+
+        // Renombrar adjunto con nombre amigable
+        $friendlyPath = dirname($pdfPath) . '/' . $pdfFileName;
+        copy($pdfPath, $friendlyPath);
+
+        app(EmailService::class)->sendTemplate(
+            templateName: 'presentation_initial',
+            to:           $email,
+            variables: [
+                'NombrePropietario' => $captacion->client->name ?? '',
+                'NombreInmueble'    => $captacion->property_address_display,
+                'NombreAgente'      => $agent->name,
+                'TrackingPixel'     => route('presentation.email.tracking', $send->tracking_token),
+                'PresentationUrl'   => route('presentation.public', $send->tracking_token),
+            ],
+            toName:      $captacion->client->name ?? null,
+            sender:      $agent,
+            attachments: [$friendlyPath],
+        );
+
+        return $send;
+    }
+
+    public function sendByWhatsApp(Captacion $captacion, string $phone, User $agent, array $overrides = []): array
+    {
+        set_time_limit(120);
+
+        $this->generatePdf($captacion, $overrides);
+        $captacion->loadMissing(['client', 'property']);
+
+        $send = PresentationSend::create([
+            'captacion_id'     => $captacion->id,
+            'channel'          => 'whatsapp',
+            'sent_by_user_id'  => $agent->id,
+            'recipient_phone'  => $phone,
+            'tracking_token'   => Str::random(48),
+            'sent_at'          => now(),
+        ]);
+
+        $publicUrl = route('presentation.public', $send->tracking_token);
+
+        $message = sprintf(
+            "Hola %s, soy %s de Home del Valle. Te comparto la presentación inicial para tu inmueble en %s.\n\nPuedes verla aquí: %s\n\nQuedo atento a tus comentarios.",
+            $captacion->client->name ?? 'estimado/a',
+            $agent->name,
+            $captacion->property_address_display,
+            $publicUrl,
+        );
+
+        $phoneClean = preg_replace('/\D+/', '', $phone);
+        if (!str_starts_with($phoneClean, '52')) {
+            $phoneClean = '52' . $phoneClean;
+        }
+
+        return [
+            'send_id'    => $send->id,
+            'wa_me_url'  => 'https://wa.me/' . $phoneClean . '?text=' . urlencode($message),
+            'public_url' => $publicUrl,
+        ];
     }
 
     // ─── Privados ─────────────────────────────────────────────────────────────
