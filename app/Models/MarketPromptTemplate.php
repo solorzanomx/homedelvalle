@@ -137,25 +137,25 @@ Si encuentras menos de 2 anuncios en total, responde: {"error": "sin_datos"}
 PROMPT,
 
             'sale.search.zone' => <<<'PROMPT'
-Find current real estate listings for {type_label} FOR SALE in these neighborhoods of Benito Juárez, Mexico City: {colony_list}.
+Search for current apartment FOR SALE listings in Benito Juárez, Mexico City.
+Target neighborhoods: {colony_list}.
 
-Search on: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker.
+Search these portals: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker, Encuentra24.
 
-For each listing extract:
+CRITICAL: Only include listings where you can find BOTH the sale price AND the construction area (m²). Skip listings missing either field.
+
+For m²: Look for labels like "construcción", "sup. construida", "m² construidos", "área construida". Do NOT use "terreno" or "lote" area.
+
+For each valid listing extract:
 {fields}
-- "colonia": neighborhood name
+- "colonia": neighborhood (e.g. "Narvarte Oriente")
 - "fuente": portal name
 
-Rules:
-- precio and m2 are required; other fields can be null
-- m2 = construction area in square meters (NOT land area)
-- precio = listing price in MXN as integer (e.g. 3800000)
-- Include listings from adjacent Benito Juárez neighborhoods if needed
-
-Return 8 to 20 listings as a plain JSON array only, no markdown, no explanation:
+Return 10 to 20 listings as a JSON array only, no markdown, no extra text:
 [
-  {"precio": 3800000, "m2": 78, "antiguedad": 12, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
-  {"precio": 7500000, "m2": 140, "antiguedad": null, "recamaras": 3, "piso": null, "condicion": null, "colonia": "Narvarte Poniente", "fuente": "Lamudi"}
+  {"precio": 4200000, "m2": 85, "antiguedad": 8, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
+  {"precio": 7800000, "m2": 148, "antiguedad": 3, "recamaras": 3, "piso": 5, "condicion": "nuevo", "colonia": "Narvarte Poniente", "fuente": "Lamudi"},
+  {"precio": 3500000, "m2": 72, "antiguedad": 30, "recamaras": 2, "piso": 1, "condicion": "antiguo", "colonia": "Vértiz Narvarte", "fuente": "Metros Cúbicos"}
 ]
 PROMPT,
 
@@ -202,41 +202,34 @@ INSTRUCCIONES:
 
 1. VALIDACIÓN — Descarta listings con:
    - precio < 500,000 o > 50,000,000 MXN
-   - m2 < 20 o m2 > 1000
-   - sin precio o sin m2
+   - sin precio
 
-2. PRECIO/M² — precio_m2 = precio / m2
-   Rango razonable en Benito Juárez: $30,000–$180,000 MXN/m²
+2. PRECIO/M²:
+   a) Si el listing tiene m2 válido (20–1000): precio_m2 = precio / m2
+   b) Si m2 es null pero tiene "recamaras": estima m2 típico para BJ
+      1 rec → 55m2 | 2 rec → 80m2 | 3 rec → 110m2 | 4 rec → 140m2
+      Marca estos como estimados.
+   c) Si no tiene m2 ni recamaras: descartar.
+   Rango razonable en BJ: $30,000–$180,000 MXN/m²
 
 3. OUTLIERS — Excluye donde precio_m2 < (Q1 - 1.5×IQR) o > (Q3 + 1.5×IQR)
 
-4. CLASIFICACIÓN POR ANTIGÜEDAD (usa la siguiente jerarquía de señales):
-
-   a) Si el listing tiene "antiguedad" explícita → úsala directamente
-      "new": 0–10 años | "mid": 11–25 años | "old": más de 25 años
-
-   b) Si tiene campo "condicion":
-      "nuevo" o "estrenar" → "new"
-      "seminuevo" → "mid"
-      "a remodelar" o "por renovar" → "old"
-
-   c) Si no hay señal de edad, usa precio_m2 como PROXY:
-      precio_m2 > $85,000 → "new"
-      precio_m2 entre $52,000 y $85,000 → "mid"
-      precio_m2 < $52,000 → "old"
+4. CLASIFICACIÓN POR ANTIGÜEDAD (jerarquía de señales):
+   a) "antiguedad" explícita → "new": 0–10 años | "mid": 11–25 años | "old": >25 años
+   b) "condicion": "nuevo"/"estrenar" → "new" | "seminuevo" → "mid" | "remodelar"/"renovar" → "old"
+   c) Proxy precio_m2: >$85,000 → "new" | $52,000–$85,000 → "mid" | <$52,000 → "old"
 
 5. ESTADÍSTICAS (por categoría):
-   - low = P25, avg = mediana, high = P75 del precio_m2 (redondear a entero)
+   low = P25, avg = mediana, high = P75 del precio_m2 (entero)
 
-6. POLÍTICA DE REPORTE (importante):
-   - ≥ 5 listings en categoría → confidence "high"
-   - 2–4 listings en categoría → confidence "medium"
-   - 1 listing en categoría → confidence "low" (REPORTAR igual, no omitir)
-   - 0 listings en categoría → omitir esa categoría
-   Es mejor un rango con confianza baja que no tener dato.
+6. POLÍTICA DE REPORTE:
+   - ≥ 5 listings → confidence "high"
+   - 2–4 listings → confidence "medium"
+   - 1 listing → confidence "low" (REPORTAR igual, no omitir)
+   - 0 listings → omitir esa categoría
+   Es mejor dato con confianza baja que no tener dato.
 
-7. JERARQUÍA — En BJ: nuevo > seminuevo > antiguo en precio/m²
-   Si se viola por muestra pequeña, reportar de todos modos con confidence "low"
+7. JERARQUÍA — En BJ: nuevo > seminuevo > antiguo. Si se viola por muestra pequeña, reportar con confidence "low".
 
 Responde ÚNICAMENTE con este JSON exacto, sin markdown:
 {
