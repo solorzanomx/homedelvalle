@@ -137,31 +137,26 @@ Si encuentras menos de 2 anuncios en total, responde: {"error": "sin_datos"}
 PROMPT,
 
             'sale.search.zone' => <<<'PROMPT'
-Busca anuncios ACTUALES de {type_label} en VENTA en la Zona {zone_name}, alcaldía Benito Juárez, Ciudad de México.
+Find current real estate listings for {type_label} FOR SALE in these neighborhoods of Benito Juárez, Mexico City: {colony_list}.
 
-Esta zona comprende las colonias: {colony_list}.
+Search on: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker.
 
-Busca activamente en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker, Encuentra24, y cualquier portal inmobiliario disponible.
-
-Si no encuentras suficientes anuncios en estas colonias específicamente, amplía la búsqueda a colonias adyacentes dentro de Benito Juárez.
-
-Por cada anuncio encontrado extrae:
+For each listing extract:
 {fields}
-- "colonia": colonia o zona aproximada
-- "fuente": nombre del portal
+- "colonia": neighborhood name
+- "fuente": portal name
 
-IMPORTANTE: Solo "precio" y "m2" son obligatorios. Los campos "antiguedad", "recamaras", "piso" y "condicion" pueden ser null si no están disponibles.
-m2 = metros cuadrados de CONSTRUCCIÓN (no terreno). Precio = precio de lista en MXN (número entero).
+Rules:
+- precio and m2 are required; other fields can be null
+- m2 = construction area in square meters (NOT land area)
+- precio = listing price in MXN as integer (e.g. 3800000)
+- Include listings from adjacent Benito Juárez neighborhoods if needed
 
-Devuelve entre 8 y 20 anuncios. Omite solo los que no tengan precio ni m².
-
-Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
+Return 8 to 20 listings as a plain JSON array only, no markdown, no explanation:
 [
   {"precio": 3800000, "m2": 78, "antiguedad": 12, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
   {"precio": 7500000, "m2": 140, "antiguedad": null, "recamaras": 3, "piso": null, "condicion": null, "colonia": "Narvarte Poniente", "fuente": "Lamudi"}
 ]
-
-Si no encuentras absolutamente ningún anuncio con precio y m² válidos, responde: {"error": "sin_datos"}
 PROMPT,
 
             'rent.search.zone' => <<<'PROMPT'
