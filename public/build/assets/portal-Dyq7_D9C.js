@@ -1,0 +1,1 @@
+import"./bootstrap-BIjGo1cL.js";window.formatMXN=e=>e?new Intl.NumberFormat(`es-MX`,{style:`currency`,currency:`MXN`,maximumFractionDigits:0}).format(e/100):`—`,window.copyToClipboard=async(e,t)=>{try{if(await navigator.clipboard.writeText(e),t){let e=t.textContent;t.textContent=`¡Copiado!`,setTimeout(()=>{t.textContent=e},2e3)}}catch{}};

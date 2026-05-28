@@ -78,7 +78,8 @@ echo "[OK] .htaccess con DirectoryIndex"
 # 3. Copiar archivos estaticos
 cp "$REPO/public/favicon.ico" "$PUBLIC_HTML/" 2>/dev/null
 cp "$REPO/public/robots.txt" "$PUBLIC_HTML/" 2>/dev/null
-echo "[OK] favicon, robots"
+cp "$REPO/public/.user.ini"  "$PUBLIC_HTML/" 2>/dev/null
+echo "[OK] favicon, robots, .user.ini (php config)"
 
 # 4. Copiar build (CSS/JS compilados)
 rm -rf "$PUBLIC_HTML/build"
@@ -101,7 +102,7 @@ if [ -d "$REPO/public/vendor" ]; then
     echo "[OK] vendor/ publico"
 fi
 
-# 7. Permisos
+# 7. Permisos y directorios (incluyendo módulo de presentaciones)
 chmod -R 775 "$REPO/storage" 2>/dev/null
 chmod -R 775 "$REPO/bootstrap/cache" 2>/dev/null
 mkdir -p "$REPO/storage/framework/sessions"
@@ -109,6 +110,8 @@ mkdir -p "$REPO/storage/framework/views"
 mkdir -p "$REPO/storage/framework/cache"
 mkdir -p "$REPO/storage/logs"
 mkdir -p "$REPO/storage/app/public/avatars"
+mkdir -p "$REPO/storage/app/presentations"   # PDFs de presentaciones de captacion
+chmod 775 "$REPO/storage/app/presentations"
 echo "[OK] permisos y directorios"
 
 # 8. Composer install
@@ -138,12 +141,27 @@ echo "[OK] cache limpiado"
 php artisan migrate --force 2>&1
 echo "[OK] migraciones"
 
-# 12. Seeders (solo la primera vez)
+# 12. Seeders (solo la primera vez con --seed, o siempre los idempotentes de presentacion)
 if [ "$1" == "--seed" ]; then
     php artisan db:seed --class=HelpCenterSeeder --force 2>&1
     php artisan db:seed --class=MarketingAutomationSeeder --force 2>&1
-    echo "[OK] seeders ejecutados"
+    echo "[OK] seeders generales ejecutados"
 fi
+
+# Seeders de presentacion: son idempotentes (updateOrCreate) — seguros en cada deploy
+php artisan db:seed --class=PresentationTemplatesSeeder --force 2>&1
+php artisan db:seed --class=PresentationEmailTemplateSeeder --force 2>&1
+echo "[OK] seeders de presentacion"
+
+# 12b. Verificar Browsershot/Puppeteer en el servidor
+echo ""
+echo "=== VERIFICACION BROWSERSHOT ==="
+NODE_BIN=$(php artisan tinker --execute="echo config('browsershot.node_path');" 2>/dev/null | tail -1)
+CHROME_BIN=$(php artisan tinker --execute="echo config('browsershot.chrome_path');" 2>/dev/null | tail -1)
+echo "  Node path: $NODE_BIN"
+echo "  Chrome path: $CHROME_BIN"
+[ -f "$NODE_BIN" ] && echo "  [OK] Node encontrado" || echo "  [WARN] Node NO encontrado en $NODE_BIN — actualiza BROWSERSHOT_NODE_PATH en .env"
+[ -f "$CHROME_BIN" ] && echo "  [OK] Chrome encontrado" || echo "  [WARN] Chrome NO encontrado en $CHROME_BIN — actualiza BROWSERSHOT_CHROME_PATH en .env"
 
 # 13. Verificacion final
 echo ""

@@ -1,6 +1,10 @@
 {
+  "_bootstrap-BIjGo1cL.js": {
+    "file": "assets/bootstrap-BIjGo1cL.js",
+    "name": "bootstrap"
+  },
   "resources/css/app.css": {
-    "file": "assets/app-Cbpr0O03.css",
+    "file": "assets/app-DOJFubdr.css",
     "name": "app",
     "names": [
       "app.css"
@@ -8,10 +12,31 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/css/portal.css": {
+    "file": "assets/portal-CMX52Yzi.css",
+    "name": "portal",
+    "names": [
+      "portal.css"
+    ],
+    "src": "resources/css/portal.css",
+    "isEntry": true
+  },
   "resources/js/app.js": {
-    "file": "assets/app-BU6mFzGd.js",
+    "file": "assets/app-DArXdOms.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-BIjGo1cL.js"
+    ]
+  },
+  "resources/js/portal.js": {
+    "file": "assets/portal-Dyq7_D9C.js",
+    "name": "portal",
+    "src": "resources/js/portal.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-BIjGo1cL.js"
+    ]
   }
 }
