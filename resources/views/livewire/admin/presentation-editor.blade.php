@@ -95,7 +95,7 @@
     @else
     <div style="background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:.6rem .9rem;font-size:.8rem;color:#713f12;">
       <x-icon name="triangle-alert" class="w-[13px] h-[13px]" style="display:inline;vertical-align:middle;" />
-      Sin email registrado. <a href="{{ route('admin.clients.edit', $captacion->client_id) }}" style="color:#92400e;font-weight:600;">Agregar email →</a>
+      Sin email registrado. <a href="{{ route('clients.edit', $captacion->client_id) }}" style="color:#92400e;font-weight:600;">Agregar email →</a>
     </div>
     @endif
 
