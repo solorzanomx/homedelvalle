@@ -24,24 +24,14 @@ class CaptacionAdminController extends Controller
 
     public function presentation(Captacion $captacion)
     {
+        // Cargar la página INMEDIATAMENTE — el iframe dispara la generación por su cuenta
         $captacion->loadMissing(['client', 'property', 'createdBy']);
-
-        // Generar PDF si aún no existe
-        if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {
-            try {
-                app(PresentationGeneratorService::class)->generatePdf($captacion);
-                $captacion->refresh();
-            } catch (\Throwable $e) {
-                return redirect()->route('admin.captaciones.show', $captacion)
-                    ->with('error', 'Error al generar PDF: ' . $e->getMessage());
-            }
-        }
-
         return view('admin.captaciones.presentation', compact('captacion'));
     }
 
     public function presentationPdf(Captacion $captacion)
     {
+        set_time_limit(120);
         $captacion->loadMissing(['client', 'property', 'createdBy']);
 
         if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {

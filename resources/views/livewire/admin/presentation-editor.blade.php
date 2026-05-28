@@ -152,12 +152,5 @@
 </div>
 @endif
 
-{{-- Script para recargar el iframe cuando Livewire actualiza la URL --}}
-<script>
-window.addEventListener('pdfUrlUpdated', function(e) {
-    const frame = document.getElementById('presentation-pdf-frame');
-    if (frame) frame.src = e.detail.url;
-});
-</script>
 
 </div>
