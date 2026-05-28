@@ -3,33 +3,55 @@
 
 @section('styles')
 <style>
-/* Flexbox en lugar de grid — evita el min-width:auto que colapsa la columna PDF */
+/* Vertical por defecto — lado a lado solo en pantallas anchas (≥1280px)
+   El sidebar ocupa 260px fijos, así que necesitamos al menos 260+300+550=1110px
+   para que los dos paneles sean usables. Usamos 1280px como punto de quiebre. */
 .presentation-layout {
     display: flex;
+    flex-direction: column;   /* vertical por defecto */
     gap: 1.5rem;
-    align-items: start;
 }
 .presentation-sticky {
-    width: 340px;
-    flex: 0 0 340px;   /* no crece, no encoge, siempre 340px */
-    position: sticky;
-    top: 72px;
-    max-height: calc(100vh - 88px);
-    overflow-y: auto;
+    width: 100%;
+    position: static;
+    max-height: none;
+    overflow-y: visible;
 }
-.pdf-panel {
-    flex: 1 1 0;       /* ocupa todo el espacio restante */
-    min-width: 0;      /* permite que encoja sin overflow */
-}
+.pdf-panel { width: 100%; }
 .pdf-frame {
     width: 100%;
-    height: calc(100vh - 190px);
-    min-height: 600px;
+    height: 75vh;
+    min-height: 500px;
     border: none;
     background: #f1f5f9;
     border-radius: 8px;
     display: block;
 }
+
+/* Lado a lado solo cuando hay suficiente espacio */
+@media (min-width: 1280px) {
+    .presentation-layout {
+        flex-direction: row;
+        align-items: start;
+    }
+    .presentation-sticky {
+        width: 300px;
+        flex: 0 0 300px;
+        position: sticky;
+        top: 72px;
+        max-height: calc(100vh - 88px);
+        overflow-y: auto;
+    }
+    .pdf-panel {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+    .pdf-frame {
+        height: calc(100vh - 190px);
+        min-height: 600px;
+    }
+}
+
 /* Loading overlay sobre el iframe */
 .pdf-loading-overlay {
     position: absolute;
@@ -65,13 +87,6 @@
 .pdf-loading-steps li::before { content: '○'; }
 .pdf-loading-steps li.done::before { content: '✓'; }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Mobile — apilar verticalmente */
-@media (max-width: 960px) {
-    .presentation-layout { flex-direction: column; }
-    .presentation-sticky { width: 100%; flex: none; position: static; max-height: none; }
-    .pdf-panel { width: 100%; }
-    .pdf-frame { height: 65vh; }
-}
 </style>
 @endsection
 
