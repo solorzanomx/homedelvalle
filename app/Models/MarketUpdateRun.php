@@ -9,6 +9,7 @@ class MarketUpdateRun extends Model
 {
     protected $fillable = [
         'market_colonia_id',
+        'market_zone_id',
         'operation_type',
         'status',
         'property_types',
@@ -28,6 +29,11 @@ class MarketUpdateRun extends Model
     public function colonia(): BelongsTo
     {
         return $this->belongsTo(MarketColonia::class, 'market_colonia_id');
+    }
+
+    public function zone(): BelongsTo
+    {
+        return $this->belongsTo(MarketZone::class, 'market_zone_id');
     }
 
     // ─── Scopes ───────────────────────────────────────────────────────────────

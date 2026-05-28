@@ -15,6 +15,7 @@ class MarketPricesMonitor extends Component
 
     public function runUpdate(int $zoneId, string $operationType): void
     {
+        try {
         $zone = MarketZone::findOrFail($zoneId);
 
         $saleTypes = ['apartment', 'house'];
@@ -46,8 +47,15 @@ class MarketPricesMonitor extends Component
         }
     }
 
+        } catch (\Throwable $e) {
+            session()->flash('error', 'Error al iniciar la actualización: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('MarketPricesMonitor::runUpdate failed', ['error' => $e->getMessage()]);
+        }
+    }
+
     public function runAll(string $operationType): void
     {
+        try {
         $zones = MarketZone::orderBy('sort_order')->get();
         $delay = 0;
 
@@ -83,6 +91,10 @@ class MarketPricesMonitor extends Component
                     ->delay(now()->addSeconds($delay));
                 $delay += 10;
             }
+        }
+        } catch (\Throwable $e) {
+            session()->flash('error', 'Error al iniciar la actualización: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('MarketPricesMonitor::runAll failed', ['error' => $e->getMessage()]);
         }
     }
 

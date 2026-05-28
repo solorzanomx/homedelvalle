@@ -1,6 +1,13 @@
 {{-- Polling activo solo cuando hay jobs en proceso --}}
 <div @if($hasActiveJobs) wire:poll.4000ms @endif>
 
+@if(session('error'))
+<div class="alert alert-danger" style="margin-bottom:1rem;">
+    {{ session('error') }}
+    <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+</div>
+@endif
+
 {{-- ═══ BANNER DE PROGRESO ═══════════════════════════════════════════════════ --}}
 @if($totalRuns > 0)
 <div class="progress-banner {{ $hasActiveJobs ? 'active' : ($failedRuns > 0 ? 'has-errors' : 'all-done') }}"
