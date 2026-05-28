@@ -294,6 +294,10 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/market/prices',                        [\App\Http\Controllers\Admin\MarketPricesController::class, 'index'])->name('market.prices');
         Route::post('/market/prices/run',                   [\App\Http\Controllers\Admin\MarketPricesController::class, 'run'])->name('market.prices.run');
         Route::post('/market/colonias/{colonia}/toggle',    [\App\Http\Controllers\Admin\MarketPricesController::class, 'toggle'])->name('market.colonias.toggle');
+        // Prompts del observatorio
+        Route::get('/market/prompts',                       [\App\Http\Controllers\Admin\MarketPromptsController::class, 'index'])->name('market.prompts.index');
+        Route::patch('/market/prompts/{key}',               [\App\Http\Controllers\Admin\MarketPromptsController::class, 'update'])->name('market.prompts.update');
+        Route::get('/market/prompts/{key}/reset',           [\App\Http\Controllers\Admin\MarketPromptsController::class, 'reset'])->name('market.prompts.reset');
 
         // Homepage CMS
         Route::get('/homepage', [HomepageController::class, 'index'])->name('homepage');
