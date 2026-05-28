@@ -98,8 +98,9 @@
     </div>
 
     {{-- Panel derecho: iframe PDF --}}
-    <div>
-      <div class="card" style="overflow:hidden;padding:0;position:relative;">
+    <div style="min-width:0;">
+      {{-- min-height fijo para que el panel no colapse mientras carga el iframe --}}
+      <div class="card" style="overflow:hidden;padding:0;position:relative;min-height:640px;">
 
         {{-- Overlay de carga (visible hasta que el iframe carga) --}}
         <div id="pdf-loading-overlay" class="pdf-loading-overlay">

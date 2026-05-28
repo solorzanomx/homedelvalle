@@ -246,9 +246,17 @@ class PresentationGeneratorService
         $property = $captacion->property;
 
         $photoUrl = null;
-        $media = $captacion->getMedia('property_photos')->first();
-        if ($media) {
-            $photoUrl = $media->getFullUrl();
+        try {
+            $media = $captacion->getMedia('property_photos')->first();
+            if ($media) {
+                $photoUrl = $media->getFullUrl();
+            }
+        } catch (\Throwable $e) {
+            // Media Library no disponible o esquema distinto en este entorno — continuar sin foto
+            \Illuminate\Support\Facades\Log::warning('PresentationGeneratorService: no se pudo obtener foto', [
+                'captacion_id' => $captacion->id,
+                'error'        => $e->getMessage(),
+            ]);
         }
 
         // Logos desde SiteSetting (claro para fondo blanco, oscuro para fondo navy)
