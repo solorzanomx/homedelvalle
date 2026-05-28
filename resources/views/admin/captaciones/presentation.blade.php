@@ -3,6 +3,10 @@
 
 @section('styles')
 <style>
+/* Evitar scroll horizontal que hace que el sidebar tape el editor */
+.content-body { overflow-x: hidden; }
+.presentation-layout, .presentation-layout * { max-width: 100%; box-sizing: border-box; }
+
 /* Vertical por defecto — lado a lado solo en pantallas anchas (≥1280px)
    El sidebar ocupa 260px fijos, así que necesitamos al menos 260+300+550=1110px
    para que los dos paneles sean usables. Usamos 1280px como punto de quiebre. */
@@ -20,6 +24,7 @@
 .pdf-panel { width: 100%; }
 .pdf-frame {
     width: 100%;
+    max-width: 100%;
     height: 75vh;
     min-height: 500px;
     border: none;
