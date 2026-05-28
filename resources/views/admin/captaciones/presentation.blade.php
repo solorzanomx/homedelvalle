@@ -2,7 +2,8 @@
 @section('title', 'Presentación — ' . $captacion->client->name)
 
 @section('styles')
-<style>
+{{-- @yield('styles') ya está DENTRO del <style> global del layout.
+     NO agregar tags <style> aquí — rompe el CSS parser del browser. --}}
 /* ── Fix: forzar el offset correcto del sidebar ───────────────────────────
    En producción var(--sidebar-w) puede no resolverse correctamente.
    Aplicar margin-left explícito con !important desde la página. */
@@ -83,7 +84,6 @@
 .pdf-loading-steps li::before { content: '○'; }
 .pdf-loading-steps li.done::before { content: '✓'; }
 @keyframes spin { to { transform: rotate(360deg); } }
-</style>
 @endsection
 
 @section('content')
