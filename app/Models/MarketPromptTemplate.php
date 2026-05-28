@@ -55,30 +55,36 @@ class MarketPromptTemplate extends Model
     public static function labels(): array
     {
         return [
-            'sale.search'    => 'Búsqueda de venta (Perplexity)',
-            'rent.search'    => 'Búsqueda de renta (Perplexity)',
-            'sale.analysis'  => 'Análisis de venta (Claude)',
-            'rent.analysis'  => 'Análisis de renta (Claude)',
+            'sale.search'       => 'Búsqueda de venta — colonia (legacy)',
+            'rent.search'       => 'Búsqueda de renta — colonia (legacy)',
+            'sale.search.zone'  => 'Búsqueda de venta — zona (Perplexity)',
+            'rent.search.zone'  => 'Búsqueda de renta — zona (Perplexity)',
+            'sale.analysis'     => 'Análisis de venta (Claude)',
+            'rent.analysis'     => 'Análisis de renta (Claude)',
         ];
     }
 
     public static function descriptions(): array
     {
         return [
-            'sale.search'    => 'Prompt enviado a Perplexity para buscar anuncios de venta en portales inmobiliarios. Variables: {colonia}, {type_label}, {fields}',
-            'rent.search'    => 'Prompt enviado a Perplexity para buscar anuncios de renta en portales inmobiliarios. Variables: {colonia}, {type_label}, {fields}',
-            'sale.analysis'  => 'Prompt enviado a Claude Haiku para filtrar outliers y calcular estadísticas de precio/m². Variables: {colonia}, {type_label}, {listings}',
-            'rent.analysis'  => 'Prompt enviado a Claude Haiku para calcular precio de renta mensual por m². Variables: {colonia}, {type_label}, {listings}, {range_min}, {range_max}, {price_m2_min}, {price_m2_max}, {age_note}, {hierarchy_note}',
+            'sale.search'       => 'Búsqueda por colonia individual. Variables: {colonia}, {type_label}, {fields}',
+            'rent.search'       => 'Búsqueda por colonia individual. Variables: {colonia}, {type_label}, {fields}',
+            'sale.search.zone'  => 'Búsqueda por zona (4–6 colonias juntas) → más listings → mayor confianza. Variables: {zone_name}, {colony_list}, {type_label}, {fields}, {op_label}',
+            'rent.search.zone'  => 'Búsqueda de renta por zona. Variables: {zone_name}, {colony_list}, {type_label}, {fields}, {op_label}',
+            'sale.analysis'     => 'Claude analiza los listings y calcula precio/m² por categoría de edad. Variables: {colonia}, {type_label}, {listings}',
+            'rent.analysis'     => 'Claude calcula precio de renta mensual por m². Variables: {colonia}, {type_label}, {listings}, {range_min}, {range_max}, {price_m2_min}, {price_m2_max}, {age_note}, {hierarchy_note}',
         ];
     }
 
     public static function variables(): array
     {
         return [
-            'sale.search'   => ['{colonia}', '{type_label}', '{fields}'],
-            'rent.search'   => ['{colonia}', '{type_label}', '{fields}'],
-            'sale.analysis' => ['{colonia}', '{type_label}', '{listings}'],
-            'rent.analysis' => ['{colonia}', '{type_label}', '{listings}', '{range_min}', '{range_max}', '{price_m2_min}', '{price_m2_max}', '{age_note}', '{hierarchy_note}'],
+            'sale.search'      => ['{colonia}', '{type_label}', '{fields}'],
+            'rent.search'      => ['{colonia}', '{type_label}', '{fields}'],
+            'sale.search.zone' => ['{zone_name}', '{colony_list}', '{type_label}', '{fields}', '{op_label}'],
+            'rent.search.zone' => ['{zone_name}', '{colony_list}', '{type_label}', '{fields}', '{op_label}'],
+            'sale.analysis'    => ['{colonia}', '{type_label}', '{listings}'],
+            'rent.analysis'    => ['{colonia}', '{type_label}', '{listings}', '{range_min}', '{range_max}', '{price_m2_min}', '{price_m2_max}', '{age_note}', '{hierarchy_note}'],
         ];
     }
 
@@ -130,11 +136,72 @@ Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
 Si encuentras menos de 2 anuncios en total, responde: {"error": "sin_datos"}
 PROMPT,
 
+            'sale.search.zone' => <<<'PROMPT'
+Necesito anuncios ACTUALES de {type_label} en {op_label} en la Zona {zone_name}, alcaldía Benito Juárez, Ciudad de México.
+
+Esta zona comprende las colonias: {colony_list}.
+
+REGLAS IMPORTANTES:
+1. Solo anuncios de venta directa (no preventa de desarrollos nuevos, no subasta)
+2. Precio = precio de LISTA publicado en el portal (no precio de cierre ni negociado)
+3. m2 = metros cuadrados de CONSTRUCCIÓN únicamente (NO de terreno ni superficie total)
+4. Prioriza anuncios publicados en los últimos 6 meses
+5. Distribuye los anuncios entre las colonias de la zona (no solo de una)
+6. Incluye campo "condicion" para ayudar a clasificar la antigüedad
+
+Busca en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker, Encuentra24, o cualquier portal disponible.
+
+Por cada anuncio, extrae:
+{fields}
+- "colonia": nombre de la colonia dentro de la zona
+- "fuente": nombre del portal
+
+Devuelve entre 10 y 20 anuncios reales de toda la zona. Omite los que no tengan precio o m².
+
+Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
+[
+  {"precio": 3800000, "m2": 78, "antiguedad": 12, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
+  {"precio": 7500000, "m2": 140, "antiguedad": 3, "recamaras": 3, "piso": 5, "condicion": "nuevo", "colonia": "Narvarte Poniente", "fuente": "Lamudi"}
+]
+
+Si encuentras menos de 3 anuncios en toda la zona, responde: {"error": "sin_datos"}
+PROMPT,
+
+            'rent.search.zone' => <<<'PROMPT'
+Necesito anuncios ACTUALES de {type_label} en {op_label} en la Zona {zone_name}, alcaldía Benito Juárez, Ciudad de México.
+
+Esta zona comprende las colonias: {colony_list}.
+
+REGLAS IMPORTANTES:
+1. Solo anuncios de renta directa (no subarrendamiento, no temporada)
+2. precio_renta = renta mensual publicada en el portal (sin incluir mantenimiento ni gastos)
+3. m2 = metros cuadrados de CONSTRUCCIÓN (NO de terreno)
+4. Prioriza anuncios publicados en los últimos 6 meses
+5. Distribuye los anuncios entre las colonias de la zona
+6. Incluye campo "condicion" para ayudar a clasificar la antigüedad
+
+Busca en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker, Encuentra24, o cualquier portal disponible.
+
+Por cada anuncio, extrae:
+{fields}
+- "colonia": nombre de la colonia dentro de la zona
+- "fuente": nombre del portal
+
+Devuelve entre 10 y 20 anuncios reales de toda la zona.
+
+Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
+[
+  {"precio_renta": 22000, "m2": 85, "antiguedad": 8, "recamaras": 2, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"}
+]
+
+Si encuentras menos de 3 anuncios en toda la zona, responde: {"error": "sin_datos"}
+PROMPT,
+
             'sale.analysis' => <<<'PROMPT'
 Eres un analista de mercado inmobiliario con experiencia en estadística de bienes raíces en México.
-Tu tarea: procesar listings crudos y producir estadísticas de precio por m² confiables.
+Tu tarea: procesar listings crudos y producir estadísticas confiables de precio por m² segmentadas por antigüedad.
 
-Se te proporcionan listings de {type_label} en VENTA en la Colonia {colonia}, Benito Juárez, CDMX:
+Listings de {type_label} en VENTA en {colonia}, Benito Juárez, CDMX:
 
 LISTINGS:
 {listings}
@@ -146,38 +213,52 @@ INSTRUCCIONES:
    - m2 < 20 o m2 > 1000
    - sin precio o sin m2
 
-2. PRECIO/M² — Para cada listing válido: precio_m2 = precio / m2
+2. PRECIO/M² — precio_m2 = precio / m2
    Rango razonable en Benito Juárez: $30,000–$180,000 MXN/m²
 
-3. OUTLIERS — Excluye listings donde precio_m2 < (Q1 - 1.5×IQR) o > (Q3 + 1.5×IQR)
+3. OUTLIERS — Excluye donde precio_m2 < (Q1 - 1.5×IQR) o > (Q3 + 1.5×IQR)
 
-4. CLASIFICACIÓN POR ANTIGÜEDAD
-   - "new": 0–10 años | "mid": 11–30 años | "old": más de 30 años
-   - Sin antigüedad: asignar a "mid"
-   - Omite categorías con < 2 listings válidos
+4. CLASIFICACIÓN POR ANTIGÜEDAD (usa la siguiente jerarquía de señales):
 
-5. ESTADÍSTICAS (por categoría con ≥ 2 listings)
-   - low = P25, avg = mediana, high = P75 del precio_m2
-   - Redondear a entero
+   a) Si el listing tiene "antiguedad" explícita → úsala directamente
+      "new": 0–10 años | "mid": 11–25 años | "old": más de 25 años
 
-6. JERARQUÍA — En BJ: nuevo > seminuevo > antiguo en precio/m²
-   Si se viola: omite esa categoría
+   b) Si tiene campo "condicion":
+      "nuevo" o "estrenar" → "new"
+      "seminuevo" → "mid"
+      "a remodelar" o "por renovar" → "old"
 
-7. CONFIANZA: "high" ≥5 listings, "medium" 2–4, "low" <2
+   c) Si no hay señal de edad, usa precio_m2 como PROXY:
+      precio_m2 > $85,000 → "new"
+      precio_m2 entre $52,000 y $85,000 → "mid"
+      precio_m2 < $52,000 → "old"
+
+5. ESTADÍSTICAS (por categoría):
+   - low = P25, avg = mediana, high = P75 del precio_m2 (redondear a entero)
+
+6. POLÍTICA DE REPORTE (importante):
+   - ≥ 5 listings en categoría → confidence "high"
+   - 2–4 listings en categoría → confidence "medium"
+   - 1 listing en categoría → confidence "low" (REPORTAR igual, no omitir)
+   - 0 listings en categoría → omitir esa categoría
+   Es mejor un rango con confianza baja que no tener dato.
+
+7. JERARQUÍA — En BJ: nuevo > seminuevo > antiguo en precio/m²
+   Si se viola por muestra pequeña, reportar de todos modos con confidence "low"
 
 Responde ÚNICAMENTE con este JSON exacto, sin markdown:
 {
   "prices": {
-    "new": {"low": 75000, "avg": 82000, "high": 90000},
-    "mid": {"low": 65000, "avg": 72000, "high": 80000},
-    "old": {"low": 52000, "avg": 58000, "high": 65000}
+    "new": {"low": 85000, "avg": 95000, "high": 110000},
+    "mid": {"low": 65000, "avg": 74000, "high": 83000},
+    "old": {"low": 48000, "avg": 55000, "high": 63000}
   },
   "confidence": "high",
-  "listings_analyzed": 10,
+  "listings_analyzed": 18,
   "outliers_excluded": 2,
-  "price_m2_range": {"min": 62000, "max": 89000},
-  "reasoning": "10 listings procesados, 2 outliers excluidos.",
-  "market_context": "Mercado activo en la zona."
+  "price_m2_range": {"min": 52000, "max": 115000},
+  "reasoning": "18 listings. 6 nuevos (proxy precio >85k), 9 seminuevos, 3 antiguos.",
+  "market_context": "Mercado activo, buena demanda en la zona."
 }
 
 Si todos los datos son inválidos: {"error": "datos_insuficientes", "reason": "descripción"}
@@ -185,9 +266,9 @@ PROMPT,
 
             'rent.analysis' => <<<'PROMPT'
 Eres un analista de mercado inmobiliario especializado en rentas en Ciudad de México.
-Tu tarea: calcular precio de renta mensual por m² ($/m²/mes) a partir de listings crudos.
+Tu tarea: calcular precio de renta mensual por m² ($/m²/mes) segmentado por antigüedad.
 
-Listings de {type_label} en RENTA en Colonia {colonia}, Benito Juárez, CDMX:
+Listings de {type_label} en RENTA en {colonia}, Benito Juárez, CDMX:
 
 LISTINGS:
 {listings}
@@ -197,33 +278,46 @@ ANÁLISIS:
 1. VALIDACIÓN — Descarta con precio_renta fuera de ${range_min}–${range_max} MXN/mes, m2 < 15 o m2 > 1000
 
 2. CÁLCULO — precio_m2_mes = precio_renta / m2
-   Rango razonable: ${price_m2_min}–${price_m2_max} MXN/m²/mes
+   Rango razonable para BJ: ${price_m2_min}–${price_m2_max} MXN/m²/mes
+   Descarta outliers fuera de ese rango
 
-3. CLASIFICACIÓN
-   {age_note}
-   Omite categorías con < 2 listings válidos
+3. CLASIFICACIÓN POR ANTIGÜEDAD (jerarquía de señales):
 
-4. ESTADÍSTICAS (por categoría con ≥ 2 listings)
-   - low = P25, avg = mediana, high = P75 del precio_m2_mes
-   - Redondear a entero
+   a) Campo "antiguedad" explícito → úsalo directamente
+      {age_note}
 
-5. JERARQUÍA — {hierarchy_note}
-   Si se viola: omite esa categoría
+   b) Campo "condicion":
+      "nuevo" → "new" | "seminuevo" → "mid" | "a remodelar" → "old"
 
-6. CONFIANZA: "high" ≥5 listings, "medium" 2–4, "low" <2
+   c) Proxy precio_m2_mes cuando no hay señal:
+      precio_m2_mes > $220/m²/mes → "new"
+      precio_m2_mes entre $140 y $220 → "mid"
+      precio_m2_mes < $140 → "old"
+
+4. ESTADÍSTICAS (por categoría):
+   - low = P25, avg = mediana, high = P75 del precio_m2_mes (redondear a entero)
+
+5. POLÍTICA DE REPORTE:
+   - ≥ 5 listings → confidence "high"
+   - 2–4 listings → confidence "medium"
+   - 1 listing → confidence "low" (REPORTAR, no omitir)
+   - 0 listings → omitir esa categoría
+
+6. JERARQUÍA — {hierarchy_note}
+   Si se viola, reportar igual con confidence "low"
 
 Responde ÚNICAMENTE con este JSON, sin markdown:
 {
   "prices": {
-    "new": {"low": 220, "avg": 270, "high": 320},
-    "mid": {"low": 180, "avg": 210, "high": 250},
-    "old": {"low": 150, "avg": 170, "high": 200}
+    "new": {"low": 250, "avg": 310, "high": 380},
+    "mid": {"low": 190, "avg": 230, "high": 275},
+    "old": {"low": 150, "avg": 175, "high": 210}
   },
   "confidence": "high",
-  "listings_analyzed": 11,
+  "listings_analyzed": 14,
   "outliers_excluded": 2,
-  "reasoning": "11 listings procesados. Mediana seminuevo $210/m²/mes.",
-  "market_context": "Mercado de renta activo en la zona."
+  "reasoning": "14 listings. 4 nuevos, 7 seminuevos (proxy precio), 3 antiguos.",
+  "market_context": "Demanda activa de renta en la zona."
 }
 
 Si datos insuficientes: {"error": "datos_insuficientes", "reason": "descripción"}

@@ -4,6 +4,7 @@ namespace App\Services\Market;
 
 use App\Models\MarketColonia;
 use App\Models\MarketPromptTemplate;
+use App\Models\MarketZone;
 use App\Services\AI\AIManager;
 use Illuminate\Support\Facades\Log;
 
@@ -224,6 +225,103 @@ class PerplexityMarketService
         }
 
         return $this->parseAnalysis($raw, $rawListings, $colonia->name, $propertyType . '_rent');
+    }
+
+    // ── Zona: pipeline completo ───────────────────────────────────────────
+
+    /**
+     * Busca y analiza precios de VENTA para toda una zona (múltiples colonias).
+     * Usa prompt zone-level → más listings → mayor confianza estadística.
+     */
+    public function fetchZonePrices(MarketZone $zone, string $propertyType): array
+    {
+        $rawListings = $this->fetchZoneListings($zone, $propertyType, 'sale');
+
+        if (empty($rawListings) || $this->isErrorResponse($rawListings)) {
+            Log::error('PerplexityMarketService[zona/venta]: sin listings', [
+                'zona'          => $zone->name,
+                'property_type' => $propertyType,
+                'raw'           => substr($rawListings, 0, 100),
+            ]);
+            return [];
+        }
+
+        return $this->analyzePrices($rawListings, $zone->colonias->first() ?? new MarketColonia(['name' => $zone->name]), $propertyType);
+    }
+
+    /**
+     * Busca y analiza precios de RENTA para toda una zona.
+     */
+    public function fetchZoneRentalPrices(MarketZone $zone, string $propertyType): array
+    {
+        $rawListings = $this->fetchZoneListings($zone, $propertyType, 'rent');
+
+        if (empty($rawListings) || $this->isErrorResponse($rawListings)) {
+            Log::error('PerplexityMarketService[zona/renta]: sin listings', [
+                'zona'          => $zone->name,
+                'property_type' => $propertyType,
+                'raw'           => substr($rawListings, 0, 100),
+            ]);
+            return [];
+        }
+
+        return $this->analyzeRentalPrices($rawListings, $zone->colonias->first() ?? new MarketColonia(['name' => $zone->name]), $propertyType);
+    }
+
+    /**
+     * Llama a Perplexity con un prompt de zona (todas las colonias de la zona).
+     */
+    private function fetchZoneListings(MarketZone $zone, string $propertyType, string $operationType): string
+    {
+        $zone->loadMissing('colonias');
+        $colonyList = $zone->colonias->pluck('name')->implode(', ');
+        $isRent     = $operationType === 'rent';
+        $isCommercial = in_array($propertyType, ['office', 'commercial']);
+
+        if ($isCommercial) {
+            $typeLabel = 'locales comerciales, oficinas y bodegas';
+            $fields    = $isRent
+                ? "- \"precio_renta\": renta mensual en MXN\n- \"m2\": metros cuadrados\n- \"tipo\": local / oficina / bodega\n- \"condicion\": nuevo / seminuevo / usado / a remodelar"
+                : "- \"precio\": precio de lista en MXN\n- \"m2\": metros cuadrados de construcción";
+        } else {
+            $typeLabel = match($propertyType) {
+                'house' => 'casas',
+                default => 'departamentos',
+            };
+            $priceKey  = $isRent ? '"precio_renta": renta mensual en MXN' : '"precio": precio de lista en MXN';
+            $fields    = "- {$priceKey}\n"
+                       . "- \"m2\": metros cuadrados de CONSTRUCCIÓN (NO de terreno)\n"
+                       . "- \"antiguedad\": años desde construcción o null\n"
+                       . ($isRent ? "- \"recamaras\": número de recámaras\n" : "- \"recamaras\": número de recámaras\n- \"piso\": número de piso o null\n")
+                       . "- \"condicion\": nuevo / seminuevo / usado / a remodelar";
+        }
+
+        $templateKey = $isRent ? 'rent.search.zone' : 'sale.search.zone';
+        $template    = MarketPromptTemplate::getPrompt($templateKey);
+        $opLabel     = $isRent ? 'RENTA (arrendamiento)' : 'VENTA';
+
+        $prompt = str_replace(
+            ['{zone_name}', '{colony_list}', '{type_label}', '{fields}', '{op_label}'],
+            [$zone->name, $colonyList, $typeLabel, $fields, $opLabel],
+            $template
+        );
+
+        try {
+            $raw = $this->ai->agent('market.fetch', $prompt);
+            Log::info('PerplexityMarketService[zona]: raw listings', [
+                'zona'           => $zone->name,
+                'operation_type' => $operationType,
+                'property_type'  => $propertyType,
+                'chars'          => strlen($raw),
+            ]);
+            return $raw;
+        } catch (\Throwable $e) {
+            Log::error('PerplexityMarketService[zona]: Perplexity error', [
+                'zona'  => $zone->name,
+                'error' => $e->getMessage(),
+            ]);
+            return '';
+        }
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
