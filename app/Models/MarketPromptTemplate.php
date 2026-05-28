@@ -137,34 +137,31 @@ Si encuentras menos de 2 anuncios en total, responde: {"error": "sin_datos"}
 PROMPT,
 
             'sale.search.zone' => <<<'PROMPT'
-Necesito anuncios ACTUALES de {type_label} en {op_label} en la Zona {zone_name}, alcaldía Benito Juárez, Ciudad de México.
+Busca anuncios ACTUALES de {type_label} en VENTA en la Zona {zone_name}, alcaldía Benito Juárez, Ciudad de México.
 
 Esta zona comprende las colonias: {colony_list}.
 
-REGLAS IMPORTANTES:
-1. Solo anuncios de venta directa (no preventa de desarrollos nuevos, no subasta)
-2. Precio = precio de LISTA publicado en el portal (no precio de cierre ni negociado)
-3. m2 = metros cuadrados de CONSTRUCCIÓN únicamente (NO de terreno ni superficie total)
-4. Prioriza anuncios publicados en los últimos 6 meses
-5. Distribuye los anuncios entre las colonias de la zona (no solo de una)
-6. Incluye campo "condicion" para ayudar a clasificar la antigüedad
+Busca activamente en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker, Encuentra24, y cualquier portal inmobiliario disponible.
 
-Busca en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker, Encuentra24, o cualquier portal disponible.
+Si no encuentras suficientes anuncios en estas colonias específicamente, amplía la búsqueda a colonias adyacentes dentro de Benito Juárez.
 
-Por cada anuncio, extrae:
+Por cada anuncio encontrado extrae:
 {fields}
-- "colonia": nombre de la colonia dentro de la zona
+- "colonia": colonia o zona aproximada
 - "fuente": nombre del portal
 
-Devuelve entre 10 y 20 anuncios reales de toda la zona. Omite los que no tengan precio o m².
+IMPORTANTE: Solo "precio" y "m2" son obligatorios. Los campos "antiguedad", "recamaras", "piso" y "condicion" pueden ser null si no están disponibles.
+m2 = metros cuadrados de CONSTRUCCIÓN (no terreno). Precio = precio de lista en MXN (número entero).
+
+Devuelve entre 8 y 20 anuncios. Omite solo los que no tengan precio ni m².
 
 Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
 [
   {"precio": 3800000, "m2": 78, "antiguedad": 12, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
-  {"precio": 7500000, "m2": 140, "antiguedad": 3, "recamaras": 3, "piso": 5, "condicion": "nuevo", "colonia": "Narvarte Poniente", "fuente": "Lamudi"}
+  {"precio": 7500000, "m2": 140, "antiguedad": null, "recamaras": 3, "piso": null, "condicion": null, "colonia": "Narvarte Poniente", "fuente": "Lamudi"}
 ]
 
-Si encuentras menos de 3 anuncios en toda la zona, responde: {"error": "sin_datos"}
+Si no encuentras absolutamente ningún anuncio con precio y m² válidos, responde: {"error": "sin_datos"}
 PROMPT,
 
             'rent.search.zone' => <<<'PROMPT'
