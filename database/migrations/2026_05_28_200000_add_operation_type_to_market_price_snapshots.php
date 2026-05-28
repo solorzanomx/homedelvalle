@@ -18,10 +18,13 @@ return new class extends Migration
             });
         }
 
-        // 2. Reemplazar índice — solo en MySQL (SQLite gestiona índices de forma diferente)
+        // 2. Agregar nuevo índice que incluye operation_type (sin tocar el viejo — tiene FK)
         if (DB::getDriverName() === 'mysql') {
-            DB::statement('DROP INDEX IF EXISTS mps_colonia_type_age_period_idx ON market_price_snapshots');
-            DB::statement('CREATE INDEX mps_main_idx ON market_price_snapshots (market_colonia_id, operation_type, property_type, age_category, period)');
+            // Crear solo si no existe ya
+            $indexExists = collect(DB::select("SHOW INDEX FROM market_price_snapshots WHERE Key_name = 'mps_main_idx'"))->isNotEmpty();
+            if (!$indexExists) {
+                DB::statement('CREATE INDEX mps_main_idx ON market_price_snapshots (market_colonia_id, operation_type, property_type, age_category, period)');
+            }
         }
     }
 
