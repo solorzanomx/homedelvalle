@@ -3,58 +3,40 @@
 
 @section('styles')
 <style>
-/* Evitar scroll horizontal que hace que el sidebar tape el editor */
-.content-body { overflow-x: hidden; }
-.presentation-layout, .presentation-layout * { max-width: 100%; box-sizing: border-box; }
-
-/* Vertical por defecto — lado a lado solo en pantallas anchas (≥1280px)
-   El sidebar ocupa 260px fijos, así que necesitamos al menos 260+300+550=1110px
-   para que los dos paneles sean usables. Usamos 1280px como punto de quiebre. */
+/* Layout siempre en columna única — el PDF viewer del browser fuerza
+   un ancho mínimo que rompe cualquier layout lado-a-lado con el sidebar fijo */
 .presentation-layout {
     display: flex;
-    flex-direction: column;   /* vertical por defecto */
-    gap: 1.5rem;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: 100%;
 }
-.presentation-sticky {
-    width: 100%;
-    position: static;
-    max-height: none;
-    overflow-y: visible;
+
+/* Panel del editor: barra horizontal compacta */
+.presentation-editor-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
 }
-.pdf-panel { width: 100%; }
+.editor-fields-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+}
+.editor-field { display: flex; flex-direction: column; gap: .3rem; }
+.editor-field label { font-size: .78rem; font-weight: 600; color: var(--text-muted); }
+
+/* PDF ocupa casi todo el viewport disponible */
 .pdf-frame {
     width: 100%;
-    max-width: 100%;
-    height: 75vh;
+    height: calc(100vh - 260px);
     min-height: 500px;
     border: none;
     background: #f1f5f9;
     border-radius: 8px;
     display: block;
-}
-
-/* Lado a lado solo cuando hay suficiente espacio */
-@media (min-width: 1280px) {
-    .presentation-layout {
-        flex-direction: row;
-        align-items: start;
-    }
-    .presentation-sticky {
-        width: 300px;
-        flex: 0 0 300px;
-        position: sticky;
-        top: 72px;
-        max-height: calc(100vh - 88px);
-        overflow-y: auto;
-    }
-    .pdf-panel {
-        flex: 1 1 0;
-        min-width: 0;
-    }
-    .pdf-frame {
-        height: calc(100vh - 190px);
-        min-height: 600px;
-    }
 }
 
 /* Loading overlay sobre el iframe */
@@ -124,17 +106,13 @@
 
   <div class="presentation-layout">
 
-    {{-- Panel izquierdo: editor Livewire --}}
-    <div class="presentation-sticky">
-      @livewire('admin.presentation-editor', ['captacion' => $captacion])
-    </div>
+    {{-- ── Livewire editor (arriba, full-width) ─────────────────────────── --}}
+    @livewire('admin.presentation-editor', ['captacion' => $captacion])
 
-    {{-- Panel derecho: iframe PDF --}}
-    <div class="pdf-panel">
-      {{-- min-height fijo para que el panel no colapse mientras carga el iframe --}}
-      <div class="card" style="overflow:hidden;padding:0;position:relative;min-height:640px;">
+    {{-- ── Iframe PDF (abajo, full-width) ──────────────────────────────── --}}
+    <div>
+      <div class="card" style="overflow:hidden;padding:0;position:relative;min-height:520px;">
 
-        {{-- Overlay de carga (visible hasta que el iframe carga) --}}
         <div id="pdf-loading-overlay" class="pdf-loading-overlay">
           <div class="pdf-loading-spinner"></div>
           <div style="text-align:center;">
