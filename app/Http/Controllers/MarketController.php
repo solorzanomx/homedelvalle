@@ -5,60 +5,64 @@ namespace App\Http\Controllers;
 use App\Models\MarketColonia;
 use App\Models\MarketPriceSnapshot;
 use App\Models\MarketZone;
+use App\Models\MarketZoneSnapshot;
 use Illuminate\View\View;
 
 class MarketController extends Controller
 {
-    /** /mercado — Hub del Observatorio */
+    // ─── /mercado ─────────────────────────────────────────────────────────────
+
     public function index(): View
     {
         $zones = MarketZone::published()
             ->with(['publishedColonias'])
+            ->orderBy('sort_order')
             ->get()
             ->map(function (MarketZone $zone) {
-                // Precio promedio de departamento medio en la zona
-                $coloniaIds = $zone->publishedColonias->pluck('id');
-                $avgPrice = MarketPriceSnapshot::whereIn('market_colonia_id', $coloniaIds)
-                    ->where('property_type', 'apartment')
-                    ->where('age_category', 'mid')
-                    ->latest('period')
-                    ->avg('price_m2_avg');
-
-                $zone->avg_price_m2 = $avgPrice ? (int) round($avgPrice) : null;
+                // Precio promedio: departamento seminuevo de venta (zona-level)
+                $snap = MarketZoneSnapshot::latestForZone($zone->id, 'sale', 'apartment', 'mid');
+                $zone->avg_price_m2     = $snap ? (int) $snap->price_m2_avg : null;
+                $zone->snap_confidence  = $snap?->confidence;
+                $zone->snap_listings    = $snap?->sample_size;
+                $zone->snap_period      = $snap?->period;
                 return $zone;
             });
 
         return view('public.mercado.index', compact('zones'));
     }
 
-    /** /mercado/{zona} — Página de sector */
+    // ─── /mercado/{zona} ──────────────────────────────────────────────────────
+
     public function zone(string $zoneSlug): View
     {
         $zone     = MarketZone::where('slug', $zoneSlug)->where('is_published', true)->firstOrFail();
-        $colonias = $zone->publishedColonias()->get();
+        $allZones = MarketZone::published()->orderBy('sort_order')->get();
+        $colonias = $zone->publishedColonias()->orderBy('name')->get();
 
-        // Snapshots más recientes por colonia + tipo + antigüedad
-        $coloniaIds = $colonias->pluck('id');
-        $snapshots  = MarketPriceSnapshot::whereIn('market_colonia_id', $coloniaIds)
-            ->whereIn('property_type', ['apartment', 'house'])
-            ->latest('period')
-            ->get()
-            ->groupBy(fn($s) => $s->market_colonia_id . '_' . $s->property_type . '_' . $s->age_category)
-            ->map(fn($group) => $group->first());
+        // Leer zone snapshots — ya tienen operation_type correcto (no mezcla venta/renta)
+        $zoneSnaps = MarketZoneSnapshot::summaryForZone($zone->id);
 
-        // Precio promedio de la zona para hero
-        $zoneAvg = MarketPriceSnapshot::whereIn('market_colonia_id', $coloniaIds)
-            ->where('property_type', 'apartment')
-            ->where('age_category', 'mid')
-            ->latest('period')
-            ->avg('price_m2_avg');
+        // Filtrar solo medium/high confidence para el público
+        $saleSnaps = $this->filterConfidence($zoneSnaps['sale'] ?? []);
+        $rentSnaps = $this->filterConfidence($zoneSnaps['rent'] ?? []);
 
-        $allZones = MarketZone::published()->get(); // para el nav entre zonas
+        // Stats de credibilidad
+        $saleMeta = $this->snapMeta($saleSnaps);
+        $rentMeta = $this->snapMeta($rentSnaps);
 
-        return view('public.mercado.zone', compact('zone', 'colonias', 'snapshots', 'zoneAvg', 'allZones'));
+        // Precio hero (depto seminuevo venta)
+        $heroPriceSale = ($saleSnaps['apartment']['mid'] ?? $saleSnaps['apartment']['new'] ?? null)?->price_m2_avg;
+
+        return view('public.mercado.zone', compact(
+            'zone', 'allZones', 'colonias',
+            'saleSnaps', 'rentSnaps',
+            'saleMeta', 'rentMeta',
+            'heroPriceSale',
+        ));
     }
 
-    /** /mercado/{zona}/{colonia} — Página de colonia */
+    // ─── /mercado/{zona}/{colonia} ────────────────────────────────────────────
+
     public function colonia(string $zoneSlug, string $coloniaSlug): View
     {
         $zone    = MarketZone::where('slug', $zoneSlug)->where('is_published', true)->firstOrFail();
@@ -67,26 +71,72 @@ class MarketController extends Controller
             ->where('is_published', true)
             ->firstOrFail();
 
-        $snapshots = MarketPriceSnapshot::where('market_colonia_id', $colonia->id)
-            ->whereIn('property_type', ['apartment', 'house'])
-            ->latest('period')
-            ->get()
-            ->groupBy(fn($s) => $s->property_type . '_' . $s->age_category)
-            ->map(fn($group) => $group->first());
+        // Usa snapshots de zona como referencia (zone-level data)
+        $allZones  = MarketZone::published()->orderBy('sort_order')->get();
+        $zoneSnaps = MarketZoneSnapshot::summaryForZone($zone->id);
+        $saleSnaps = $this->filterConfidence($zoneSnaps['sale'] ?? []);
+        $rentSnaps = $this->filterConfidence($zoneSnaps['rent'] ?? []);
+        $saleMeta  = $this->snapMeta($saleSnaps);
+        $rentMeta  = $this->snapMeta($rentSnaps);
 
-        // Colonias vecinas de la misma zona para el footer
+        $heroPriceSale = ($saleSnaps['apartment']['mid'] ?? $saleSnaps['apartment']['new'] ?? null)?->price_m2_avg;
+
         $siblings = $zone->publishedColonias()
             ->where('id', '!=', $colonia->id)
+            ->orderBy('name')
             ->get();
 
-        return view('public.mercado.colonia', compact('zone', 'colonia', 'snapshots', 'siblings'));
+        return view('public.mercado.colonia', compact(
+            'zone', 'colonia', 'siblings', 'allZones',
+            'saleSnaps', 'rentSnaps',
+            'saleMeta', 'rentMeta',
+            'heroPriceSale',
+        ));
     }
 
-    /** /mercado/opinion-de-valor — Landing + formulario */
+    // ─── /mercado/opinion-de-valor ────────────────────────────────────────────
+
     public function opinionForm(): View
     {
         $colonias = MarketColonia::published()->with('zone')->orderBy('name')->get()->groupBy('zone.name');
-
         return view('public.mercado.opinion', compact('colonias'));
+    }
+
+    // ─── Helpers privados ─────────────────────────────────────────────────────
+
+    /**
+     * Filtra snapshots al mínimo de confianza para mostrar en público.
+     * Retorna [property_type][age_category] = snapshot|null
+     */
+    private function filterConfidence(array $snaps, array $minConf = ['high', 'medium', 'low']): array
+    {
+        $filtered = [];
+        foreach ($snaps as $type => $ages) {
+            foreach ($ages as $age => $snap) {
+                if ($snap && in_array($snap->confidence, $minConf)) {
+                    $filtered[$type][$age] = $snap;
+                }
+            }
+        }
+        return $filtered;
+    }
+
+    /**
+     * Metadata de un conjunto de snapshots: total listings, último período, confianza dominante.
+     */
+    private function snapMeta(array $snaps): array
+    {
+        $allSnaps   = collect($snaps)->flatten()->filter();
+        $totalList  = $allSnaps->sum('sample_size');
+        $lastPeriod = $allSnaps->sortByDesc('period')->first()?->period;
+        $confCounts = $allSnaps->countBy('confidence');
+        $dominantConf = $confCounts->sortByDesc(fn($v) => match($v) { 'high' => 3, 'medium' => 2, default => 1 })->keys()->first();
+
+        return [
+            'total_listings' => $totalList,
+            'last_period'    => $lastPeriod,
+            'confidence'     => $dominantConf,
+            'has_data'       => $allSnaps->isNotEmpty(),
+        ];
     }
 }
