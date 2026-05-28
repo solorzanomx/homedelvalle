@@ -231,10 +231,10 @@ Devuelve entre 8 y 15 anuncios reales.
 
 Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
 [
-  {{"precio_renta": 18000, "m2": 75, "antiguedad": 10, "recamaras": 2, "fuente": "Inmuebles24"}}
+  {"precio_renta": 18000, "m2": 75, "antiguedad": 10, "recamaras": 2, "fuente": "Inmuebles24"}
 ]
 
-Si encuentras menos de 3 anuncios, responde: {{"error": "sin_datos"}}
+Si encuentras menos de 3 anuncios, responde: {"error": "sin_datos"}
 PROMPT;
 
         try {
