@@ -47,13 +47,23 @@ class UpdateZonePricesJob implements ShouldQueue
                 : $service->fetchZonePrices($this->zone, $type);
 
             if (empty($prices)) {
-                Log::error('UpdateZonePricesJob: sin datos', [
+                Log::error('UpdateZonePricesJob: sin datos guardados', [
                     'zona'          => $this->zone->name,
                     'property_type' => $type,
                     'operation'     => $this->operationType,
+                    'hint'          => 'Perplexity devolvió vacío o Claude análisis falló — revisar log PerplexityMarketService',
                 ]);
                 continue;
             }
+
+            Log::info('UpdateZonePricesJob: guardando ' . count(array_filter(array_keys($prices), fn($k) => $k !== '_meta')) . ' categorías', [
+                'zona'          => $this->zone->name,
+                'operation'     => $this->operationType,
+                'property_type' => $type,
+                'categorias'    => array_keys(array_diff_key($prices, ['_meta' => true])),
+                'confidence'    => $prices['_meta']['confidence'] ?? '?',
+                'listings'      => $prices['_meta']['listings_analyzed'] ?? 0,
+            ]);
 
             foreach ($prices as $ageCategory => $range) {
                 if ($ageCategory === '_meta') continue;

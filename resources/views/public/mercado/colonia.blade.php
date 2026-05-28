@@ -99,9 +99,13 @@
         </span>
     </div>
 
-    @php $hasSale = !empty($saleSnaps); $hasRent = !empty($rentSnaps); @endphp
+    @php
+        $hasSale = !empty($saleSnaps);
+        $hasRent = !empty($rentSnaps);
+        $defaultTab = $hasSale ? 'sale' : 'rent';
+    @endphp
 
-    <div x-data="{ tab: 'sale' }">
+    <div x-data="{ tab: '{{ $defaultTab }}' }">
         @if($hasSale || $hasRent)
         <div style="display:flex;gap:0;border-bottom:2px solid #e5e7eb;margin-bottom:1.5rem;">
             @if($hasSale)
