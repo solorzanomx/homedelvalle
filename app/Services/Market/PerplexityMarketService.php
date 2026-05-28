@@ -22,10 +22,11 @@ class PerplexityMarketService
         // Step 1 — Perplexity: get raw real listings
         $rawListings = $this->fetchListings($colonia, $propertyType);
 
-        if (empty($rawListings)) {
-            Log::warning('PerplexityMarketService: no listings found', [
+        if (empty($rawListings) || $this->isErrorResponse($rawListings)) {
+            Log::error('PerplexityMarketService: no listings found', [
                 'colonia'       => $colonia->name,
                 'property_type' => $propertyType,
+                'raw'           => substr($rawListings, 0, 100),
             ]);
             return [];
         }
@@ -192,10 +193,12 @@ PROMPT;
     {
         $rawListings = $this->fetchRentalListings($colonia, $propertyType);
 
-        if (empty($rawListings)) {
-            Log::warning('PerplexityMarketService[rent]: no listings found', [
+        // Detectar respuesta vacía O respuesta de error explícita de Perplexity
+        if (empty($rawListings) || $this->isErrorResponse($rawListings)) {
+            Log::error('PerplexityMarketService[rent]: no listings found', [
                 'colonia'       => $colonia->name,
                 'property_type' => $propertyType,
+                'raw'           => substr($rawListings, 0, 100),
             ]);
             return [];
         }
@@ -219,22 +222,24 @@ PROMPT;
         }
 
         $prompt = <<<PROMPT
-Busca anuncios ACTUALES de {$typeLabel} en RENTA en la Colonia {$colonia->name}, alcaldía Benito Juárez, Ciudad de México.
+Busca anuncios ACTUALES de {$typeLabel} en RENTA (arrendamiento) en la Colonia {$colonia->name}, Benito Juárez, Ciudad de México, CDMX.
 
-Busca en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles.
+Busca en estos portales inmobiliarios: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker.
 
-Para cada anuncio, extrae:
+Si no encuentras en "{$colonia->name}" exactamente, incluye anuncios de colonias muy cercanas dentro de Benito Juárez.
+
+Para cada anuncio que encuentres, extrae:
 - {$fields}
 - "fuente": nombre del portal
 
-Devuelve entre 8 y 15 anuncios reales.
+Devuelve todos los anuncios que encuentres (mínimo 2, máximo 15).
 
 Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
 [
   {"precio_renta": 18000, "m2": 75, "antiguedad": 10, "recamaras": 2, "fuente": "Inmuebles24"}
 ]
 
-Si encuentras menos de 3 anuncios, responde: {"error": "sin_datos"}
+Si encuentras menos de 2 anuncios en total, responde: {"error": "sin_datos"}
 PROMPT;
 
         try {
@@ -346,6 +351,26 @@ PROMPT;
         }
 
         return $this->parseAnalysis($raw, $rawListings, $colonia->name, $propertyType . '_rent');
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────
+
+    /**
+     * Detecta si la respuesta de Perplexity es un mensaje de error
+     * en lugar de un array de listings reales.
+     */
+    private function isErrorResponse(string $raw): bool
+    {
+        $trimmed = trim($raw);
+        // Respuesta de error explícita: {"error": "..."}
+        if (str_starts_with($trimmed, '{"error"')) {
+            return true;
+        }
+        // Array vacío
+        if ($trimmed === '[]') {
+            return true;
+        }
+        return false;
     }
 
     // ── Parse Claude response ─────────────────────────────────────────────
