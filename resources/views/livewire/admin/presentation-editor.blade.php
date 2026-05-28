@@ -10,31 +10,76 @@
   </div>
   <div class="card-body" style="display:flex;flex-direction:column;gap:1rem;">
 
-    {{-- Comisión --}}
+    {{-- Comisión: % para venta, meses para renta --}}
     <div>
-      <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
-        Comisión propuesta (%)
-      </label>
-      <div style="display:flex;align-items:center;gap:.75rem;">
-        <input wire:model.live.debounce.600ms="commission_pct"
-               type="number" min="0" max="100" step="0.5"
-               style="width:90px;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.9rem;font-weight:700;text-align:center;">
-        <input wire:model.live.debounce.600ms="commission_pct"
-               type="range" min="0" max="10" step="0.5"
-               style="flex:1;accent-color:var(--primary);">
-        <span style="font-size:1.1rem;font-weight:800;color:var(--success);min-width:40px;text-align:right;">{{ $commission_pct }}%</span>
-      </div>
+      @if($this->isRenta())
+        {{-- RENTA: selector de meses --}}
+        <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
+          Comisión propuesta
+          <span style="font-weight:400;color:var(--text-muted);font-size:.75rem;">(meses de renta)</span>
+        </label>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          @foreach([0.5 => 'Medio mes', 1 => '1 mes', 1.5 => '1.5 meses', 2 => '2 meses'] as $val => $lbl)
+          <label style="flex:1;min-width:80px;cursor:pointer;">
+            <input wire:model.live="commission_pct" type="radio" value="{{ $val }}" style="margin-right:.3rem;">
+            <span style="font-size:.82rem;">{{ $lbl }}</span>
+          </label>
+          @endforeach
+        </div>
+        <p style="font-size:.72rem;color:var(--text-muted);margin-top:.35rem;">
+          Seleccionado: <strong style="color:var(--success);">
+            @if((float)$commission_pct == 0.5) Medio mes de renta
+            @elseif((float)$commission_pct == 1) 1 mes de renta
+            @else {{ $commission_pct }} meses de renta
+            @endif
+          </strong>
+        </p>
+      @else
+        {{-- VENTA: slider de porcentaje --}}
+        <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
+          Comisión propuesta (%)
+        </label>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <input wire:model.live.debounce.600ms="commission_pct"
+                 type="number" min="0" max="100" step="0.5"
+                 style="width:90px;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.9rem;font-weight:700;text-align:center;">
+          <input wire:model.live.debounce.600ms="commission_pct"
+                 type="range" min="0" max="10" step="0.5"
+                 style="flex:1;accent-color:var(--primary);">
+          <span style="font-size:1.1rem;font-weight:800;color:var(--success);min-width:40px;text-align:right;">{{ $commission_pct }}%</span>
+        </div>
+      @endif
     </div>
 
-    {{-- Precio sugerido --}}
+    {{-- Precio sugerido + referencia de mercado --}}
     <div>
       <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
-        Precio de referencia sugerido
+        {{ $this->isRenta() ? 'Renta de referencia sugerida' : 'Precio de referencia sugerido' }}
         <span style="font-weight:400;color:var(--text-muted);font-size:.75rem;">(aparece en la presentación)</span>
       </label>
       <input wire:model.live.debounce.600ms="price_suggested"
-             type="text" placeholder="Ej. $3,500,000 MXN"
+             type="text"
+             placeholder="{{ $this->isRenta() ? 'Ej. $28,000 MXN/mes' : 'Ej. $3,500,000 MXN' }}"
              style="width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
+
+      {{-- Badge de mercado si hay datos del observatorio --}}
+      @if(isset($marketSnapshot) && $marketSnapshot)
+      @php
+        $isRent = $marketSnapshot->operation_type === 'rent';
+        $unit   = $isRent ? '/m²/mes' : '/m²';
+        $confColor = match($marketSnapshot->confidence) { 'high' => '#059669', 'medium' => '#d97706', default => '#94a3b8' };
+      @endphp
+      <div style="margin-top:.45rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:.45rem .75rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
+        <span style="font-size:.75rem;color:#166534;">
+          📊 Mercado zona:
+          <strong>${{ number_format($marketSnapshot->price_m2_low, 0) }}–${{ number_format($marketSnapshot->price_m2_high, 0) }}{{ $unit }}</strong>
+          · {{ $marketSnapshot->colonia->name ?? '' }}
+        </span>
+        <span style="font-size:.68rem;background:{{ $confColor }}20;color:{{ $confColor }};padding:1px 7px;border-radius:4px;font-weight:600;">
+          {{ $marketSnapshot->confidence_label }}
+        </span>
+      </div>
+      @endif
     </div>
 
     {{-- Plan de marketing --}}

@@ -181,6 +181,173 @@ PROMPT;
         return $this->parseAnalysis($raw, $rawListings, $colonia->name, $propertyType);
     }
 
+    // ── Renta: pipeline completo ─────────────────────────────────────────
+
+    /**
+     * Pipeline Perplexity→Claude para precios de RENTA.
+     * Devuelve precio_mensual_m2 por age_category (new/mid/old).
+     * Para commercial (office): los tres buckets representan calidad/ubicación.
+     */
+    public function fetchRentalPrices(MarketColonia $colonia, string $propertyType): array
+    {
+        $rawListings = $this->fetchRentalListings($colonia, $propertyType);
+
+        if (empty($rawListings)) {
+            Log::warning('PerplexityMarketService[rent]: no listings found', [
+                'colonia'       => $colonia->name,
+                'property_type' => $propertyType,
+            ]);
+            return [];
+        }
+
+        return $this->analyzeRentalPrices($rawListings, $colonia, $propertyType);
+    }
+
+    private function fetchRentalListings(MarketColonia $colonia, string $propertyType): string
+    {
+        $isCommercial = in_array($propertyType, ['office', 'commercial']);
+
+        if ($isCommercial) {
+            $typeLabel = 'locales comerciales, oficinas y bodegas';
+            $fields    = '"precio_renta": renta mensual en MXN, "m2": metros cuadrados, "tipo": (local/oficina/bodega), "piso": número de piso o null';
+        } else {
+            $typeLabel = match($propertyType) {
+                'house'     => 'casas',
+                default     => 'departamentos',
+            };
+            $fields = '"precio_renta": renta mensual en MXN, "m2": metros cuadrados de construcción, "antiguedad": años desde construcción o null, "recamaras": número de recámaras';
+        }
+
+        $prompt = <<<PROMPT
+Busca anuncios ACTUALES de {$typeLabel} en RENTA en la Colonia {$colonia->name}, alcaldía Benito Juárez, Ciudad de México.
+
+Busca en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles.
+
+Para cada anuncio, extrae:
+- {$fields}
+- "fuente": nombre del portal
+
+Devuelve entre 8 y 15 anuncios reales.
+
+Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
+[
+  {{"precio_renta": 18000, "m2": 75, "antiguedad": 10, "recamaras": 2, "fuente": "Inmuebles24"}}
+]
+
+Si encuentras menos de 3 anuncios, responde: {{"error": "sin_datos"}}
+PROMPT;
+
+        try {
+            $raw = $this->ai->agent('market.fetch', $prompt);
+            Log::info('PerplexityMarketService[rent]: raw listings', [
+                'colonia'       => $colonia->name,
+                'property_type' => $propertyType,
+                'chars'         => strlen($raw),
+            ]);
+            return $raw;
+        } catch (\Throwable $e) {
+            Log::error('PerplexityMarketService[rent]: Perplexity error', [
+                'colonia' => $colonia->name,
+                'error'   => $e->getMessage(),
+            ]);
+            return '';
+        }
+    }
+
+    private function analyzeRentalPrices(string $rawListings, MarketColonia $colonia, string $propertyType): array
+    {
+        $isCommercial = in_array($propertyType, ['office', 'commercial']);
+
+        if ($isCommercial) {
+            $typeLabel      = 'locales comerciales / oficinas / bodegas';
+            $priceField     = 'precio_renta (renta mensual MXN)';
+            $rangeMin       = 3000;
+            $rangeMax       = 500000;
+            $priceM2Min     = 50;    // $50/m²/mes mínimo razonable BJ
+            $priceM2Max     = 800;   // $800/m²/mes máximo razonable BJ
+            $hierarchyNote  = 'Para comercial, la jerarquía es: planta baja / ubicación prime > piso superior / secundario.';
+            $ageNote        = 'Para inmuebles comerciales, usa el campo "tipo" en lugar de antigüedad para diferenciar categorías: local PB = "new", oficina = "mid", bodega = "old".';
+        } else {
+            $typeLabel      = match($propertyType) { 'house' => 'casas', default => 'departamentos' };
+            $priceField     = 'precio_renta (renta mensual MXN)';
+            $rangeMin       = 3000;
+            $rangeMax       = 120000;
+            $priceM2Min     = 80;    // $80/m²/mes mínimo razonable BJ
+            $priceM2Max     = 500;   // $500/m²/mes máximo razonable BJ
+            $hierarchyNote  = 'En Benito Juárez, inmuebles nuevos rentan más caro por m² que los viejos.';
+            $ageNote        = '"new": 0–10 años, "mid": 11–30 años, "old": >30 años. Sin antigüedad → asignar a "mid".';
+        }
+
+        $system = <<<SYSTEM
+Eres un analista de mercado inmobiliario especializado en rentas en Ciudad de México.
+Tu tarea es procesar listings de renta y calcular precio de renta mensual por m² ($/m²/mes).
+SYSTEM;
+
+        $prompt = <<<PROMPT
+Listings de {$typeLabel} en RENTA en Colonia {$colonia->name}, Benito Juárez, CDMX:
+
+LISTINGS:
+{$rawListings}
+
+ANÁLISIS:
+
+1. VALIDACIÓN
+   - Descarta listings con {$priceField} fuera del rango \${$rangeMin}–\${$rangeMax} MXN/mes
+   - Descarta listings con m2 < 15 o m2 > 1000
+   - Descarta listings sin precio o sin m2
+
+2. CÁLCULO
+   - precio_m2_mes = precio_renta / m2 (pesos MXN por m² por mes)
+   - Rango razonable para BJ: \${$priceM2Min}–\${$priceM2Max} MXN/m²/mes
+   - Descarta outliers con precio_m2_mes fuera de ese rango
+
+3. CLASIFICACIÓN
+   {$ageNote}
+   - Categorías: "new", "mid", "old"
+   - Omite categorías con < 2 listings válidos
+
+4. ESTADÍSTICAS (por categoría con ≥ 2 listings)
+   - low = P25 de precio_m2_mes
+   - avg = mediana de precio_m2_mes
+   - high = P75 de precio_m2_mes
+   - Redondear a entero
+
+5. JERARQUÍA
+   {$hierarchyNote}
+   Si violas la jerarquía, omite esa categoría.
+
+6. CONFIANZA: "high" ≥5 listings, "medium" 2–4, "low" <2.
+
+Responde ÚNICAMENTE con este JSON, sin markdown:
+{
+  "prices": {
+    "new": {"low": 220, "avg": 270, "high": 320},
+    "mid": {"low": 180, "avg": 210, "high": 250},
+    "old": {"low": 150, "avg": 170, "high": 200}
+  },
+  "confidence": "high",
+  "listings_analyzed": 11,
+  "outliers_excluded": 2,
+  "reasoning": "11 listings procesados. Mediana seminuevo \$210/m²/mes.",
+  "market_context": "Mercado de renta activo en la zona."
+}
+
+Si datos insuficientes: {"error": "datos_insuficientes", "reason": "descripción"}
+PROMPT;
+
+        try {
+            $raw = $this->ai->agent('market.analysis', $prompt, $system);
+        } catch (\Throwable $e) {
+            Log::error('PerplexityMarketService[rent]: Claude error', [
+                'colonia' => $colonia->name,
+                'error'   => $e->getMessage(),
+            ]);
+            return [];
+        }
+
+        return $this->parseAnalysis($raw, $rawListings, $colonia->name, $propertyType . '_rent');
+    }
+
     // ── Parse Claude response ─────────────────────────────────────────────
 
     private function parseAnalysis(string $raw, string $rawListings, string $coloniaName, string $propertyType): array

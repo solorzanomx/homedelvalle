@@ -6,6 +6,8 @@ use App\Models\Captacion;
 use App\Models\ContractTemplate;
 use App\Models\Document;
 use App\Models\Interaction;
+use App\Models\MarketColonia;
+use App\Models\MarketPriceSnapshot;
 use App\Models\PresentationSend;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -240,6 +242,64 @@ class PresentationGeneratorService
 
     // ─── Privados ─────────────────────────────────────────────────────────────
 
+    // ─── Datos de mercado ────────────────────────────────────────────────────
+
+    /**
+     * Busca el snapshot de precio de mercado más relevante para la captación.
+     * - Venta → operation_type = 'sale'
+     * - Renta → operation_type = 'rent'
+     * Mapea el intent al property_type correcto para el observatorio.
+     */
+    public function getMarketSnapshot(Captacion $captacion): ?MarketPriceSnapshot
+    {
+        $property = $captacion->property;
+        $intent   = $captacion->intent ?? 'general';
+        $colony   = $property?->colony ?? $captacion->property_address ?? '';
+
+        if (empty($colony)) return null;
+
+        // Determinar operation_type según intent
+        $operationType = str_starts_with($intent, 'renta_') ? 'rent' : 'sale';
+
+        // Mapear property_type del observatorio
+        $propertyType = match(strtolower($property?->property_type ?? '')) {
+            'house'      => 'house',
+            'land'       => 'land',
+            'office', 'commercial', 'warehouse' => $operationType === 'rent' ? 'office' : 'office',
+            default      => 'apartment',
+        };
+
+        // Buscar colonia por nombre aproximado
+        $colonia = MarketColonia::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower(trim($colony)) . '%'])
+            ->first();
+
+        if (!$colonia) return null;
+
+        return MarketPriceSnapshot::latestForColonia(
+            $colonia->id,
+            $operationType,
+            $propertyType,
+            'mid' // categoría representativa
+        );
+    }
+
+    /**
+     * Formatea el valor de comisión según el intent.
+     * Venta: "X%" — Renta: "X mes(es) de renta"
+     */
+    public static function formatCommission(float|string $value, string $intent): string
+    {
+        if (str_starts_with($intent, 'renta_')) {
+            $months = (float) $value;
+            if ($months == 1) return '1 mes de renta';
+            if ($months == 0.5) return 'Medio mes de renta';
+            return rtrim(rtrim(number_format($months, 1, '.', ''), '0'), '.') . ' meses de renta';
+        }
+        // Venta
+        $pct = rtrim(rtrim(number_format((float)$value, 1, '.', ''), '0'), '.');
+        return "{$pct}%";
+    }
+
     private function buildVars(Captacion $captacion, ?User $agent, array $overrides): array
     {
         $client   = $captacion->client;
@@ -272,25 +332,42 @@ class PresentationGeneratorService
             $logoDarkUrl = $logoUrl; // fallback al logo normal
         }
 
-        // Comisión sin ceros decimales innecesarios
+        // Comisión — valor numérico y etiqueta según intent
+        $intent   = $captacion->intent ?? 'general';
         $comision = $overrides['commission_pct'] ?? $captacion->commission_pct ?? 5;
-        $comisionFormatted = rtrim(rtrim(number_format((float)$comision, 1, '.', ''), '0'), '.');
+        $comisionFormatted = self::formatCommission((float)$comision, $intent);
+
+        // Datos de mercado del observatorio
+        $marketSnapshot = $this->getMarketSnapshot($captacion);
+        $marketPriceText = null;
+        $marketConfidence = null;
+        if ($marketSnapshot) {
+            $isRent = $marketSnapshot->operation_type === 'rent';
+            $unit   = $isRent ? '/m²/mes' : '/m²';
+            $marketPriceText = '$' . number_format($marketSnapshot->price_m2_low, 0) . '–$' . number_format($marketSnapshot->price_m2_high, 0) . ' ' . $unit;
+            $marketConfidence = $marketSnapshot->confidence;
+        }
 
         return [
-            'nombrePropietario' => $client?->name ?? '',
-            'inmuebleTipo'      => $property ? ($property->property_type_label ?? $property->property_type) : '',
-            'inmuebleColonia'   => $property?->colony ?? $captacion->property_address ?? '',
-            'comisionPct'       => $comisionFormatted,
-            'precioSugerido'    => $overrides['price_suggested'] ?? ($property?->price && $property->price > 0 ? '$' . number_format($property->price, 0) . ' MXN' : null),
-            'planMarketing'     => $overrides['marketing_plan'] ?? $captacion->marketing_plan ?? '',
-            'nombreAgente'      => $agent?->name ?? 'Home del Valle',
-            'telefonoAgente'    => $agent?->phone ?? '',
-            'emailAgente'       => $agent?->email ?? '',
-            'fechaPresentacion' => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
-            'sloganHDV'         => 'Pocos inmuebles. Más control. Mejores resultados.',
-            'photoUrl'          => $overrides['photo_url'] ?? $photoUrl,
-            'logoUrl'           => $logoUrl,
-            'logoDarkUrl'       => $logoDarkUrl,
+            'nombrePropietario'  => $client?->name ?? '',
+            'inmuebleTipo'       => $property ? ($property->property_type_label ?? $property->property_type) : '',
+            'inmuebleColonia'    => $property?->colony ?? $captacion->property_address ?? '',
+            'comisionLabel'      => $comisionFormatted,  // ej. "5%" o "1 mes de renta"
+            'comisionPct'        => $comisionFormatted,  // alias para compatibilidad con templates existentes
+            'esRenta'            => str_starts_with($intent, 'renta_'),
+            'precioSugerido'     => $overrides['price_suggested'] ?? ($property?->price && $property->price > 0 ? '$' . number_format($property->price, 0) . ' MXN' : null),
+            'planMarketing'      => $overrides['marketing_plan'] ?? $captacion->marketing_plan ?? '',
+            'nombreAgente'       => $agent?->name ?? 'Home del Valle',
+            'telefonoAgente'     => $agent?->phone ?? '',
+            'emailAgente'        => $agent?->email ?? '',
+            'fechaPresentacion'  => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
+            'sloganHDV'          => 'Pocos inmuebles. Más control. Mejores resultados.',
+            'photoUrl'           => $overrides['photo_url'] ?? $photoUrl,
+            'logoUrl'            => $logoUrl,
+            'logoDarkUrl'        => $logoDarkUrl,
+            // Datos de mercado del observatorio
+            'precioMercadoZona'  => $marketPriceText,    // ej. "$180–$240 /m²/mes"
+            'mercadoConfianza'   => $marketConfidence,   // 'high'|'medium'|'low'|null
         ];
     }
 }

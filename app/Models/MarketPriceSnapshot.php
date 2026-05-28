@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MarketPriceSnapshot extends Model
 {
     protected $fillable = [
-        'market_colonia_id', 'property_type', 'age_category', 'period',
+        'market_colonia_id', 'operation_type', 'property_type', 'age_category', 'period',
         'price_m2_low', 'price_m2_avg', 'price_m2_high',
         'sample_size', 'confidence', 'source', 'source_raw', 'notes', 'created_by',
     ];
@@ -64,8 +64,52 @@ class MarketPriceSnapshot extends Model
             'apartment' => 'Departamento',
             'house'     => 'Casa',
             'land'      => 'Terreno',
-            'office'    => 'Oficina',
+            'office'    => 'Oficina / Local Comercial',
             default     => $this->property_type,
         };
+    }
+
+    public function getOperationLabelAttribute(): string
+    {
+        return match($this->operation_type) {
+            'rent' => 'Renta',
+            default => 'Venta',
+        };
+    }
+
+    public function isRent(): bool
+    {
+        return $this->operation_type === 'rent';
+    }
+
+    // ── Scopes ────────────────────────────────────────────────────────────
+
+    public function scopeForSale($query)
+    {
+        return $query->where('operation_type', 'sale');
+    }
+
+    public function scopeForRent($query)
+    {
+        return $query->where('operation_type', 'rent');
+    }
+
+    /**
+     * Devuelve el snapshot más reciente para una colonia + tipo de operación + tipo de inmueble.
+     * Para renta residencial: toma el age_category 'mid' como referencia representativa.
+     * Para renta comercial (office): ídem.
+     */
+    public static function latestForColonia(
+        int    $coloniaId,
+        string $operationType,
+        string $propertyType,
+        string $ageCategory = 'mid'
+    ): ?self {
+        return static::where('market_colonia_id', $coloniaId)
+            ->where('operation_type', $operationType)
+            ->where('property_type', $propertyType)
+            ->where('age_category', $ageCategory)
+            ->orderByDesc('period')
+            ->first();
     }
 }

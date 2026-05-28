@@ -15,9 +15,10 @@ use Livewire\Component;
 class PresentationEditor extends Component
 {
     public int    $captacionId;
-    public string $commission_pct  = '5';
+    public string $commission_pct  = '5';   // para venta = %; para renta = meses
     public string $price_suggested = '';
     public string $marketing_plan  = '';
+    public string $intent          = 'general';  // para saber si es renta o venta
 
     // Token del send más reciente (para "Ver como propietario")
     public ?string $latestToken = null;
@@ -32,7 +33,8 @@ class PresentationEditor extends Component
     public function mount(Captacion $captacion): void
     {
         $this->captacionId     = $captacion->id;
-        $this->commission_pct  = (string)($captacion->commission_pct ?? 5);
+        $this->intent          = $captacion->intent ?? 'general';
+        $this->commission_pct  = (string)($captacion->commission_pct ?? ($this->isRenta() ? 1 : 5));
         $this->marketing_plan  = $captacion->marketing_plan ?? '';
         $this->price_suggested = $captacion->property?->price > 0
             ? '$' . number_format($captacion->property->price, 0) . ' MXN'
@@ -72,9 +74,19 @@ class PresentationEditor extends Component
         $this->dispatch('pdfUrlUpdated', url: $this->pdfUrl);
     }
 
+    public function isRenta(): bool
+    {
+        return str_starts_with($this->intent, 'renta_');
+    }
+
     public function render()
     {
         $captacion = Captacion::with(['client', 'property', 'sends'])->find($this->captacionId);
-        return view('livewire.admin.presentation-editor', compact('captacion'));
+
+        // Obtener datos de mercado si existen
+        $marketSnapshot = app(\App\Services\PresentationGeneratorService::class)
+            ->getMarketSnapshot($captacion);
+
+        return view('livewire.admin.presentation-editor', compact('captacion', 'marketSnapshot'));
     }
 }

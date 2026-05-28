@@ -43,8 +43,12 @@ class MarketPricesController extends Controller
     /** Dispatch jobs for one colonia or all published */
     public function run(Request $request): RedirectResponse
     {
-        $coloniaId = $request->input('colonia_id');
-        $types     = ['apartment', 'house'];
+        $coloniaId     = $request->input('colonia_id');
+        $operationType = $request->input('operation_type', 'sale'); // 'sale' | 'rent' | 'both'
+
+        // Tipos de inmueble según operación
+        $saleTypes = ['apartment', 'house'];
+        $rentTypes = ['apartment', 'house', 'office']; // office cubre local comercial en renta
 
         if ($coloniaId === 'all') {
             $colonias = MarketColonia::published()->get();
@@ -56,16 +60,30 @@ class MarketPricesController extends Controller
             return back()->with('error', 'No se encontraron colonias.');
         }
 
-        foreach ($colonias as $i => $colonia) {
-            UpdateColoniaPricesJob::dispatch($colonia, $types)
-                ->onQueue('default')
-                ->delay(now()->addSeconds($i * 4));
+        $delay = 0;
+        foreach ($colonias as $colonia) {
+            if (in_array($operationType, ['sale', 'both'])) {
+                UpdateColoniaPricesJob::dispatch($colonia, $saleTypes, 'sale')
+                    ->onQueue('default')
+                    ->delay(now()->addSeconds($delay));
+                $delay += 5;
+            }
+            if (in_array($operationType, ['rent', 'both'])) {
+                UpdateColoniaPricesJob::dispatch($colonia, $rentTypes, 'rent')
+                    ->onQueue('default')
+                    ->delay(now()->addSeconds($delay));
+                $delay += 5;
+            }
         }
 
         $label = $coloniaId === 'all'
             ? "las {$colonias->count()} colonias activas"
             : $colonias->first()->name;
 
-        return back()->with('success', "Actualización de precios iniciada para {$label}. Los resultados aparecerán en 1–3 min por colonia.");
+        $opLabel = match($operationType) {
+            'rent' => 'renta', 'both' => 'venta + renta', default => 'venta',
+        };
+
+        return back()->with('success', "Actualización de precios de {$opLabel} iniciada para {$label}. Resultados en 1–3 min por colonia.");
     }
 }

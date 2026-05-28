@@ -20,35 +20,43 @@ class UpdateColoniaPricesJob implements ShouldQueue
     public int $tries   = 2;
     public int $timeout = 120;
 
-    /** @param string[] $propertyTypes */
+    /**
+     * @param string[] $propertyTypes  e.g. ['apartment','house'] or ['apartment','house','office']
+     * @param string   $operationType  'sale' | 'rent'
+     */
     public function __construct(
         public readonly MarketColonia $colonia,
-        public readonly array $propertyTypes = ['apartment', 'house'],
+        public readonly array         $propertyTypes  = ['apartment', 'house'],
+        public readonly string        $operationType  = 'sale',
     ) {}
 
     public function handle(PerplexityMarketService $service): void
     {
-        $period = Carbon::now()->startOfMonth()->toDateString(); // e.g. 2026-04-01
+        $period = Carbon::now()->startOfMonth()->toDateString();
 
         foreach ($this->propertyTypes as $type) {
-            $prices = $service->fetchPrices($this->colonia, $type);
+            $prices = $this->operationType === 'rent'
+                ? $service->fetchRentalPrices($this->colonia, $type)
+                : $service->fetchPrices($this->colonia, $type);
 
             if (empty($prices)) {
                 Log::warning('UpdateColoniaPricesJob: sin datos de Perplexity', [
-                    'colonia'       => $this->colonia->name,
-                    'property_type' => $type,
+                    'colonia'        => $this->colonia->name,
+                    'property_type'  => $type,
+                    'operation_type' => $this->operationType,
                 ]);
                 continue;
             }
 
             foreach ($prices as $ageCategory => $range) {
-                if ($ageCategory === '_meta') continue; // skip metadata key
+                if ($ageCategory === '_meta') continue;
 
                 $meta = $prices['_meta'] ?? [];
 
                 MarketPriceSnapshot::updateOrCreate(
                     [
                         'market_colonia_id' => $this->colonia->id,
+                        'operation_type'    => $this->operationType,
                         'property_type'     => $type,
                         'age_category'      => $ageCategory,
                         'period'            => $period,
@@ -67,9 +75,10 @@ class UpdateColoniaPricesJob implements ShouldQueue
             }
 
             Log::info('UpdateColoniaPricesJob: actualizado', [
-                'colonia'       => $this->colonia->name,
-                'property_type' => $type,
-                'categories'    => array_keys($prices),
+                'colonia'        => $this->colonia->name,
+                'operation_type' => $this->operationType,
+                'property_type'  => $type,
+                'categories'     => array_keys($prices),
             ]);
         }
     }
