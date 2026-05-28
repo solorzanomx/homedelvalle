@@ -205,14 +205,14 @@ LISTINGS:
 INSTRUCCIONES:
 
 1. VALIDACIÓN — Descarta listings con:
+   - precio es null, 0 o ausente
    - precio < 500,000 o > 50,000,000 MXN
-   - sin precio
+   Los listings son de distintas colonias dentro de la misma zona — NO filtres por nombre de colonia.
 
 2. PRECIO/M²:
    a) Si el listing tiene m2 válido (20–1000): precio_m2 = precio / m2
    b) Si m2 es null pero tiene "recamaras": estima m2 típico para BJ
       1 rec → 55m2 | 2 rec → 80m2 | 3 rec → 110m2 | 4 rec → 140m2
-      Marca estos como estimados.
    c) Si no tiene m2 ni recamaras: descartar.
    Rango razonable en BJ: $30,000–$180,000 MXN/m²
 

@@ -246,7 +246,13 @@ class PerplexityMarketService
             return [];
         }
 
-        return $this->analyzePrices($rawListings, $zone->colonias->first() ?? new MarketColonia(['name' => $zone->name]), $propertyType);
+        // Usar el nombre de la zona con TODAS sus colonias para que Claude
+        // no filtre geográficamente listings de colonias "distintas" a la primera.
+        $zone->loadMissing('colonias');
+        $colonyList  = $zone->colonias->pluck('name')->implode(', ');
+        $zoneColonia = new MarketColonia(['name' => 'Zona ' . $zone->name . ' (' . $colonyList . ')']);
+
+        return $this->analyzePrices($rawListings, $zoneColonia, $propertyType);
     }
 
     /**
@@ -265,7 +271,11 @@ class PerplexityMarketService
             return [];
         }
 
-        return $this->analyzeRentalPrices($rawListings, $zone->colonias->first() ?? new MarketColonia(['name' => $zone->name]), $propertyType);
+        $zone->loadMissing('colonias');
+        $colonyList  = $zone->colonias->pluck('name')->implode(', ');
+        $zoneColonia = new MarketColonia(['name' => 'Zona ' . $zone->name . ' (' . $colonyList . ')']);
+
+        return $this->analyzeRentalPrices($rawListings, $zoneColonia, $propertyType);
     }
 
     /**
