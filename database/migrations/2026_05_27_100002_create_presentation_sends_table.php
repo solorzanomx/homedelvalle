@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('presentation_sends', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('captacion_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('captacion_id')->constrained('captaciones')->cascadeOnDelete();
             $table->enum('channel', ['email', 'whatsapp', 'download']);
             $table->foreignId('sent_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('recipient_email')->nullable();
