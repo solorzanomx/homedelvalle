@@ -10,7 +10,7 @@
 {{-- FAQ Schema.org para rich results en Google --}}
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
     @if(!empty($saleSnaps['apartment']['mid']))
@@ -54,7 +54,7 @@
 </script>
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Observatorio", "item": "{{ url('/mercado') }}" },
