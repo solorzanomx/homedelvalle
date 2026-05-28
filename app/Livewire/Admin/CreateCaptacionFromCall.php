@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Captacion;
+use App\Models\MarketColonia;
 use App\Services\CaptacionIntakeService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -30,16 +31,20 @@ class CreateCaptacionFromCall extends Component
     public string $civil_status   = '';
 
     // ─── Paso 2 — Inmueble ───────────────────────────────────────────────────
-    public string $property_type = '';
-    public string $colony        = '';
-    public string $city          = 'CDMX';
-    public string $address       = '';
-    public string $area          = '';
-    public string $bedrooms      = '';
-    public string $bathrooms     = '';
-    public string $parking       = '';
-    public string $price_expected = '';
-    public array  $photos        = [];
+    public string $property_type    = '';
+    // Selección de colonia: ID de MarketColonia o 'otra'
+    public string $colony_id        = '';
+    public string $colony           = '';   // nombre final (auto o manual)
+    public string $colony_cp        = '';   // CP auto-llenado
+    public bool   $colony_is_custom = false; // true cuando elige "Otra"
+    public string $city             = 'CDMX';
+    public string $address          = '';
+    public string $area             = '';
+    public string $bedrooms         = '';
+    public string $bathrooms        = '';
+    public string $parking          = '';
+    public string $price_expected   = '';
+    public array  $photos           = [];
 
     // ─── Paso 3 — Intención y propuesta ─────────────────────────────────────
     public string $intent         = 'general';
@@ -81,6 +86,26 @@ class CreateCaptacionFromCall extends Component
     {
         if ($this->step > 1) {
             $this->step--;
+        }
+    }
+
+    // ─── Reaccionar al seleccionar una colonia ────────────────────────────────
+
+    public function updatedColonyId(string $value): void
+    {
+        if ($value === 'otra' || $value === '') {
+            $this->colony_is_custom = true;
+            $this->colony           = '';
+            $this->colony_cp        = '';
+            return;
+        }
+
+        $this->colony_is_custom = false;
+
+        $colonia = MarketColonia::find((int) $value);
+        if ($colonia) {
+            $this->colony    = $colonia->name;
+            $this->colony_cp = $colonia->cp ?? '';
         }
     }
 
@@ -141,6 +166,12 @@ class CreateCaptacionFromCall extends Component
 
     public function render()
     {
+        // Colonias del observatorio agrupadas por zona, ordenadas
+        $coloniasByZone = MarketColonia::with('zone')
+            ->orderBy('name')
+            ->get()
+            ->groupBy(fn($c) => $c->zone->name ?? 'Otras');
+
         return view('livewire.admin.create-captacion-from-call', [
             'propertyTypes' => [
                 'House'      => 'Casa',
@@ -151,8 +182,9 @@ class CreateCaptacionFromCall extends Component
                 'Warehouse'  => 'Bodega',
                 'Building'   => 'Edificio',
             ],
-            'intents' => Captacion::INTENTS,
-            'sources' => Captacion::SOURCES,
+            'intents'        => Captacion::INTENTS,
+            'sources'        => Captacion::SOURCES,
+            'coloniasByZone' => $coloniasByZone,
         ]);
     }
 
@@ -190,7 +222,8 @@ class CreateCaptacionFromCall extends Component
             'rfc'            => $this->rfc             ?: null,
             'client_address' => $this->client_address  ?: null,
             'property_type'  => $this->property_type,
-            'colony'         => $this->colony,
+            'colony'         => $this->colony ?: '',
+            'colony_cp'      => $this->colony_cp ?: null,
             'city'           => $this->city            ?: 'CDMX',
             'address'        => $this->address         ?: null,
             'area'           => $this->area            ? (float)$this->area    : null,

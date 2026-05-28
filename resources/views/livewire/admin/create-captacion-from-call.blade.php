@@ -170,19 +170,57 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Colonia <span style="color:var(--danger)">*</span>
                 </label>
-                <input wire:model="colony" type="text" placeholder="Del Valle, Nápoles, Insurgentes..."
-                    style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
+
+                {{-- Select con colonias del observatorio --}}
+                <select wire:model.live="colony_id"
+                        style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;background:var(--card);color:var(--text);">
+                    <option value="">— Selecciona colonia —</option>
+                    @foreach($coloniasByZone as $zoneName => $colonias)
+                    <optgroup label="{{ $zoneName }}">
+                        @foreach($colonias as $col)
+                        <option value="{{ $col->id }}">{{ $col->name }}{{ $col->cp ? ' · CP '.$col->cp : '' }}</option>
+                        @endforeach
+                    </optgroup>
+                    @endforeach
+                    <option value="otra" style="font-style:italic;color:#6366f1;">✏ Otra colonia (escribir)</option>
+                </select>
+
+                {{-- CP auto-llenado --}}
+                @if($colony_cp && !$colony_is_custom)
+                <div style="font-size:.75rem;color:#059669;margin-top:.3rem;display:flex;align-items:center;gap:.3rem;">
+                    ✓ CP {{ $colony_cp }} · Benito Juárez, CDMX
+                </div>
+                @endif
+
+                {{-- Input manual cuando elige "Otra" --}}
+                @if($colony_is_custom)
+                <div style="margin-top:.5rem;">
+                    <input wire:model="colony" type="text"
+                           placeholder="Escribe el nombre de la colonia"
+                           style="width:100%;padding:.55rem .8rem;border:1px solid #6366f1;border-radius:var(--radius);font-family:inherit;font-size:.88rem;"
+                           autofocus>
+                    <div style="display:flex;gap:.5rem;margin-top:.4rem;">
+                        <input wire:model="colony_cp" type="text"
+                               placeholder="CP (opcional)"
+                               style="width:120px;padding:.45rem .7rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.85rem;">
+                        <span style="font-size:.75rem;color:var(--text-muted);align-self:center;">
+                            Esta colonia no tiene datos en el Observatorio todavía
+                        </span>
+                    </div>
+                </div>
+                @endif
+
                 @error('colony') <span style="font-size:.75rem;color:var(--danger);margin-top:.25rem;display:block;">{{ $message }}</span> @enderror
             </div>
 
-            {{-- Ciudad --}}
+            {{-- Ciudad (oculta — se toma de la colonia, editable solo si es "otra") --}}
+            @if($colony_is_custom)
             <div class="form-group">
-                <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
-                    Ciudad
-                </label>
+                <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">Ciudad</label>
                 <input wire:model="city" type="text" placeholder="CDMX"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
+            @endif
 
             {{-- Dirección exacta --}}
             <div class="form-group">

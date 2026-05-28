@@ -100,6 +100,7 @@ class CaptacionIntakeService
             'property_type'  => $data['property_type'],
             'operation_type' => $this->intentToOperationType($data['intent'] ?? 'general'),
             'colony'         => $data['colony'],
+            'zipcode'        => $data['colony_cp'] ?? null,
             'city'           => $data['city']    ?? 'CDMX',
             'address'        => $data['address'] ?? null,
             'area'           => $data['area']    ?? null,
