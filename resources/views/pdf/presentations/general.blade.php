@@ -1,12 +1,15 @@
 @php
 $proposicion = '
-<p>Somos expertos en el mercado inmobiliario de la Ciudad de México y estamos listos para acompañarte en el proceso de comercialización de tu inmueble con la atención personalizada que mereces.</p>
-<p>Analizaremos contigo las mejores opciones — ya sea venta o renta — y te presentaremos una estrategia comercial a la medida de tus objetivos y tiempos.</p>
-<ul class="bullet-list">
-    <li><strong>Asesoría completa desde el primer día</strong> — conocemos el mercado de Benito Juárez como nadie.</li>
-    <li><strong>Precio justo y sustentado</strong> — basado en datos reales del Observatorio de Precios HDV.</li>
-    <li><strong>Red de compradores e inquilinos activos</strong> — sin esperar a que lleguen solos.</li>
-    <li><strong>Proceso transparente</strong> — avances visibles en tu portal en cualquier momento.</li>
+<p>Somos expertos en el mercado de <strong>Benito Juárez</strong> y queremos acompañarte a definir la mejor estrategia para tu inmueble. El primer paso es siempre una valuación técnica seria — y de ahí diseñamos juntos el camino correcto.</p>
+
+<p>Ya sea que estés evaluando <strong>venta o renta</strong>, te presentaremos los datos reales del mercado, las opciones disponibles y nuestra recomendación estratégica basada en tu objetivo y tus tiempos.</p>
+
+<ul class="blist">
+    <li><strong>Valuación profesional y sustentada</strong> — datos reales del Observatorio de Precios HDV, no estimaciones genéricas de portales.</li>
+    <li><strong>Análisis de escenarios: venta vs. renta</strong> — te mostramos los números de ambas opciones para que decidas con información completa.</li>
+    <li><strong>Red activa de compradores e inquilinos calificados</strong> — no esperamos a que lleguen solos; los tenemos identificados hoy.</li>
+    <li><strong>Proceso 100% transparente</strong> — seguimiento en tiempo real desde tu portal de propietario, sin llamadas de seguimiento necesarias.</li>
+    <li><strong>Sin anticipos, sin sorpresas</strong> — cobramos únicamente al cierre exitoso de la operación.</li>
 </ul>
 ';
 @endphp

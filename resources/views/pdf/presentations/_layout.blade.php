@@ -104,10 +104,10 @@ strong { color: #1e293b; }
 .chart-note   { font-size: 9.5px; color: #94a3b8; margin-top: 6px; font-style: italic; }
 
 /* ── Bullet list ─────────────────────────────────────────────────────────── */
-.blist { list-style: none; margin: 10px 0 16px; }
-.blist li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 12.5px; line-height: 1.5; }
-.blist li:last-child { border-bottom: none; }
-.blist li::before { content: ''; position: absolute; left: 0; top: 15px; width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+.blist, .bullet-list { list-style: none; margin: 10px 0 16px; }
+.blist li, .bullet-list li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 12.5px; line-height: 1.5; }
+.blist li:last-child, .bullet-list li:last-child { border-bottom: none; }
+.blist li::before, .bullet-list li::before { content: ''; position: absolute; left: 0; top: 15px; width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
 
 /* ── Proceso timeline ────────────────────────────────────────────────────── */
 .tl { display: flex; align-items: flex-start; margin: 20px 0 16px; position: relative; }
@@ -173,6 +173,41 @@ strong { color: #1e293b; }
 .testimonial { background: #f8fafc; border-left: 3px solid #1e1b4b; border-radius: 0 8px 8px 0; padding: 14px 18px; margin-top: 14px; }
 .quote       { font-size: 12.5px; color: #334155; line-height: 1.7; font-style: italic; margin-bottom: 8px; }
 .quote-author  { font-size: 10.5px; color: #64748b; font-weight: 600; }
+
+/* ── Observatorio HDV badge ──────────────────────────────────────────────── */
+.obs-badge { display: flex; align-items: center; gap: 12px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 16px; margin: 12px 0; }
+.obs-label { font-size: 8.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #166534; margin-bottom: 2px; }
+.obs-price { font-size: 20px; font-weight: 800; color: #065f46; line-height: 1; }
+.obs-conf  { font-size: 8px; background: #dcfce7; border: 1px solid #86efac; border-radius: 10px; padding: 3px 9px; color: #166534; font-weight: 600; white-space: nowrap; }
+.obs-conf.medium { background: #fef9c3; border-color: #fde047; color: #713f12; }
+.obs-conf.low    { background: #f1f5f9; border-color: #cbd5e1; color: #64748b; }
+
+/* ── KPI dark row ────────────────────────────────────────────────────────── */
+.dark-kpi-row { display: flex; gap: 8px; margin: 12px 0; }
+.dark-kpi     { flex: 1; background: #1e1b4b; border-radius: 10px; padding: 12px 8px; text-align: center; }
+.dark-kpi-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+.dark-kpi-num .green { color: #10b981; }
+.dark-kpi-lbl { font-size: 8.5px; color: rgba(199,210,254,.55); margin-top: 3px; line-height: 1.3; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ── Mini cards (3 col) ──────────────────────────────────────────────────── */
+.mini-grid-3  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 0; }
+.mini-card    { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
+.mini-card-icon { font-size: 17px; margin-bottom: 4px; display: block; }
+.mini-card h4 { font-size: 10.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 3px; }
+.mini-card p  { font-size: 9.5px; color: #64748b; margin: 0; line-height: 1.5; }
+
+/* ── Profile chips (buyer/tenant types) ─────────────────────────────────── */
+.profile-row  { display: flex; gap: 6px; margin: 12px 0; }
+.profile-chip { flex: 1; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; }
+.profile-chip h4 { font-size: 10.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
+.profile-chip p  { font-size: 9.5px; color: #64748b; margin: 0; line-height: 1.45; }
+
+/* ── Income simulator table ──────────────────────────────────────────────── */
+.sim-row { display: flex; gap: 8px; margin: 12px 0; }
+.sim-box { flex: 1; text-align: center; padding: 10px 8px; background: #fff; border-radius: 8px; border: 1px solid #bbf7d0; }
+.sim-val  { font-size: 20px; font-weight: 800; color: #065f46; line-height: 1; }
+.sim-lbl  { font-size: 8.5px; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.sim-desc { font-size: 9px; color: #94a3b8; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -238,123 +273,227 @@ strong { color: #1e293b; }
       <div class="accent-bar"></div>
 
       @php
-        // Variables de intent disponibles en todas las páginas desde aquí
-        $isRenta = in_array($captacion->intent ?? 'general', ['renta_residencial', 'renta_comercial']);
-        $isConstructor = ($captacion->intent ?? '') === 'venta_constructor';
+        // Variables de intent — disponibles en todas las páginas desde aquí
+        $intentSlug       = $captacion->intent ?? 'general';
+        $isRenta          = in_array($intentSlug, ['renta_residencial', 'renta_comercial']);
+        $isRentaComercial = $intentSlug === 'renta_comercial';
+        $isRentaResid     = $intentSlug === 'renta_residencial';
+        $isConstructor    = $intentSlug === 'venta_constructor';
+        $isVentaComercial = $intentSlug === 'venta_comercial';
+        $confLabel = match($mercadoConfianza ?? null) {
+            'high'   => 'Alta confianza',
+            'medium' => 'Confianza media',
+            'low'    => 'Confianza estimada',
+            default  => null,
+        };
+        $confClass = match($mercadoConfianza ?? null) {
+            'high'   => '',
+            'medium' => 'medium',
+            'low'    => 'low',
+            default  => '',
+        };
       @endphp
 
-      @if($isRenta)
-        <p>La <strong>demanda de rentas en Benito Juárez</strong> supera la oferta disponible desde 2022. Las rentas en Del Valle y colonias aledañas han crecido un <strong>11% anual</strong> en los últimos tres años, y la tasa de vacancia es de apenas el 4%.</p>
+      {{-- ═══ RENTA COMERCIAL ═══════════════════════════════════════ --}}
+      @if($isRentaComercial)
+        <p>El <strong>arrendamiento comercial en Benito Juárez</strong> opera con lógica distinta al residencial: contratos más largos, arrendatarios más solventes y rentas más estables. La demanda de locales, oficinas y bodegas de calidad sigue superando la oferta.</p>
 
-        <div class="chart-title">Renta promedio mensual por colonia (Benito Juárez, 2025)</div>
+        <div class="chart-title">Renta comercial promedio por m²/mes — Benito Juárez (2025)</div>
         <div class="bar-chart">
           <div class="bar-row">
-            <div class="bar-lbl hl">Del Valle</div>
-            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$28,000 – $45,000</div></div>
+            <div class="bar-lbl hl">Local prime BJ</div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$350 – $600 /m²/mes</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Narvarte Ote.</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:87%;">$24,000 – $38,000</div></div>
+            <div class="bar-lbl">Oficina clase A</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:82%;">$280 – $480 /m²/mes</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Nápoles</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:80%;">$22,000 – $35,000</div></div>
+            <div class="bar-lbl">Local secundario</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:65%;">$200 – $350 /m²/mes</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Insurgentes Sur</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:70%;">$19,000 – $30,000</div></div>
+            <div class="bar-lbl">Oficina clase B/C</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:52%;">$160 – $280 /m²/mes</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Col. del Valle</div>
-            <div class="bar-track"><div class="bar-fill hi" style="width:95%;">Roma / Condesa comparado</div></div>
+            <div class="bar-lbl">Bodega / uso mixto</div>
+            <div class="bar-track"><div class="bar-fill hi" style="width:40%;">$120 – $200 /m²/mes</div></div>
           </div>
         </div>
-        <p class="chart-note">* Rango para departamentos de 2 recámaras (80–120 m²). Fuente: Observatorio de Precios HDV 2025.</p>
+        <p class="chart-note">* Rangos para inmuebles en buenas condiciones en Benito Juárez. Fuente: Observatorio de Precios HDV 2025.</p>
 
         <div class="insight-box">
-          <p><strong>Momento ideal:</strong> Con vacancia de 4% y lista de espera activa, colocar tu inmueble en renta hoy significa inquilino calificado en 15–30 días. El precio de renta tiene margen al alza si el inmueble se presenta correctamente.</p>
+          <p><strong>Estabilidad del comercial:</strong> Un contrato comercial de 5 años con ajuste INPC + spread anual garantiza ingresos predecibles y crecientes. Un arrendatario corporativo con garantía afianzadora <strong>elimina virtualmente el riesgo de impago</strong>.</p>
         </div>
 
-        <div class="chart-title" style="margin-top:16px;margin-bottom:8px;">Tendencia del mercado de renta en BJ (2023 → 2025)</div>
+        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Ventajas del arrendamiento comercial vs. residencial</div>
         <div class="bar-chart">
-          <div class="bar-row"><div class="bar-lbl">Precio renta</div><div class="bar-track"><div class="bar-fill hi" style="width:60%;">+11% anual promedio</div></div></div>
-          <div class="bar-row"><div class="bar-lbl">Demanda activa</div><div class="bar-track"><div class="bar-fill hdv" style="width:80%;">+22% más candidatos</div></div></div>
-          <div class="bar-row"><div class="bar-lbl">Oferta disponible</div><div class="bar-track"><div class="bar-fill avg" style="width:38%;">-28% menos inventario</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Plazo contractual</div><div class="bar-track"><div class="bar-fill hdv" style="width:90%;">Comercial 3–10 años vs residencial 1–2 años</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Tipo de garantía</div><div class="bar-track"><div class="bar-fill hi" style="width:80%;">Fianza corporativa de primer nivel</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Ajuste anual</div><div class="bar-track"><div class="bar-fill avg" style="width:65%;">INPC + spread pactado en contrato</div></div></div>
         </div>
 
+      {{-- ═══ RENTA RESIDENCIAL ══════════════════════════════════════ --}}
+      @elseif($isRenta)
+        <p>La <strong>demanda de renta residencial en Benito Juárez</strong> supera la oferta disponible. Las rentas en Del Valle y colonias aledañas han crecido <strong>11% anual</strong> en los últimos tres años, con una tasa de vacancia histórica de apenas ~4%.</p>
+
+        <div class="chart-title">Renta mensual por tipo de inmueble — Benito Juárez (2025)</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-lbl hl">Casa 3 rec.</div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$30,000 – $65,000 /mes</div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl">Depto 3 rec.</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:87%;">$28,000 – $55,000 /mes</div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl">Depto 2 rec.</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:72%;">$18,000 – $38,000 /mes</div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl">Estudio / 1 rec.</div>
+            <div class="bar-track"><div class="bar-fill hi" style="width:50%;">$12,000 – $22,000 /mes</div></div>
+          </div>
+        </div>
+        <p class="chart-note">* Rangos para inmuebles en buen estado en BJ. Fuente: Observatorio de Precios HDV 2025.</p>
+
+        <div class="insight-box">
+          <p><strong>Momento ideal:</strong> Con vacancia ~4% y candidatos registrados activos, los inmuebles bien presentados con precio competitivo se colocan en <strong>15–30 días</strong>. El precio de renta tiene margen al alza si el inmueble se prepara correctamente.</p>
+        </div>
+
+        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Tendencia del mercado de renta BJ (2023 → 2025)</div>
+        <div class="bar-chart">
+          <div class="bar-row"><div class="bar-lbl">Precio de renta</div><div class="bar-track"><div class="bar-fill hi" style="width:60%;">+11% anual promedio</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Demanda activa</div><div class="bar-track"><div class="bar-fill hdv" style="width:80%;">+22% más candidatos registrados</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Oferta disponible</div><div class="bar-track"><div class="bar-fill avg" style="width:36%;">-28% menos inmuebles en renta</div></div></div>
+        </div>
+
+      {{-- ═══ VENTA A CONSTRUCTOR ════════════════════════════════════ --}}
       @elseif($isConstructor)
-        <p>Los predios en Benito Juárez con zonificación <strong>H5 y H6</strong> se han revalorizado <strong>22% en 3 años</strong>. La presión de desarrolladores sigue creciendo ante la escasez de predios disponibles en la zona.</p>
+        <p>Los predios en Benito Juárez con zonificación <strong>H5 y H6</strong> se han revalorizado <strong>22% en 3 años</strong>. La presión de desarrolladores sigue creciendo ante la escasez de predios disponibles con ZP favorable.</p>
 
         <div class="chart-title">Valor de predio por m² de terreno — Colonias clave BJ (2025)</div>
         <div class="bar-chart">
           <div class="bar-row">
-            <div class="bar-lbl hl">Del Valle</div>
-            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$45,000 – $75,000 / m²</div></div>
+            <div class="bar-lbl hl">Del Valle Sur</div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$50,000 – $80,000 /m²</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Narvarte</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:85%;">$40,000 – $65,000 / m²</div></div>
+            <div class="bar-lbl">Narvarte Pte.</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:86%;">$44,000 – $68,000 /m²</div></div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl">Nápoles</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:75%;">$35,000 – $55,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:73%;">$36,000 – $57,000 /m²</div></div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl">Insurgentes Sur</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:65%;">$30,000 – $48,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill hi" style="width:60%;">$30,000 – $48,000 /m²</div></div>
           </div>
         </div>
         <p class="chart-note">* Valores para predios con H5/H6 sin construcción relevante. Fuente: Observatorio HDV 2025.</p>
 
         <div class="insight-box">
-          <p><strong>Por qué ahora:</strong> Hay 30+ desarrolladores activos buscando predios en BJ con poco inventario disponible. Múltiples ofertas simultáneas elevan el precio final. La escasez de predios con ZP favorable no va a durar.</p>
+          <p><strong>Por qué ahora:</strong> Hay <strong>30+ desarrolladores activos</strong> buscando predios en BJ con poco inventario disponible. Las múltiples ofertas simultáneas que generamos elevan el precio final. La escasez de predios con ZP favorable en BJ es <em>estructural</em> — no coyuntural.</p>
         </div>
 
-        <div class="chart-title" style="margin-top:16px;margin-bottom:8px;">Tendencia del valor de predios en BJ (2023 → 2025)</div>
+        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Tendencia del valor de predios H5/H6 en BJ (2023 → 2025)</div>
         <div class="bar-chart">
           <div class="bar-row"><div class="bar-lbl">Valor predio</div><div class="bar-track"><div class="bar-fill hi" style="width:65%;">+22% en 3 años</div></div></div>
-          <div class="bar-row"><div class="bar-lbl">Desarrolladores</div><div class="bar-track"><div class="bar-fill hdv" style="width:85%;">30+ activos buscando hoy</div></div></div>
-          <div class="bar-row"><div class="bar-lbl">Predios H5/H6</div><div class="bar-track"><div class="bar-fill avg" style="width:32%;">-45% disponibles vs 2022</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Desarrolladores activos</div><div class="bar-track"><div class="bar-fill hdv" style="width:85%;">30+ buscando en BJ hoy</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Predios H5/H6 disponibles</div><div class="bar-track"><div class="bar-fill avg" style="width:30%;">-45% vs 2022</div></div></div>
         </div>
 
+      {{-- ═══ VENTA COMERCIAL ════════════════════════════════════════ --}}
+      @elseif($isVentaComercial)
+        <p>Los <strong>inmuebles comerciales en Benito Juárez</strong> se valúan por rentabilidad: cap rate, NOI y flujo proyectado. El comprador es el inversionista que entiende estos números — y en BJ la demanda de activos comerciales de calidad es alta.</p>
+
+        <div class="chart-title">Precio de venta comercial por m² — Benito Juárez (2025)</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-lbl hl">Local prime BJ</div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$85,000 – $150,000 /m²</div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl">Oficina clase A</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:78%;">$70,000 – $115,000 /m²</div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl">Local secundario</div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:60%;">$50,000 – $82,000 /m²</div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-lbl">Bodega / uso mixto</div>
+            <div class="bar-track"><div class="bar-fill hi" style="width:44%;">$36,000 – $60,000 /m²</div></div>
+          </div>
+        </div>
+        <p class="chart-note">* Rangos para inmuebles en buenas condiciones, con contrato de arrendamiento vigente ideal. Fuente: Observatorio HDV 2025.</p>
+
+        <div class="insight-box">
+          <p><strong>Factor determinante:</strong> Un inmueble comercial con arrendatario solvente y contrato vigente puede alcanzar un <strong>cap rate de 6–8%</strong> atractivo para inversionistas. La presentación con datos de rentabilidad real es lo que define el precio de cierre.</p>
+        </div>
+
+        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Métricas de inversión comercial en BJ (referencia 2025)</div>
+        <div class="bar-chart">
+          <div class="bar-row"><div class="bar-lbl">Cap rate objetivo</div><div class="bar-track"><div class="bar-fill hi" style="width:68%;">6–8% en inmuebles de calidad BJ</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Inversionistas activos</div><div class="bar-track"><div class="bar-fill hdv" style="width:85%;">40+ en nuestra red hoy</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Plusvalía comercial BJ</div><div class="bar-track"><div class="bar-fill avg" style="width:55%;">+8% anual 2022–2025</div></div></div>
+        </div>
+
+      {{-- ═══ VENTA RESIDENCIAL (default) ═══════════════════════════ --}}
       @else
-        <p>Los inmuebles residenciales en <strong>Benito Juárez</strong> tienen la demanda más alta de la CDMX. Del Valle mantiene precios de venta estables con tendencia alcista, impulsados por la escasez de oferta nueva.</p>
+        <p>Los inmuebles residenciales en <strong>Benito Juárez</strong> tienen la demanda activa más alta de la CDMX. Del Valle mantiene precios con tendencia alcista sólida, impulsados por la escasez de oferta nueva y la demanda sostenida de compradores calificados.</p>
 
         <div class="chart-title">Precio de venta promedio por m² — Colonias de referencia BJ (2025)</div>
         <div class="bar-chart">
           <div class="bar-row">
             <div class="bar-lbl hl">Del Valle</div>
-            <div class="bar-track"><div class="bar-fill hdv" style="width:90%;">$65,000 – $85,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:90%;">$65,000 – $90,000 /m²</div></div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl">Narvarte Ote.</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:80%;">$58,000 – $75,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:80%;">$58,000 – $78,000 /m²</div></div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl">Nápoles</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:72%;">$52,000 – $68,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:72%;">$52,000 – $70,000 /m²</div></div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl">Insurgentes Sur</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:63%;">$45,000 – $60,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill avg" style="width:63%;">$45,000 – $62,000 /m²</div></div>
           </div>
           <div class="bar-row">
             <div class="bar-lbl hi">Roma / Condesa</div>
-            <div class="bar-track"><div class="bar-fill hi" style="width:100%;">$75,000 – $105,000 / m²</div></div>
+            <div class="bar-track"><div class="bar-fill hi" style="width:100%;">$75,000 – $110,000 /m²</div></div>
           </div>
         </div>
         <p class="chart-note">* Casas y departamentos usados en buen estado. Fuente: Observatorio de Precios HDV 2025.</p>
 
         <div class="insight-box">
-          <p><strong>Momento favorable:</strong> El mercado de BJ tiene <strong>35% menos oferta disponible</strong> que hace 2 años. Con la estrategia correcta de precio y presentación, las propiedades bien posicionadas reciben 3–6 propuestas serias en los primeros 30 días.</p>
+          <p><strong>Momento favorable:</strong> El mercado de BJ tiene <strong>35% menos oferta disponible</strong> que hace 2 años. Las propiedades bien posicionadas con precio correcto reciben <strong>3–6 propuestas serias en los primeros 30 días</strong>.</p>
         </div>
 
-        <div class="chart-title" style="margin-top:16px;margin-bottom:8px;">Tendencia del mercado residencial BJ (2023 → 2025)</div>
+        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Tendencia del mercado residencial BJ (2023 → 2025)</div>
         <div class="bar-chart">
           <div class="bar-row"><div class="bar-lbl">Precio m²</div><div class="bar-track"><div class="bar-fill hi" style="width:55%;">+8.5% anual promedio</div></div></div>
-          <div class="bar-row"><div class="bar-lbl">Demanda activa</div><div class="bar-track"><div class="bar-fill hdv" style="width:78%;">+15% más compradores</div></div></div>
-          <div class="bar-row"><div class="bar-lbl">Oferta disponible</div><div class="bar-track"><div class="bar-fill avg" style="width:35%;">-35% menos inmuebles</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Demanda activa</div><div class="bar-track"><div class="bar-fill hdv" style="width:78%;">+15% más compradores calificados</div></div></div>
+          <div class="bar-row"><div class="bar-lbl">Oferta disponible</div><div class="bar-track"><div class="bar-fill avg" style="width:35%;">-35% menos inmuebles activos</div></div></div>
         </div>
+      @endif
+
+      {{-- Observatorio HDV — Precio real de tu colonia (si disponible) --}}
+      @if(!empty($precioMercadoZona))
+      <div class="obs-badge">
+        <div style="flex:1;">
+          <div class="obs-label">📊 Observatorio HDV · {{ $inmuebleColonia ?: 'Tu colonia' }}</div>
+          <div class="obs-price">{{ $precioMercadoZona }}</div>
+        </div>
+        @if($confLabel)
+        <div class="obs-conf {{ $confClass }}">{{ $confLabel }}</div>
+        @endif
+      </div>
       @endif
 
     </div>
@@ -579,6 +718,40 @@ strong { color: #1e293b; }
 
       <p>Una sola comisión. Sin anticipos, sin cobros adicionales, sin sorpresas. Todo lo que necesitas para cerrar bien.</p>
 
+      @if($esRenta)
+      <div class="svc-grid">
+        <div class="svc-card">
+          <span class="svc-icon">📊</span>
+          <h4>Valuación de renta</h4>
+          <p>Precio óptimo de renta basado en datos reales del Observatorio HDV.</p>
+        </div>
+        <div class="svc-card">
+          <span class="svc-icon">🔍</span>
+          <h4>Calificación de candidatos</h4>
+          <p>Buró de crédito, comprobante de ingresos 3× y referencias verificadas.</p>
+        </div>
+        <div class="svc-card">
+          <span class="svc-icon">⚖️</span>
+          <h4>Póliza jurídica</h4>
+          <p>Cobertura hasta 18 meses de renta en caso de incumplimiento del inquilino.</p>
+        </div>
+        <div class="svc-card">
+          <span class="svc-icon">📋</span>
+          <h4>Contrato de arrendamiento</h4>
+          <p>Con cláusulas de protección al propietario e inventario fotográfico.</p>
+        </div>
+        <div class="svc-card">
+          <span class="svc-icon">💳</span>
+          <h4>Administración de cobro</h4>
+          <p>Gestión del cobro mensual y reporte de pagos puntual.</p>
+        </div>
+        <div class="svc-card">
+          <span class="svc-icon">📱</span>
+          <h4>Portal del Propietario</h4>
+          <p>Seguimiento 24/7: pagos, historial del inquilino y documentos.</p>
+        </div>
+      </div>
+      @else
       <div class="svc-grid">
         <div class="svc-card">
           <span class="svc-icon">📊</span>
@@ -611,6 +784,7 @@ strong { color: #1e293b; }
           <p>Seguimiento 24/7 desde tu celular: documentos, avances y pagos.</p>
         </div>
       </div>
+      @endif
 
       <div class="svc-note">
         🔒 <strong>Confidencialidad garantizada.</strong> Tus datos y los del inmueble solo se comparten con candidatos calificados y verificados. Nunca en redes abiertas sin tu autorización.
@@ -635,12 +809,30 @@ strong { color: #1e293b; }
       <h2 class="section-h2">Comisión y<br>próximos pasos</h2>
       <div class="accent-bar"></div>
 
+      @if($esRenta)
+      <div class="com-hero" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#bfdbfe;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1e40af;margin-bottom:8px;">COMISIÓN DE COLOCACIÓN</div>
+        <div class="com-pct" style="font-size:40px;color:#1e40af;letter-spacing:-.5px;line-height:1.2;">{{ $comisionLabel }}</div>
+        <div class="com-desc" style="color:#1e3a8a;">Comisión única de colocación · Sin cobros mensuales · Sin anticipos · Se carga al cierre del contrato</div>
+      </div>
+      @else
       <div class="com-hero">
-        <div class="com-pct">{{ $comisionPct }}%</div>
+        <div class="com-pct">{{ $comisionLabel }}</div>
         <div class="com-desc">Comisión sobre precio de cierre · Sin anticipos · Sin cargos extras</div>
       </div>
+      @endif
 
       <ul class="steps">
+        @if($esRenta)
+        @foreach([
+          'Agendamos la visita técnica al inmueble esta semana',
+          'Tomamos fotografías y preparamos los materiales de difusión',
+          'Firmamos el contrato de exclusiva de arrendamiento',
+          'Iniciamos la búsqueda activa y calificación de candidatos',
+        ] as $i => $paso)
+        <li><span class="step-n">{{ $i + 1 }}</span>{{ $paso }}</li>
+        @endforeach
+        @else
         @foreach([
           'Agendamos la visita técnica al inmueble esta semana',
           'Presentamos nuestra valuación y confirmamos el precio de salida',
@@ -649,8 +841,18 @@ strong { color: #1e293b; }
         ] as $i => $paso)
         <li><span class="step-n">{{ $i + 1 }}</span>{{ $paso }}</li>
         @endforeach
+        @endif
       </ul>
 
+      @if($esRenta)
+      <div class="cta-box">
+        <div class="cta-text">
+          <h4>¿Listo para colocar tu inmueble?</h4>
+          <p>Inquilino calificado en 30–45 días con protección legal total.</p>
+        </div>
+        <div class="cta-badge">Agendar visita →</div>
+      </div>
+      @else
       <div class="cta-box">
         <div class="cta-text">
           <h4>¿Listo para empezar?</h4>
@@ -658,6 +860,7 @@ strong { color: #1e293b; }
         </div>
         <div class="cta-badge">Agendar visita →</div>
       </div>
+      @endif
 
       <div class="agent-card">
         <div class="agent-av">{{ strtoupper(substr($nombreAgente, 0, 1)) }}</div>
