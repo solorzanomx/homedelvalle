@@ -153,6 +153,8 @@
 
 </div>
 
+@endsection
+
 @section('scripts')
 <script>
 (function () {
