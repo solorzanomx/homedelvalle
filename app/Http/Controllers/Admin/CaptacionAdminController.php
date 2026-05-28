@@ -35,11 +35,14 @@ class CaptacionAdminController extends Controller
         $captacion->loadMissing(['client', 'property', 'createdBy']);
 
         if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {
-            app(PresentationGeneratorService::class)->generatePdf($captacion);
-            $captacion->refresh();
+            // generatePdf() ya hace $captacion->update() que actualiza el modelo en memoria.
+            // NO llamar refresh() — recarga relaciones incluyendo 'media' que falla en producción.
+            $path = app(PresentationGeneratorService::class)->generatePdf($captacion);
         }
 
-        return Response::make(file_get_contents($captacion->last_presentation_pdf_path), 200, [
+        $path = $captacion->last_presentation_pdf_path;
+
+        return Response::make(file_get_contents($path), 200, [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="presentacion-hdv.pdf"',
         ]);
@@ -62,7 +65,6 @@ class CaptacionAdminController extends Controller
 
         if (empty($captacion->last_presentation_pdf_path) || !file_exists($captacion->last_presentation_pdf_path)) {
             app(PresentationGeneratorService::class)->generatePdf($captacion);
-            $captacion->refresh();
         }
 
         $filename = 'HDV-Presentacion-' . str_replace(' ', '-', $captacion->client->name) . '.pdf';
