@@ -38,28 +38,24 @@ class AiAgentConfig extends Model
         ],
     ];
 
-    /** Return cached options array for a given agent key. Falls back to config defaults. */
+    /** Return options array for a given agent key. Direct DB query — no serialization risk. */
     public static function optionsFor(string $key): array
     {
-        // IMPORTANTE: cachear array (no el modelo Eloquent) para que el queue worker
-        // pueda deserializar sin necesitar la definición de clase cargada previamente.
-        return Cache::remember("ai_agent:{$key}", 300, function () use ($key) {
-            $model = static::where('key', $key)->where('is_active', true)->first();
+        $model = static::where('key', $key)->where('is_active', true)->first();
 
-            if (!$model) {
-                return [];
-            }
+        if (!$model) {
+            return [];
+        }
 
-            return [
-                'provider'    => $model->provider,
-                'model'       => $model->model,
-                'max_tokens'  => $model->max_tokens,
-                'temperature' => $model->temperature,
-            ];
-        });
+        return [
+            'provider'    => $model->provider,
+            'model'       => $model->model,
+            'max_tokens'  => $model->max_tokens,
+            'temperature' => $model->temperature,
+        ];
     }
 
-    /** Flush cache for this agent after saving */
+    /** Flush legacy cache keys from previous versions */
     protected static function booted(): void
     {
         static::saved(function (self $config) {
