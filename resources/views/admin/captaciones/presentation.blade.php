@@ -3,13 +3,24 @@
 
 @section('styles')
 <style>
+/* Flexbox en lugar de grid — evita el min-width:auto que colapsa la columna PDF */
 .presentation-layout {
-    display: grid;
-    grid-template-columns: 340px 1fr;
+    display: flex;
     gap: 1.5rem;
     align-items: start;
 }
-.presentation-sticky { position: sticky; top: 72px; max-height: calc(100vh - 88px); overflow-y: auto; }
+.presentation-sticky {
+    width: 340px;
+    flex: 0 0 340px;   /* no crece, no encoge, siempre 340px */
+    position: sticky;
+    top: 72px;
+    max-height: calc(100vh - 88px);
+    overflow-y: auto;
+}
+.pdf-panel {
+    flex: 1 1 0;       /* ocupa todo el espacio restante */
+    min-width: 0;      /* permite que encoja sin overflow */
+}
 .pdf-frame {
     width: 100%;
     height: calc(100vh - 190px);
@@ -54,11 +65,12 @@
 .pdf-loading-steps li::before { content: '○'; }
 .pdf-loading-steps li.done::before { content: '✓'; }
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Mobile */
-@media (max-width: 900px) {
-    .presentation-layout { grid-template-columns: 1fr; }
+/* Mobile — apilar verticalmente */
+@media (max-width: 960px) {
+    .presentation-layout { flex-direction: column; }
+    .presentation-sticky { width: 100%; flex: none; position: static; max-height: none; }
+    .pdf-panel { width: 100%; }
     .pdf-frame { height: 65vh; }
-    .presentation-sticky { position: static; max-height: none; }
 }
 </style>
 @endsection
@@ -98,7 +110,7 @@
     </div>
 
     {{-- Panel derecho: iframe PDF --}}
-    <div style="min-width:0;">
+    <div class="pdf-panel">
       {{-- min-height fijo para que el panel no colapse mientras carga el iframe --}}
       <div class="card" style="overflow:hidden;padding:0;position:relative;min-height:640px;">
 
