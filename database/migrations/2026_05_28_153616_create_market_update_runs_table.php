@@ -21,8 +21,8 @@ return new class extends Migration
             $table->text('error_msg')->nullable();
             $table->timestamps();
 
-            $table->index(['market_colonia_id', 'operation_type', 'created_at']);
-            $table->index(['status', 'created_at']);
+            $table->index(['market_colonia_id', 'operation_type', 'created_at'], 'mur_colonia_type_date_idx');
+            $table->index(['status', 'created_at'], 'mur_status_date_idx');
         });
     }
 
@@ -30,4 +30,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('market_update_runs');
     }
+
 };
