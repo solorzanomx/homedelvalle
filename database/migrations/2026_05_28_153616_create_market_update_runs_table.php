@@ -8,6 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Guard: si la tabla quedó a medias en un intento anterior, la eliminamos
+        Schema::dropIfExists('market_update_runs');
+
         Schema::create('market_update_runs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('market_colonia_id')

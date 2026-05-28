@@ -30,12 +30,20 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'mysql') {
+            // Eliminar índice nuevo si existe
+            $hasMain = collect(DB::select("SHOW INDEX FROM market_price_snapshots WHERE Key_name = 'mps_main_idx'"))->isNotEmpty();
+            if ($hasMain) {
+                DB::statement('DROP INDEX mps_main_idx ON market_price_snapshots');
+            }
+            // Recrear índice viejo solo si no existe ya
+            $hasOld = collect(DB::select("SHOW INDEX FROM market_price_snapshots WHERE Key_name = 'mps_colonia_type_age_period_idx'"))->isNotEmpty();
+            if (!$hasOld) {
+                DB::statement('CREATE INDEX mps_colonia_type_age_period_idx ON market_price_snapshots (market_colonia_id, property_type, age_category, period)');
+            }
+        }
+
         Schema::table('market_price_snapshots', function (Blueprint $table) {
-            $table->dropIndex('mps_main_idx');
-            $table->index(
-                ['market_colonia_id', 'property_type', 'age_category', 'period'],
-                'mps_colonia_type_age_period_idx'
-            );
             $table->dropColumn('operation_type');
         });
     }
