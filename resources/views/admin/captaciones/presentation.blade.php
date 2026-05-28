@@ -3,8 +3,17 @@
 
 @section('styles')
 <style>
-/* Layout siempre en columna única — el PDF viewer del browser fuerza
-   un ancho mínimo que rompe cualquier layout lado-a-lado con el sidebar fijo */
+/* ── Fix: forzar el offset correcto del sidebar ───────────────────────────
+   En producción var(--sidebar-w) puede no resolverse correctamente.
+   Aplicar margin-left explícito con !important desde la página. */
+@media (min-width: 769px) {
+    html body main.main-content { margin-left: 260px !important; }
+}
+@media (max-width: 768px) {
+    html body main.main-content { margin-left: 0 !important; }
+}
+
+/* Layout siempre en columna única */
 .presentation-layout {
     display: flex;
     flex-direction: column;
@@ -178,6 +187,18 @@
             frame.style.opacity   = '1';
         }, 400);
     });
+
+    // Fix JS: si margin-left de main-content no se aplicó vía CSS, corregirlo
+    (function() {
+        if (window.innerWidth <= 768) return;
+        var main = document.querySelector('main.main-content');
+        if (!main) return;
+        var ml = parseInt(window.getComputedStyle(main).marginLeft || '0', 10);
+        if (ml < 200) {
+            main.style.setProperty('margin-left', '260px', 'important');
+            console.warn('[HDV] main-content margin-left forzado a 260px (era: ' + ml + 'px)');
+        }
+    })();
 
     // Disparar carga del iframe ahora (la página ya está visible)
     frame.src = pdfUrl;
