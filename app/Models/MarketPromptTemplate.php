@@ -137,25 +137,29 @@ Si encuentras menos de 2 anuncios en total, responde: {"error": "sin_datos"}
 PROMPT,
 
             'sale.search.zone' => <<<'PROMPT'
-Search for current apartment FOR SALE listings in Benito Juárez, Mexico City.
-Target neighborhoods: {colony_list}.
+Search for current {type_label} FOR SALE listings in Benito Juárez, Mexico City.
+Neighborhoods: {colony_list}.
 
-Search these portals: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker, Encuentra24.
+Search: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker, Encuentra24.
+If needed, include nearby Benito Juárez neighborhoods.
 
-CRITICAL: Only include listings where you can find BOTH the sale price AND the construction area (m²). Skip listings missing either field.
-
-For m²: Look for labels like "construcción", "sup. construida", "m² construidos", "área construida". Do NOT use "terreno" or "lote" area.
-
-For each valid listing extract:
+For each listing extract every field you can find — use null for fields not available:
 {fields}
-- "colonia": neighborhood (e.g. "Narvarte Oriente")
+- "colonia": neighborhood name
 - "fuente": portal name
 
-Return 10 to 20 listings as a JSON array only, no markdown, no extra text:
+Field notes:
+- precio: sale price in MXN as integer (e.g. 4200000). Required.
+- m2: construction area only ("construcción", "sup. construida", "m² construidos") — NOT terreno or lote. Use null if unclear.
+- recamaras: number of bedrooms. Very useful when m2 is missing.
+
+Include ALL listings you find regardless of missing fields. Do NOT skip listings just because m2 is null.
+
+Return 10 to 20 listings as a plain JSON array, no markdown, no text outside the array:
 [
   {"precio": 4200000, "m2": 85, "antiguedad": 8, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
-  {"precio": 7800000, "m2": 148, "antiguedad": 3, "recamaras": 3, "piso": 5, "condicion": "nuevo", "colonia": "Narvarte Poniente", "fuente": "Lamudi"},
-  {"precio": 3500000, "m2": 72, "antiguedad": 30, "recamaras": 2, "piso": 1, "condicion": "antiguo", "colonia": "Vértiz Narvarte", "fuente": "Metros Cúbicos"}
+  {"precio": 7800000, "m2": null, "antiguedad": null, "recamaras": 3, "piso": 5, "condicion": "nuevo", "colonia": "Narvarte Poniente", "fuente": "Lamudi"},
+  {"precio": 3100000, "m2": 72, "antiguedad": 35, "recamaras": 2, "piso": 1, "condicion": null, "colonia": "Vértiz Narvarte", "fuente": "Metros Cúbicos"}
 ]
 PROMPT,
 
