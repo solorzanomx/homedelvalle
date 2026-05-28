@@ -289,6 +289,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // Agentes IA
         Route::get('/ai-config', [\App\Http\Controllers\Admin\AiConfigController::class, 'index'])->name('ai-config');
         Route::patch('/ai-config/{agent}', [\App\Http\Controllers\Admin\AiConfigController::class, 'update'])->name('ai-config.update');
+        Route::patch('/ai-config/prompts/{key}', [\App\Http\Controllers\Admin\AiConfigController::class, 'updatePrompt'])->name('ai-config.prompts.update');
+        Route::get('/ai-config/prompts/{key}/reset', [\App\Http\Controllers\Admin\AiConfigController::class, 'resetPrompt'])->name('ai-config.prompts.reset');
 
         // Precios de Mercado (admin — actualización manual)
         Route::get('/market/prices',                        [\App\Http\Controllers\Admin\MarketPricesController::class, 'index'])->name('market.prices');
