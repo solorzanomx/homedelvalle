@@ -39,7 +39,7 @@ class CaptacionIntakeService
             ]);
 
             // Vinculamos el operation a la captacion para trazabilidad
-            $operation->update(['notes' => 'Captación #{$captacion->id} — ' . $captacion->intent_label]);
+            $operation->update(['notes' => "Captación #{$captacion->id} — {$captacion->intent_label}"]);
 
             return $captacion;
         });

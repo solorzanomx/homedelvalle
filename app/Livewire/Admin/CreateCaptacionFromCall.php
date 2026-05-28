@@ -100,26 +100,41 @@ class CreateCaptacionFromCall extends Component
         /** @var \App\Models\User $agent */
         $agent = Auth::user();
 
-        $captacion = app(CaptacionIntakeService::class)->createFromCall(
-            $this->buildPayload(),
-            $agent
-        );
+        try {
+            $captacion = app(CaptacionIntakeService::class)->createFromCall(
+                $this->buildPayload(),
+                $agent
+            );
+        } catch (\Throwable $e) {
+            $this->addError('general', 'Error al guardar la captación: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('CreateCaptacionFromCall::save failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return;
+        }
 
         // Adjuntar fotos vía Spatie Media Library
         if (!empty($this->photos)) {
             foreach ($this->photos as $photo) {
-                $captacion
-                    ->addMedia($photo->getRealPath())
-                    ->usingFileName($photo->getClientOriginalName())
-                    ->toMediaCollection('property_photos');
+                try {
+                    $captacion
+                        ->addMedia($photo->getRealPath())
+                        ->usingFileName($photo->getClientOriginalName())
+                        ->toMediaCollection('property_photos');
+                } catch (\Throwable $e) {
+                    // Las fotos no son bloqueantes — continuar
+                    \Illuminate\Support\Facades\Log::warning('Error al adjuntar foto', ['error' => $e->getMessage()]);
+                }
             }
         }
 
-        $route = $goToPresentation
-            ? route('admin.captaciones.presentation', $captacion)
-            : route('admin.captaciones.show', $captacion);
+        // URL relativa para evitar problemas de host (localhost vs 127.0.0.1)
+        $path = $goToPresentation
+            ? route('admin.captaciones.presentation', ['captacion' => $captacion->id], false)
+            : route('admin.captaciones.show', ['captacion' => $captacion->id], false);
 
-        $this->redirect($route, navigate: false);
+        $this->redirect($path, navigate: false);
     }
 
     // ─── Render ──────────────────────────────────────────────────────────────
