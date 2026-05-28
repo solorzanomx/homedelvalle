@@ -16,53 +16,11 @@ class MarketPricesMonitor extends Component
     public function runUpdate(int $zoneId, string $operationType): void
     {
         try {
-        $zone = MarketZone::findOrFail($zoneId);
+            $zone = MarketZone::findOrFail($zoneId);
 
-        $saleTypes = ['apartment', 'house'];
-        $rentTypes = ['apartment', 'house', 'office'];
+            $saleTypes = ['apartment', 'house'];
+            $rentTypes = ['apartment', 'house', 'office'];
 
-        if (in_array($operationType, ['sale', 'both'])) {
-            $run = MarketUpdateRun::create([
-                'market_colonia_id' => null,
-                'market_zone_id'    => $zone->id,
-                'operation_type'    => 'sale',
-                'property_types'    => $saleTypes,
-                'status'            => 'pending',
-                'dispatched_at'     => now(),
-            ]);
-            UpdateZonePricesJob::dispatch($zone, $saleTypes, 'sale', $run->id)
-                ->onQueue('default');
-        }
-        if (in_array($operationType, ['rent', 'both'])) {
-            $run = MarketUpdateRun::create([
-                'market_colonia_id' => null,
-                'market_zone_id'    => $zone->id,
-                'operation_type'    => 'rent',
-                'property_types'    => $rentTypes,
-                'status'            => 'pending',
-                'dispatched_at'     => now(),
-            ]);
-            UpdateZonePricesJob::dispatch($zone, $rentTypes, 'rent', $run->id)
-                ->onQueue('default');
-        }
-    }
-
-        } catch (\Throwable $e) {
-            session()->flash('error', 'Error al iniciar la actualización: ' . $e->getMessage());
-            \Illuminate\Support\Facades\Log::error('MarketPricesMonitor::runUpdate failed', ['error' => $e->getMessage()]);
-        }
-    }
-
-    public function runAll(string $operationType): void
-    {
-        try {
-        $zones = MarketZone::orderBy('sort_order')->get();
-        $delay = 0;
-
-        $saleTypes = ['apartment', 'house'];
-        $rentTypes = ['apartment', 'house', 'office'];
-
-        foreach ($zones as $zone) {
             if (in_array($operationType, ['sale', 'both'])) {
                 $run = MarketUpdateRun::create([
                     'market_colonia_id' => null,
@@ -73,9 +31,7 @@ class MarketPricesMonitor extends Component
                     'dispatched_at'     => now(),
                 ]);
                 UpdateZonePricesJob::dispatch($zone, $saleTypes, 'sale', $run->id)
-                    ->onQueue('default')
-                    ->delay(now()->addSeconds($delay));
-                $delay += 10;
+                    ->onQueue('default');
             }
             if (in_array($operationType, ['rent', 'both'])) {
                 $run = MarketUpdateRun::create([
@@ -87,11 +43,53 @@ class MarketPricesMonitor extends Component
                     'dispatched_at'     => now(),
                 ]);
                 UpdateZonePricesJob::dispatch($zone, $rentTypes, 'rent', $run->id)
-                    ->onQueue('default')
-                    ->delay(now()->addSeconds($delay));
-                $delay += 10;
+                    ->onQueue('default');
             }
+        } catch (\Throwable $e) {
+            session()->flash('error', 'Error al iniciar la actualización: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('MarketPricesMonitor::runUpdate failed', ['error' => $e->getMessage()]);
         }
+    }
+
+    public function runAll(string $operationType): void
+    {
+        try {
+            $zones = MarketZone::orderBy('sort_order')->get();
+            $delay = 0;
+
+            $saleTypes = ['apartment', 'house'];
+            $rentTypes = ['apartment', 'house', 'office'];
+
+            foreach ($zones as $zone) {
+                if (in_array($operationType, ['sale', 'both'])) {
+                    $run = MarketUpdateRun::create([
+                        'market_colonia_id' => null,
+                        'market_zone_id'    => $zone->id,
+                        'operation_type'    => 'sale',
+                        'property_types'    => $saleTypes,
+                        'status'            => 'pending',
+                        'dispatched_at'     => now(),
+                    ]);
+                    UpdateZonePricesJob::dispatch($zone, $saleTypes, 'sale', $run->id)
+                        ->onQueue('default')
+                        ->delay(now()->addSeconds($delay));
+                    $delay += 10;
+                }
+                if (in_array($operationType, ['rent', 'both'])) {
+                    $run = MarketUpdateRun::create([
+                        'market_colonia_id' => null,
+                        'market_zone_id'    => $zone->id,
+                        'operation_type'    => 'rent',
+                        'property_types'    => $rentTypes,
+                        'status'            => 'pending',
+                        'dispatched_at'     => now(),
+                    ]);
+                    UpdateZonePricesJob::dispatch($zone, $rentTypes, 'rent', $run->id)
+                        ->onQueue('default')
+                        ->delay(now()->addSeconds($delay));
+                    $delay += 10;
+                }
+            }
         } catch (\Throwable $e) {
             session()->flash('error', 'Error al iniciar la actualización: ' . $e->getMessage());
             \Illuminate\Support\Facades\Log::error('MarketPricesMonitor::runAll failed', ['error' => $e->getMessage()]);
