@@ -358,17 +358,18 @@ class PerplexityMarketService
         }
 
         if (!is_array($decoded)) {
-            Log::warning('PerplexityMarketService: invalid Claude JSON', [
+            Log::error('PerplexityMarketService: Claude JSON inválido', [
                 'colonia' => $coloniaName,
-                'raw'     => substr($raw, 0, 600),
+                'raw'     => substr($raw, 0, 800),
             ]);
             return [];
         }
 
         if (isset($decoded['error'])) {
-            Log::info('PerplexityMarketService: insufficient data', [
+            Log::error('PerplexityMarketService: Claude devolvió error', [
                 'colonia' => $coloniaName,
                 'reason'  => $decoded['reason'] ?? '—',
+                'decoded' => $decoded,
             ]);
             return [];
         }
@@ -390,7 +391,7 @@ class PerplexityMarketService
         // Sanity check: enforce new >= mid >= old hierarchy.
         // If violated, drop the offending category rather than show wrong data.
         if (isset($result['new'], $result['mid']) && $result['new']['avg'] < $result['mid']['avg']) {
-            Log::warning('PerplexityMarketService: new < mid, dropping new category', [
+            Log::error('PerplexityMarketService: new < mid, descartando new', [
                 'colonia' => $coloniaName,
                 'new_avg' => $result['new']['avg'],
                 'mid_avg' => $result['mid']['avg'],
@@ -398,7 +399,7 @@ class PerplexityMarketService
             unset($result['new']);
         }
         if (isset($result['old'], $result['mid']) && $result['old']['avg'] > $result['mid']['avg']) {
-            Log::warning('PerplexityMarketService: old > mid, dropping old category', [
+            Log::error('PerplexityMarketService: old > mid, descartando old', [
                 'colonia' => $coloniaName,
                 'old_avg' => $result['old']['avg'],
                 'mid_avg' => $result['mid']['avg'],
