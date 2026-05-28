@@ -70,12 +70,24 @@
         </p>
     </div>
     <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-left:auto;">
+        {{-- Actualizar VENTA --}}
         <form method="POST" action="{{ route('admin.market.prices.run') }}"
-              onsubmit="return confirm('¿Actualizar precios de todas las colonias ACTIVAS? Esto consumirá créditos de Perplexity y Claude.')">
+              onsubmit="return confirm('¿Actualizar precios de VENTA para las {{ $activeColonias }} colonias activas? ~$0.10–0.30 USD por colonia.')">
             @csrf
             <input type="hidden" name="colonia_id" value="all">
-            <button type="submit" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:.4rem;">
-                ↺ Actualizar colonias activas
+            <input type="hidden" name="operation_type" value="sale">
+            <button type="submit" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:.4rem;">
+                ↺ Actualizar precios de venta
+            </button>
+        </form>
+        {{-- Actualizar RENTA --}}
+        <form method="POST" action="{{ route('admin.market.prices.run') }}"
+              onsubmit="return confirm('¿Actualizar precios de RENTA (residencial + comercial) para las {{ $activeColonias }} colonias activas? ~$0.15–0.45 USD por colonia.')">
+            @csrf
+            <input type="hidden" name="colonia_id" value="all">
+            <input type="hidden" name="operation_type" value="rent">
+            <button type="submit" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:.4rem;background:#7c3aed;border-color:#7c3aed;">
+                ↺ Actualizar precios de renta
             </button>
         </form>
     </div>
@@ -116,13 +128,23 @@
     <div class="colonia-grid">
         @foreach($zone->colonias as $colonia)
         @php
-            $snaps      = $colonia->snapshots->sortByDesc('period')->groupBy('property_type');
-            $latestApt  = $snaps['apartment'] ?? collect();
-            $latestHouse= $snaps['house']     ?? collect();
-            $period     = $latestApt->first()?->period ?? $latestHouse->first()?->period;
-            $confidence = $latestApt->first()?->confidence ?? $latestHouse->first()?->confidence;
-            $confColor  = match($confidence) { 'high' => '#16a34a', 'medium' => '#d97706', default => '#94a3b8' };
-            $isActive   = $colonia->is_published;
+            $allSnaps    = $colonia->snapshots->sortByDesc('period');
+            $saleSnaps   = $allSnaps->where('operation_type', 'sale')->groupBy('property_type');
+            $rentSnaps   = $allSnaps->where('operation_type', 'rent')->groupBy('property_type');
+            // backward compat: si no tiene operation_type (filas viejas), tratarlas como sale
+            $legacySnaps = $allSnaps->whereNotIn('operation_type', ['sale','rent'])->groupBy('property_type');
+            foreach ($legacySnaps as $pt => $items) {
+                if (!isset($saleSnaps[$pt])) $saleSnaps[$pt] = $items;
+            }
+            $latestApt   = $saleSnaps['apartment'] ?? collect();
+            $latestHouse = $saleSnaps['house']     ?? collect();
+            $rentApt     = $rentSnaps['apartment'] ?? collect();
+            $rentOffice  = $rentSnaps['office']    ?? collect();
+            $period      = $latestApt->first()?->period ?? $latestHouse->first()?->period;
+            $confidence  = $latestApt->first()?->confidence ?? $latestHouse->first()?->confidence;
+            $confColor   = match($confidence) { 'high' => '#16a34a', 'medium' => '#d97706', default => '#94a3b8' };
+            $isActive    = $colonia->is_published;
+            $hasRentData = $rentApt->isNotEmpty() || $rentOffice->isNotEmpty();
         @endphp
         <div class="colonia-card {{ $isActive ? '' : 'inactive' }}">
 
@@ -158,42 +180,73 @@
             </span>
             @endif
 
-            {{-- Prices --}}
+            {{-- VENTA --}}
             <div class="price-section">
+                @php $ageMap = ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo']; @endphp
                 @if($latestApt->isNotEmpty())
-                <div class="price-type-label" style="margin-top:.25rem;">Departamentos · MXN/m²</div>
+                <div class="price-type-label" style="margin-top:.25rem;">DEPARTAMENTOS · MXN/m²</div>
                 @foreach($latestApt->take(3) as $snap)
                 <div class="price-row">
-                    <span class="price-cat">{{ ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo'][$snap->age_category] ?? $snap->age_category }}</span>
+                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
                     <span class="price-val">${{ number_format($snap->price_m2_avg) }}</span>
                 </div>
                 @endforeach
                 @endif
-
                 @if($latestHouse->isNotEmpty())
-                <div class="price-type-label" style="margin-top:.5rem;">Casas · MXN/m²</div>
+                <div class="price-type-label" style="margin-top:.5rem;">CASAS · MXN/m²</div>
                 @foreach($latestHouse->take(3) as $snap)
                 <div class="price-row">
-                    <span class="price-cat">{{ ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo'][$snap->age_category] ?? $snap->age_category }}</span>
+                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
                     <span class="price-val">${{ number_format($snap->price_m2_avg) }}</span>
                 </div>
                 @endforeach
                 @endif
-
                 @if($latestApt->isEmpty() && $latestHouse->isEmpty())
-                <div class="no-data">Sin datos de precios</div>
+                <div class="no-data">Sin datos de venta</div>
                 @endif
             </div>
 
-            {{-- Action: update prices --}}
-            <div class="card-actions">
+            {{-- RENTA --}}
+            @if($hasRentData)
+            <div class="price-section" style="margin-top:.5rem;padding-top:.5rem;border-top:1px dashed #c4b5fd;">
+                @if($rentApt->isNotEmpty())
+                <div class="price-type-label" style="color:#7c3aed;">DEPTO RENTA · $/m²/mes</div>
+                @foreach($rentApt->take(3) as $snap)
+                <div class="price-row">
+                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
+                    <span class="price-val" style="color:#7c3aed;">${{ number_format($snap->price_m2_avg) }}</span>
+                </div>
+                @endforeach
+                @endif
+                @if($rentOffice->isNotEmpty())
+                <div class="price-type-label" style="color:#7c3aed;margin-top:.35rem;">LOCAL/OFICINA RENTA · $/m²/mes</div>
+                @foreach($rentOffice->take(3) as $snap)
+                <div class="price-row">
+                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
+                    <span class="price-val" style="color:#7c3aed;">${{ number_format($snap->price_m2_avg) }}</span>
+                </div>
+                @endforeach
+                @endif
+            </div>
+            @else
+            <div style="font-size:.68rem;color:#a78bfa;font-style:italic;margin-top:.4rem;padding-top:.4rem;border-top:1px dashed #ddd8fe;">
+                Sin datos de renta aún
+            </div>
+            @endif
+
+            {{-- Acciones: venta y renta --}}
+            <div class="card-actions" style="gap:.3rem;">
                 <form method="POST" action="{{ route('admin.market.prices.run') }}" style="flex:1;">
                     @csrf
                     <input type="hidden" name="colonia_id" value="{{ $colonia->id }}">
-                    <button type="submit" class="btn btn-outline btn-sm btn-xs" style="width:100%;"
-                            title="Obtener precios actualizados vía Perplexity + Claude">
-                        ↺ Actualizar precios
-                    </button>
+                    <input type="hidden" name="operation_type" value="sale">
+                    <button type="submit" class="btn btn-outline btn-sm btn-xs" style="width:100%;">↺ Venta</button>
+                </form>
+                <form method="POST" action="{{ route('admin.market.prices.run') }}" style="flex:1;">
+                    @csrf
+                    <input type="hidden" name="colonia_id" value="{{ $colonia->id }}">
+                    <input type="hidden" name="operation_type" value="rent">
+                    <button type="submit" class="btn btn-sm btn-xs" style="width:100%;background:#7c3aed;color:#fff;border:none;">↺ Renta</button>
                 </form>
             </div>
         </div>
