@@ -1,8 +1,7 @@
 @extends('layouts.app-sidebar')
 @section('title', 'Precios de Mercado')
 
-@section('content')
-<style>
+@section('styles')
 /* ── Layout ───────────────────────────────────────────────────── */
 .zone-section        { margin-bottom: 2rem; }
 .zone-header         { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
@@ -53,206 +52,57 @@
 .card-actions        { display: flex; gap: 0.4rem; margin-top: 0.6rem; padding-top: 0.6rem;
                         border-top: 1px solid var(--border); }
 .btn-xs              { font-size: 0.72rem; padding: 3px 10px; }
-</style>
 
-{{-- ── Page header ──────────────────────────────────────────── --}}
-<div class="page-header" style="align-items:flex-start; flex-wrap:wrap; gap:0.75rem;">
-    <div>
-        <h2>Precios de Mercado · Benito Juárez</h2>
-        <p class="text-muted" style="margin:0;">
-            @if($lastPeriod)
-                Última actualización: <strong>{{ \Carbon\Carbon::parse($lastPeriod)->translatedFormat('F Y') }}</strong> ·
-            @else
-                <strong>Sin datos aún.</strong> ·
-            @endif
-            <strong style="color:var(--text);">{{ $activeColonias }}</strong> de
-            <strong style="color:var(--text);">{{ $totalColonias }}</strong> colonias activas en el sitio
-        </p>
-    </div>
-    <div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-left:auto;">
-        {{-- Actualizar VENTA --}}
-        <form method="POST" action="{{ route('admin.market.prices.run') }}"
-              onsubmit="return confirm('¿Actualizar precios de VENTA para las {{ $activeColonias }} colonias activas? ~$0.10–0.30 USD por colonia.')">
-            @csrf
-            <input type="hidden" name="colonia_id" value="all">
-            <input type="hidden" name="operation_type" value="sale">
-            <button type="submit" class="btn btn-outline" style="display:inline-flex;align-items:center;gap:.4rem;">
-                ↺ Actualizar precios de venta
-            </button>
-        </form>
-        {{-- Actualizar RENTA --}}
-        <form method="POST" action="{{ route('admin.market.prices.run') }}"
-              onsubmit="return confirm('¿Actualizar precios de RENTA (residencial + comercial) para las {{ $activeColonias }} colonias activas? ~$0.15–0.45 USD por colonia.')">
-            @csrf
-            <input type="hidden" name="colonia_id" value="all">
-            <input type="hidden" name="operation_type" value="rent">
-            <button type="submit" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:.4rem;background:#7c3aed;border-color:#7c3aed;">
-                ↺ Actualizar precios de renta
-            </button>
-        </form>
-    </div>
-</div>
+/* ── Job status badges per card ──────────────────────────────── */
+.run-badges          { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.run-badge           { display: inline-flex; align-items: center; gap: 4px; font-size: 0.68rem;
+                        font-weight: 600; padding: 2px 8px; border-radius: 20px;
+                        border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; }
+.run-badge.pending,
+.run-badge.running   { border-color: #bfdbfe; background: #eff6ff; color: #1d4ed8; }
+.run-badge.failed    { border-color: #fecaca; background: #fef2f2; color: #dc2626; }
 
-@if(session('success'))
-<div class="alert alert-success" style="margin-bottom:1rem;">
-    ✓ {{ session('success') }}
-    <button class="alert-close" onclick="this.parentElement.remove()">×</button>
-</div>
-@endif
-@if(session('error'))
-<div class="alert alert-danger" style="margin-bottom:1rem;">
-    {{ session('error') }}
-    <button class="alert-close" onclick="this.parentElement.remove()">×</button>
-</div>
-@endif
+.run-spinner         { display: inline-block; width: 10px; height: 10px; border: 2px solid #bfdbfe;
+                        border-top-color: #2563eb; border-radius: 50%;
+                        animation: spin .75s linear infinite; flex-shrink: 0; }
+.run-spinner-sm      { display: inline-block; width: 9px; height: 9px; border: 1.5px solid rgba(0,0,0,.15);
+                        border-top-color: #1d4ed8; border-radius: 50%;
+                        animation: spin .75s linear infinite; vertical-align: middle; }
+.run-time            { font-size: 0.6rem; color: var(--text-muted); font-weight: 400; }
+.run-error-msg       { font-size: 0.65rem; color: #dc2626; margin-top: 4px;
+                        background: #fef2f2; border-radius: 4px; padding: 3px 6px; line-height: 1.4; }
 
-<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius);padding:0.65rem 1rem;font-size:0.8rem;color:#92400e;margin-bottom:1.5rem;">
-    ⚠️ Cada actualización llama a <strong>Perplexity + Claude</strong> por colonia × tipo ≈ 4 llamadas/colonia.
-    Costo estimado: <strong>~$0.10–0.30 USD</strong> por colonia. Activa solo las colonias donde operas.
-</div>
+/* ── Progress banner ─────────────────────────────────────────── */
+.progress-banner     { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius);
+                        padding: 0.75rem 1rem; display: flex; align-items: center;
+                        justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.progress-banner.all-done   { background: #f0fdf4; border-color: #bbf7d0; }
+.progress-banner.has-errors { background: #fffbeb; border-color: #fde68a; }
 
-{{-- ── Zonas ─────────────────────────────────────────────────── --}}
-@foreach($zones as $zone)
-@php
-    $total    = $zone->colonias->count();
-    $activas  = $zone->colonias->where('is_published', true)->count();
-@endphp
-<div class="zone-section">
-    <div class="zone-header">
-        <span class="zone-title">{{ $zone->name }}</span>
-        <span class="zone-pill {{ $activas > 0 ? 'active' : '' }}">
-            {{ $activas }}/{{ $total }} activas
-        </span>
-    </div>
+.progress-banner-left { display: flex; align-items: center; gap: 0.65rem; }
+.progress-spinner    { width: 18px; height: 18px; border: 2.5px solid #bfdbfe;
+                        border-top-color: #2563eb; border-radius: 50%;
+                        animation: spin .75s linear infinite; flex-shrink: 0; }
+.progress-title      { font-size: 0.85rem; font-weight: 700; color: #1e40af; }
+.progress-sub        { font-size: 0.75rem; color: #3b82f6; margin-top: 1px; }
 
-    <div class="colonia-grid">
-        @foreach($zone->colonias as $colonia)
-        @php
-            $allSnaps    = $colonia->snapshots->sortByDesc('period');
-            $saleSnaps   = $allSnaps->where('operation_type', 'sale')->groupBy('property_type');
-            $rentSnaps   = $allSnaps->where('operation_type', 'rent')->groupBy('property_type');
-            // backward compat: si no tiene operation_type (filas viejas), tratarlas como sale
-            $legacySnaps = $allSnaps->whereNotIn('operation_type', ['sale','rent'])->groupBy('property_type');
-            foreach ($legacySnaps as $pt => $items) {
-                if (!isset($saleSnaps[$pt])) $saleSnaps[$pt] = $items;
-            }
-            $latestApt   = $saleSnaps['apartment'] ?? collect();
-            $latestHouse = $saleSnaps['house']     ?? collect();
-            $rentApt     = $rentSnaps['apartment'] ?? collect();
-            $rentOffice  = $rentSnaps['office']    ?? collect();
-            $period      = $latestApt->first()?->period ?? $latestHouse->first()?->period;
-            $confidence  = $latestApt->first()?->confidence ?? $latestHouse->first()?->confidence;
-            $confColor   = match($confidence) { 'high' => '#16a34a', 'medium' => '#d97706', default => '#94a3b8' };
-            $isActive    = $colonia->is_published;
-            $hasRentData = $rentApt->isNotEmpty() || $rentOffice->isNotEmpty();
-        @endphp
-        <div class="colonia-card {{ $isActive ? '' : 'inactive' }}">
+.progress-bar-wrap   { display: flex; align-items: center; gap: 8px; min-width: 160px; }
+.progress-bar-track  { flex: 1; height: 8px; background: #dbeafe; border-radius: 4px; overflow: hidden; }
+.progress-bar-fill   { height: 100%; background: #2563eb; border-radius: 4px;
+                        transition: width .4s ease; }
+.progress-bar-fill.has-errors { background: #d97706; }
+.progress-pct        { font-size: 0.75rem; font-weight: 700; color: #1d4ed8; white-space: nowrap; }
 
-            {{-- Header: nombre + toggle --}}
-            <div class="card-top">
-                <div>
-                    <div class="colonia-name">{{ $colonia->name }}</div>
-                    @if($colonia->cp)
-                    <div class="colonia-cp">CP {{ $colonia->cp }}</div>
-                    @endif
-                </div>
+/* ── Spinner animation ───────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
 
-                {{-- Toggle switch --}}
-                <form method="POST" action="{{ route('admin.market.colonias.toggle', $colonia) }}"
-                      class="toggle-form" title="{{ $isActive ? 'Desactivar del sitio' : 'Activar en el sitio' }}">
-                    @csrf
-                    <span class="toggle-label">{{ $isActive ? 'Activa' : 'Oculta' }}</span>
-                    <label class="toggle-wrap">
-                        <input type="checkbox" {{ $isActive ? 'checked' : '' }}
-                               onchange="this.closest('form').submit()">
-                        <span class="toggle-slider"></span>
-                    </label>
-                </form>
-            </div>
+/* ── Btn loading state ───────────────────────────────────────── */
+.btn-loading         { opacity: .65; cursor: not-allowed; }
+.btn-spinner         { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(255,255,255,.3);
+                        border-top-color: currentColor; border-radius: 50%;
+                        animation: spin .75s linear infinite; vertical-align: middle; }
+@endsection
 
-            {{-- Period tag --}}
-            @if($period)
-            <span class="period-tag">
-                @if($confidence)
-                <span class="conf-dot" style="background:{{ $confColor }}"></span>
-                @endif
-                {{ \Carbon\Carbon::parse($period)->translatedFormat('M Y') }}
-            </span>
-            @endif
-
-            {{-- VENTA --}}
-            <div class="price-section">
-                @php $ageMap = ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo']; @endphp
-                @if($latestApt->isNotEmpty())
-                <div class="price-type-label" style="margin-top:.25rem;">DEPARTAMENTOS · MXN/m²</div>
-                @foreach($latestApt->take(3) as $snap)
-                <div class="price-row">
-                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
-                    <span class="price-val">${{ number_format($snap->price_m2_avg) }}</span>
-                </div>
-                @endforeach
-                @endif
-                @if($latestHouse->isNotEmpty())
-                <div class="price-type-label" style="margin-top:.5rem;">CASAS · MXN/m²</div>
-                @foreach($latestHouse->take(3) as $snap)
-                <div class="price-row">
-                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
-                    <span class="price-val">${{ number_format($snap->price_m2_avg) }}</span>
-                </div>
-                @endforeach
-                @endif
-                @if($latestApt->isEmpty() && $latestHouse->isEmpty())
-                <div class="no-data">Sin datos de venta</div>
-                @endif
-            </div>
-
-            {{-- RENTA --}}
-            @if($hasRentData)
-            <div class="price-section" style="margin-top:.5rem;padding-top:.5rem;border-top:1px dashed #c4b5fd;">
-                @if($rentApt->isNotEmpty())
-                <div class="price-type-label" style="color:#7c3aed;">DEPTO RENTA · $/m²/mes</div>
-                @foreach($rentApt->take(3) as $snap)
-                <div class="price-row">
-                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
-                    <span class="price-val" style="color:#7c3aed;">${{ number_format($snap->price_m2_avg) }}</span>
-                </div>
-                @endforeach
-                @endif
-                @if($rentOffice->isNotEmpty())
-                <div class="price-type-label" style="color:#7c3aed;margin-top:.35rem;">LOCAL/OFICINA RENTA · $/m²/mes</div>
-                @foreach($rentOffice->take(3) as $snap)
-                <div class="price-row">
-                    <span class="price-cat">{{ $ageMap[$snap->age_category] ?? $snap->age_category }}</span>
-                    <span class="price-val" style="color:#7c3aed;">${{ number_format($snap->price_m2_avg) }}</span>
-                </div>
-                @endforeach
-                @endif
-            </div>
-            @else
-            <div style="font-size:.68rem;color:#a78bfa;font-style:italic;margin-top:.4rem;padding-top:.4rem;border-top:1px dashed #ddd8fe;">
-                Sin datos de renta aún
-            </div>
-            @endif
-
-            {{-- Acciones: venta y renta --}}
-            <div class="card-actions" style="gap:.3rem;">
-                <form method="POST" action="{{ route('admin.market.prices.run') }}" style="flex:1;">
-                    @csrf
-                    <input type="hidden" name="colonia_id" value="{{ $colonia->id }}">
-                    <input type="hidden" name="operation_type" value="sale">
-                    <button type="submit" class="btn btn-outline btn-sm btn-xs" style="width:100%;">↺ Venta</button>
-                </form>
-                <form method="POST" action="{{ route('admin.market.prices.run') }}" style="flex:1;">
-                    @csrf
-                    <input type="hidden" name="colonia_id" value="{{ $colonia->id }}">
-                    <input type="hidden" name="operation_type" value="rent">
-                    <button type="submit" class="btn btn-sm btn-xs" style="width:100%;background:#7c3aed;color:#fff;border:none;">↺ Renta</button>
-                </form>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</div>
-@endforeach
-
+@section('content')
+<livewire:admin.market-prices-monitor />
 @endsection

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\MarketColonia;
 use App\Models\MarketPriceSnapshot;
+use App\Models\MarketUpdateRun;
 use App\Services\Market\PerplexityMarketService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -21,17 +22,25 @@ class UpdateColoniaPricesJob implements ShouldQueue
     public int $timeout = 120;
 
     /**
-     * @param string[] $propertyTypes  e.g. ['apartment','house'] or ['apartment','house','office']
-     * @param string   $operationType  'sale' | 'rent'
+     * @param string[]  $propertyTypes  e.g. ['apartment','house'] or ['apartment','house','office']
+     * @param string    $operationType  'sale' | 'rent'
+     * @param int|null  $runId          ID de MarketUpdateRun para tracking (null = sin tracking)
      */
     public function __construct(
         public readonly MarketColonia $colonia,
         public readonly array         $propertyTypes  = ['apartment', 'house'],
         public readonly string        $operationType  = 'sale',
+        public readonly ?int          $runId          = null,
     ) {}
 
     public function handle(PerplexityMarketService $service): void
     {
+        // Marcar como "running" en el tracker
+        if ($this->runId) {
+            MarketUpdateRun::where('id', $this->runId)
+                ->update(['status' => 'running']);
+        }
+
         $period = Carbon::now()->startOfMonth()->toDateString();
 
         foreach ($this->propertyTypes as $type) {
@@ -81,6 +90,12 @@ class UpdateColoniaPricesJob implements ShouldQueue
                 'categories'     => array_keys($prices),
             ]);
         }
+
+        // Marcar como "done"
+        if ($this->runId) {
+            MarketUpdateRun::where('id', $this->runId)
+                ->update(['status' => 'done', 'completed_at' => now()]);
+        }
     }
 
     public function failed(\Throwable $e): void
@@ -89,5 +104,15 @@ class UpdateColoniaPricesJob implements ShouldQueue
             'colonia' => $this->colonia->name,
             'error'   => $e->getMessage(),
         ]);
+
+        // Marcar como "failed"
+        if ($this->runId) {
+            MarketUpdateRun::where('id', $this->runId)
+                ->update([
+                    'status'       => 'failed',
+                    'error_msg'    => $e->getMessage(),
+                    'completed_at' => now(),
+                ]);
+        }
     }
 }
