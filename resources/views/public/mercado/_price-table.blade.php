@@ -9,16 +9,16 @@
       $showMonthly bool    true para renta residencial — muestra monto mensual en vez de $/m²/mes
 --}}
 @php
-    $unitLabel   ??= '/m²';
-    $accentColor ??= '#1d4ed8';
-    $accentBg    ??= '#eff6ff';
-    $showOffice  ??= false;
-    $showMonthly ??= false;   // true = renta residencial → muestra monto mensual
+    $unitLabel   = $unitLabel   ?? '/m²';
+    $accentColor = $accentColor ?? '#1d4ed8';
+    $accentBg    = $accentBg    ?? '#eff6ff';
+    $showOffice  = $showOffice  ?? false;
+    $showMonthly = $showMonthly ?? false;
 
-    $ageMap  = ['new' => 'Nuevo',     'mid' => 'Seminuevo', 'old' => 'Antiguo'];
-    $ageDesc = ['new' => '0–5 años',  'mid' => '6–20 años', 'old' => '+20 años'];
+    $ageMap  = ['new' => 'Nuevo',    'mid' => 'Seminuevo', 'old' => 'Antiguo'];
+    $ageDesc = ['new' => '0–5 años', 'mid' => '6–20 años', 'old' => '+20 años'];
 
-    // m² típico por tipo de inmueble en BJ (para estimar renta mensual)
+    // m² típico por tipo de inmueble en BJ
     $typicalM2 = ['apartment' => 75, 'house' => 120, 'office' => null];
 
     $types = ['apartment' => '🏢 Departamento', 'house' => '🏠 Casa'];
@@ -26,51 +26,30 @@
         $types['office'] = '🏪 Local / Oficina';
     }
 
-    // Columnas de edad que tienen datos en ALGÚN tipo
-    $agesWithData = collect(['new','mid','old'])->filter(function($age) use ($snaps, $types) {
-        foreach (array_keys($types) as $type) {
-            if (!empty($snaps[$type][$age])) return true;
+    // Columnas de edad con datos en algún tipo
+    $agesWithData = [];
+    foreach (['new','mid','old'] as $_age) {
+        foreach (array_keys($types) as $_type) {
+            if (!empty($snaps[$_type][$_age])) {
+                $agesWithData[] = $_age;
+                break;
+            }
         }
-        return false;
-    })->values()->all();
+    }
+    if (empty($agesWithData)) {
+        $agesWithData = ['new','mid','old'];
+    }
 
-    if (empty($agesWithData)) $agesWithData = ['new','mid','old'];
-
-    /**
-     * Calcula el rango a mostrar:
-     * - Usa P25–P75 del snapshot
-     * - Garantiza spread mínimo de 20% (±10% sobre el avg)
-     * - Redondea: venta → mil más cercano; renta mensual → 500 más cercano
-     */
-    $displayRange = function($snap, bool $monthly = false, int $m2 = 75) use ($unitLabel): array {
-        $avg  = (float) $snap->price_m2_avg;
-        $low  = (float) $snap->price_m2_low;
-        $high = (float) $snap->price_m2_high;
-
-        // Asegurar spread mínimo del 20%
-        if ($avg > 0 && ($high - $low) / $avg < 0.20) {
-            $low  = $avg * 0.90;
-            $high = $avg * 1.10;
+    // ¿Hay algún dato?
+    $hasAnyData = false;
+    foreach (array_keys($types) as $_t) {
+        if (!empty($snaps[$_t])) {
+            $hasAnyData = true;
+            break;
         }
-
-        if ($monthly) {
-            // Renta mensual estimada = $/m²/mes × m² típico
-            $low  = $low  * $m2;
-            $high = $high * $m2;
-            // Redondear al 500 más cercano
-            $low  = round($low  / 500)  * 500;
-            $high = round($high / 500)  * 500;
-        } else {
-            // Venta o renta comercial $/m²: redondear al 1,000 más cercano
-            $low  = round($low  / 1000) * 1000;
-            $high = round($high / 1000) * 1000;
-        }
-
-        return [(int) $low, (int) $high];
-    };
+    }
 @endphp
 
-@php $hasAnyData = false; foreach(array_keys($types) as $t) { if(!empty($snaps[$t])) { $hasAnyData = true; break; } } @endphp
 @if(!$hasAnyData)
 <div style="text-align:center;color:#9ca3af;padding:2rem;background:#f8fafc;border-radius:10px;font-size:.85rem;">
     Sin datos de mercado disponibles para esta sección aún.
@@ -85,8 +64,7 @@
                         Tipo
                     </th>
                     @foreach($agesWithData as $age)
-                    <th style="padding:.65rem 1.1rem;text-align:center;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid #e5e7eb;min-width:160px;
-                                {{ $age === 'mid' ? "color:{$accentColor};background:{$accentBg};" : 'color:#6b7280;' }}">
+                    <th style="padding:.65rem 1.1rem;text-align:center;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid #e5e7eb;min-width:160px;{{ $age === 'mid' ? 'color:'.$accentColor.';background:'.$accentBg.';' : 'color:#6b7280;' }}">
                         {{ $ageMap[$age] }}<br>
                         <span style="font-weight:400;text-transform:none;font-size:.65rem;opacity:.75;">{{ $ageDesc[$age] }}</span>
                     </th>
@@ -97,12 +75,11 @@
                 @foreach($types as $typeKey => $typeLabel)
                 @if(!empty($snaps[$typeKey]))
                 @php
-                    $isLastType  = $typeKey === array_key_last($types);
-                    $isCommercial = $typeKey === 'office';
-                    // Renta residencial → monto mensual; renta comercial → $/m²/mes; venta → $/m²
-                    $useMonthly  = $showMonthly && !$isCommercial;
-                    $m2typical   = $typicalM2[$typeKey] ?? 75;
-                    $unitDisplay = $useMonthly
+                    $isLastType   = ($typeKey === array_key_last($types));
+                    $isCommercial = ($typeKey === 'office');
+                    $useMonthly   = $showMonthly && !$isCommercial;
+                    $m2typical    = $typicalM2[$typeKey] ?? 75;
+                    $unitDisplay  = $useMonthly
                         ? '/mes (estimado ~' . $m2typical . ' m²)'
                         : $unitLabel;
                 @endphp
@@ -114,22 +91,35 @@
                     @foreach($agesWithData as $age)
                     @php
                         $snap  = $snaps[$typeKey][$age] ?? null;
-                        $isMid = $age === 'mid';
+                        $isMid = ($age === 'mid');
+                        // Calcular rango con spread mínimo del 20%
+                        if ($snap) {
+                            $rAvg  = (float) $snap->price_m2_avg;
+                            $rLow  = (float) $snap->price_m2_low;
+                            $rHigh = (float) $snap->price_m2_high;
+                            if ($rAvg > 0 && ($rHigh - $rLow) / $rAvg < 0.20) {
+                                $rLow  = $rAvg * 0.90;
+                                $rHigh = $rAvg * 1.10;
+                            }
+                            if ($useMonthly) {
+                                $rLow  = round($rLow  * $m2typical / 500) * 500;
+                                $rHigh = round($rHigh * $m2typical / 500) * 500;
+                            } else {
+                                $rLow  = round($rLow  / 1000) * 1000;
+                                $rHigh = round($rHigh / 1000) * 1000;
+                            }
+                        }
                     @endphp
-                    <td style="padding:.8rem 1.1rem;{{ $isLastType ? '' : 'border-bottom:1px solid #f3f4f6;' }}text-align:center;vertical-align:middle;{{ $isMid ? "background:{$accentBg};" : '' }}">
+                    <td style="padding:.8rem 1.1rem;{{ $isLastType ? '' : 'border-bottom:1px solid #f3f4f6;' }}text-align:center;vertical-align:middle;{{ $isMid ? 'background:'.$accentBg.';' : '' }}">
                         @if($snap)
-                        @php [$rLow, $rHigh] = $displayRange($snap, $useMonthly, $m2typical); @endphp
-                            {{-- Rango principal --}}
                             <div style="font-weight:700;font-size:{{ $isMid ? '1rem' : '.88rem' }};color:{{ $isMid ? $accentColor : '#111827' }};white-space:nowrap;">
-                                ${{ number_format($rLow) }} – ${{ number_format($rHigh) }}
+                                ${{ number_format((int)$rLow) }} – ${{ number_format((int)$rHigh) }}
                             </div>
-                            {{-- Promedio secundario (solo para venta y renta comercial) --}}
                             @if(!$useMonthly)
                             <div style="font-size:.67rem;color:#9ca3af;margin-top:.1rem;">
-                                promedio ${{ number_format(round($snap->price_m2_avg / 1000) * 1000) }}
+                                promedio ${{ number_format((int)round($snap->price_m2_avg / 1000) * 1000) }}
                             </div>
                             @endif
-                            {{-- Badge confianza --}}
                             @if($snap->confidence === 'low')
                             <div style="font-size:.6rem;color:#9ca3af;margin-top:.15rem;font-style:italic;">estimado</div>
                             @elseif($snap->sample_size >= 5)
@@ -146,14 +136,9 @@
             </tbody>
         </table>
     </div>
-    {{-- Footer --}}
     <div style="padding:.6rem 1.1rem;background:#fafafa;border-top:1px solid #f0f2f5;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.4rem;">
-        <span style="font-size:.69rem;color:#9ca3af;">
-            Rango de mercado · referencia aproximada, no avalúo formal
-        </span>
-        <span style="font-size:.69rem;color:#9ca3af;">
-            Seminuevo resaltado por ser el segmento más representativo
-        </span>
+        <span style="font-size:.69rem;color:#9ca3af;">Rango de mercado · referencia aproximada, no avalúo formal</span>
+        <span style="font-size:.69rem;color:#9ca3af;">Seminuevo resaltado por ser el segmento más representativo</span>
     </div>
 </div>
 @endif
