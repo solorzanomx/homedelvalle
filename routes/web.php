@@ -292,6 +292,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/ai-config/prompt/{key}/reset', [\App\Http\Controllers\Admin\AiConfigController::class, 'resetPrompt'])->name('ai-config.prompts.reset');
         Route::patch('/ai-config/{agent}', [\App\Http\Controllers\Admin\AiConfigController::class, 'update'])->name('ai-config.update');
 
+        // Calculadora de Valor Rápido (Quick Quote)
+        Route::get('/quick-quote', fn() => view('admin.quick-quote'))->name('quick-quote');
+
         // Precios de Mercado (admin — actualización manual)
         Route::get('/market/prices',                        [\App\Http\Controllers\Admin\MarketPricesController::class, 'index'])->name('market.prices');
         Route::post('/market/prices/run',                   [\App\Http\Controllers\Admin\MarketPricesController::class, 'run'])->name('market.prices.run');

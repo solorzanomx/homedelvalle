@@ -255,6 +255,9 @@
             <button class="tab-btn" onclick="switchTab('timeline',this)">
                 Actividad <span class="tab-count">{{ $interactions->count() }}</span>
             </button>
+            <button class="tab-btn" onclick="switchTab('quickquote',this)">
+                📊 Valor de Mercado
+            </button>
         </div>
 
         {{-- TAB: Documentos --}}
@@ -412,6 +415,32 @@
                 </div>
             </div>
             @endforeach
+        </div>
+
+        {{-- TAB: Valor de Mercado (Quick Quote) --}}
+        <div class="tab-content" id="tab-quickquote">
+            @php
+                $qProperty = $captacion->property ?? $clientProperty ?? null;
+                $qColoniaId = $qProperty?->market_colonia_id ?? null;
+                $qType = match($qProperty?->property_type ?? '') {
+                    'Apartment' => 'apartment',
+                    'House'     => 'house',
+                    'Office'    => 'office',
+                    default     => 'apartment',
+                };
+                $qM2 = $qProperty?->construction_area ?? $qProperty?->area ?? null;
+                $qLandM2 = $qProperty?->lot_area ?? 0;
+                $qYearBuilt = $qProperty?->year_built ?? null;
+            @endphp
+            <livewire:admin.quick-quote
+                :coloniaId="$qColoniaId"
+                :propertyType="$qType"
+                :m2Construction="$qM2"
+                :m2Land="$qLandM2"
+                :yearBuilt="$qYearBuilt"
+                :widgetMode="true"
+                wire:key="quick-quote-{{ $captacion->id }}"
+            />
         </div>
 
         {{-- TAB: Actividad --}}

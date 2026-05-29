@@ -386,6 +386,11 @@
                             <span class="nav-icon"><x-icon name="circle-play" class="w-4 h-4" /></span> Operaciones
                         </a>
                         @endif
+                        @if(Route::has('admin.quick-quote'))
+                        <a href="{{ route('admin.quick-quote') }}" class="nav-item {{ request()->routeIs('admin.quick-quote') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="calculator" class="w-4 h-4" /></span> Valor Rápido
+                        </a>
+                        @endif
                         @if(Route::has('admin.valuations.index'))
                         <a href="{{ route('admin.valuations.index') }}" class="nav-item {{ request()->routeIs('admin.valuations.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Opinión de Valor
