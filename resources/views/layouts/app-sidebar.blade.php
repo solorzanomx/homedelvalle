@@ -388,7 +388,7 @@
                         @endif
                         @if(Route::has('admin.quick-quote'))
                         <a href="{{ route('admin.quick-quote') }}" class="nav-item {{ request()->routeIs('admin.quick-quote') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="calculator" class="w-4 h-4" /></span> Valor Rápido
+                            <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Valor Rápido
                         </a>
                         @endif
                         @if(Route::has('admin.valuations.index'))
