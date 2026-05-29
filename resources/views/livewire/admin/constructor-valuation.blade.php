@@ -113,17 +113,43 @@
 <div class="card-body" style="padding:1rem 1.25rem;">
 <div class="cv-section-title"><span class="n">2</span> Zonificación urbana · PDDU CDMX</div>
 
-    {{-- Campo libre para clave de zonificación --}}
+    {{-- Campo libre para clave de zonificación — parseo automático --}}
     <div style="margin-bottom:.75rem;">
         <label class="cv-label">
-            Clave de zonificación
-            <span style="font-weight:400;color:#94a3b8;font-size:.72rem;"> · acepta cualquier clave SEDUVI</span>
+            Clave de zonificación SEDUVI
+            <span style="font-weight:400;color:#94a3b8;font-size:.72rem;"> · auto-calcula COS, CUS y niveles</span>
         </label>
-        <input wire:model="zonificacionLabel" type="text"
-               placeholder="ej. HM 6/30  ó  H6/Z/20  ó  HM8/40"
+        <input wire:model.live.debounce.600ms="zonificacionLabel"
+               type="text"
+               placeholder="ej. HM 6/30  ó  H4/40  ó  HC4/Z/30  ó  CB5/30"
                class="cv-input"
-               style="font-family:monospace;font-size:.92rem;font-weight:600;letter-spacing:.5px;">
-        <span class="cv-hint">Escribe la clave del certificado de uso de suelo o usa un preset rápido:</span>
+               style="font-family:monospace;font-size:.95rem;font-weight:700;letter-spacing:.5px;
+                      border-color:{{ $parsedZone ? '#059669' : 'var(--border)' }};">
+
+        {{-- Feedback del parser --}}
+        @if($parsedZone)
+        <div style="margin-top:.35rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;
+                    padding:.35rem .7rem;font-size:.72rem;color:#166534;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+            <span>✅ Uso <strong>{{ $parsedZone['uso'] }}</strong></span>
+            <span>·</span>
+            <span><strong>{{ $parsedZone['pisos'] }}</strong> niveles</span>
+            <span>·</span>
+            <span>COS <strong>{{ $parsedZone['cos'] }}</strong></span>
+            <span>·</span>
+            <span>CUS <strong>{{ $parsedZone['cus'] }}</strong></span>
+            @if($parsedZone['lote_min'])
+            <span>·</span>
+            <span>Lote mín. <strong>{{ $parsedZone['lote_min'] }} m²</strong></span>
+            @endif
+        </div>
+        @elseif($zonificacionLabel)
+        <div style="margin-top:.35rem;background:#fefce8;border:1px solid #fde047;border-radius:6px;
+                    padding:.35rem .7rem;font-size:.72rem;color:#713f12;">
+            ⚠ No se reconoce el formato — ajusta COS, CUS y niveles manualmente, o usa un preset
+        </div>
+        @else
+        <span class="cv-hint">Escribe la clave del certificado SEDUVI o usa un preset rápido ↓</span>
+        @endif
     </div>
 
     {{-- Presets rápidos --}}

@@ -15,10 +15,11 @@ class ConstructorValuation extends Component
     public string $fondo     = '';
 
     // ─── Zonificación ─────────────────────────────────────────────────────────
-    public string $zonificacionLabel = 'HM 6/30';   // texto libre — clave PDDU
-    public string $cos               = '0.60';
-    public string $cus               = '3.60';
-    public string $pisos             = '6';
+    public string $zonificacionLabel  = 'HM 6/30';   // texto libre — clave PDDU
+    public string $cos                = '0.60';
+    public string $cus                = '3.60';
+    public string $pisos              = '6';
+    public ?array $parsedZone         = null;         // resultado del parser para el hint en vista
 
     // ─── Precio del terreno (dos modos independientes, sin sync automático) ───
     public string $precioTerreno   = '';   // total MXN  (modo 'total')
@@ -34,13 +35,33 @@ class ConstructorValuation extends Component
     // ─── Resultado ────────────────────────────────────────────────────────────
     public ?array $result = null;
 
+    // ─── Parser automático de clave SEDUVI ───────────────────────────────────
+
+    public function updatedZonificacionLabel(string $value): void
+    {
+        $svc    = app(ConstructorValuationService::class);
+        $parsed = $svc->parseSedeviCode($value);
+
+        if ($parsed) {
+            $this->parsedZone = $parsed;
+            $this->cos        = (string) $parsed['cos'];
+            $this->cus        = (string) $parsed['cus'];
+            $this->pisos      = (string) $parsed['pisos'];
+        } else {
+            $this->parsedZone = null;
+            // Dejar COS/CUS/pisos como están para que el usuario los ajuste manualmente
+        }
+
+        $this->recalculate();
+    }
+
     // ─── Aplica un preset de zonificación ────────────────────────────────────
     public function applyPreset(string $key): void
     {
         $presets = app(ConstructorValuationService::class)->getZonificaciones();
         $p = $presets[$key] ?? null;
         if ($p && $p['cos'] !== null) {
-            $this->zonificacionLabel = match($key) {
+            $label = match($key) {
                 'H3_30'  => 'H 3/30',
                 'H4_30'  => 'H 4/30',
                 'HM4_30' => 'HM 4/30',
@@ -52,9 +73,17 @@ class ConstructorValuation extends Component
                 'N10'    => 'H Norma 10',
                 default  => $this->zonificacionLabel,
             };
-            $this->cos   = (string) $p['cos'];
-            $this->cus   = (string) $p['cus'];
-            $this->pisos = (string) $p['pisos'];
+            $this->zonificacionLabel = $label;
+            $this->cos               = (string) $p['cos'];
+            $this->cus               = (string) $p['cus'];
+            $this->pisos             = (string) $p['pisos'];
+            $this->parsedZone        = [
+                'uso'      => strtoupper(preg_replace('/[\s\d\/].*/', '', $label)),
+                'pisos'    => $p['pisos'],
+                'cos'      => $p['cos'],
+                'cus'      => $p['cus'],
+                'lote_min' => $p['lote_min'] ?? 30,
+            ];
         }
         $this->recalculate();
     }

@@ -231,6 +231,73 @@ class ConstructorValuationService
         return self::ZONIFICACIONES;
     }
 
+    // ─── Parser de clave SEDUVI ───────────────────────────────────────────────
+
+    /**
+     * Parsea una clave de zonificación PDDU CDMX y devuelve COS, CUS y pisos.
+     *
+     * Formatos soportados:
+     *   HM 6/30    HM6/30    H 4/40    HC4/Z/30    CB5/30    HM8/Z/20
+     *   HM-6/30    H6        HM6Z30    H 3         CB5       CE 5/30
+     *
+     * Reglas COS por uso de suelo (PDDU Benito Juárez / CDMX):
+     *   H, HM, HA, HR              → COS 0.60
+     *   HC (Habitacional+Comercio) → COS 0.80
+     *   CB, CE, CS, CI, CN         → COS 1.00
+     *   E, EQ, EA                  → COS 0.60
+     *   Otros / no reconocido      → COS 0.60 (conservador)
+     *
+     * CUS = COS × pisos  (fórmula estándar PDDU)
+     *
+     * @return array{cos:float, cus:float, pisos:int, uso:string, lote_min:int|null}|null
+     *         null si el código no se puede parsear.
+     */
+    public function parseSedeviCode(string $rawCode): ?array
+    {
+        // Normalizar: mayúsculas, colapsar espacios múltiples
+        $code = strtoupper(trim(preg_replace('/\s+/', ' ', $rawCode)));
+
+        if ($code === '') return null;
+
+        // Separar la parte alfanumérica inicial (uso) del resto numérico
+        // Acepta: "HM 6/30", "HM6/30", "HC4/Z/30", "HM-6/30", "HM6Z30", "H 3"
+        //  Grupo 1 → letras del uso de suelo
+        //  Grupo 2 → primer número encontrado (= niveles)
+        if (! preg_match('/^([A-Z]+)[\s\-\/]?(\d+)/i', $code, $m)) {
+            return null;
+        }
+
+        $uso   = $m[1];
+        $pisos = (int) $m[2];
+
+        if ($pisos < 1 || $pisos > 40) return null;
+
+        // COS según uso de suelo
+        $cos = match(true) {
+            in_array($uso, ['HC'])                           => 0.80,
+            in_array($uso, ['CB', 'CE', 'CS', 'CI', 'CN']) => 1.00,
+            default                                          => 0.60,   // H, HM, HA, HR, E, otros
+        };
+
+        // Lote mínimo: buscar el último número en la clave (ej. /30, /40, /120)
+        preg_match_all('/\d+/', $code, $nums);
+        $allNums  = array_map('intval', $nums[0]);
+        $loteMin  = null;
+        // El primer número es los pisos; si hay un segundo distinto y razonable → lote mínimo
+        if (count($allNums) >= 2) {
+            $candidates = array_filter($allNums, fn($n) => $n !== $pisos && $n >= 20 && $n <= 1000);
+            $loteMin    = $candidates ? (int) reset($candidates) : null;
+        }
+
+        return [
+            'uso'      => $uso,
+            'pisos'    => $pisos,
+            'cos'      => $cos,
+            'cus'      => round($cos * $pisos, 2),
+            'lote_min' => $loteMin,
+        ];
+    }
+
     // ─── Helpers ─────────────────────────────────────────────────────────────
 
     /** Redondea al múltiplo de 10,000 más cercano */
