@@ -391,6 +391,11 @@
                             <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Valor Rápido
                         </a>
                         @endif
+                        @if(Route::has('admin.constructor-valuation'))
+                        <a href="{{ route('admin.constructor-valuation') }}" class="nav-item {{ request()->routeIs('admin.constructor-valuation') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Valuación Constructor
+                        </a>
+                        @endif
                         @if(Route::has('admin.valuations.index'))
                         <a href="{{ route('admin.valuations.index') }}" class="nav-item {{ request()->routeIs('admin.valuations.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Opinión de Valor

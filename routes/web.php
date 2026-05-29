@@ -295,6 +295,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         // Calculadora de Valor Rápido (Quick Quote)
         Route::get('/quick-quote', fn() => view('admin.quick-quote'))->name('quick-quote');
 
+        // Valuación para Constructor (COS/CUS)
+        Route::get('/constructor-valuation', fn() => view('admin.constructor-valuation'))->name('constructor-valuation');
+
         // Precios de Mercado (admin — actualización manual)
         Route::get('/market/prices',                        [\App\Http\Controllers\Admin\MarketPricesController::class, 'index'])->name('market.prices');
         Route::post('/market/prices/run',                   [\App\Http\Controllers\Admin\MarketPricesController::class, 'run'])->name('market.prices.run');
