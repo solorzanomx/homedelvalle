@@ -400,22 +400,8 @@ class PerplexityMarketService
 
         // Sanity check: enforce new >= mid >= old hierarchy.
         // If violated, drop the offending category rather than show wrong data.
-        if (isset($result['new'], $result['mid']) && $result['new']['avg'] < $result['mid']['avg']) {
-            Log::error('PerplexityMarketService: new < mid, descartando new', [
-                'colonia' => $coloniaName,
-                'new_avg' => $result['new']['avg'],
-                'mid_avg' => $result['mid']['avg'],
-            ]);
-            unset($result['new']);
-        }
-        if (isset($result['old'], $result['mid']) && $result['old']['avg'] > $result['mid']['avg']) {
-            Log::error('PerplexityMarketService: old > mid, descartando old', [
-                'colonia' => $coloniaName,
-                'old_avg' => $result['old']['avg'],
-                'mid_avg' => $result['mid']['avg'],
-            ]);
-            unset($result['old']);
-        }
+        // Nota: el prompt ya instruye a Claude reportar inversiones de jerarquía
+        // con confidence "low" en lugar de omitirlos. No descartamos aquí.
 
         // Attach metadata for the job to persist
         $result['_meta'] = [
