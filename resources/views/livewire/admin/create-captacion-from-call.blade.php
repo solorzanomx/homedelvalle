@@ -258,21 +258,36 @@
                 <span style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">Afecta hasta ±30% en la estimación</span>
             </div>
 
-            {{-- Año de construcción --}}
-            <div class="form-group">
+            {{-- Año de construcción (Alpine-only: no wire:model, solo actualiza age_category en Livewire) --}}
+            <div class="form-group"
+                 x-data="{ yr: '', info: '' }"
+                 x-init="
+                    $watch('yr', v => {
+                        let y = parseInt(v);
+                        let now = {{ now()->year }};
+                        if (y >= 1900 && y <= now) {
+                            let age = now - y;
+                            let cat = age <= 5 ? 'new' : (age <= 20 ? 'mid' : 'old');
+                            let label = cat === 'new' ? 'Nuevo' : (cat === 'mid' ? 'Seminuevo' : 'Antiguo');
+                            info = '✓ ' + age + ' años → ' + label;
+                            $wire.set('age_category', cat);
+                            $wire.set('year_built', y);
+                        } else {
+                            info = '';
+                        }
+                    });
+                 ">
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Año de construcción <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model.live="year_built" type="number" min="1900" max="{{ now()->year }}" placeholder="ej. 2010"
+                <input type="number" x-model="yr" min="1900" max="{{ now()->year }}" placeholder="ej. 2010"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
-                @if($year_built >= 1900 && $year_built <= now()->year)
-                <span style="font-size:.72rem;color:#059669;margin-top:.3rem;display:block;">
-                    ✓ {{ now()->year - $year_built }} años →
-                    {{ ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo'][$age_category] }}
+                <span x-show="info" x-text="info"
+                    style="font-size:.72rem;color:#059669;margin-top:.3rem;display:block;"></span>
+                <span x-show="!info"
+                    style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">
+                    Sincroniza la categoría de antigüedad automáticamente
                 </span>
-                @else
-                <span style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">Sincroniza la categoría de antigüedad automáticamente</span>
-                @endif
             </div>
 
             {{-- Precio esperado --}}
