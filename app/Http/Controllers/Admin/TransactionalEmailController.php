@@ -13,6 +13,7 @@ use App\Mail\V4\Mailables\AcuseMail;
 use App\Mail\V4\Mailables\CitaMail;
 use App\Mail\V4\Mailables\CompradorMail;
 use App\Mail\V4\Mailables\BienvenidaMail;
+use App\Mail\V4\Mailables\DbTemplateMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -45,6 +46,16 @@ class TransactionalEmailController extends Controller
                 'id' => 'bienvenida',
                 'name' => 'Bienvenida a Área de Clientes',
                 'description' => 'Email de bienvenida con credenciales',
+            ],
+            [
+                'id' => 'presentation-initial',
+                'name' => 'Presentación Inicial · Captación',
+                'description' => 'Se envía al propietario junto con el PDF de presentación de HDV',
+            ],
+            [
+                'id' => 'captacion-declined',
+                'name' => 'Gracias por tu confianza · Declive amistoso',
+                'description' => 'Se envía al propietario cuando se declina una captación',
             ],
         ];
 
@@ -157,6 +168,26 @@ class TransactionalEmailController extends Controller
                 password_temporal: 'Temp123!@#Secure',
                 url_acceso: 'https://app.homedelvalle.mx/login'
             )),
+            'presentation-initial' => new DbTemplateMail(
+                templateName:   'presentation_initial',
+                previewSubject: 'Tu presentación de Home del Valle — Av. División del Norte 123',
+                sampleVars: [
+                    'NombrePropietario' => 'Carlos Mendoza',
+                    'NombreInmueble'    => 'Av. División del Norte 123, Col. del Valle',
+                    'NombreAgente'      => 'Alejandro García',
+                    'PresentationUrl'   => 'https://homedelvalle.mx',
+                    'TrackingPixel'     => 'https://homedelvalle.mx/favicon.ico',
+                ],
+            ),
+            'captacion-declined' => new DbTemplateMail(
+                templateName:   'captacion_declined_friendly',
+                previewSubject: 'Gracias por tu confianza, Carlos',
+                sampleVars: [
+                    'NombrePropietario' => 'Carlos Mendoza',
+                    'NombreInmueble'    => 'Av. División del Norte 123, Col. del Valle',
+                    'NombreAgente'      => 'Alejandro García',
+                ],
+            ),
             default => null,
         };
     }
@@ -221,6 +252,26 @@ class TransactionalEmailController extends Controller
                     'usuario' => 'Usuario de login',
                     'password_temporal' => 'Contraseña temporal',
                     'url_acceso' => 'URL del portal',
+                ],
+            ],
+            'presentation-initial' => [
+                'name'        => 'Presentación Inicial · Captación',
+                'description' => 'Se envía al propietario junto con el PDF adjunto tras la llamada inicial',
+                'variables'   => [
+                    'NombrePropietario' => 'Nombre del propietario',
+                    'NombreInmueble'    => 'Dirección o nombre del inmueble',
+                    'NombreAgente'      => 'Nombre del agente que envía',
+                    'PresentationUrl'   => 'URL para ver la presentación en línea',
+                    'TrackingPixel'     => 'Pixel de seguimiento (automático)',
+                ],
+            ],
+            'captacion-declined' => [
+                'name'        => 'Gracias por tu confianza · Declive amistoso',
+                'description' => 'Se envía al propietario cuando se declina la captación desde el CRM',
+                'variables'   => [
+                    'NombrePropietario' => 'Nombre del propietario',
+                    'NombreInmueble'    => 'Dirección o nombre del inmueble',
+                    'NombreAgente'      => 'Nombre del agente que declina',
                 ],
             ],
         ];
