@@ -31,9 +31,24 @@ class DbTemplateMail extends Mailable
             return;
         }
 
-        // Sustituir variables de muestra
+        // Inyectar LogoUrl automáticamente desde SiteSetting
+        $logoUrl = null;
+        try {
+            $settings = \App\Models\SiteSetting::current();
+            if ($settings?->logo_path) {
+                $logoUrl = url(\Illuminate\Support\Facades\Storage::url($settings->logo_path));
+            }
+        } catch (\Throwable) {}
+
+        // Combinar: LogoUrl primero (puede ser sobreescrito por sampleVars si se pasa)
+        $vars = array_merge(
+            $logoUrl ? ['LogoUrl' => $logoUrl] : [],
+            $this->sampleVars,
+        );
+
+        // Sustituir variables
         $html = $template->body;
-        foreach ($this->sampleVars as $key => $value) {
+        foreach ($vars as $key => $value) {
             $html = str_replace('{{' . $key . '}}', $value, $html);
         }
 

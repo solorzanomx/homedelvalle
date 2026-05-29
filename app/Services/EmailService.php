@@ -144,6 +144,28 @@ class EmailService
     }
 
     /**
+     * Variables globales inyectadas automáticamente en todos los templates.
+     */
+    private function globalVariables(): array
+    {
+        try {
+            $settings = \App\Models\SiteSetting::current();
+            $logoPath = $settings?->logo_path;
+            $logoUrl  = $logoPath
+                ? url(\Illuminate\Support\Facades\Storage::url($logoPath))
+                : null;
+        } catch (\Throwable) {
+            $logoUrl = null;
+        }
+
+        return array_filter([
+            'LogoUrl'  => $logoUrl,
+            'SiteUrl'  => config('app.url', 'https://homedelvalle.mx'),
+            'SiteName' => config('app.name', 'Home del Valle'),
+        ]);
+    }
+
+    /**
      * Send an email using a named template with variable replacement.
      */
     public function sendTemplate(string $templateName, string $to, array $variables, ?string $toName = null, ?User $sender = null, array $attachments = []): bool
@@ -154,6 +176,9 @@ class EmailService
             Log::error('EmailService: Template "' . $templateName . '" no encontrado en BD.');
             return false;
         }
+
+        // Inyectar variables globales automáticas (logo, URL del sitio)
+        $variables = array_merge($this->globalVariables(), $variables);
 
         $rendered = $template->render($variables);
 

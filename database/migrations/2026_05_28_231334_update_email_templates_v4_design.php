@@ -38,13 +38,7 @@ a{color:#2E84C4;text-decoration:none}
       <table role="presentation" width="100%">
       <tr>
         <td align="left" style="vertical-align:middle">
-          <div style="display:inline-flex;align-items:center;gap:10px">
-            <div style="width:32px;height:32px;border-radius:50%;background-color:#16314D;color:#fff;font-size:14px;font-weight:600;line-height:32px;text-align:center">HV</div>
-            <div>
-              <p style="margin:0;font-size:14px;font-weight:600;color:#16314D">Home del Valle</p>
-              <p style="margin:0;font-size:12px;color:#8B95A8">homedelvalle.mx</p>
-            </div>
-          </div>
+          <img src="{{LogoUrl}}" alt="Home del Valle" width="150" style="display:block;max-width:160px;height:auto;border:0;">
         </td>
         <td align="right" style="vertical-align:middle">
           <div style="display:inline-block;background-color:#EBF4FA;color:#2E84C4;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600">Presentación Inicial</div>
@@ -193,13 +187,7 @@ a{color:#2E84C4;text-decoration:none}
       <table role="presentation" width="100%">
       <tr>
         <td align="left" style="vertical-align:middle">
-          <div style="display:inline-flex;align-items:center;gap:10px">
-            <div style="width:32px;height:32px;border-radius:50%;background-color:#16314D;color:#fff;font-size:14px;font-weight:600;line-height:32px;text-align:center">HV</div>
-            <div>
-              <p style="margin:0;font-size:14px;font-weight:600;color:#16314D">Home del Valle</p>
-              <p style="margin:0;font-size:12px;color:#8B95A8">homedelvalle.mx</p>
-            </div>
-          </div>
+          <img src="{{LogoUrl}}" alt="Home del Valle" width="150" style="display:block;max-width:160px;height:auto;border:0;">
         </td>
         <td align="right" style="vertical-align:middle">
           <div style="display:inline-block;background-color:#F6F7F9;color:#8B95A8;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600">Mensaje de tu asesor</div>
@@ -285,5 +273,5 @@ a{color:#2E84C4;text-decoration:none}
 </html>']);
     }
 
-    public function down(): void {} // irreversible design update
+    public function down(): void {}
 };
