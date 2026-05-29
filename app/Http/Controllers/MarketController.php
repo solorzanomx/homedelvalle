@@ -53,11 +53,16 @@ class MarketController extends Controller
         // Precio hero (depto seminuevo venta)
         $heroPriceSale = ($saleSnaps['apartment']['mid'] ?? $saleSnaps['apartment']['new'] ?? null)?->price_m2_avg;
 
+        // Datos históricos para gráficas (últimos 12 meses, depto seminuevo)
+        $chartSale = MarketZoneSnapshot::chartDataForZone($zone->id, 'sale', 'apartment', 'mid', 12);
+        $chartRent = MarketZoneSnapshot::chartDataForZone($zone->id, 'rent', 'apartment', 'mid', 12);
+
         return view('public.mercado.zone', compact(
             'zone', 'allZones', 'colonias',
             'saleSnaps', 'rentSnaps',
             'saleMeta', 'rentMeta',
             'heroPriceSale',
+            'chartSale', 'chartRent',
         ));
     }
 

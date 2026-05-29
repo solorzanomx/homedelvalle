@@ -233,6 +233,181 @@
 </section>
 
 {{-- ══════════════════════════════════════════════════════
+     GRÁFICA EVOLUCIÓN MENSUAL
+════════════════════════════════════════════════════════ --}}
+@if(count($chartSale) >= 2 || count($chartRent) >= 2)
+<section style="max-width:960px;margin:0 auto;padding:0 1.5rem 2.5rem;">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:.25rem;">Evolución de precios · {{ $zone->name }}</h2>
+    <p style="font-size:.8rem;color:#9ca3af;margin-bottom:1.5rem;">
+        Departamento seminuevo (6–20 años) · Actualización mensual
+    </p>
+
+    <div style="display:grid;grid-template-columns:{{ (count($chartSale)>=2 && count($chartRent)>=2) ? '1fr 1fr' : '1fr' }};gap:1.25rem;">
+
+        {{-- Gráfica venta --}}
+        @if(count($chartSale) >= 2)
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+                <div>
+                    <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#2563eb;margin-bottom:.2rem;">🏠 Precio de Venta</div>
+                    <div style="font-size:.75rem;color:#9ca3af;">$/m² · Departamento seminuevo</div>
+                </div>
+                @php $lastSale = end($chartSale); @endphp
+                <div style="text-align:right;">
+                    <div style="font-size:1.1rem;font-weight:700;color:#111827;">${{ number_format($lastSale['avg']) }}</div>
+                    <div style="font-size:.65rem;color:#9ca3af;">/m² · {{ $lastSale['label'] }}</div>
+                </div>
+            </div>
+            <canvas id="chartSale" style="width:100%;height:160px;"></canvas>
+        </div>
+        @endif
+
+        {{-- Gráfica renta --}}
+        @if(count($chartRent) >= 2)
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1.25rem;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;">
+                <div>
+                    <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:#7c3aed;margin-bottom:.2rem;">🔑 Precio de Renta</div>
+                    <div style="font-size:.75rem;color:#9ca3af;">Mensual ~75 m² · Departamento seminuevo</div>
+                </div>
+                @php $lastRent = end($chartRent); @endphp
+                <div style="text-align:right;">
+                    <div style="font-size:1.1rem;font-weight:700;color:#111827;">${{ number_format($lastRent['avg'] * 75) }}</div>
+                    <div style="font-size:.65rem;color:#9ca3af;">/mes · {{ $lastRent['label'] }}</div>
+                </div>
+            </div>
+            <canvas id="chartRent" style="width:100%;height:160px;"></canvas>
+        </div>
+        @endif
+
+    </div>
+
+    {{-- Nota aclaratoria --}}
+    <p style="font-size:.7rem;color:#9ca3af;margin-top:.75rem;text-align:center;">
+        Promedio móvil 3 meses · Fuente: análisis de anuncios publicados en portales inmobiliarios · Se actualiza el 1° de cada mes
+    </p>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    Chart.defaults.font.family = '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+    Chart.defaults.font.size   = 11;
+
+    function buildGradient(ctx, color) {
+        const g = ctx.createLinearGradient(0, 0, 0, 160);
+        g.addColorStop(0, color + '30');
+        g.addColorStop(1, color + '00');
+        return g;
+    }
+
+    function makeChart(id, data, color, yLabel, formatFn) {
+        const el = document.getElementById(id);
+        if (!el || !data || data.length < 2) return;
+        const ctx = el.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.label),
+                datasets: [
+                    {
+                        label: 'Rango',
+                        data: data.map(d => d.high),
+                        borderColor: 'transparent',
+                        backgroundColor: buildGradient(ctx, color),
+                        fill: '+1',
+                        pointRadius: 0,
+                        tension: .4,
+                    },
+                    {
+                        label: 'Promedio',
+                        data: data.map(d => d.avg),
+                        borderColor: color,
+                        backgroundColor: 'transparent',
+                        borderWidth: 2.5,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: color,
+                        pointBorderWidth: 2,
+                        tension: .4,
+                        fill: false,
+                    },
+                    {
+                        label: 'Rango bajo',
+                        data: data.map(d => d.low),
+                        borderColor: 'transparent',
+                        backgroundColor: 'transparent',
+                        fill: false,
+                        pointRadius: 0,
+                        tension: .4,
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        titleColor: '#94a3b8',
+                        bodyColor: '#f1f5f9',
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            title: items => items[0].label,
+                            label: item => {
+                                if (item.datasetIndex === 0) return '  Máx: ' + formatFn(item.raw);
+                                if (item.datasetIndex === 1) return '  Prom: ' + formatFn(item.raw);
+                                if (item.datasetIndex === 2) return '  Mín: ' + formatFn(item.raw);
+                                return null;
+                            },
+                        }
+                    },
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af', maxRotation: 0 }
+                    },
+                    y: {
+                        grid: { color: '#f3f4f6' },
+                        ticks: {
+                            color: '#9ca3af',
+                            callback: v => formatFn(v),
+                        },
+                        border: { display: false },
+                    }
+                }
+            }
+        });
+    }
+
+    const fmtK = v => '$' + (v >= 1000 ? Math.round(v/1000) + 'k' : v);
+    const fmtM = v => '$' + new Intl.NumberFormat('es-MX').format(Math.round(v / 500) * 500);
+
+    @if(count($chartSale) >= 2)
+    makeChart('chartSale', @json($chartSale), '#2563eb', '$/m²', fmtK);
+    @endif
+
+    @if(count($chartRent) >= 2)
+    // Renta: convertir $/m²/mes → monto mensual ~75m²
+    const rentData = @json($chartRent);
+    const rentMonthly = rentData.map(d => ({
+        ...d,
+        avg:  Math.round(d.avg  * 75 / 500) * 500,
+        low:  Math.round(d.low  * 75 / 500) * 500,
+        high: Math.round(d.high * 75 / 500) * 500,
+    }));
+    makeChart('chartRent', rentMonthly, '#7c3aed', '$/mes', fmtM);
+    @endif
+})();
+</script>
+@endif
+
+{{-- ══════════════════════════════════════════════════════
      CTA 1 — Intermedio
 ════════════════════════════════════════════════════════ --}}
 <section style="max-width:960px;margin:0 auto;padding:0 1.5rem 2.5rem;">
