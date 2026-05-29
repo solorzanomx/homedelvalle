@@ -231,7 +231,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Dirección exacta <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model="address" type="text" placeholder="Calle, número"
+                <input wire:model.live.debounce.800ms="address" type="text" placeholder="Calle, número"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
 
@@ -306,7 +306,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Precio esperado por el propietario <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model="price_expected" type="text" placeholder="3,500,000"
+                <input wire:model.live.debounce.600ms="price_expected" type="text" placeholder="3,500,000"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
 
@@ -358,8 +358,26 @@
 
 {{-- ── Columna derecha: cotización en vivo ─────────────────────────────── --}}
 @if($liveQuote && $liveQuote['available'])
-@php $q = $liveQuote; @endphp
-<div style="width:320px;flex-shrink:0;" wire:loading.class.remove="opacity-0" wire:loading.class="opacity-50">
+@php
+    $q        = $liveQuote;
+    $mapsKey  = config('services.google_maps.key');
+    $svAddr   = $address && $colony
+        ? urlencode($address . ', ' . $colony . ', Benito Juárez, CDMX, México')
+        : null;
+
+    // ── Análisis de precio esperado ────────────────────────────────────
+    $expected    = $price_expected ? (float) str_replace(',', '', $price_expected) : 0;
+    $saleMid     = $q['sale_residential']['mid'] ?? 0;
+    $saleHigh    = $q['sale_residential']['high'] ?? 0;
+    $rentMid     = $q['rent_residential']['mid'] ?? 0;
+
+    $diff        = ($saleMid > 0 && $expected > 0) ? round(($expected - $saleMid) / $saleMid * 100, 1) : null;
+    $commPesos   = $expected > 0 ? (int) round($expected * 5 / 100 / 10000) * 10000 : 0;
+    $optPrice    = $saleMid > 0  ? (int) round($saleMid * 1.06 / 50000) * 50000 : 0;  // +6% margen de negociación
+    $capRate     = ($expected > 0 && $rentMid > 0) ? round($rentMid * 12 / $expected * 100, 1) : null;
+    $mktCapRate  = ($saleMid  > 0 && $rentMid > 0) ? round($rentMid * 12 / $saleMid  * 100, 1) : null;
+@endphp
+<div style="width:320px;flex-shrink:0;">
 
     {{-- Cabecera del panel --}}
     <div style="background:linear-gradient(135deg,#1d4ed8 0%,#4f46e5 100%);border-radius:10px 10px 0 0;padding:.75rem 1rem;display:flex;align-items:center;gap:.5rem;">
@@ -377,9 +395,23 @@
         </div>
     </div>
 
+    {{-- Street View (solo si hay dirección + colonia del observatorio + API key) --}}
+    @if($svAddr && $mapsKey)
+    <div style="position:relative;height:130px;overflow:hidden;border-left:1px solid #c7d2fe;border-right:1px solid #c7d2fe;"
+         id="sv-wrapper-{{ $q['colonia_name'] }}">
+        <img src="https://maps.googleapis.com/maps/api/streetview?size=640x260&location={{ $svAddr }}&fov=90&key={{ $mapsKey }}&return_error_code=true"
+             style="width:100%;height:130px;object-fit:cover;display:block;"
+             onerror="document.getElementById('sv-wrapper-{{ $q['colonia_name'] }}').style.display='none'">
+        <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.55));padding:.35rem .65rem;display:flex;align-items:center;gap:.35rem;">
+            <span style="font-size:.95rem;">📍</span>
+            <span style="font-size:.65rem;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $address }}</span>
+        </div>
+    </div>
+    @endif
+
     {{-- Ajustes aplicados --}}
     @if(!empty($q['adjustments']))
-    <div style="background:#eff6ff;border-left:3px solid #3b82f6;border-right:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe;padding:.45rem .8rem;font-size:.7rem;color:#1e40af;">
+    <div style="background:#eff6ff;border-left:1px solid #c7d2fe;border-right:1px solid #c7d2fe;border-bottom:1px solid #c7d2fe;padding:.45rem .8rem;font-size:.7rem;color:#1e40af;">
         <span style="font-weight:600;margin-right:.3rem;">Ajustes:</span>
         @foreach($q['adjustments'] as $adj)
         <span style="margin-right:.4rem;white-space:nowrap;">
@@ -390,43 +422,43 @@
         <span style="font-weight:700;color:#1d4ed8;">Total: {{ $q['total_adjustment'] > 0 ? '+' : '' }}{{ $q['total_adjustment'] }}%</span>
     </div>
     @else
-    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:.4rem .8rem;font-size:.68rem;color:#64748b;">
+    <div style="background:#f8fafc;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:.4rem .8rem;font-size:.68rem;color:#64748b;">
         Características en el promedio del segmento · sin ajuste adicional
     </div>
     @endif
 
     {{-- Escenarios --}}
-    <div style="border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;overflow:hidden;">
+    <div style="border:1px solid #e2e8f0;border-top:none;overflow:hidden;">
 
         {{-- 1. Venta vivienda --}}
         @if($q['sale_residential'])
         @php $s = $q['sale_residential']; @endphp
-        <div style="padding:.7rem 1rem;border-bottom:1px solid #f1f5f9;">
-            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#2563eb;margin-bottom:.3rem;">🏠 Venta habitacional</div>
-            <div style="font-size:1.1rem;font-weight:800;color:var(--text,#0f172a);">
+        <div style="padding:.65rem 1rem;border-bottom:1px solid #f1f5f9;">
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#2563eb;margin-bottom:.2rem;">🏠 Venta habitacional</div>
+            <div style="font-size:1.05rem;font-weight:800;color:var(--text,#0f172a);">
                 ${{ number_format($s['low']) }}
                 <span style="font-size:.78rem;font-weight:400;color:#94a3b8;">–</span>
                 ${{ number_format($s['high']) }}
             </div>
-            <div style="font-size:.7rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}</strong> · ${{ number_format($s['per_m2']) }}/m²</div>
+            <div style="font-size:.68rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}</strong> · ${{ number_format($s['per_m2']) }}/m²</div>
         </div>
         @endif
 
         {{-- 2. Venta constructor --}}
         @if($q['sale_constructor'])
         @php $s = $q['sale_constructor']; @endphp
-        <div style="padding:.7rem 1rem;border-bottom:1px solid #f1f5f9;">
-            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#d97706;margin-bottom:.3rem;">🏗️ Venta a constructor</div>
-            <div style="font-size:1.1rem;font-weight:800;color:var(--text,#0f172a);">
+        <div style="padding:.65rem 1rem;border-bottom:1px solid #f1f5f9;">
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#d97706;margin-bottom:.2rem;">🏗️ Venta a constructor</div>
+            <div style="font-size:1.05rem;font-weight:800;color:var(--text,#0f172a);">
                 ${{ number_format($s['low']) }}
                 <span style="font-size:.78rem;font-weight:400;color:#94a3b8;">–</span>
                 ${{ number_format($s['high']) }}
             </div>
-            <div style="font-size:.7rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}</strong>
+            <div style="font-size:.68rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}</strong>
                 @if(!empty($s['per_m2'])) · ${{ number_format($s['per_m2']) }}/m² @endif
             </div>
             @if(!empty($s['note']))
-            <div style="font-size:.65rem;color:#92400e;margin-top:.2rem;">{{ $s['note'] }}</div>
+            <div style="font-size:.62rem;color:#92400e;margin-top:.15rem;">{{ $s['note'] }}</div>
             @endif
         </div>
         @endif
@@ -434,57 +466,100 @@
         {{-- 3. Renta habitacional --}}
         @if($q['rent_residential'])
         @php $s = $q['rent_residential']; @endphp
-        <div style="padding:.7rem 1rem;border-bottom:1px solid #f1f5f9;">
-            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#7c3aed;margin-bottom:.3rem;">🔑 Renta habitacional</div>
-            <div style="font-size:1.1rem;font-weight:800;color:var(--text,#0f172a);">
+        <div style="padding:.65rem 1rem;border-bottom:1px solid #f1f5f9;">
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#7c3aed;margin-bottom:.2rem;">🔑 Renta habitacional</div>
+            <div style="font-size:1.05rem;font-weight:800;color:var(--text,#0f172a);">
                 ${{ number_format($s['low']) }}
                 <span style="font-size:.78rem;font-weight:400;color:#94a3b8;">–</span>
                 ${{ number_format($s['high']) }}
-                <span style="font-size:.7rem;font-weight:500;color:#94a3b8;">/mes</span>
+                <span style="font-size:.68rem;font-weight:500;color:#94a3b8;">/mes</span>
             </div>
-            <div style="font-size:.7rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}/mes</strong> · ${{ number_format($s['per_m2']) }}/m²</div>
+            <div style="font-size:.68rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}/mes</strong> · ${{ number_format($s['per_m2']) }}/m²</div>
         </div>
         @endif
 
         {{-- 4. Renta comercial --}}
         @if($q['rent_commercial'])
         @php $s = $q['rent_commercial']; @endphp
-        <div style="padding:.7rem 1rem;">
-            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#059669;margin-bottom:.3rem;">🏪 Renta comercial</div>
-            <div style="font-size:1.1rem;font-weight:800;color:var(--text,#0f172a);">
+        <div style="padding:.65rem 1rem;">
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:#059669;margin-bottom:.2rem;">🏪 Renta comercial</div>
+            <div style="font-size:1.05rem;font-weight:800;color:var(--text,#0f172a);">
                 ${{ number_format($s['low']) }}
                 <span style="font-size:.78rem;font-weight:400;color:#94a3b8;">–</span>
                 ${{ number_format($s['high']) }}
-                <span style="font-size:.7rem;font-weight:500;color:#94a3b8;">/mes</span>
+                <span style="font-size:.68rem;font-weight:500;color:#94a3b8;">/mes</span>
             </div>
-            <div style="font-size:.7rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}/mes</strong> · ${{ number_format($s['per_m2']) }}/m²</div>
+            <div style="font-size:.68rem;color:#64748b;">Promedio: <strong>${{ number_format($s['mid']) }}/mes</strong> · ${{ number_format($s['per_m2']) }}/m²</div>
         </div>
         @endif
 
     </div>
 
-    {{-- Precio esperado vs estimado --}}
-    @if($price_expected && $q['sale_residential'])
-    @php
-        $expected = (float) str_replace(',', '', $price_expected);
-        $mid      = $q['sale_residential']['mid'];
-        $diff     = $mid > 0 ? round(($expected - $mid) / $mid * 100, 1) : null;
-    @endphp
-    @if($diff !== null)
-    <div style="margin-top:.6rem;background:{{ abs($diff) <= 10 ? '#f0fdf4' : ($diff > 10 ? '#fefce8' : '#fef2f2') }};border:1px solid {{ abs($diff) <= 10 ? '#86efac' : ($diff > 10 ? '#fde047' : '#fca5a5') }};border-radius:8px;padding:.5rem .8rem;font-size:.72rem;color:{{ abs($diff) <= 10 ? '#166534' : ($diff > 10 ? '#713f12' : '#991b1b') }};">
-        @if(abs($diff) <= 10)
-        ✅ Precio esperado alineado con el mercado ({{ $diff > 0 ? '+' : '' }}{{ $diff }}%)
-        @elseif($diff > 10)
-        ⚠️ Precio esperado <strong>{{ $diff }}% arriba</strong> del estimado — argumentar con datos
-        @else
-        ✅ Precio esperado <strong>{{ abs($diff) }}% debajo</strong> del estimado — buena oportunidad
+    {{-- ── Análisis del precio esperado ───────────────────────────── --}}
+    @if($expected > 0)
+    <div style="margin-top:.5rem;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+
+        {{-- Badge alineación vs mercado --}}
+        @if($diff !== null)
+        @php
+            $badgeBg    = abs($diff) <= 10 ? '#f0fdf4' : ($diff > 10 ? '#fefce8' : '#f0fdf4');
+            $badgeBdr   = abs($diff) <= 10 ? '#86efac' : ($diff > 10 ? '#fde047' : '#86efac');
+            $badgeColor = abs($diff) <= 10 ? '#166534' : ($diff > 10 ? '#713f12' : '#166534');
+        @endphp
+        <div style="background:{{ $badgeBg }};border-bottom:1px solid {{ $badgeBdr }};padding:.45rem .8rem;font-size:.7rem;color:{{ $badgeColor }};">
+            @if(abs($diff) <= 10)
+            ✅ Precio alineado con el mercado
+            @elseif($diff > 10)
+            ⚠️ Precio esperado <strong>{{ $diff }}% sobre</strong> el mercado — preparar argumentos
+            @else
+            🎯 Precio esperado <strong>{{ abs($diff) }}% bajo</strong> el mercado — ventaja competitiva
+            @endif
+            <span style="float:right;font-weight:700;">{{ $diff > 0 ? '+' : '' }}{{ $diff }}%</span>
+        </div>
         @endif
+
+        {{-- Métricas del precio esperado --}}
+        <div style="padding:.55rem .8rem;display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;">
+
+            {{-- Comisión estimada (5%) --}}
+            <div>
+                <div style="font-size:.6rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Comisión 5%</div>
+                <div style="font-size:.92rem;font-weight:800;color:#1d4ed8;">${{ number_format($commPesos) }}</div>
+            </div>
+
+            {{-- Precio de salida sugerido --}}
+            @if($optPrice > 0)
+            <div>
+                <div style="font-size:.6rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Precio de salida sugerido</div>
+                <div style="font-size:.88rem;font-weight:700;color:#0f172a;">${{ number_format($optPrice) }}</div>
+                <div style="font-size:.58rem;color:#94a3b8;">Mercado +6% · margen negociación</div>
+            </div>
+            @endif
+
+            {{-- Cap rate implícito --}}
+            @if($capRate !== null)
+            <div>
+                <div style="font-size:.6rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Cap rate implícito</div>
+                <div style="font-size:.92rem;font-weight:800;color:{{ $capRate >= 5 ? '#059669' : '#d97706' }};">{{ $capRate }}% anual</div>
+                <div style="font-size:.58rem;color:#94a3b8;">Al precio esperado</div>
+            </div>
+            @endif
+
+            {{-- Cap rate de mercado --}}
+            @if($mktCapRate !== null)
+            <div>
+                <div style="font-size:.6rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;">Cap rate de mercado</div>
+                <div style="font-size:.92rem;font-weight:800;color:{{ $mktCapRate >= 5 ? '#059669' : '#d97706' }};">{{ $mktCapRate }}% anual</div>
+                <div style="font-size:.58rem;color:#94a3b8;">Al valor estimado HDV</div>
+            </div>
+            @endif
+
+        </div>
     </div>
-    @endif
     @endif
 
     {{-- Nota --}}
-    <div style="margin-top:.5rem;font-size:.65rem;color:#94a3b8;line-height:1.4;text-align:center;">
+    <div style="margin-top:.4rem;font-size:.62rem;color:#94a3b8;line-height:1.4;text-align:center;">
         Referencia rápida · Datos del Observatorio HDV<br>
         Requiere visita técnica para OdV formal
     </div>
