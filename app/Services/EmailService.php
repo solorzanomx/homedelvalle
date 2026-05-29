@@ -25,11 +25,19 @@ class EmailService
         if ($sender) {
             $userConfig = $sender->mailSetting;
             if ($userConfig && $userConfig->is_active && $userConfig->from_email) {
+                // Resolver host y username
+                $uHost = $userConfig->smtp_server ?: ($global->smtp_server ?? '');
+                $uUser = $userConfig->username ?: ($global->username ?? $userConfig->from_email);
+                // Resend requiere username literal "resend" — si hay un email como username, corregir
+                if (str_contains($uHost, 'resend.com') && str_contains($uUser, '@')) {
+                    $uUser = 'resend';
+                }
+
                 // Use user's email, but inherit SMTP credentials from global if not set
                 return (object) [
-                    'host' => $userConfig->smtp_server ?: ($global->smtp_server ?? ''),
+                    'host' => $uHost,
                     'port' => $userConfig->port ?: ($global->port ?? 587),
-                    'username' => $userConfig->username ?: ($global->username ?? $global->from_email ?? $userConfig->from_email),
+                    'username' => $uUser,
                     'password' => $userConfig->password ?: ($global->password ?? ''),
                     'enable_ssl' => $userConfig->encryption !== 'none'
                         ? true
