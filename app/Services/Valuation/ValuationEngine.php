@@ -4,6 +4,7 @@ namespace App\Services\Valuation;
 
 use App\Models\MarketColonia;
 use App\Models\MarketPriceSnapshot;
+use App\Models\MarketZoneSnapshot;
 use App\Models\PropertyValuation;
 use App\Models\ValuationAdjustment;
 
@@ -59,6 +60,7 @@ class ValuationEngine
         $confidence    = $snapshot ? $snapshot->confidence : 'low';
 
         // 4. Persistir en la valuación
+        $isZoneSnap = $snapshot instanceof MarketZoneSnapshot;
         $valuation->fill([
             'base_price_m2'       => $basePrice,
             'adjusted_price_m2'   => $adjusted,
@@ -68,7 +70,10 @@ class ValuationEngine
             'suggested_list_price'=> $suggested,
             'diagnosis'           => $diagnosis,
             'confidence'          => $confidence,
-            'snapshot_id'         => $snapshot?->id,
+            // Guardar en el FK correcto según la fuente
+            'snapshot_id'         => $isZoneSnap ? null : $snapshot?->id,
+            'zone_snapshot_id'    => $isZoneSnap ? $snapshot->id : null,
+            'snapshot_source'     => $isZoneSnap ? 'zone' : 'colony',
         ])->save();
 
         // Reemplazar adjustments existentes
@@ -105,7 +110,17 @@ class ValuationEngine
 
     // ── Resolución del precio base ─────────────────────────────────────────
 
-    protected function resolveSnapshot(PropertyValuation $v): ?MarketPriceSnapshot
+    /**
+     * Resuelve el snapshot de mercado a usar como precio base.
+     * Devuelve un objeto con price_m2_avg, confidence, id (duck typing).
+     *
+     * Cascada de fuentes:
+     *  1. MarketZoneSnapshot (nueva arq. zona — datos reales, rolling 3 meses)
+     *  2. MarketZoneSnapshot mismo zona, cualquier edad (fallback de edad)
+     *  3. MarketPriceSnapshot colonia exacta (legacy)
+     *  4. MarketPriceSnapshot cualquier colonia de la zona (legacy)
+     */
+    protected function resolveSnapshot(PropertyValuation $v): ?object
     {
         if (! $v->input_colonia_id) {
             return null;
@@ -114,7 +129,35 @@ class ValuationEngine
         $type        = $v->input_type;
         $ageCategory = $v->age_category; // accessor del model
 
-        // Prioridad 1: colonia exacta + tipo + antigüedad
+        $colonia = MarketColonia::find($v->input_colonia_id);
+        $zoneId  = $colonia?->market_zone_id;
+
+        // ── Prioridad 1: MarketZoneSnapshot, tipo + edad exactos ──────────
+        if ($zoneId) {
+            $snap = MarketZoneSnapshot::where('market_zone_id', $zoneId)
+                ->where('property_type', $type)
+                ->where('age_category', $ageCategory)
+                ->orderByDesc('period')
+                ->first();
+            if ($snap) return $snap;
+
+            // ── Prioridad 2: MarketZoneSnapshot, tipo, cualquier edad ──────
+            $snap = MarketZoneSnapshot::where('market_zone_id', $zoneId)
+                ->where('property_type', $type)
+                ->orderByDesc('period')
+                ->first();
+            if ($snap) return $snap;
+
+            // ── Prioridad 3: MarketZoneSnapshot, zona, cualquier tipo ──────
+            // (útil p. ej. si buscamos 'house' y solo hay 'apartment')
+            $snap = MarketZoneSnapshot::where('market_zone_id', $zoneId)
+                ->where('age_category', $ageCategory)
+                ->orderByDesc('period')
+                ->first();
+            if ($snap) return $snap;
+        }
+
+        // ── Prioridad 4: MarketPriceSnapshot legacy, colonia exacta ───────
         $snap = MarketPriceSnapshot::where('market_colonia_id', $v->input_colonia_id)
             ->where('property_type', $type)
             ->where('age_category', $ageCategory)
@@ -122,15 +165,13 @@ class ValuationEngine
             ->first();
         if ($snap) return $snap;
 
-        // Prioridad 2: colonia exacta + tipo (cualquier antigüedad)
         $snap = MarketPriceSnapshot::where('market_colonia_id', $v->input_colonia_id)
             ->where('property_type', $type)
             ->latest('period')
             ->first();
         if ($snap) return $snap;
 
-        // Prioridad 3: cualquier colonia de la misma zona + tipo + antigüedad
-        $zoneId    = MarketColonia::find($v->input_colonia_id)?->market_zone_id;
+        // ── Prioridad 5: legacy, cualquier colonia de la zona ─────────────
         if ($zoneId) {
             $coloniaIds = MarketColonia::where('market_zone_id', $zoneId)->pluck('id');
             $snap = MarketPriceSnapshot::whereIn('market_colonia_id', $coloniaIds)
@@ -138,9 +179,10 @@ class ValuationEngine
                 ->where('age_category', $ageCategory)
                 ->latest('period')
                 ->first();
+            if ($snap) return $snap;
         }
 
-        return $snap; // null si no hay nada
+        return null;
     }
 
     // ── Pipeline de factores de ajuste ────────────────────────────────────

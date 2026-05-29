@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\MarketPriceSnapshot;
+use App\Models\MarketZoneSnapshot;
 
 class PropertyValuation extends Model
 {
@@ -20,7 +22,8 @@ class PropertyValuation extends Model
         'base_price_m2', 'adjusted_price_m2',
         'total_value_low', 'total_value_mid', 'total_value_high', 'suggested_list_price',
         'market_trend', 'diagnosis', 'confidence',
-        'snapshot_id', 'used_perplexity', 'perplexity_query', 'perplexity_response',
+        'snapshot_id', 'zone_snapshot_id', 'snapshot_source',
+        'used_perplexity', 'perplexity_query', 'perplexity_response',
         'status', 'delivered_at', 'pdf_path',
         'actual_sale_price', 'accuracy_pct', 'sale_recorded_at',
         'ai_narrative',
@@ -60,6 +63,19 @@ class PropertyValuation extends Model
     public function snapshot(): BelongsTo
     {
         return $this->belongsTo(MarketPriceSnapshot::class, 'snapshot_id');
+    }
+
+    public function zoneSnapshot(): BelongsTo
+    {
+        return $this->belongsTo(MarketZoneSnapshot::class, 'zone_snapshot_id');
+    }
+
+    /** Devuelve el snapshot activo (zona o colonia) */
+    public function activeSnapshot(): MarketPriceSnapshot|MarketZoneSnapshot|null
+    {
+        return $this->snapshot_source === 'zone'
+            ? $this->zoneSnapshot
+            : $this->snapshot;
     }
 
     public function adjustments(): HasMany

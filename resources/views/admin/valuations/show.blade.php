@@ -126,13 +126,17 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Factores de ajuste</h3>
-                @if($valuation->snapshot)
+                @php $activeSnap = $valuation->activeSnapshot(); @endphp
+                @if($activeSnap)
                 <span style="font-size:.73rem;color:#6b7280;">
-                    Base: {{ $valuation->colonia?->name }}
-                    · {{ $valuation->snapshot->period->format('M Y') }}
-                    · <span class="badge badge-{{ $valuation->snapshot->confidence_color }}" style="font-size:.65rem;">
-                        {{ $valuation->snapshot->confidence_label }}
+                    Fuente: {{ $valuation->snapshot_source === 'zone' ? 'Zona' : 'Colonia' }}
+                    · {{ $activeSnap->period->format('M Y') }}
+                    · <span style="font-size:.65rem;padding:.15rem .45rem;border-radius:4px;font-weight:600;background:{{ match($activeSnap->confidence) {'high'=>'#f0fdf4','medium'=>'#fffbeb',default=>'#f8fafc'} }};color:{{ match($activeSnap->confidence) {'high'=>'#16a34a','medium'=>'#d97706',default=>'#94a3b8'} }};">
+                        {{ ['high'=>'Alta','medium'=>'Media','low'=>'Baja'][$activeSnap->confidence] ?? '?' }}
                     </span>
+                    @if($valuation->snapshot_source === 'zone')
+                    <span style="font-size:.63rem;color:#2563eb;">● Zona</span>
+                    @endif
                 </span>
                 @endif
             </div>
@@ -145,8 +149,8 @@
                             @if($valuation->colonia)
                             <div style="font-size:.72rem;color:#6b7280;font-weight:400;">
                                 {{ $valuation->colonia->name }}
-                                @if($valuation->snapshot)
-                                    · {{ $valuation->snapshot->age_label }}
+                                @if($valuation->snapshot_source === 'zone')
+                                    · Datos de zona
                                 @endif
                             </div>
                             @endif
