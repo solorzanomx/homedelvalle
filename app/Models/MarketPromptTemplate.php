@@ -140,57 +140,64 @@ PROMPT,
 Search for current {type_label} FOR SALE listings in Benito Juárez, Mexico City.
 Neighborhoods: {colony_list}.
 
-Search: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker, Encuentra24.
-If needed, include nearby Benito Juárez neighborhoods.
+Search portals: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker, Encuentra24.
+Include nearby Benito Juárez neighborhoods if needed to reach 10+ listings.
 
-For each listing extract every field you can find — use null for fields not available:
+For each listing extract:
 {fields}
+- "condicion": CRITICAL — classify as "nuevo", "seminuevo", or "antiguo" using these signals:
+    * Listing title says "estrenar", "nuevo", "brand new", year built ≤ 5 years ago → "nuevo"
+    * Title says "a remodelar", "remodelar", "remodelar", year built > 25 years ago → "antiguo"
+    * Everything else → "seminuevo"
 - "colonia": neighborhood name
 - "fuente": portal name
 
 Field notes:
-- precio: sale price in MXN as integer (e.g. 4200000). Required.
-- m2: construction area only ("construcción", "sup. construida", "m² construidos") — NOT terreno or lote. Use null if unclear.
-- recamaras: number of bedrooms. Very useful when m2 is missing.
+- precio: sale price in MXN as integer. Required.
+- m2: construction area in m² ("construcción", "sup. construida") — NOT terreno. null if unclear.
+- antiguedad: years since construction if shown. null if not shown.
+- recamaras: number of bedrooms (very useful when m2 is missing).
 
-Include ALL listings you find regardless of missing fields. Do NOT skip listings just because m2 is null.
+Include ALL listings regardless of missing fields. NEVER skip a listing just because m2 is null — recamaras helps estimate it.
 
-Return 10 to 20 listings as a plain JSON array, no markdown, no text outside the array:
+Return 12 to 20 listings as a plain JSON array, no markdown:
 [
-  {"precio": 4200000, "m2": 85, "antiguedad": 8, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"},
-  {"precio": 7800000, "m2": null, "antiguedad": null, "recamaras": 3, "piso": 5, "condicion": "nuevo", "colonia": "Narvarte Poniente", "fuente": "Lamudi"},
-  {"precio": 3100000, "m2": 72, "antiguedad": 35, "recamaras": 2, "piso": 1, "condicion": null, "colonia": "Vértiz Narvarte", "fuente": "Metros Cúbicos"}
+  {"precio": 4200000, "m2": 85, "antiguedad": 8, "recamaras": 2, "piso": 3, "condicion": "seminuevo", "colonia": "Del Valle Centro", "fuente": "Inmuebles24"},
+  {"precio": 7200000, "m2": null, "antiguedad": 2, "recamaras": 3, "piso": 8, "condicion": "nuevo", "colonia": "Del Valle Norte", "fuente": "Lamudi"},
+  {"precio": 2800000, "m2": 70, "antiguedad": 40, "recamaras": 2, "piso": 1, "condicion": "antiguo", "colonia": "Del Valle Sur", "fuente": "Propiedades.com"}
 ]
 PROMPT,
 
             'rent.search.zone' => <<<'PROMPT'
-Necesito anuncios ACTUALES de {type_label} en {op_label} en la Zona {zone_name}, alcaldía Benito Juárez, Ciudad de México.
+Search for current {type_label} FOR RENT listings in Benito Juárez, Mexico City.
+Neighborhoods: {colony_list}.
 
-Esta zona comprende las colonias: {colony_list}.
+Search portals: Inmuebles24, Lamudi, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, Vivanuncios, easybroker, Encuentra24.
+Include nearby Benito Juárez neighborhoods if needed to reach 10+ listings.
 
-REGLAS IMPORTANTES:
-1. Solo anuncios de renta directa (no subarrendamiento, no temporada)
-2. precio_renta = renta mensual publicada en el portal (sin incluir mantenimiento ni gastos)
-3. m2 = metros cuadrados de CONSTRUCCIÓN (NO de terreno)
-4. Prioriza anuncios publicados en los últimos 6 meses
-5. Distribuye los anuncios entre las colonias de la zona
-6. Incluye campo "condicion" para ayudar a clasificar la antigüedad
-
-Busca en: Inmuebles24, Lamudi, Vivanuncios, Propiedades.com, MercadoLibre Inmuebles, Metros Cúbicos, easybroker, Encuentra24, o cualquier portal disponible.
-
-Por cada anuncio, extrae:
+For each listing extract:
 {fields}
-- "colonia": nombre de la colonia dentro de la zona
-- "fuente": nombre del portal
+- "condicion": classify as "nuevo", "seminuevo", or "antiguo" using these signals:
+    * Title says "estrenar", "nuevo", "recién construido", year built ≤ 5 years → "nuevo"
+    * Title says "a remodelar", "renovar", year built > 25 years → "antiguo"
+    * Everything else → "seminuevo"
+- "colonia": neighborhood name
+- "fuente": portal name
 
-Devuelve entre 10 y 20 anuncios reales de toda la zona.
+Field notes:
+- precio_renta: monthly rent in MXN as integer (e.g. 18000). Required.
+- m2: construction area in m² only — NOT terreno. null if unclear.
+- recamaras: number of bedrooms (very useful when m2 is missing).
+- antiguedad: years since construction if shown, null otherwise.
 
-Responde ÚNICAMENTE con un JSON array, sin texto adicional ni markdown:
+Include ALL listings regardless of missing fields. Do NOT skip listings because m2 is null.
+
+Return 12 to 20 listings as a plain JSON array, no markdown:
 [
-  {"precio_renta": 22000, "m2": 85, "antiguedad": 8, "recamaras": 2, "condicion": "seminuevo", "colonia": "Narvarte Oriente", "fuente": "Inmuebles24"}
+  {"precio_renta": 22000, "m2": 85, "antiguedad": 8, "recamaras": 2, "condicion": "seminuevo", "colonia": "Del Valle Centro", "fuente": "Inmuebles24"},
+  {"precio_renta": 35000, "m2": null, "antiguedad": 3, "recamaras": 3, "condicion": "nuevo", "colonia": "Del Valle Norte", "fuente": "Lamudi"},
+  {"precio_renta": 14000, "m2": 65, "antiguedad": 40, "recamaras": 2, "condicion": "antiguo", "colonia": "Del Valle Sur", "fuente": "Propiedades.com"}
 ]
-
-Si encuentras menos de 3 anuncios en toda la zona, responde: {"error": "sin_datos"}
 PROMPT,
 
             'sale.analysis' => <<<'PROMPT'
@@ -220,8 +227,10 @@ INSTRUCCIONES:
 
 4. CLASIFICACIÓN POR ANTIGÜEDAD (jerarquía de señales):
    a) "antiguedad" explícita → "new": 0–10 años | "mid": 11–25 años | "old": >25 años
-   b) "condicion": "nuevo"/"estrenar" → "new" | "seminuevo" → "mid" | "remodelar"/"renovar" → "old"
-   c) Proxy precio_m2: >$85,000 → "new" | $52,000–$85,000 → "mid" | <$52,000 → "old"
+   b) "condicion": "nuevo"/"estrenar"/"a estrenar" → "new" | "seminuevo" → "mid" | "remodelar"/"antiguo"/"renovar" → "old"
+   c) Proxy precio_m2 (último recurso, solo si no hay a ni b):
+      >$72,000 → "new" | $45,000–$72,000 → "mid" | <$45,000 → "old"
+      (Las zonas de BJ tienen precios variados; usa el proxy conservadoramente)
 
 5. ESTADÍSTICAS (por categoría):
    low = P25, avg = mediana, high = P75 del precio_m2 (entero)
@@ -233,7 +242,8 @@ INSTRUCCIONES:
    - 0 listings → omitir esa categoría
    Es mejor dato con confianza baja que no tener dato.
 
-7. JERARQUÍA — En BJ: nuevo > seminuevo > antiguo. Si se viola por muestra pequeña, reportar con confidence "low".
+7. JERARQUÍA — En BJ: nuevo > seminuevo > antiguo.
+   Si se viola por muestra pequeña, NO descartar — reportar con confidence "low".
 
 Responde ÚNICAMENTE con este JSON exacto, sin markdown:
 {
