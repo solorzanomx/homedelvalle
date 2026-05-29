@@ -120,7 +120,7 @@
     $lastSalePeriod = collect($saleApt)->first()?->period ?? collect($saleHouse)->first()?->period;
     $lastRentPeriod = collect($rentApt)->first()?->period;
 
-    $ageMap  = ['new' => 'Nuevo', 'mid' => 'Seminuevo', 'old' => 'Antiguo'];
+    $ageMap  = ['new' => 'Nuevo (0–5a)', 'mid' => 'Seminuevo (6–20a)', 'old' => 'Antiguo (+20a)'];
     $confColor = fn($c) => match($c) { 'high' => '#16a34a', 'medium' => '#d97706', default => '#94a3b8' };
 @endphp
 

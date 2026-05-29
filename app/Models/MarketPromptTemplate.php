@@ -225,12 +225,12 @@ INSTRUCCIONES:
 
 3. OUTLIERS — Excluye donde precio_m2 < (Q1 - 1.5×IQR) o > (Q3 + 1.5×IQR)
 
-4. CLASIFICACIÓN POR ANTIGÜEDAD (jerarquía de señales):
-   a) "antiguedad" explícita → "new": 0–10 años | "mid": 11–25 años | "old": >25 años
+4. CLASIFICACIÓN POR ANTIGÜEDAD — estándar bancario mexicano (SHF/Banorte):
+   a) "antiguedad" explícita:
+      "new": 0–5 años | "mid": 6–20 años | "old": más de 20 años
    b) "condicion": "nuevo"/"estrenar"/"a estrenar" → "new" | "seminuevo" → "mid" | "remodelar"/"antiguo"/"renovar" → "old"
    c) Proxy precio_m2 (último recurso, solo si no hay a ni b):
       >$72,000 → "new" | $45,000–$72,000 → "mid" | <$45,000 → "old"
-      (Las zonas de BJ tienen precios variados; usa el proxy conservadoramente)
 
 5. ESTADÍSTICAS (por categoría):
    low = P25, avg = mediana, high = P75 del precio_m2 (entero)
@@ -282,7 +282,7 @@ ANÁLISIS:
 
 3. CLASIFICACIÓN POR ANTIGÜEDAD (jerarquía de señales):
 
-   a) Campo "antiguedad" explícito → úsalo directamente
+   a) Campo "antiguedad" explícito — estándar bancario mexicano (SHF):
       {age_note}
 
    b) Campo "condicion":

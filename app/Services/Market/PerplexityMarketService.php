@@ -201,7 +201,7 @@ class PerplexityMarketService
             $priceM2Min     = 80;    // $80/m²/mes mínimo razonable BJ
             $priceM2Max     = 500;   // $500/m²/mes máximo razonable BJ
             $hierarchyNote  = 'En Benito Juárez, inmuebles nuevos rentan más caro por m² que los viejos.';
-            $ageNote        = '"new": 0–10 años, "mid": 11–30 años, "old": >30 años. Sin antigüedad → asignar a "mid".';
+            $ageNote        = 'Estándar bancario mexicano (SHF): "new": 0–5 años, "mid": 6–20 años, "old": más de 20 años. Sin antigüedad → "mid".';
         }
 
         $system = 'Eres un analista de mercado inmobiliario especializado en rentas en Ciudad de México. '

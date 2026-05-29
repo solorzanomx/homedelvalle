@@ -14,7 +14,7 @@
     $showOffice  ??= false;
 
     $ageMap = ['new' => 'Nuevo', 'mid' => 'Seminuevo', 'old' => 'Antiguo'];
-    $ageDesc= ['new' => '0–10 años', 'mid' => '10–25 años', 'old' => '25+ años'];
+    $ageDesc= ['new' => '0–5 años', 'mid' => '6–20 años', 'old' => '+20 años'];
 
     $types = ['apartment' => '🏢 Departamento', 'house' => '🏠 Casa'];
     if ($showOffice && !empty($snaps['office'])) {
@@ -68,19 +68,19 @@
                     @php $snap = $snaps[$typeKey][$age] ?? null; $isMid = $age === 'mid'; @endphp
                     <td style="padding:.8rem 1.1rem;{{ $isLastType ? '' : 'border-bottom:1px solid #f3f4f6;' }}text-align:center;vertical-align:middle;{{ $isMid ? "background:{$accentBg};" : '' }}">
                         @if($snap)
-                            {{-- Precio promedio --}}
-                            <div style="font-weight:700;font-size:{{ $isMid ? '1.05rem' : '.92rem' }};color:{{ $isMid ? $accentColor : '#111827' }};">
-                                ${{ number_format($snap->price_m2_avg) }}
-                            </div>
-                            {{-- Rango --}}
-                            <div style="font-size:.7rem;color:#9ca3af;margin-top:.15rem;">
+                            {{-- Rango como dato principal --}}
+                            <div style="font-weight:700;font-size:{{ $isMid ? '1rem' : '.88rem' }};color:{{ $isMid ? $accentColor : '#111827' }};white-space:nowrap;">
                                 ${{ number_format($snap->price_m2_low) }} – ${{ number_format($snap->price_m2_high) }}
+                            </div>
+                            {{-- Promedio secundario --}}
+                            <div style="font-size:.68rem;color:#6b7280;margin-top:.1rem;">
+                                promedio ${{ number_format($snap->price_m2_avg) }}{{ $unitLabel }}
                             </div>
                             {{-- Badge de confianza --}}
                             @if($snap->confidence === 'low')
-                            <div style="font-size:.6rem;color:#9ca3af;margin-top:.2rem;font-style:italic;">estimado</div>
+                            <div style="font-size:.6rem;color:#9ca3af;margin-top:.15rem;font-style:italic;">estimado</div>
                             @elseif($snap->sample_size >= 5)
-                            <div style="font-size:.6rem;color:#16a34a;margin-top:.2rem;">● {{ $snap->sample_size }} listings</div>
+                            <div style="font-size:.6rem;color:#16a34a;margin-top:.15rem;">● {{ $snap->sample_size }} anuncios</div>
                             @endif
                         @else
                             <span style="color:#d1d5db;font-size:.8rem;">Sin datos</span>
