@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Captacion;
 use App\Models\MarketColonia;
 use App\Services\CaptacionIntakeService;
+use App\Services\QuickQuoteService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -45,6 +46,9 @@ class CreateCaptacionFromCall extends Component
     public string $parking          = '';
     public string $price_expected   = '';
     public array  $photos           = [];
+
+    // ─── Cotización en vivo (Paso 2) ────────────────────────────────────────
+    public ?array $liveQuote = null;
 
     // ─── Paso 3 — Intención y propuesta ─────────────────────────────────────
     public string $intent         = 'general';
@@ -97,6 +101,7 @@ class CreateCaptacionFromCall extends Component
             $this->colony_is_custom = true;
             $this->colony           = '';
             $this->colony_cp        = '';
+            $this->liveQuote        = null;
             return;
         }
 
@@ -107,7 +112,17 @@ class CreateCaptacionFromCall extends Component
             $this->colony    = $colonia->name;
             $this->colony_cp = $colonia->cp ?? '';
         }
+
+        $this->refreshLiveQuote();
     }
+
+    // ─── Cotización en vivo — hooks de campos del Paso 2 ─────────────────────
+
+    public function updatedPropertyType(): void { $this->refreshLiveQuote(); }
+    public function updatedArea(): void          { $this->refreshLiveQuote(); }
+    public function updatedBedrooms(): void      { $this->refreshLiveQuote(); }
+    public function updatedBathrooms(): void     { $this->refreshLiveQuote(); }
+    public function updatedParking(): void       { $this->refreshLiveQuote(); }
 
     // ─── Actualizar plan de marketing cuando cambia el intent ────────────────
 
@@ -210,6 +225,51 @@ class CreateCaptacionFromCall extends Component
             ],
             default => [],
         };
+    }
+
+    private function refreshLiveQuote(): void
+    {
+        // Necesitamos colonia del observatorio, tipo y m² mínimos
+        if (
+            ! $this->colony_id
+            || $this->colony_id === 'otra'
+            || ! $this->area
+            || (float) $this->area < 10
+        ) {
+            $this->liveQuote = null;
+            return;
+        }
+
+        // Mapeo de tipos del formulario → QuickQuoteService
+        $typeMap = [
+            'House'      => 'house',
+            'Apartment'  => 'apartment',
+            'Office'     => 'office',
+            'Land'       => 'land',
+            'Commercial' => 'office',
+            'Warehouse'  => 'office',
+            'Building'   => 'house',
+        ];
+        $qqType = $typeMap[$this->property_type] ?? 'apartment';
+
+        // Parking: vacío = no especificado (-1), número = cantidad de cajones
+        $qqParking = ($this->parking !== '' && $this->parking !== null)
+            ? (int) $this->parking
+            : -1;
+
+        try {
+            $this->liveQuote = app(QuickQuoteService::class)->calculate(
+                coloniaId:      (int) $this->colony_id,
+                propertyType:   $qqType,
+                m2Construction: (float) $this->area,
+                ageCategory:    'mid',           // sin año de construcción en el formulario
+                bedrooms:       $this->bedrooms  ? (int) $this->bedrooms  : 0,
+                bathrooms:      $this->bathrooms ? (int) $this->bathrooms : 0,
+                parking:        $qqParking,
+            );
+        } catch (\Throwable) {
+            $this->liveQuote = null;
+        }
     }
 
     private function buildPayload(): array
