@@ -2,7 +2,6 @@
 
 namespace App\Services\Valuation;
 
-use App\Models\MarketPriceSnapshot;
 use App\Models\PropertyValuation;
 
 class ValuationResult
@@ -17,7 +16,7 @@ class ValuationResult
         public readonly string  $diagnosis,
         public readonly string  $confidence,
         public readonly array   $adjustments,
-        public readonly ?MarketPriceSnapshot $snapshot = null,
+        public readonly ?object $snapshot = null,  // MarketZoneSnapshot | MarketPriceSnapshot
     ) {}
 
     public static function insufficientData(PropertyValuation $v): self
