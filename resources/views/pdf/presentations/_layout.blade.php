@@ -227,7 +227,14 @@ strong { color: #1e293b; }
     @endif
 
     @if(!empty($photoUrl))
-      <img src="{{ $photoUrl }}" class="cover-photo" alt="Inmueble">
+      <div style="position:relative;margin-bottom:22px;">
+        <img src="{{ $photoUrl }}" class="cover-photo" alt="Inmueble" style="margin-bottom:0;">
+        @if(!empty($photoIsStreetView))
+        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);border-radius:4px;padding:2px 7px;font-size:7px;color:rgba(255,255,255,.8);letter-spacing:.5px;">
+          📍 Vista de calle · reemplaza con foto real
+        </div>
+        @endif
+      </div>
     @else
       <div class="cover-photo-ph">Fotografía del inmueble</div>
     @endif

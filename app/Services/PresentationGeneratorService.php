@@ -323,6 +323,26 @@ class PresentationGeneratorService
             ]);
         }
 
+        // Fallback: Street View de fachada cuando no hay foto subida pero sí hay dirección
+        if (! $photoUrl && config('services.google_maps.key')) {
+            $svParts = array_filter([
+                $property?->address,
+                $property?->colony,
+                $property?->city ?: 'Benito Juárez, CDMX',
+                'México',
+            ]);
+            if (count($svParts) >= 2) {
+                $photoUrl = 'https://maps.googleapis.com/maps/api/streetview?' . http_build_query([
+                    'size'              => '800x450',
+                    'location'         => implode(', ', $svParts),
+                    'fov'              => '90',
+                    'pitch'            => '5',
+                    'key'              => config('services.google_maps.key'),
+                    'return_error_code' => 'true',
+                ]);
+            }
+        }
+
         // Logos desde SiteSetting (claro para fondo blanco, oscuro para fondo navy)
         $logoUrl     = null;
         $logoDarkUrl = null;
@@ -367,6 +387,9 @@ class PresentationGeneratorService
             'fechaPresentacion'  => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
             'sloganHDV'          => 'Pocos inmuebles. Más control. Mejores resultados.',
             'photoUrl'           => $overrides['photo_url'] ?? $photoUrl,
+            'photoIsStreetView'  => ! isset($overrides['photo_url'])
+                                    && $photoUrl !== null
+                                    && str_contains($photoUrl, 'maps.googleapis.com/maps/api/streetview'),
             'logoUrl'            => $logoUrl,
             'logoDarkUrl'        => $logoDarkUrl,
             // Datos de mercado del observatorio

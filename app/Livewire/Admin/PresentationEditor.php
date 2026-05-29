@@ -5,7 +5,9 @@ namespace App\Livewire\Admin;
 use App\Models\Captacion;
 use App\Services\PresentationGeneratorService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 /**
  * Editor reactivo de la presentación inicial.
@@ -14,6 +16,8 @@ use Livewire\Component;
  */
 class PresentationEditor extends Component
 {
+    use WithFileUploads;
+
     public int    $captacionId;
     public string $commission_pct  = '5';   // para venta = %; para renta = meses
     public string $price_suggested = '';
@@ -29,6 +33,9 @@ class PresentationEditor extends Component
     // Estado de envío
     public string $emailStatus = '';
     public string $waUrl       = '';
+
+    // Foto de portada (upload temporal)
+    public $coverPhoto = null;
 
     public function mount(Captacion $captacion): void
     {
@@ -49,6 +56,46 @@ class PresentationEditor extends Component
     public function updatedCommissionPct(): void  { $this->regenerate(); }
     public function updatedPriceSuggested(): void { $this->regenerate(); }
     public function updatedMarketingPlan(): void  { $this->regenerate(); }
+
+    public function updatedCoverPhoto(): void
+    {
+        if (! $this->coverPhoto) return;
+
+        $this->validate(['coverPhoto' => 'image|max:10240']);
+
+        $captacion = Captacion::find($this->captacionId);
+        if (! $captacion) return;
+
+        try {
+            // Reemplaza la foto de portada (elimina la anterior si existe)
+            $captacion->clearMediaCollection('property_photos');
+            $captacion
+                ->addMedia($this->coverPhoto->getRealPath())
+                ->usingFileName('portada-' . time() . '.' . $this->coverPhoto->extension())
+                ->toMediaCollection('property_photos');
+
+            $this->coverPhoto = null;
+            $this->regenerate();
+        } catch (\Throwable $e) {
+            Log::error('PresentationEditor: error al guardar foto de portada', [
+                'captacion_id' => $this->captacionId,
+                'error'        => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /** Elimina la foto subida y vuelve al Street View (o placeholder) */
+    public function removeCoverPhoto(): void
+    {
+        $captacion = Captacion::find($this->captacionId);
+        if (! $captacion) return;
+
+        try {
+            $captacion->clearMediaCollection('property_photos');
+        } catch (\Throwable) {}
+
+        $this->regenerate();
+    }
 
     public function regenerate(): void
     {
@@ -87,6 +134,16 @@ class PresentationEditor extends Component
         $marketSnapshot = app(\App\Services\PresentationGeneratorService::class)
             ->getMarketSnapshot($captacion);
 
-        return view('livewire.admin.presentation-editor', compact('captacion', 'marketSnapshot'));
+        // Estado de la foto de portada: 'uploaded' | 'street_view' | 'none'
+        $coverSource = 'none';
+        try {
+            if ($captacion->getMedia('property_photos')->isNotEmpty()) {
+                $coverSource = 'uploaded';
+            } elseif ($captacion->property?->address && config('services.google_maps.key')) {
+                $coverSource = 'street_view';
+            }
+        } catch (\Throwable) {}
+
+        return view('livewire.admin.presentation-editor', compact('captacion', 'marketSnapshot', 'coverSource'));
     }
 }

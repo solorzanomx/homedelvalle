@@ -93,6 +93,40 @@
                 style="width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.83rem;line-height:1.6;resize:vertical;">{{ $marketing_plan }}</textarea>
     </div>
 
+    {{-- ── Foto de portada ─────────────────────────────────────────── --}}
+    <div>
+      <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
+        Foto de portada
+        <span style="font-weight:400;color:var(--text-muted);font-size:.75rem;">(aparece en pág. 1)</span>
+      </label>
+
+      {{-- Estado actual de la foto --}}
+      @if($coverSource === 'uploaded')
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:.45rem .75rem;font-size:.75rem;color:#166534;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;">
+        <span>✅ Foto real subida</span>
+        <button wire:click="removeCoverPhoto" wire:confirm="¿Eliminar la foto? Se usará Street View si hay dirección." style="background:none;border:none;color:#dc2626;font-size:.72rem;cursor:pointer;padding:0;">
+          × Quitar
+        </button>
+      </div>
+      @elseif($coverSource === 'street_view')
+      <div style="background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:.45rem .75rem;font-size:.75rem;color:#713f12;margin-bottom:.5rem;">
+        📍 Usando vista de calle automática — sube una foto real para mayor impacto
+      </div>
+      @else
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.45rem .75rem;font-size:.75rem;color:#64748b;margin-bottom:.5rem;">
+        Sin foto · agrega la dirección del inmueble para usar Street View automáticamente
+      </div>
+      @endif
+
+      {{-- Upload --}}
+      <input wire:model="coverPhoto" type="file" accept="image/*"
+             style="font-size:.82rem;color:var(--text-muted);">
+      <div wire:loading wire:target="coverPhoto" style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem;">
+        Subiendo y regenerando PDF...
+      </div>
+      @error('coverPhoto') <span style="font-size:.75rem;color:var(--danger);margin-top:.25rem;display:block;">{{ $message }}</span> @enderror
+    </div>
+
     <button wire:click="regenerate" wire:loading.attr="disabled" class="btn btn-outline btn-sm" style="align-self:flex-start;">
       <span wire:loading.remove wire:target="regenerate">
         <x-icon name="plus" class="w-3 h-3" />
