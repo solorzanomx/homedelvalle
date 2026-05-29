@@ -13,6 +13,7 @@ class MarketZoneSnapshot extends Model
         'price_m2_low', 'price_m2_avg', 'price_m2_high',
         'sample_size', 'listings_found', 'confidence',
         'source', 'source_raw', 'notes',
+        'is_validated', 'validated_by', 'validated_at',
     ];
 
     protected $casts = [
@@ -20,6 +21,8 @@ class MarketZoneSnapshot extends Model
         'price_m2_low'  => 'decimal:2',
         'price_m2_avg'  => 'decimal:2',
         'price_m2_high' => 'decimal:2',
+        'is_validated'  => 'boolean',
+        'validated_at'  => 'datetime',
     ];
 
     public function zone(): BelongsTo
@@ -29,8 +32,56 @@ class MarketZoneSnapshot extends Model
 
     // ─── Scopes ───────────────────────────────────────────────────────────────
 
-    public function scopeForSale($q)   { $q->where('operation_type', 'sale'); }
-    public function scopeForRent($q)   { $q->where('operation_type', 'rent'); }
+    public function scopeForSale($q)      { $q->where('operation_type', 'sale'); }
+    public function scopeForRent($q)      { $q->where('operation_type', 'rent'); }
+    public function scopeValidated($q)    { $q->where('is_validated', true); }
+
+    // ─── Validation helpers ───────────────────────────────────────────────────
+
+    /**
+     * ¿Tiene algún snapshot validado por agente en los últimos 3 meses?
+     */
+    public static function isZoneValidated(int $zoneId): bool
+    {
+        return static::where('market_zone_id', $zoneId)
+            ->where('is_validated', true)
+            ->where('period', '>=', now()->subMonths(3)->startOfMonth())
+            ->exists();
+    }
+
+    /**
+     * Nombre del agente que validó (el más reciente).
+     */
+    public static function validatedBy(int $zoneId): ?string
+    {
+        return static::where('market_zone_id', $zoneId)
+            ->where('is_validated', true)
+            ->orderByDesc('validated_at')
+            ->value('validated_by');
+    }
+
+    /**
+     * Marca todos los snapshots recientes de una zona como validados.
+     */
+    public static function validateZone(int $zoneId, string $agentName): int
+    {
+        return static::where('market_zone_id', $zoneId)
+            ->where('period', '>=', now()->subMonths(3)->startOfMonth())
+            ->update([
+                'is_validated' => true,
+                'validated_by' => $agentName,
+                'validated_at' => now(),
+            ]);
+    }
+
+    /**
+     * Revoca la validación de una zona.
+     */
+    public static function revokeValidation(int $zoneId): int
+    {
+        return static::where('market_zone_id', $zoneId)
+            ->update(['is_validated' => false, 'validated_by' => null, 'validated_at' => null]);
+    }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 

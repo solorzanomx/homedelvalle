@@ -7,6 +7,7 @@ use App\Models\MarketColonia;
 use App\Models\MarketUpdateRun;
 use App\Models\MarketZone;
 use App\Models\MarketZoneSnapshot;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class MarketPricesMonitor extends Component
@@ -96,6 +97,28 @@ class MarketPricesMonitor extends Component
         }
     }
 
+    // ─── Validación por agente ───────────────────────────────────────────────
+
+    public function validateZone(int $zoneId): void
+    {
+        try {
+            $count = MarketZoneSnapshot::validateZone($zoneId, 'Agente HDV');
+            session()->flash('success', "✓ {$count} snapshots validados para esta zona.");
+        } catch (\Throwable $e) {
+            session()->flash('error', 'Error al validar: ' . $e->getMessage());
+        }
+    }
+
+    public function revokeValidation(int $zoneId): void
+    {
+        try {
+            MarketZoneSnapshot::revokeValidation($zoneId);
+            session()->flash('success', 'Validación revocada.');
+        } catch (\Throwable $e) {
+            session()->flash('error', 'Error al revocar: ' . $e->getMessage());
+        }
+    }
+
     // ─── Render ─────────────────────────────────────────────────────────────
 
     public function render()
@@ -124,10 +147,15 @@ class MarketPricesMonitor extends Component
 
         $lastPeriod    = MarketZoneSnapshot::max('period');
 
+        // Estado de validación por zona
+        $validationStatus = $zones->mapWithKeys(fn($z) => [
+            $z->id => MarketZoneSnapshot::isZoneValidated($z->id)
+        ]);
+
         return view('livewire.admin.market-prices-monitor', compact(
             'zones', 'allSnapshots', 'recentRuns',
             'hasActiveJobs', 'totalRuns', 'doneRuns', 'failedRuns', 'pendingRuns',
-            'lastPeriod',
+            'lastPeriod', 'validationStatus',
         ));
     }
 }

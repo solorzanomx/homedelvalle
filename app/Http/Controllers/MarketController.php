@@ -57,12 +57,17 @@ class MarketController extends Controller
         $chartSale = MarketZoneSnapshot::chartDataForZone($zone->id, 'sale', 'apartment', 'mid', 12);
         $chartRent = MarketZoneSnapshot::chartDataForZone($zone->id, 'rent', 'apartment', 'mid', 12);
 
+        // Validación por agente
+        $isValidated = MarketZoneSnapshot::isZoneValidated($zone->id);
+        $validatedBy = MarketZoneSnapshot::validatedBy($zone->id);
+
         return view('public.mercado.zone', compact(
             'zone', 'allZones', 'colonias',
             'saleSnaps', 'rentSnaps',
             'saleMeta', 'rentMeta',
             'heroPriceSale',
             'chartSale', 'chartRent',
+            'isValidated', 'validatedBy',
         ));
     }
 

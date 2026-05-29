@@ -1,6 +1,12 @@
 {{-- Polling activo solo cuando hay jobs en proceso --}}
 <div @if($hasActiveJobs) wire:poll.4000ms @endif>
 
+@if(session('success'))
+<div class="alert alert-success" style="margin-bottom:1rem;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;padding:.75rem 1rem;border-radius:var(--radius);display:flex;justify-content:space-between;align-items:center;">
+    {{ session('success') }}
+    <button style="background:none;border:none;cursor:pointer;color:#166534;font-size:1rem;" onclick="this.parentElement.remove()">×</button>
+</div>
+@endif
 @if(session('error'))
 <div class="alert alert-danger" style="margin-bottom:1rem;">
     {{ session('error') }}
@@ -264,6 +270,32 @@
     @elseif(!$runRent?->isActive())
     <div class="zone-no-data" style="border-color:#ddd8fe;color:#a78bfa;">Sin datos de renta</div>
     @endif
+
+    {{-- ── Validación por agente ────────────────────────────────────── --}}
+    @php $isValidated = $validationStatus[$zone->id] ?? false; @endphp
+    <div style="padding:.5rem .75rem;border-top:1px dashed #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:.5rem;">
+        @if($isValidated)
+        <span style="font-size:.72rem;color:#16a34a;font-weight:600;display:flex;align-items:center;gap:.3rem;">
+            ✓ Validado por agente HDV
+        </span>
+        <button wire:click="revokeValidation({{ $zone->id }})"
+                wire:loading.attr="disabled"
+                wire:target="revokeValidation({{ $zone->id }})"
+                style="font-size:.68rem;color:#9ca3af;background:none;border:none;cursor:pointer;padding:.2rem .4rem;border-radius:4px;"
+                title="Revocar validación">
+            Revocar
+        </button>
+        @else
+        <span style="font-size:.72rem;color:#9ca3af;">Sin validar</span>
+        <button wire:click="validateZone({{ $zone->id }})"
+                wire:loading.attr="disabled"
+                wire:target="validateZone({{ $zone->id }})"
+                style="font-size:.72rem;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;padding:.25rem .65rem;border-radius:6px;cursor:pointer;font-weight:600;">
+            <span wire:loading.remove wire:target="validateZone({{ $zone->id }})">✓ Validar datos</span>
+            <span wire:loading wire:target="validateZone({{ $zone->id }})">Guardando...</span>
+        </button>
+        @endif
+    </div>
 
     {{-- ── Botones de actualización ───────────────────────────────── --}}
     <div class="zone-card-actions">

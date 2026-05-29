@@ -145,13 +145,20 @@
                 · Referencias de mercado, no avalúos
             </p>
         </div>
-        @if($saleMeta['total_listings'] > 0)
-        <div style="display:flex;align-items:center;gap:.4rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.35rem .75rem;font-size:.72rem;color:#166534;">
-            <span style="width:7px;height:7px;border-radius:50%;background:{{ match($saleMeta['confidence'] ?? '') {'high'=>'#16a34a','medium'=>'#d97706',default=>'#94a3b8'} }};flex-shrink:0;display:inline-block;"></span>
-            Basado en {{ $saleMeta['total_listings'] }} listings ·
-            {{ match($saleMeta['confidence'] ?? '') {'high'=>'Alta confianza','medium'=>'Confianza media',default=>'Confianza estimada'} }}
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;">
+            @if($isValidated)
+            <div style="display:flex;align-items:center;gap:.4rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.35rem .75rem;font-size:.72rem;color:#166534;font-weight:600;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;flex-shrink:0;display:inline-block;"></span>
+                Verificado por agente Home del Valle
+            </div>
+            @elseif($saleMeta['total_listings'] > 0)
+            <div style="display:flex;align-items:center;gap:.4rem;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:.35rem .75rem;font-size:.72rem;color:#6b7280;">
+                <span style="width:7px;height:7px;border-radius:50%;background:{{ match($saleMeta['confidence'] ?? '') {'high'=>'#16a34a','medium'=>'#d97706',default=>'#94a3b8'} }};flex-shrink:0;display:inline-block;"></span>
+                {{ $saleMeta['total_listings'] }} anuncios analizados ·
+                {{ match($saleMeta['confidence'] ?? '') {'high'=>'Alta confianza','medium'=>'Confianza media',default=>'Confianza estimada'} }}
+            </div>
+            @endif
         </div>
-        @endif
     </div>
 
     @php
@@ -223,12 +230,49 @@
         @endif
     </div>
 
-    {{-- Nota metodológica --}}
-    <div style="margin-top:1.25rem;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:.85rem 1.1rem;font-size:.78rem;color:#92400e;line-height:1.55;">
-        <strong>¿Qué son estos precios?</strong>
-        Son referencias de mercado calculadas a partir de anuncios publicados en portales inmobiliarios (Inmuebles24, Lamudi, Propiedades.com, entre otros).
-        El precio real de tu inmueble depende de sus características específicas: superficie exacta, estado de conservación, piso, estacionamiento y amenidades.
-        <a href="{{ route('mercado.opinion') }}" style="color:#92400e;font-weight:600;">Solicita una opinión de valor personalizada →</a>
+    {{-- Badge de metodología expandible --}}
+    <div x-data="{ open: false }" style="margin-top:1.25rem;">
+        <button @click="open = !open"
+                style="width:100%;display:flex;justify-content:space-between;align-items:center;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:.75rem 1.1rem;cursor:pointer;font-size:.8rem;color:#374151;font-weight:500;text-align:left;">
+            <span style="display:flex;align-items:center;gap:.5rem;">
+                <span style="font-size:.9rem;">🔍</span>
+                ¿Cómo calculamos estos precios?
+            </span>
+            <span x-text="open ? '−' : '+'" style="color:#9ca3af;font-size:1rem;flex-shrink:0;"></span>
+        </button>
+        <div x-show="open" x-transition style="display:none;">
+            <div style="background:#f8fafc;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:1rem 1.1rem;font-size:.8rem;color:#4b5563;line-height:1.7;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1rem;">
+                    <div>
+                        <div style="font-weight:600;color:#111827;margin-bottom:.3rem;">📊 Fuentes de datos</div>
+                        Analizamos anuncios publicados en Inmuebles24, Lamudi, Propiedades.com, Metros Cúbicos, MercadoLibre Inmuebles y otros portales inmobiliarios.
+                    </div>
+                    <div>
+                        <div style="font-weight:600;color:#111827;margin-bottom:.3rem;">📐 Metodología</div>
+                        Calculamos el precio por m² de construcción de cada anuncio, eliminamos valores atípicos (método IQR) y segmentamos por antigüedad del inmueble.
+                    </div>
+                    <div>
+                        <div style="font-weight:600;color:#111827;margin-bottom:.3rem;">📅 Actualización</div>
+                        Promedio móvil de los últimos 3 meses. Se actualiza el 1° de cada mes. Los rangos mostrados (±10%) reflejan la variación real del mercado.
+                    </div>
+                    <div>
+                        <div style="font-weight:600;color:#111827;margin-bottom:.3rem;">🏷️ Clasificación de edad</div>
+                        Estándar bancario SHF: <strong>Nuevo</strong> (0–5 años), <strong>Seminuevo</strong> (6–20 años), <strong>Antiguo</strong> (+20 años).
+                    </div>
+                </div>
+                @if($isValidated)
+                <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.6rem .9rem;font-size:.75rem;color:#166534;display:flex;align-items:flex-start;gap:.5rem;">
+                    <span>✓</span>
+                    <span>Los datos de esta zona han sido <strong>revisados y verificados</strong> por un agente de Home del Valle, quien confirmó que los rangos de precio son consistentes con el mercado actual.</span>
+                </div>
+                @else
+                <div style="color:#9ca3af;font-size:.75rem;">
+                    ⚠️ Estos son precios de referencia estadísticos, no avalúos formales. El valor real de un inmueble específico depende de sus características, estado de conservación y condiciones de negociación.
+                    <a href="{{ route('mercado.opinion') }}" style="color:#2563eb;font-weight:600;">Solicita una opinión de valor personalizada →</a>
+                </div>
+                @endif
+            </div>
+        </div>
     </div>
 </section>
 
