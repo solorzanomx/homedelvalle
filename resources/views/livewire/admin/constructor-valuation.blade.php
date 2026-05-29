@@ -788,6 +788,187 @@
 </div>
 
 {{-- ╔══════════════════════════════════╗
+     ║  TABLA DE ESCENARIOS             ║
+     ╚══════════════════════════════════╝ --}}
+@if($observatorioPrice && $r['m2_vendibles'] > 0)
+@php
+    // Cálculo de escenarios usando la misma estructura de costos fijos
+    // Solo varía el precio de venta (y en consecuencia: ventas, comercialización, residual)
+    $sc_m2v       = $r['m2_vendibles'];
+    $sc_brutos    = $r['m2_brutos'];
+    $sc_cc        = (float)$costoConstruccion;
+    $sc_pterreno  = $precioMode === 'per_m2' && $derivedTot
+                    ? (float)$derivedTot
+                    : (float)str_replace([',',' '], '', $precioTerreno ?: '0');
+
+    // Costos que NO cambian con el precio de venta
+    $sc_construccion = $sc_brutos * $sc_cc;
+    $sc_indirectos   = $sc_construccion * 0.10;
+    $sc_permisos     = $sc_construccion * 0.05;
+    $sc_fin_obra     = $sc_construccion * 0.10;
+    $sc_fijos        = $sc_construccion + $sc_indirectos + $sc_permisos + $sc_fin_obra;
+
+    $sc_mults = [
+        '1.00' => ['label' => 'Base Obs.', 'color' => '#94a3b8'],
+        '1.10' => ['label' => '+10%',      'color' => '#64748b'],
+        '1.15' => ['label' => '+15%',      'color' => '#0369a1'],
+        '1.20' => ['label' => '+20%',      'color' => '#6d28d9'],
+        '1.25' => ['label' => '+25%',      'color' => '#b45309'],
+        '1.30' => ['label' => '+30%',      'color' => '#b91c1c'],
+    ];
+
+    $sc_rows = [];
+    foreach ($sc_mults as $mult_key => $meta) {
+        $mult       = (float)$mult_key;
+        $pvm2       = (int)round($observatorioPrice * $mult);
+        $ventas     = $sc_m2v * $pvm2;
+        $comerc     = $ventas * 0.04;
+        $costos_st  = $sc_fijos + $comerc;
+        $utilidad_obj = $ventas * 0.22;
+        $residual   = ($ventas - $costos_st - $utilidad_obj) / 1.20;
+        $oferta     = $residual * 0.88;
+        $oferta_m2  = $residual > 0 && ($m2Float > 0) ? (int)round($oferta / $m2Float) : 0;
+
+        // ROI al precio pedido por el propietario
+        $costo_total_sc = $costos_st + $sc_pterreno + ($sc_pterreno * 0.20);
+        $roi_sc = $costo_total_sc > 0 ? round(($ventas - $costo_total_sc) / $costo_total_sc * 100, 1) : -999;
+        $inc_sc = ($pvm2 > 0 && $sc_m2v > 0) ? round($sc_pterreno / $sc_m2v / $pvm2 * 100, 1) : 0;
+
+        $verdict_sc = $roi_sc >= 22 ? 'compra_directa' : ($roi_sc >= 17 ? 'viable' : ($roi_sc >= 8 ? 'negocia' : 'descarta'));
+        $verdict_icon = match($verdict_sc) {
+            'compra_directa' => ['✅', '#059669'],
+            'viable'         => ['👍', '#d97706'],
+            'negocia'        => ['⚠️', '#d97706'],
+            default          => ['🚫', '#dc2626'],
+        };
+        $is_current = ($mult_key === $precioMultiplier) || (abs($pvm2 - (int)str_replace([',',' '],'', $precioVentaM2 ?: '0')) < 500);
+
+        $sc_rows[] = compact('mult_key','meta','pvm2','residual','oferta','oferta_m2','roi_sc','inc_sc','verdict_sc','verdict_icon','is_current');
+    }
+@endphp
+<div class="card" style="margin-bottom:.85rem;border-top:3px solid #f59e0b;">
+<div class="card-body" style="padding:.85rem 1.1rem;">
+    <div style="font-size:.7rem;font-weight:700;color:#0f172a;margin-bottom:.2rem;">
+        🎯 Tabla de escenarios — ¿a qué precio de venta puede el constructor pagar más por el terreno?
+    </div>
+    <div style="font-size:.65rem;color:#64748b;margin-bottom:.75rem;line-height:1.5;">
+        Cambiando el precio al que el constructor venderá los departamentos, cambia cuánto puede pagar
+        por el terreno. Úsala para saber <strong>a qué precio debes salir a vender el terreno</strong>
+        y qué precio de nuevos deptos hace el negocio viable.
+        @if($sc_pterreno > 0)
+        Precio del terreno analizado: <strong>${{ number_format((int)$sc_pterreno) }}</strong>
+        @endif
+    </div>
+
+    {{-- Tabla --}}
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:.7rem;">
+        <thead>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;">
+                <th style="padding:.4rem .5rem;text-align:left;font-weight:700;color:#475569;white-space:nowrap;">Premium</th>
+                <th style="padding:.4rem .5rem;text-align:right;font-weight:700;color:#475569;white-space:nowrap;">$/m² venta</th>
+                <th style="padding:.4rem .5rem;text-align:right;font-weight:700;color:#475569;white-space:nowrap;">Residual máx</th>
+                <th style="padding:.4rem .5rem;text-align:right;font-weight:700;color:#475569;white-space:nowrap;">Oferta sugerida</th>
+                <th style="padding:.4rem .5rem;text-align:right;font-weight:700;color:#475569;white-space:nowrap;">ROI actual</th>
+                <th style="padding:.4rem .5rem;text-align:center;font-weight:700;color:#475569;">Verdict</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach($sc_rows as $sc)
+        @php
+            $rowBg = $sc['is_current'] ? '#faf5ff' : 'transparent';
+            $rowBorder = $sc['is_current'] ? '2px solid #6366f1' : '1px solid #f1f5f9';
+        @endphp
+        <tr style="background:{{ $rowBg }};border-left:{{ $rowBorder }};border-bottom:1px solid #f1f5f9;
+                   {{ $sc['is_current'] ? 'font-weight:700;' : '' }}">
+            <td style="padding:.45rem .5rem;">
+                @if($sc['is_current'])<span style="color:#6366f1;font-size:.65rem;margin-right:.2rem;">★</span>@endif
+                <span style="color:{{ $sc['meta']['color'] }};font-weight:600;">{{ $sc['meta']['label'] }}</span>
+                <div style="font-size:.6rem;color:#94a3b8;font-weight:400;">${{ number_format((int)($observatorioPrice * (float)$sc['mult_key'])) }}/m²</div>
+            </td>
+            <td style="padding:.45rem .5rem;text-align:right;font-weight:600;color:#0f172a;">
+                ${{ number_format($sc['pvm2']) }}
+            </td>
+            <td style="padding:.45rem .5rem;text-align:right;color:{{ $sc['residual']>0?'#1d4ed8':'#dc2626' }};">
+                @if($sc['residual'] > 0)
+                ${{ number_format((int)round($sc['residual'])) }}
+                <div style="font-size:.58rem;color:#94a3b8;font-weight:400;">${{ $sc['oferta_m2'] > 0 ? number_format($sc['oferta_m2']).'/' : '' }}m²</div>
+                @else
+                <span style="color:#dc2626;">—</span>
+                @endif
+            </td>
+            <td style="padding:.45rem .5rem;text-align:right;font-weight:700;
+                color:{{ $sc['oferta'] > 0 ? '#059669' : '#dc2626' }};">
+                @if($sc['oferta'] > 0)
+                ${{ number_format((int)round($sc['oferta'])) }}
+                @else —
+                @endif
+            </td>
+            <td style="padding:.45rem .5rem;text-align:right;
+                color:{{ $sc['roi_sc'] >= 20 ? '#059669' : ($sc['roi_sc'] >= 15 ? '#d97706' : '#dc2626') }};">
+                @if($sc['roi_sc'] > -500)
+                {{ $sc['roi_sc'] }}%
+                @else —
+                @endif
+            </td>
+            <td style="padding:.45rem .5rem;text-align:center;font-size:.78rem;">
+                {{ $sc['verdict_icon'][0] }}
+            </td>
+        </tr>
+        @endforeach
+        </tbody>
+    </table>
+    </div>
+
+    {{-- Leyenda y recomendación --}}
+    <div style="margin-top:.75rem;background:#f8fafc;border-radius:6px;padding:.55rem .75rem;font-size:.68rem;color:#475569;line-height:1.6;">
+        <div style="font-weight:700;color:#0f172a;margin-bottom:.2rem;">💡 Cómo usar esta tabla para negociar el terreno:</div>
+        @php
+            // Encontrar el escenario mínimo viable (ROI >= 17%)
+            $primer_viable = collect($sc_rows)->first(fn($s) => $s['roi_sc'] >= 17);
+            $mejor_viable  = collect($sc_rows)->last(fn($s) => $s['roi_sc'] >= 17);
+        @endphp
+        @if($primer_viable)
+        <div>
+            → Con un precio de venta de departamentos de
+            <strong>${{ number_format($primer_viable['pvm2']) }}/m²</strong>
+            (+{{ round(($primer_viable['pvm2'] - $observatorioPrice) / $observatorioPrice * 100) }}% sobre Obs.),
+            el constructor puede pagar hasta
+            <strong style="color:#1d4ed8;">${{ number_format((int)round($primer_viable['residual'])) }}</strong>
+            por el terreno con ROI viable.
+        </div>
+        @if($sc_pterreno > 0)
+        @php $gap = $sc_pterreno - $primer_viable['oferta']; @endphp
+        @if($gap > 0)
+        <div style="margin-top:.25rem;">
+            → <strong style="color:#dc2626;">El terreno está ${{ number_format((int)$gap) }} por encima</strong>
+            de lo que el constructor puede pagar en el escenario más favorable de precio mínimo viable.
+            Necesitas que el precio de venta sea al menos <strong>${{ number_format($primer_viable['pvm2']) }}/m²</strong>
+            o negociar el precio del terreno a la baja.
+        </div>
+        @elseif($mejor_viable)
+        <div style="margin-top:.25rem;">
+            → <strong style="color:#059669;">El terreno encaja bien</strong>
+            en el rango de escenarios viables.
+            Precio de salida recomendado:
+            <strong style="color:#1d4ed8;">${{ number_format((int)round($mejor_viable['oferta'])) }}</strong>
+            (escenario +{{ round(($mejor_viable['pvm2'] - $observatorioPrice) / $observatorioPrice * 100) }}%
+            sobre Obs.).
+        </div>
+        @endif
+        @endif
+        @else
+        <div style="color:#dc2626;">
+            → Con el precio actual del terreno, ningún escenario de precio de venta llega a ROI viable (17%+).
+            El terreno requiere una baja significativa de precio para ser atractivo para un constructor.
+        </div>
+        @endif
+    </div>
+</div>
+</div>
+@endif
+
+{{-- ╔══════════════════════════════════╗
      ║  INDICADORES SECUNDARIOS         ║
      ╚══════════════════════════════════╝ --}}
 <div class="card" style="margin-bottom:.85rem;">
