@@ -46,10 +46,17 @@ class EmailService
             return null;
         }
 
+        // Resend SMTP requiere username = "resend" literalmente.
+        // Si el campo está vacío o contiene un email, usar 'resend'.
+        $smtpUsername = $global->username;
+        if (empty($smtpUsername) || str_contains($smtpUsername, '@')) {
+            $smtpUsername = str_contains($global->smtp_server ?? '', 'resend.com') ? 'resend' : $smtpUsername;
+        }
+
         return (object) [
             'host' => $global->smtp_server,
             'port' => $global->port,
-            'username' => $global->username ?: $global->from_email,
+            'username' => $smtpUsername ?: $global->from_email,
             'password' => $global->password,
             'enable_ssl' => $global->enable_ssl,
             'ssl_mode' => null,
