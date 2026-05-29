@@ -204,11 +204,12 @@
             </div>
             @endif
             @include('public.mercado._price-table', [
-                'snaps'     => $rentSnaps,
-                'unitLabel' => '/m²/mes',
-                'accentColor'=> '#7c3aed',
-                'accentBg'   => '#faf5ff',
-                'showOffice' => true,
+                'snaps'       => $rentSnaps,
+                'unitLabel'   => '/m²/mes',
+                'accentColor' => '#7c3aed',
+                'accentBg'    => '#faf5ff',
+                'showOffice'  => true,
+                'showMonthly' => true,
             ])
         </div>
         @endif
