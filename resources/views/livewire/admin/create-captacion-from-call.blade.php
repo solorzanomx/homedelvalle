@@ -244,6 +244,37 @@
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
 
+            {{-- Antigüedad (categoría) --}}
+            <div class="form-group">
+                <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
+                    Antigüedad del inmueble
+                </label>
+                <select wire:model.live="age_category"
+                    style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;background:var(--card);">
+                    <option value="new">Nuevo (0–5 años)</option>
+                    <option value="mid" selected>Seminuevo (6–20 años)</option>
+                    <option value="old">Antiguo (+20 años)</option>
+                </select>
+                <span style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">Afecta hasta ±30% en la estimación</span>
+            </div>
+
+            {{-- Año de construcción --}}
+            <div class="form-group">
+                <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
+                    Año de construcción <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
+                </label>
+                <input wire:model.live="year_built" type="number" min="1900" max="{{ now()->year }}" placeholder="ej. 2010"
+                    style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
+                @if($year_built >= 1900 && $year_built <= now()->year)
+                <span style="font-size:.72rem;color:#059669;margin-top:.3rem;display:block;">
+                    ✓ {{ now()->year - $year_built }} años →
+                    {{ ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo'][$age_category] }}
+                </span>
+                @else
+                <span style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">Sincroniza la categoría de antigüedad automáticamente</span>
+                @endif
+            </div>
+
             {{-- Precio esperado --}}
             <div class="form-group">
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
@@ -307,12 +338,16 @@
     {{-- Cabecera del panel --}}
     <div style="background:linear-gradient(135deg,#1d4ed8 0%,#4f46e5 100%);border-radius:10px 10px 0 0;padding:.75rem 1rem;display:flex;align-items:center;gap:.5rem;">
         <span style="font-size:1rem;">📊</span>
-        <div>
+        <div style="flex:1;min-width:0;">
             <div style="font-size:.78rem;font-weight:700;color:#fff;letter-spacing:.3px;">Valor estimado en vivo</div>
-            <div style="font-size:.68rem;color:#bfdbfe;">{{ $q['colonia_name'] }} · {{ $q['m2_construction'] }} m²</div>
+            <div style="font-size:.68rem;color:#bfdbfe;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ $q['colonia_name'] }} · {{ $q['m2_construction'] }} m²
+                · {{ ['new'=>'Nuevo','mid'=>'Seminuevo','old'=>'Antiguo'][$q['age_category']] }}
+                @if($q['exact_age'] > 0) ({{ $q['exact_age'] }} años) @endif
+            </div>
         </div>
-        <div wire:loading wire:target="refreshLiveQuote" style="margin-left:auto;">
-            <span style="width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;display:inline-block;animation:spin 1s linear infinite;"></span>
+        <div wire:loading style="flex-shrink:0;">
+            <span style="width:14px;height:14px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;display:inline-block;animation:spin 1s linear infinite;"></span>
         </div>
     </div>
 

@@ -41,6 +41,8 @@ class CreateCaptacionFromCall extends Component
     public string $city             = 'CDMX';
     public string $address          = '';
     public string $area             = '';
+    public string $age_category     = 'mid';  // new | mid | old
+    public int    $year_built       = 0;       // año de construcción (0 = desconocido)
     public string $bedrooms         = '';
     public string $bathrooms        = '';
     public string $parking          = '';
@@ -120,9 +122,23 @@ class CreateCaptacionFromCall extends Component
 
     public function updatedPropertyType(): void { $this->refreshLiveQuote(); }
     public function updatedArea(): void          { $this->refreshLiveQuote(); }
+    public function updatedAgeCategory(): void   { $this->refreshLiveQuote(); }
     public function updatedBedrooms(): void      { $this->refreshLiveQuote(); }
     public function updatedBathrooms(): void     { $this->refreshLiveQuote(); }
     public function updatedParking(): void       { $this->refreshLiveQuote(); }
+
+    public function updatedYearBuilt(): void
+    {
+        if ($this->year_built >= 1900 && $this->year_built <= now()->year) {
+            $age = now()->year - $this->year_built;
+            $this->age_category = match(true) {
+                $age <= 5  => 'new',
+                $age <= 20 => 'mid',
+                default    => 'old',
+            };
+        }
+        $this->refreshLiveQuote();
+    }
 
     // ─── Actualizar plan de marketing cuando cambia el intent ────────────────
 
@@ -257,12 +273,18 @@ class CreateCaptacionFromCall extends Component
             ? (int) $this->parking
             : -1;
 
+        // Edad exacta: si se capturó año de construcción lo derivamos; si no, 0 (sin ajuste fino)
+        $exactAge = ($this->year_built >= 1900 && $this->year_built <= now()->year)
+            ? (now()->year - $this->year_built)
+            : 0;
+
         try {
             $this->liveQuote = app(QuickQuoteService::class)->calculate(
                 coloniaId:      (int) $this->colony_id,
                 propertyType:   $qqType,
                 m2Construction: (float) $this->area,
-                ageCategory:    'mid',           // sin año de construcción en el formulario
+                ageCategory:    $this->age_category ?: 'mid',
+                exactAge:       $exactAge,
                 bedrooms:       $this->bedrooms  ? (int) $this->bedrooms  : 0,
                 bathrooms:      $this->bathrooms ? (int) $this->bathrooms : 0,
                 parking:        $qqParking,
@@ -287,6 +309,7 @@ class CreateCaptacionFromCall extends Component
             'city'           => $this->city            ?: 'CDMX',
             'address'        => $this->address         ?: null,
             'area'           => $this->area            ? (float)$this->area    : null,
+            'year_built'     => ($this->year_built >= 1900 && $this->year_built <= now()->year) ? $this->year_built : null,
             'bedrooms'       => $this->bedrooms        ? (int)$this->bedrooms  : null,
             'bathrooms'      => $this->bathrooms       ? (int)$this->bathrooms : null,
             'parking'        => $this->parking         ? (int)$this->parking   : null,
