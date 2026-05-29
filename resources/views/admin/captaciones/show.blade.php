@@ -438,6 +438,9 @@
                 :m2Construction="$qM2"
                 :m2Land="$qLandM2"
                 :yearBuilt="$qYearBuilt"
+                :bedrooms="$qProperty?->bedrooms ?? 0"
+                :bathrooms="$qProperty?->bathrooms ?? 0"
+                :parking="$qProperty?->parking ?? -1"
                 :widgetMode="true"
                 wire:key="quick-quote-{{ $captacion->id }}"
             />

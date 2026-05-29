@@ -13,7 +13,7 @@
         </p>
     </div>
     <div class="card-body">
-        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:1rem;">
 
             {{-- Colonia --}}
             <div class="form-group full-width">
@@ -63,7 +63,50 @@
                 <label class="form-label">M² terreno <span style="color:#9ca3af;font-weight:400;">(opcional)</span></label>
                 <input type="number" wire:model="m2Land" class="form-input"
                        placeholder="ej. 120" min="0" step="1">
-                <span class="form-hint">Mejora la precisión del precio a constructor</span>
+                <span class="form-hint">Para precisar precio a constructor</span>
+            </div>
+
+            {{-- Edad exacta --}}
+            <div class="form-group">
+                <label class="form-label">Antigüedad exacta <span style="color:#9ca3af;font-weight:400;">(años)</span></label>
+                <input type="number" wire:model="exactAge" class="form-input"
+                       placeholder="ej. 12" min="0" max="100" step="1">
+                <span class="form-hint">Afina el rango dentro de la categoría</span>
+            </div>
+
+            {{-- Recámaras --}}
+            <div class="form-group">
+                <label class="form-label">Recámaras</label>
+                <select wire:model="bedrooms" class="form-select">
+                    <option value="0">— No especificado —</option>
+                    <option value="1">Studio / 1 rec.</option>
+                    <option value="2">2 recámaras</option>
+                    <option value="3">3 recámaras</option>
+                    <option value="4">4+ recámaras</option>
+                </select>
+            </div>
+
+            {{-- Baños --}}
+            <div class="form-group">
+                <label class="form-label">Baños</label>
+                <select wire:model="bathrooms" class="form-select">
+                    <option value="0">— No especificado —</option>
+                    <option value="1">1 baño</option>
+                    <option value="2">2 baños</option>
+                    <option value="3">3+ baños</option>
+                </select>
+            </div>
+
+            {{-- Estacionamiento --}}
+            <div class="form-group">
+                <label class="form-label">Estacionamiento</label>
+                <select wire:model="parking" class="form-select">
+                    <option value="-1">— No especificado —</option>
+                    <option value="0">Sin cajón</option>
+                    <option value="1">1 cajón</option>
+                    <option value="2">2 cajones</option>
+                    <option value="3">3+ cajones</option>
+                </select>
             </div>
 
         </div>
@@ -109,6 +152,22 @@
         Datos: {{ $result['period'] ?? 'recientes' }} · Zona {{ $result['zone_name'] }}
     </div>
 </div>
+
+{{-- Panel de ajustes aplicados --}}
+@if(!empty($result['adjustments']))
+<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:.65rem 1rem;margin-bottom:1rem;font-size:.78rem;">
+    <span style="font-weight:600;color:#0369a1;">Ajustes aplicados:</span>
+    @foreach($result['adjustments'] as $adj)
+    <span style="display:inline-block;margin-left:.5rem;background:#fff;border:1px solid #bae6fd;border-radius:4px;padding:.1rem .4rem;color:{{ $adj['pct'] > 0 ? '#16a34a' : '#dc2626' }};">
+        {{ $adj['label'] }}
+        {{ $adj['pct'] > 0 ? '+' : '' }}{{ round($adj['pct'] * 100, 0) }}%
+    </span>
+    @endforeach
+    <span style="margin-left:.5rem;color:#0369a1;font-weight:600;">
+        Total: {{ $result['total_adjustment'] > 0 ? '+' : '' }}{{ $result['total_adjustment'] }}%
+    </span>
+</div>
+@endif
 
 {{-- Grid de 4 escenarios --}}
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">

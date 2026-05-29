@@ -15,6 +15,10 @@ class QuickQuote extends Component
     public ?float  $m2Construction  = null;
     public ?float  $m2Land          = null;
     public string  $ageCategory     = 'mid';
+    public int     $exactAge        = 0;
+    public int     $bedrooms        = 0;
+    public int     $bathrooms       = 0;
+    public int     $parking         = -1;
 
     // ─── Estado ───────────────────────────────────────────────────────
     public ?array  $result          = null;
@@ -29,20 +33,26 @@ class QuickQuote extends Component
         ?float  $m2Construction = null,
         ?float  $m2Land         = null,
         ?int    $yearBuilt      = null,
+        ?int    $bedrooms       = null,
+        ?int    $bathrooms      = null,
+        ?int    $parking        = null,
         bool    $widgetMode     = false,
     ): void {
         $this->coloniaId      = $coloniaId;
         $this->propertyType   = $propertyType;
         $this->m2Construction = $m2Construction;
-        $this->m2Land         = $m2Land;
+        $this->m2Land         = $m2Land ?? 0;
+        $this->bedrooms       = $bedrooms  ?? 0;
+        $this->bathrooms      = $bathrooms ?? 0;
+        $this->parking        = $parking   ?? -1;
         $this->widgetMode     = $widgetMode;
 
         if ($yearBuilt) {
-            $age = now()->year - $yearBuilt;
+            $this->exactAge   = max(0, now()->year - $yearBuilt);
             $this->ageCategory = match(true) {
-                $age <= 5  => 'new',
-                $age <= 20 => 'mid',
-                default    => 'old',
+                $this->exactAge <= 5  => 'new',
+                $this->exactAge <= 20 => 'mid',
+                default               => 'old',
             };
         }
 
@@ -67,6 +77,10 @@ class QuickQuote extends Component
             m2Construction: (float) $this->m2Construction,
             m2Land:         (float) ($this->m2Land ?? 0),
             ageCategory:    $this->ageCategory,
+            exactAge:       (int) $this->exactAge,
+            bedrooms:       (int) $this->bedrooms,
+            bathrooms:      (int) $this->bathrooms,
+            parking:        (int) $this->parking,
         );
     }
 
