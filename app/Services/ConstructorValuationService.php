@@ -252,49 +252,88 @@ class ConstructorValuationService
      * @return array{cos:float, cus:float, pisos:int, uso:string, lote_min:int|null}|null
      *         null si el código no se puede parsear.
      */
+    /**
+     * Parsea una clave de zonificación PDDU / SEDUVI CDMX.
+     *
+     * ─── Dos formatos principales ──────────────────────────────────────────
+     *
+     * 1. Con variante de zona  →  [USO][PISOS] / [ZONA] / [AREA_LIBRE_%]
+     *    Ejemplo: H4/Z/20, HM8/Z/20, HC4/ZC/30
+     *    - La variante (/Z/, /ZC/, /ZB/...) indica zona especial del PDDU.
+     *    - El último número es % de ÁREA LIBRE MÍNIMA (porción del terreno
+     *      que debe quedar sin construir).
+     *    - COS = 1 − (área_libre% / 100)
+     *      ej. H4/Z/20 → 20% libre → COS = 0.80 → CUS = 0.80×4 = 3.20
+     *
+     * 2. Sin variante de zona  →  [USO][PISOS] / [LOTE_MIN_m²]
+     *    Ejemplo: H 3/30, HM 6/30, HC4/40, HM8/30
+     *    - El número final es el LOTE MÍNIMO en m².
+     *    - COS proviene del tipo de uso de suelo (ver tabla abajo).
+     *
+     * ─── COS por uso de suelo (sin variante de zona) ──────────────────────
+     *   H, HM, HA, HR        → 0.60
+     *   HC (Hab + Comercio)  → 0.80
+     *   CB, CE, CS, CI, CN   → 1.00
+     *   Otros / no conocido  → 0.60 (conservador)
+     *
+     * ─── CUS ──────────────────────────────────────────────────────────────
+     *   CUS = COS × pisos  (fórmula estándar PDDU)
+     */
     public function parseSedeviCode(string $rawCode): ?array
     {
-        // Normalizar: mayúsculas, colapsar espacios múltiples
         $code = strtoupper(trim(preg_replace('/\s+/', ' ', $rawCode)));
-
         if ($code === '') return null;
 
-        // Separar la parte alfanumérica inicial (uso) del resto numérico
-        // Acepta: "HM 6/30", "HM6/30", "HC4/Z/30", "HM-6/30", "HM6Z30", "H 3"
-        //  Grupo 1 → letras del uso de suelo
-        //  Grupo 2 → primer número encontrado (= niveles)
-        if (! preg_match('/^([A-Z]+)[\s\-\/]?(\d+)/i', $code, $m)) {
+        // Extrae uso (letras iniciales) y pisos (primer número)
+        if (! preg_match('/^([A-Z]+)[\s\-]?(\d+)(.*)/i', $code, $m)) {
             return null;
         }
 
         $uso   = $m[1];
         $pisos = (int) $m[2];
+        $rest  = $m[3];   // ej. "/Z/20", "/ZC/30", "/30", "/40", "/Z20"
 
         if ($pisos < 1 || $pisos > 40) return null;
 
-        // COS según uso de suelo
-        $cos = match(true) {
-            in_array($uso, ['HC'])                           => 0.80,
-            in_array($uso, ['CB', 'CE', 'CS', 'CI', 'CN']) => 1.00,
-            default                                          => 0.60,   // H, HM, HA, HR, E, otros
-        };
+        // ── Detectar si hay variante de zona ───────────────────────────────
+        // Patrón: /[LETRAS]/ seguido de número  → zona + área libre %
+        //         /[LETRAS][NÚMERO]             → zona + área libre % (sin segundo /)
+        // Patrón simple: /[NÚMERO]              → lote mínimo
+        $areaLibrePct = null;
+        $loteMin      = null;
+        $zonaVar      = null;
 
-        // Lote mínimo: buscar el último número en la clave (ej. /30, /40, /120)
-        preg_match_all('/\d+/', $code, $nums);
-        $allNums  = array_map('intval', $nums[0]);
-        $loteMin  = null;
-        // El primer número es los pisos; si hay un segundo distinto y razonable → lote mínimo
-        if (count($allNums) >= 2) {
-            $candidates = array_filter($allNums, fn($n) => $n !== $pisos && $n >= 20 && $n <= 1000);
-            $loteMin    = $candidates ? (int) reset($candidates) : null;
+        // Buscar variante de zona (letras después de delimitador, antes del número final)
+        // Ejemplos: /Z/20  /ZC/30  /ZB/20  /Z20  -Z/20
+        if (preg_match('/[\/\-\s]([A-Z]+)[\/\-\s]?(\d+)\s*$/', $rest, $zv)) {
+            $zonaVar      = $zv[1];
+            $areaLibrePct = (int) $zv[2];   // % área libre
+        } elseif (preg_match('/[\/\-\s](\d+)\s*$/', $rest, $lm)) {
+            // Sin variante de zona → número final = lote mínimo
+            $loteMin = (int) $lm[1];
+        }
+
+        // ── COS ────────────────────────────────────────────────────────────
+        if ($areaLibrePct !== null && $areaLibrePct > 0 && $areaLibrePct <= 80) {
+            // Variante de zona: COS = 1 − área_libre%
+            $cos = round(1.0 - ($areaLibrePct / 100), 2);
+        } else {
+            // Sin variante: COS según tipo de uso de suelo
+            $cos = match(true) {
+                $uso === 'HC'                                     => 0.80,
+                in_array($uso, ['CB', 'CE', 'CS', 'CI', 'CN'])   => 1.00,
+                default                                           => 0.60,
+            };
         }
 
         return [
-            'uso'      => $uso,
-            'pisos'    => $pisos,
-            'cos'      => $cos,
-            'cus'      => round($cos * $pisos, 2),
-            'lote_min' => $loteMin,
+            'uso'         => $uso,
+            'pisos'       => $pisos,
+            'cos'         => $cos,
+            'cus'         => round($cos * $pisos, 2),
+            'lote_min'    => $loteMin,
+            'area_libre'  => $areaLibrePct,   // % si aplica, null si no
+            'zona_var'    => $zonaVar,         // ej. 'Z', 'ZC', null si no aplica
         ];
     }
 

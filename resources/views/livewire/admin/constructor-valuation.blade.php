@@ -129,17 +129,30 @@
         {{-- Feedback del parser --}}
         @if($parsedZone)
         <div style="margin-top:.35rem;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;
-                    padding:.35rem .7rem;font-size:.72rem;color:#166534;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
-            <span>✅ Uso <strong>{{ $parsedZone['uso'] }}</strong></span>
-            <span>·</span>
-            <span><strong>{{ $parsedZone['pisos'] }}</strong> niveles</span>
-            <span>·</span>
-            <span>COS <strong>{{ $parsedZone['cos'] }}</strong></span>
-            <span>·</span>
-            <span>CUS <strong>{{ $parsedZone['cus'] }}</strong></span>
-            @if($parsedZone['lote_min'])
-            <span>·</span>
-            <span>Lote mín. <strong>{{ $parsedZone['lote_min'] }} m²</strong></span>
+                    padding:.4rem .75rem;font-size:.72rem;color:#166534;">
+            <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.2rem;">
+                <span>✅ Uso <strong>{{ $parsedZone['uso'] }}</strong></span>
+                <span>·</span>
+                <span><strong>{{ $parsedZone['pisos'] }}</strong> niveles</span>
+                <span>·</span>
+                <span>COS <strong>{{ $parsedZone['cos'] }}</strong>
+                    @if(($parsedZone['area_libre'] ?? null) !== null)
+                    <span style="font-weight:400;color:#15803d;">({{ 100 - (int)round($parsedZone['cos']*100) }}% área libre)</span>
+                    @endif
+                </span>
+                <span>·</span>
+                <span>CUS <strong>{{ $parsedZone['cus'] }}</strong></span>
+                @if(($parsedZone['zona_var'] ?? null))
+                <span>· Zona <strong>{{ $parsedZone['zona_var'] }}</strong></span>
+                @endif
+                @if(($parsedZone['lote_min'] ?? null))
+                <span>· Lote mín. <strong>{{ $parsedZone['lote_min'] }} m²</strong></span>
+                @endif
+            </div>
+            @if(($parsedZone['area_libre'] ?? null) !== null)
+            <div style="font-size:.66rem;color:#15803d;opacity:.85;">
+                Variante de zona · /{{ $parsedZone['zona_var'] }}/{{ $parsedZone['area_libre'] }} = {{ $parsedZone['area_libre'] }}% área libre mínima → COS {{ $parsedZone['cos'] }}
+            </div>
             @endif
         </div>
         @elseif($zonificacionLabel)
