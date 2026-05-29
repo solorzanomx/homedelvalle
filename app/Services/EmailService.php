@@ -103,7 +103,7 @@ class EmailService
         $config = $this->resolveSmtpConfig($sender);
 
         if (!$config) {
-            Log::warning('EmailService: No hay configuracion SMTP. Correo no enviado a ' . $to);
+            Log::error('EmailService: No hay configuracion SMTP. Correo no enviado a ' . $to);
             return false;
         }
 
@@ -143,7 +143,7 @@ class EmailService
         $template = EmailTemplate::where('name', $templateName)->first();
 
         if (!$template) {
-            Log::warning('EmailService: Template "' . $templateName . '" no encontrado.');
+            Log::error('EmailService: Template "' . $templateName . '" no encontrado en BD.');
             return false;
         }
 

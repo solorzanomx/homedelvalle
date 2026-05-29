@@ -149,6 +149,10 @@ class PresentationGeneratorService
 
         // Renombrar adjunto con nombre amigable
         $friendlyPath = dirname($pdfPath) . '/' . $pdfFileName;
+
+        if (!file_exists($pdfPath)) {
+            \Illuminate\Support\Facades\Log::error('PresentationGeneratorService: PDF no encontrado en ' . $pdfPath);
+        }
         copy($pdfPath, $friendlyPath);
 
         app(EmailService::class)->sendTemplate(
