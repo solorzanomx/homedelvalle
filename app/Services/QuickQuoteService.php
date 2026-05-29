@@ -124,13 +124,13 @@ class QuickQuoteService
                 $totalMid  = (int) round((float) $saleSnap->price_m2_avg  * $m2Construction * $constructorFactor / 50000) * 50000;
                 $totalHigh = (int) round((float) $saleSnap->price_m2_high * $m2Construction * $constructorFactor / 50000) * 50000;
                 $saleConstructor = [
-                    'low'      => $totalLow,
-                    'mid'      => $totalMid,
-                    'high'     => $totalHigh,
-                    'per_m2'   => (int) round((float) $saleSnap->price_m2_avg),
-                    'confidence'=> $saleSnap->confidence,
-                    'samples'  => $saleSnap->sample_size,
-                    'note'     => round($constructorFactor * 100) . '% del valor vivienda · Ingresa m² terreno para mayor precisión',
+                    'low'        => $totalLow,
+                    'mid'        => $totalMid,
+                    'high'       => $totalHigh,
+                    'per_m2'     => (int) round((float) $saleSnap->price_m2_avg * $constructorFactor),
+                    'confidence' => $saleSnap->confidence,
+                    'samples'    => $saleSnap->sample_size,
+                    'note'       => round($constructorFactor * 100) . '% del valor vivienda · Ingresa m² terreno para mayor precisión',
                 ];
             }
         }

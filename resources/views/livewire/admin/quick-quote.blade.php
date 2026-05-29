@@ -209,6 +209,7 @@
             </div>
             <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem;">
                 Promedio: <strong>${{ number_format($s['mid']) }}</strong>
+                @if(!empty($s['per_m2'])) · ${{ number_format($s['per_m2']) }}/m² @endif
             </div>
             @if($s['note'])
             <div style="font-size:.72rem;color:#92400e;background:#fffbeb;border-radius:6px;padding:.3rem .5rem;margin-bottom:.4rem;">
