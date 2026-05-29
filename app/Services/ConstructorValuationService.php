@@ -6,36 +6,73 @@ use App\Models\MarketColonia;
 use App\Models\MarketZoneSnapshot;
 
 /**
- * Valuación de terrenos para constructores.
- * Calcula potencial constructivo (COS/CUS), análisis de viabilidad financiera
- * y valor residual del terreno usando el método de desarrollo.
+ * Valuación de terrenos para constructores — perspectiva de la constructora compradora.
+ *
+ * LÓGICA CENTRAL: Método Residual
+ * ──────────────────────────────────────────────────────────────────────────────
+ * El valor del terreno NO es lo que pide el dueño.
+ * El valor del terreno ES lo que le queda al developer después de:
+ *
+ *   Valor de venta total
+ *   − Construcción directa
+ *   − Indirectos técnicos (proyecto, supervision)
+ *   − Permisos y licencias CDMX
+ *   − Comercialización (ventas, marketing)
+ *   − Financiamiento de la obra
+ *   − Financiamiento del terreno (intereses durante el desarrollo)
+ *   − Utilidad mínima exigida por la constructora
+ *   ═══════════════════════════════════════════════
+ *   = Valor máximo que puede pagar por el terreno
+ *
+ * MÉTRICA PRINCIPAL: Incidencia del Terreno
+ * ──────────────────────────────────────────────────────────────────────────────
+ * Incidencia = Precio del Terreno / m² Vendibles
+ * Expresada también como % del precio de venta por m²
+ *
+ * Rangos para CDMX / BJ 2025 (calibrados con datos de mercado):
+ *   < 12% del precio de venta  → Excelente — compra directa
+ *   12 – 18%                   → Aceptable — viable
+ *   18 – 25%                   → Caro — negocia el precio
+ *   > 25%                      → Inviable — descarta o asociación
  */
 class ConstructorValuationService
 {
-    // ─── Costos de referencia CDMX 2025 ──────────────────────────────────────
+    // ─── Costos de referencia CDMX 2025 (fuente: CEICO-CMIC) ─────────────────
 
-    /** Costo de construcción base $/m² bruto (departamentos medios BJ) */
-    const COSTO_CONSTRUCCION_DEFAULT = 22_000;
+    /** Costo directo de construcción $/m² bruto — vivienda media/semilujо BJ */
+    const COSTO_CONSTRUCCION_DEFAULT = 18_000;
 
-    /** % de m² brutos que son vendibles (descuenta circulaciones, lobby, muros) */
+    /** Proyecto ejecutivo + supervisión técnica: % sobre costo directo */
+    const INDIRECTOS_TECNICOS_PCT = 0.10;
+
+    /** Permisos, licencias, dictámenes, derechos CDMX: % sobre costo directo
+     *  (CDMX puede tardar 6-24 meses y cuesta 3-8% del costo directo) */
+    const PERMISOS_CDMX_PCT = 0.05;
+
+    /** Comercialización — ventas, marketing, comisiones: % sobre ventas totales */
+    const COMERCIALIZACION_PCT = 0.04;
+
+    /** Intereses del crédito constructor: % sobre costo directo de obra
+     *  (tasa comercial ~13-14% × ~1.5 años drawdown promedio) */
+    const FINANCIERO_OBRA_PCT = 0.10;
+
+    /** Intereses del crédito puente terreno: % sobre valor del terreno
+     *  (tasa ~13% × ~2.5 años plazo promedio de desarrollo) */
+    const FINANCIERO_TERRENO_PCT = 0.20;
+
+    /** % de m² brutos que son vendibles (descuenta circulación, lobby, instalaciones) */
     const EFICIENCIA_VENDIBLE_DEFAULT = 0.80;
 
-    /** Costos indirectos como % del costo de construcción (proyecto, permisos, supervisión, ventas) */
-    const COSTOS_INDIRECTOS_PCT = 0.20;
-
-    /** Gasto financiero como % del valor del terreno (crédito puente ~3 años) */
-    const GASTO_FINANCIERO_PCT = 0.15;
-
-    /** ROI mínimo que exige el constructor sobre el total invertido */
+    /** ROI mínimo que exige una constructora sobre el total invertido */
     const ROI_MINIMO_VIABLE = 18.0;
 
-    /** ROI objetivo para calcular el valor residual del terreno */
+    /** ROI objetivo para calcular el valor residual (lo que deja un proyecto "bueno") */
     const ROI_OBJETIVO_RESIDUAL = 22.0;
 
     /** m² promedio por departamento para estimar unidades */
     const TAMANO_DEPTO_DEFAULT = 65;
 
-    // ─── Catálogo de zonificaciones (PDDU Benito Juárez / CDMX) ─────────────
+    // ─── Catálogo de zonificaciones PDDU Benito Juárez / CDMX ────────────────
 
     const ZONIFICACIONES = [
         'H3_30'  => ['label' => 'H 3/30 · Habitacional 3 pisos',       'cos' => 0.60, 'cus' => 1.80, 'pisos' => 3,  'lote_min' => 30],
@@ -47,23 +84,11 @@ class ConstructorValuationService
         'HC4_30' => ['label' => 'HC 4/30 · Hab. + Comercio 4 pisos',   'cos' => 0.80, 'cus' => 3.20, 'pisos' => 4,  'lote_min' => 30],
         'CB5_30' => ['label' => 'CB 5/30 · Centro de Barrio 5 pisos',  'cos' => 1.00, 'cus' => 5.00, 'pisos' => 5,  'lote_min' => 30],
         'N10'    => ['label' => 'Norma 10 · Lote pequeño < 200 m²',     'cos' => 0.80, 'cus' => 3.20, 'pisos' => 4,  'lote_min' => 30],
-        'custom' => ['label' => '✏ Personalizado (ingresa COS y CUS)',  'cos' => null,  'cus' => null,  'pisos' => null, 'lote_min' => null],
+        'custom' => ['label' => '✏ Personalizado',                      'cos' => null,  'cus' => null,  'pisos' => null, 'lote_min' => null],
     ];
 
-    // ─── Método principal ─────────────────────────────────────────────────────
+    // ─── Cálculo principal ────────────────────────────────────────────────────
 
-    /**
-     * @param  float  $m2Terreno          m² del terreno
-     * @param  float  $cos                Coeficiente de Ocupación del Suelo (0–1)
-     * @param  float  $cus                Coeficiente de Utilización del Suelo
-     * @param  int    $pisos              Niveles construibles
-     * @param  float  $precioTerreno      Precio total del terreno en MXN
-     * @param  float  $costoConstruccion  Costo de construcción por m² bruto
-     * @param  float  $eficiencia         Factor vendible (0–1)
-     * @param  float  $tamanoDepto        m² promedio por departamento
-     * @param  float  $precioVentaM2      Precio de venta de los deptos nuevos $/m² (0 = tomar de mercado)
-     * @param  ?int   $coloniaId          ID de MarketColonia para precios de mercado
-     */
     public function calculate(
         float  $m2Terreno,
         float  $cos,
@@ -80,54 +105,89 @@ class ConstructorValuationService
             return ['available' => false, 'reason' => 'Datos insuficientes'];
         }
 
-        // ── Precio de mercado de departamentos nuevos ─────────────────────────
-        $precioVentaM2Fuente = 'manual';
+        // ── 1. Precio de venta de departamentos nuevos ────────────────────────
+        $precioFuente = 'manual';
         if ($precioVentaM2 <= 0 && $coloniaId) {
             $precioVentaM2 = $this->getMarketPriceM2($coloniaId, 'new');
-            $precioVentaM2Fuente = 'observatorio';
+            $precioFuente  = 'observatorio';
         }
         if ($precioVentaM2 <= 0) {
-            return ['available' => false, 'reason' => 'No hay precio de venta. Ingresa el precio $/m² o selecciona una colonia con datos del Observatorio.'];
+            return ['available' => false, 'reason' => 'Ingresa el precio de venta $/m² o selecciona una colonia con datos del Observatorio.'];
         }
 
-        // ── Potencial constructivo ────────────────────────────────────────────
-        $m2Huella          = round($m2Terreno * $cos, 1);
-        $m2BrutosTotales   = round($m2Terreno * $cus, 1);
-        $m2Vendibles       = round($m2BrutosTotales * $eficiencia, 1);
-        $m2Circulacion     = round($m2BrutosTotales * (1 - $eficiencia), 1);
-        $deptoEstimados    = $m2Vendibles > 0 ? max(1, (int) floor($m2Vendibles / $tamanoDepto)) : 0;
+        // ── 2. Potencial constructivo ─────────────────────────────────────────
+        $m2Huella        = round($m2Terreno * $cos, 1);
+        $m2BrutosTotales = round($m2Terreno * $cus, 1);
+        $m2Vendibles     = round($m2BrutosTotales * $eficiencia, 1);
+        $deptos          = $m2Vendibles > 0 ? max(1, (int) floor($m2Vendibles / $tamanoDepto)) : 0;
 
-        // ── Análisis financiero con el precio pedido por el propietario ───────
-        $valorVentaTotal        = $m2Vendibles * $precioVentaM2;
-        $costoConstruccionTotal = $m2BrutosTotales * $costoConstruccion;
-        $costosIndirectos       = $costoConstruccionTotal * self::COSTOS_INDIRECTOS_PCT;
-        $gastoFinanciero        = $precioTerreno * self::GASTO_FINANCIERO_PCT;
-        $costoTotal             = $precioTerreno + $costoConstruccionTotal + $costosIndirectos + $gastoFinanciero;
-        $utilidadNeta           = $valorVentaTotal - $costoTotal;
-        $roiConstructor         = $costoTotal > 0 ? ($utilidadNeta / $costoTotal) * 100 : -999;
-        $margenSobreVenta       = $valorVentaTotal > 0 ? ($utilidadNeta / $valorVentaTotal) * 100 : 0;
+        // ── 3. Estructura de costos real (sin terreno) ────────────────────────
+        $ventas             = $m2Vendibles * $precioVentaM2;
 
-        // ── Valor residual del terreno (¿cuánto debería costar para ser viable?) ─
-        $utilidadObjetivo    = $valorVentaTotal * (self::ROI_OBJETIVO_RESIDUAL / 100);
-        $costosSinTerreno    = $costoConstruccionTotal + $costosIndirectos;
-        // Valor residual = Venta - Construcción - Indirectos - Utilidad objetivo
-        // Con gastoFinanciero = terreno × 15%:
-        // residual = (Venta - CostosConst - Indirectos - Utilidad) / 1.15
-        $valorResidualTerreno  = ($valorVentaTotal - $costosSinTerreno - $utilidadObjetivo) / (1 + self::GASTO_FINANCIERO_PCT);
-        $precioResidualM2      = $m2Terreno > 0 ? $valorResidualTerreno / $m2Terreno : 0;
+        $construccionDirect = $m2BrutosTotales * $costoConstruccion;
+        $indirectosTecnicos = $construccionDirect * self::INDIRECTOS_TECNICOS_PCT;
+        $permisosLicencias  = $construccionDirect * self::PERMISOS_CDMX_PCT;
+        $comercializacion   = $ventas * self::COMERCIALIZACION_PCT;
+        $financieroObra     = $construccionDirect * self::FINANCIERO_OBRA_PCT;
+        // Financiamiento terreno: calculado sobre el precio pedido para el análisis real
+        $financieroTerreno  = $precioTerreno * self::FINANCIERO_TERRENO_PCT;
 
-        // ── Indicadores ───────────────────────────────────────────────────────
-        $tierraM2Vendible    = $m2Vendibles > 0 ? $precioTerreno / $m2Vendibles : 0;
-        $precioTerrenoM2     = $m2Terreno > 0 ? $precioTerreno / $m2Terreno : 0;
-        $ratioTierraVenta    = $valorVentaTotal > 0 ? ($precioTerreno / $valorVentaTotal) * 100 : 0;
-        $brechaValor         = $valorResidualTerreno - $precioTerreno;   // positivo = terreno barato, negativo = caro
-        $brechaPct           = $precioTerreno > 0 ? ($brechaValor / $precioTerreno) * 100 : 0;
+        $costosSinTerreno   = $construccionDirect + $indirectosTecnicos + $permisosLicencias
+                            + $comercializacion + $financieroObra;
 
-        // ── Semáforo de viabilidad ────────────────────────────────────────────
-        $viabilidad = $this->calcViabilidad($roiConstructor, $tierraM2Vendible, $ratioTierraVenta);
+        // ── 4. Análisis con el precio pedido ──────────────────────────────────
+        $costoTotal    = $costosSinTerreno + $financieroTerreno + $precioTerreno;
+        $utilidadNeta  = $ventas - $costoTotal;
+        $roi           = $costoTotal > 0 ? ($utilidadNeta / $costoTotal) * 100 : -999;
+        $margenVentas  = $ventas > 0 ? ($utilidadNeta / $ventas) * 100 : 0;
 
-        // ── Norma 10 notice ───────────────────────────────────────────────────
-        $norma10Aplica = $m2Terreno < 200 && $m2Terreno >= 60;
+        // ── 5. Método residual: ¿cuánto DEBERÍA costar el terreno? ────────────
+        // Residual = Ventas − Costos sin terreno − Financiamiento terreno estimado − Utilidad objetivo
+        // Financiamiento terreno sobre el residual mismo (circular, simplificado):
+        // Residual × (1 + financiero_pct) = Ventas − Costos sin terreno − Utilidad objetivo
+        $utilidadObjetivo   = $ventas * (self::ROI_OBJETIVO_RESIDUAL / 100);
+        // Residual / (1 + FINANCIERO_TERRENO_PCT) para despejar el terreno sin financiamiento
+        $valorResidualBruto = $ventas - $costosSinTerreno - $utilidadObjetivo;
+        $valorResidual      = $valorResidualBruto / (1 + self::FINANCIERO_TERRENO_PCT);
+        $valorResidualM2    = $m2Terreno > 0 ? $valorResidual / $m2Terreno : 0;
+
+        // Precio de oferta sugerido = residual × 0.88 (12% margen de negociación / contingencias)
+        $precioOferta   = $valorResidual * 0.88;
+        $precioOfertaM2 = $m2Terreno > 0 ? $precioOferta / $m2Terreno : 0;
+        $brechaOferta   = $precioTerreno - $precioOferta;   // positivo = terreno caro
+        $brechaPct      = $precioOferta > 0 ? ($brechaOferta / $precioOferta) * 100 : 0;
+
+        // ── 6. Incidencia del terreno (LA métrica principal) ──────────────────
+        $incidencia    = $m2Vendibles > 0 ? $precioTerreno / $m2Vendibles : 0;
+        $incidenciaPct = $precioVentaM2 > 0 ? ($incidencia / $precioVentaM2) * 100 : 0;
+
+        // ── 7. Indicadores adicionales ────────────────────────────────────────
+        $precioTerrenoM2  = $m2Terreno > 0 ? $precioTerreno / $m2Terreno : 0;
+        $ratioTierraVenta = $ventas > 0 ? ($precioTerreno / $ventas) * 100 : 0;
+
+        // ── 8. Veredicto ──────────────────────────────────────────────────────
+        $verdict = $this->calcVerdict($incidenciaPct, $roi);
+
+        // ── 9. Esquema de asociación (alternativa si terreno es caro) ─────────
+        // El dueño no vende — aporta el terreno al fideicomiso
+        // El developer construye y se reparten utilidades según aportación de capital
+        $asociacion = null;
+        if ($verdict === 'negocia' || $verdict === 'descarta') {
+            $valorTerreno       = max($valorResidual, $precioTerreno);
+            $capitalDeveloper   = $costosSinTerreno;
+            $totalCapital       = $valorTerreno + $capitalDeveloper;
+            $splitDono          = $totalCapital > 0 ? round($valorTerreno / $totalCapital * 100) : 35;
+            $splitDeveloper     = 100 - $splitDono;
+            $utilidadTotal      = $ventas - $costosSinTerreno - ($ventas * 0.05); // 5% ISR/gastos
+            $parteDonoAsociacion= $utilidadTotal * ($splitDono / 100);
+            $asociacion = [
+                'split_dono'       => $splitDono,
+                'split_developer'  => $splitDeveloper,
+                'parte_dono'       => $this->r($parteDonoAsociacion),
+                'equivalente_m2'   => $m2Terreno > 0 ? (int) round($parteDonoAsociacion / $m2Terreno) : 0,
+                'utilidad_total'   => $this->r($utilidadTotal),
+            ];
+        }
 
         return [
             'available'           => true,
@@ -137,66 +197,72 @@ class ConstructorValuationService
             'm2_huella'           => $m2Huella,
             'm2_brutos'           => $m2BrutosTotales,
             'm2_vendibles'        => $m2Vendibles,
-            'm2_circulacion'      => $m2Circulacion,
             'pisos'               => $pisos,
-            'deptos_estimados'    => $deptoEstimados,
+            'deptos_estimados'    => $deptos,
             'eficiencia'          => $eficiencia,
 
-            // Mercado
+            // Precio de venta
             'precio_venta_m2'     => (int) round($precioVentaM2),
-            'precio_venta_fuente' => $precioVentaM2Fuente,
+            'precio_venta_fuente' => $precioFuente,
 
-            // Financiero con precio del propietario
-            'valor_venta_total'      => $this->r($valorVentaTotal),
-            'costo_construccion'     => $this->r($costoConstruccionTotal),
-            'costos_indirectos'      => $this->r($costosIndirectos),
-            'gasto_financiero'       => $this->r($gastoFinanciero),
-            'costo_sin_terreno'      => $this->r($costosSinTerreno + $gastoFinanciero),
-            'costo_total'            => $this->r($costoTotal),
-            'utilidad_neta'          => $this->r($utilidadNeta),
-            'roi_constructor'        => round($roiConstructor, 1),
-            'margen_sobre_venta'     => round($margenSobreVenta, 1),
+            // Waterfall financiero (con precio pedido)
+            'ventas'              => $this->r($ventas),
+            'construccion_direct' => $this->r($construccionDirect),
+            'indirectos_tecnicos' => $this->r($indirectosTecnicos),
+            'permisos_licencias'  => $this->r($permisosLicencias),
+            'comercializacion'    => $this->r($comercializacion),
+            'financiero_obra'     => $this->r($financieroObra),
+            'financiero_terreno'  => $this->r($financieroTerreno),
+            'costos_sin_terreno'  => $this->r($costosSinTerreno),
+            'costo_total'         => $this->r($costoTotal),
+            'utilidad_neta'       => $this->r($utilidadNeta),
+            'roi'                 => round($roi, 1),
+            'margen_ventas'       => round($margenVentas, 1),
 
-            // Valor residual
-            'valor_residual_terreno' => $this->r($valorResidualTerreno),
-            'precio_residual_m2'     => (int) round($precioResidualM2),
-            'brecha_valor'           => $this->r($brechaValor),
-            'brecha_pct'             => round($brechaPct, 1),
+            // Método residual
+            'valor_residual'      => $this->r($valorResidual),
+            'valor_residual_m2'   => (int) round($valorResidualM2),
+            'precio_oferta'       => $this->r($precioOferta),
+            'precio_oferta_m2'    => (int) round($precioOfertaM2),
+            'brecha_oferta'       => $this->r($brechaOferta),
+            'brecha_pct'          => round($brechaPct, 1),
 
-            // Indicadores
-            'tierra_m2_vendible'     => (int) round($tierraM2Vendible),
-            'precio_terreno_m2'      => (int) round($precioTerrenoM2),
-            'ratio_tierra_venta'     => round($ratioTierraVenta, 1),
+            // ★ Incidencia del terreno (LA métrica principal)
+            'incidencia_m2'       => (int) round($incidencia),
+            'incidencia_pct'      => round($incidenciaPct, 1),
 
-            // Viabilidad
-            'viabilidad'             => $viabilidad,
-            'norma10_aplica'         => $norma10Aplica,
+            // Indicadores secundarios
+            'precio_terreno_m2'   => (int) round($precioTerrenoM2),
+            'ratio_tierra_venta'  => round($ratioTierraVenta, 1),
+
+            // Veredicto y alternativa
+            'verdict'             => $verdict,
+            'norma10_aplica'      => ($m2Terreno >= 60 && $m2Terreno < 200),
+            'asociacion'          => $asociacion,
         ];
     }
 
-    // ─── Semáforo de viabilidad ───────────────────────────────────────────────
+    // ─── Veredicto (basado en incidencia % y ROI) ─────────────────────────────
 
-    private function calcViabilidad(float $roi, float $tierraM2Vendible, float $ratioTierraVenta): string
+    /**
+     * Veredicto calibrado para CDMX / BJ 2025.
+     *
+     * El ROI es el indicador primario — es lo que decide la constructora.
+     * La incidencia explica por qué el precio es caro o barato, pero no
+     * bloquea el negocio si el retorno es suficientemente atractivo.
+     *
+     * Umbrales CDMX 2025 (tasas 13-14%, riesgo CDMX, plazo 2.5 años):
+     *   ROI ≥ 22%  → COMPRA DIRECTA  (excelente retorno, sin negociación)
+     *   ROI 17-22% → VIABLE           (buen negocio, procede)
+     *   ROI  8-17% → NEGOCIA          (marginal, bajar precio para que funcione)
+     *   ROI  < 8%  → DESCARTA         (inviable, considerar asociación)
+     */
+    private function calcVerdict(float $incidenciaPct, float $roi): string
     {
-        $puntos = 0;
-
-        // ROI
-        if ($roi >= self::ROI_MINIMO_VIABLE) $puntos += 2;
-        elseif ($roi >= 12)                   $puntos += 1;
-
-        // Tierra/m² vendible
-        if ($tierraM2Vendible <= 8_000)  $puntos += 2;
-        elseif ($tierraM2Vendible <= 12_000) $puntos += 1;
-
-        // Ratio tierra/venta
-        if ($ratioTierraVenta <= 20)  $puntos += 1;
-        elseif ($ratioTierraVenta <= 30) $puntos += 0;
-
-        return match(true) {
-            $puntos >= 4 => 'green',
-            $puntos >= 2 => 'yellow',
-            default      => 'red',
-        };
+        if ($roi >= 22) return 'compra_directa';
+        if ($roi >= 17) return 'viable';
+        if ($roi >= 8)  return 'negocia';
+        return 'descarta';
     }
 
     // ─── Precio de mercado ────────────────────────────────────────────────────
@@ -226,120 +292,66 @@ class ConstructorValuationService
         }
     }
 
-    public function getZonificaciones(): array
-    {
-        return self::ZONIFICACIONES;
-    }
+    public function getZonificaciones(): array { return self::ZONIFICACIONES; }
 
     // ─── Parser de clave SEDUVI ───────────────────────────────────────────────
 
     /**
-     * Parsea una clave de zonificación PDDU CDMX y devuelve COS, CUS y pisos.
-     *
-     * Formatos soportados:
-     *   HM 6/30    HM6/30    H 4/40    HC4/Z/30    CB5/30    HM8/Z/20
-     *   HM-6/30    H6        HM6Z30    H 3         CB5       CE 5/30
-     *
-     * Reglas COS por uso de suelo (PDDU Benito Juárez / CDMX):
-     *   H, HM, HA, HR              → COS 0.60
-     *   HC (Habitacional+Comercio) → COS 0.80
-     *   CB, CE, CS, CI, CN         → COS 1.00
-     *   E, EQ, EA                  → COS 0.60
-     *   Otros / no reconocido      → COS 0.60 (conservador)
-     *
-     * CUS = COS × pisos  (fórmula estándar PDDU)
-     *
-     * @return array{cos:float, cus:float, pisos:int, uso:string, lote_min:int|null}|null
-     *         null si el código no se puede parsear.
-     */
-    /**
      * Parsea una clave de zonificación PDDU / SEDUVI CDMX.
      *
-     * ─── Dos formatos principales ──────────────────────────────────────────
+     * Formato con variante de zona:  [USO][PISOS] / [ZONA] / [AREA_LIBRE_%]
+     *   H4/Z/20 → 20% libre → COS = 0.80 → CUS = 3.20
      *
-     * 1. Con variante de zona  →  [USO][PISOS] / [ZONA] / [AREA_LIBRE_%]
-     *    Ejemplo: H4/Z/20, HM8/Z/20, HC4/ZC/30
-     *    - La variante (/Z/, /ZC/, /ZB/...) indica zona especial del PDDU.
-     *    - El último número es % de ÁREA LIBRE MÍNIMA (porción del terreno
-     *      que debe quedar sin construir).
-     *    - COS = 1 − (área_libre% / 100)
-     *      ej. H4/Z/20 → 20% libre → COS = 0.80 → CUS = 0.80×4 = 3.20
+     * Formato sin variante:  [USO][PISOS] / [LOTE_MIN_m²]
+     *   HM 6/30 → lote mín 30m² → COS = 0.60 → CUS = 3.60
      *
-     * 2. Sin variante de zona  →  [USO][PISOS] / [LOTE_MIN_m²]
-     *    Ejemplo: H 3/30, HM 6/30, HC4/40, HM8/30
-     *    - El número final es el LOTE MÍNIMO en m².
-     *    - COS proviene del tipo de uso de suelo (ver tabla abajo).
-     *
-     * ─── COS por uso de suelo (sin variante de zona) ──────────────────────
-     *   H, HM, HA, HR        → 0.60
-     *   HC (Hab + Comercio)  → 0.80
-     *   CB, CE, CS, CI, CN   → 1.00
-     *   Otros / no conocido  → 0.60 (conservador)
-     *
-     * ─── CUS ──────────────────────────────────────────────────────────────
-     *   CUS = COS × pisos  (fórmula estándar PDDU)
+     * COS por uso: H/HM/HA=0.60 · HC=0.80 · CB/CE/CS=1.00
      */
     public function parseSedeviCode(string $rawCode): ?array
     {
         $code = strtoupper(trim(preg_replace('/\s+/', ' ', $rawCode)));
         if ($code === '') return null;
 
-        // Extrae uso (letras iniciales) y pisos (primer número)
-        if (! preg_match('/^([A-Z]+)[\s\-]?(\d+)(.*)/i', $code, $m)) {
-            return null;
-        }
+        if (! preg_match('/^([A-Z]+)[\s\-]?(\d+)(.*)/i', $code, $m)) return null;
 
         $uso   = $m[1];
         $pisos = (int) $m[2];
-        $rest  = $m[3];   // ej. "/Z/20", "/ZC/30", "/30", "/40", "/Z20"
+        $rest  = $m[3];
 
         if ($pisos < 1 || $pisos > 40) return null;
 
-        // ── Detectar si hay variante de zona ───────────────────────────────
-        // Patrón: /[LETRAS]/ seguido de número  → zona + área libre %
-        //         /[LETRAS][NÚMERO]             → zona + área libre % (sin segundo /)
-        // Patrón simple: /[NÚMERO]              → lote mínimo
         $areaLibrePct = null;
         $loteMin      = null;
         $zonaVar      = null;
 
-        // Buscar variante de zona (letras después de delimitador, antes del número final)
-        // Ejemplos: /Z/20  /ZC/30  /ZB/20  /Z20  -Z/20
         if (preg_match('/[\/\-\s]([A-Z]+)[\/\-\s]?(\d+)\s*$/', $rest, $zv)) {
             $zonaVar      = $zv[1];
-            $areaLibrePct = (int) $zv[2];   // % área libre
+            $areaLibrePct = (int) $zv[2];
         } elseif (preg_match('/[\/\-\s](\d+)\s*$/', $rest, $lm)) {
-            // Sin variante de zona → número final = lote mínimo
             $loteMin = (int) $lm[1];
         }
 
-        // ── COS ────────────────────────────────────────────────────────────
-        if ($areaLibrePct !== null && $areaLibrePct > 0 && $areaLibrePct <= 80) {
-            // Variante de zona: COS = 1 − área_libre%
-            $cos = round(1.0 - ($areaLibrePct / 100), 2);
-        } else {
-            // Sin variante: COS según tipo de uso de suelo
-            $cos = match(true) {
-                $uso === 'HC'                                     => 0.80,
-                in_array($uso, ['CB', 'CE', 'CS', 'CI', 'CN'])   => 1.00,
-                default                                           => 0.60,
+        $cos = ($areaLibrePct !== null && $areaLibrePct > 0 && $areaLibrePct <= 80)
+            ? round(1.0 - ($areaLibrePct / 100), 2)
+            : match(true) {
+                $uso === 'HC'                                    => 0.80,
+                in_array($uso, ['CB','CE','CS','CI','CN'])       => 1.00,
+                default                                          => 0.60,
             };
-        }
 
         return [
-            'uso'         => $uso,
-            'pisos'       => $pisos,
-            'cos'         => $cos,
-            'cus'         => round($cos * $pisos, 2),
-            'lote_min'    => $loteMin,
-            'area_libre'  => $areaLibrePct,   // % si aplica, null si no
-            'zona_var'    => $zonaVar,         // ej. 'Z', 'ZC', null si no aplica
+            'uso'        => $uso,
+            'pisos'      => $pisos,
+            'cos'        => $cos,
+            'cus'        => round($cos * $pisos, 2),
+            'lote_min'   => $loteMin,
+            'area_libre' => $areaLibrePct,
+            'zona_var'   => $zonaVar,
         ];
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────────────────
+    // ─── Helper ───────────────────────────────────────────────────────────────
 
-    /** Redondea al múltiplo de 10,000 más cercano */
     private function r(float $v): int
     {
         return (int) round($v / 10_000) * 10_000;
