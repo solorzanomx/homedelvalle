@@ -26,11 +26,18 @@ class ConstructorValuation extends Component
     public string $precioTerrenoM2 = '';   // $/m²       (modo 'per_m2')
     public string $precioMode      = 'total';
 
+    // ─── Precio de venta de nuevos desarrollos ───────────────────────────────
+    /** Precio base del Observatorio (age=new) — solo lectura, referencia */
+    public ?float  $observatorioPrice    = null;
+    /** Precio final que se usa en el cálculo (manual o Obs × multiplicador) */
+    public string  $precioVentaM2        = '';
+    /** Multiplicador de premium aplicado sobre el precio del Observatorio */
+    public string  $precioMultiplier     = '1.20';   // default +20% sobre obs
+
     // ─── Parámetros de construcción ───────────────────────────────────────────
-    public string $costoConstruccion = '22000';
+    public string $costoConstruccion = '18000';
     public string $eficiencia        = '80';
     public string $tamanoDepto       = '65';
-    public string $precioVentaM2     = '';
 
     // ─── Resultado ────────────────────────────────────────────────────────────
     public ?array $result = null;
@@ -88,11 +95,41 @@ class ConstructorValuation extends Component
         $this->recalculate();
     }
 
+    // ─── Premio de nuevos desarrollos ────────────────────────────────────────
+
+    /** Aplica un multiplicador sobre el precio del Observatorio */
+    public function applyPremium(string $multiplier): void
+    {
+        $this->precioMultiplier = $multiplier;
+        if ($this->observatorioPrice && $this->observatorioPrice > 0) {
+            $mult = (float) $multiplier;
+            $this->precioVentaM2 = (string) (int) round($this->observatorioPrice * $mult);
+        }
+        $this->recalculate();
+    }
+
     // ─── Hooks de recálculo — solo para campos que tienen wire:model.live ─────
     //     Los campos de precio usan wire:model.blur y llaman recalculate()
     //     directamente a través del evento blur en el blade.
 
-    public function updatedColoniaId(): void         { $this->recalculate(); }
+    public function updatedColoniaId(): void
+    {
+        $svc = app(ConstructorValuationService::class);
+        $obs = $this->coloniaId
+            ? $svc->getMarketPriceM2((int) $this->coloniaId, 'new')
+            : 0.0;
+
+        $this->observatorioPrice = $obs > 0 ? $obs : null;
+
+        // Auto-aplicar el multiplicador vigente sobre el nuevo precio de observatorio,
+        // solo si el usuario no ingresó un precio manual diferente al obs anterior
+        if ($obs > 0) {
+            $mult = (float) $this->precioMultiplier ?: 1.20;
+            $this->precioVentaM2 = (string) (int) round($obs * $mult);
+        }
+
+        $this->recalculate();
+    }
     public function updatedCos(): void               { $this->recalculate(); }
     public function updatedCus(): void               { $this->recalculate(); }
     public function updatedPisos(): void             { $this->recalculate(); }

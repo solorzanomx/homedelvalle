@@ -222,6 +222,72 @@
         </div>
         @endif
     </div>
+
+    {{-- Separador ──────────────────────────────────────────────────── --}}
+    <div style="border-top:1px solid #f1f5f9;margin:.9rem 0;"></div>
+
+    {{-- Precio de venta de nuevos desarrollos ──────────────────────── --}}
+    <div>
+        <label class="cv-label" style="color:#0f172a;">
+            Precio de venta de departamentos nuevos ($/m²)
+            <span style="font-weight:400;color:#94a3b8;font-size:.72rem;">— el constructor vende aquí</span>
+        </label>
+
+        @if($observatorioPrice)
+        {{-- Referencia del Observatorio con selector de premium --}}
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:.6rem .85rem;margin-bottom:.6rem;">
+            <div style="font-size:.7rem;font-weight:600;color:#1e40af;margin-bottom:.45rem;">
+                📊 Observatorio HDV (promedio anuncios nuevos 0-5 años en la zona):
+                <strong style="font-size:.85rem;">${{ number_format((int)$observatorioPrice) }}/m²</strong>
+            </div>
+            <div style="font-size:.68rem;color:#3b82f6;margin-bottom:.5rem;">
+                Los nuevos desarrollos tipo constructora suelen cotizarse <strong>15-30% sobre el promedio</strong>
+                del mercado, porque ofrecen 100% nuevo con amenidades.
+                Ajusta con el premium real de la zona:
+            </div>
+            {{-- Botones de premium rápido --}}
+            <div style="display:flex;flex-wrap:wrap;gap:.3rem;">
+                @foreach([
+                    '1.00' => 'Base ('  . number_format((int)$observatorioPrice)       . ')',
+                    '1.10' => '+10% (' . number_format((int)round($observatorioPrice*1.10)) . ')',
+                    '1.15' => '+15% (' . number_format((int)round($observatorioPrice*1.15)) . ')',
+                    '1.20' => '+20% (' . number_format((int)round($observatorioPrice*1.20)) . ')',
+                    '1.25' => '+25% (' . number_format((int)round($observatorioPrice*1.25)) . ')',
+                    '1.30' => '+30% (' . number_format((int)round($observatorioPrice*1.30)) . ')',
+                ] as $mult => $label)
+                <button wire:click="applyPremium('{{ $mult }}')"
+                        style="font-size:.68rem;font-weight:600;padding:.22rem .55rem;border-radius:5px;cursor:pointer;border:1px solid;
+                               background:{{ $precioMultiplier===$mult ? '#6366f1' : '#fff' }};
+                               border-color:{{ $precioMultiplier===$mult ? '#6366f1' : '#bfdbfe' }};
+                               color:{{ $precioMultiplier===$mult ? '#fff' : '#1e40af' }};">
+                    {{ $label }}
+                </button>
+                @endforeach
+            </div>
+        </div>
+        @else
+        <div style="background:#fefce8;border:1px solid #fde047;border-radius:6px;padding:.45rem .75rem;margin-bottom:.5rem;font-size:.7rem;color:#713f12;">
+            ⚠ Sin datos del Observatorio para esta zona — ingresa el precio manualmente
+        </div>
+        @endif
+
+        {{-- Input manual (siempre visible) --}}
+        <div style="display:flex;align-items:center;gap:.5rem;">
+            <input wire:model.blur="precioVentaM2" wire:change="recalculate"
+                   type="text" inputmode="numeric"
+                   placeholder="{{ $coloniaId ? 'Auto del Observatorio' : 'ej. 70000' }}"
+                   class="cv-input" style="flex:1;">
+            @if($precioVentaM2 && $observatorioPrice)
+            @php $pvNum = (int) str_replace([',',' '], '', $precioVentaM2); @endphp
+            <div style="font-size:.7rem;color:{{ $pvNum > $observatorioPrice ? '#059669' : '#d97706' }};white-space:nowrap;font-weight:600;">
+                {{ $pvNum > $observatorioPrice ? '+' : '' }}{{ round(($pvNum - $observatorioPrice) / $observatorioPrice * 100) }}%
+                vs obs.
+            </div>
+            @endif
+        </div>
+        <span class="cv-hint">Precio al que el constructor venderá los departamentos nuevos que construya</span>
+    </div>
+
 </div>
 </div>
 
@@ -245,7 +311,7 @@
         <label class="cv-label">Costo construcción ($/m² bruto)</label>
         <input wire:model.blur="costoConstruccion" wire:change="recalculate"
                type="number" min="10000" max="80000" step="500" placeholder="18000" class="cv-input">
-        <span class="cv-hint">CEICO-CMIC media CDMX 2025: ~$18k-$22k/m²</span>
+        <span class="cv-hint">CEICO-CMIC media CDMX 2025: ~$18k/m² (semilujо: $22k, lujo: $28k+)</span>
     </div>
 
     <div>
@@ -259,20 +325,6 @@
         <label class="cv-label">Tamaño promedio depto (m²)</label>
         <input wire:model.live.debounce.400ms="tamanoDepto" type="number"
                min="30" max="250" step="5" placeholder="65" class="cv-input">
-    </div>
-
-    <div>
-        <label class="cv-label">
-            Precio venta depto nuevo ($/m²)
-            @if($result && ($result['precio_venta_fuente']??'')=='observatorio')
-            <span style="font-size:.66rem;color:#059669;font-weight:600;">· Observatorio HDV</span>
-            @endif
-        </label>
-        <input wire:model.blur="precioVentaM2" wire:change="recalculate"
-               type="text" inputmode="numeric"
-               placeholder="{{ $coloniaId ? 'Auto del Observatorio' : 'ej. 65000' }}"
-               class="cv-input">
-        <span class="cv-hint">Vacío = usar precio del Observatorio de Precios HDV</span>
     </div>
 
 </div>
