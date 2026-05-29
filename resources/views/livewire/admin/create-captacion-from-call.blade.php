@@ -258,36 +258,47 @@
                 <span style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">Afecta hasta ±30% en la estimación</span>
             </div>
 
-            {{-- Año de construcción (Alpine-only: no wire:model, solo actualiza age_category en Livewire) --}}
+            {{-- Antigüedad exacta (Alpine-only: acepta años de edad 1-99 o año de construcción 1900-hoy) --}}
             <div class="form-group"
-                 x-data="{ yr: '', info: '' }"
+                 x-data="{ v: '', info: '', hint: 'Afina el precio dentro de la categoría' }"
                  x-init="
-                    $watch('yr', v => {
-                        let y = parseInt(v);
+                    $watch('v', val => {
+                        let n = parseInt(val);
                         let now = {{ now()->year }};
-                        if (y >= 1900 && y <= now) {
-                            let age = now - y;
-                            let cat = age <= 5 ? 'new' : (age <= 20 ? 'mid' : 'old');
+                        let age = null;
+                        let yr  = null;
+                        if (n >= 1 && n <= 99) {
+                            age = n;
+                            yr  = now - n;
+                        } else if (n >= 1900 && n <= now) {
+                            age = now - n;
+                            yr  = n;
+                        }
+                        if (age !== null) {
+                            let cat   = age <= 5 ? 'new' : (age <= 20 ? 'mid' : 'old');
                             let label = cat === 'new' ? 'Nuevo' : (cat === 'mid' ? 'Seminuevo' : 'Antiguo');
-                            info = '✓ ' + age + ' años → ' + label;
+                            info = '✓ ' + age + ' años · ' + label;
+                            hint = '';
                             $wire.set('age_category', cat);
-                            $wire.set('year_built', y);
+                            $wire.set('year_built', yr);
+                        } else if (val !== '') {
+                            info = '';
+                            hint = 'Ingresa años (ej. 8) o año (ej. 2015)';
                         } else {
                             info = '';
+                            hint = 'Afina el precio dentro de la categoría';
                         }
                     });
                  ">
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
-                    Año de construcción <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
+                    Antigüedad exacta <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(años o año de construcción)</span>
                 </label>
-                <input type="number" x-model="yr" min="1900" max="{{ now()->year }}" placeholder="ej. 2010"
+                <input type="number" x-model="v" min="1" placeholder="ej. 8 años  ó  2015"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
                 <span x-show="info" x-text="info"
                     style="font-size:.72rem;color:#059669;margin-top:.3rem;display:block;"></span>
-                <span x-show="!info"
-                    style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">
-                    Sincroniza la categoría de antigüedad automáticamente
-                </span>
+                <span x-show="!info" x-text="hint"
+                    style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;"></span>
             </div>
 
             {{-- Precio esperado --}}
@@ -366,15 +377,21 @@
         </div>
     </div>
 
-    {{-- Ajustes aplicados (solo si hay) --}}
+    {{-- Ajustes aplicados --}}
     @if(!empty($q['adjustments']))
-    <div style="background:#eff6ff;border-left:3px solid #3b82f6;border-right:1px solid #bfdbfe;padding:.45rem .8rem;font-size:.7rem;color:#1e40af;">
+    <div style="background:#eff6ff;border-left:3px solid #3b82f6;border-right:1px solid #bfdbfe;border-bottom:1px solid #bfdbfe;padding:.45rem .8rem;font-size:.7rem;color:#1e40af;">
+        <span style="font-weight:600;margin-right:.3rem;">Ajustes:</span>
         @foreach($q['adjustments'] as $adj)
-        <span style="margin-right:.4rem;">
+        <span style="margin-right:.4rem;white-space:nowrap;">
             {{ $adj['label'] }}
-            <strong>{{ $adj['pct'] > 0 ? '+' : '' }}{{ round($adj['pct'] * 100) }}%</strong>
+            <strong style="color:{{ $adj['pct'] > 0 ? '#15803d' : '#dc2626' }}">{{ $adj['pct'] > 0 ? '+' : '' }}{{ round($adj['pct'] * 100) }}%</strong>
         </span>
         @endforeach
+        <span style="font-weight:700;color:#1d4ed8;">Total: {{ $q['total_adjustment'] > 0 ? '+' : '' }}{{ $q['total_adjustment'] }}%</span>
+    </div>
+    @else
+    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:.4rem .8rem;font-size:.68rem;color:#64748b;">
+        Características en el promedio del segmento · sin ajuste adicional
     </div>
     @endif
 
