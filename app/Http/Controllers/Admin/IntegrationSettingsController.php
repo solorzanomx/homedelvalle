@@ -58,9 +58,11 @@ class IntegrationSettingsController extends Controller
         }
 
         try {
+            // GET /me con el Page Access Token devuelve la info de la página
+            // sin requerir page_public_content_access ni permisos adicionales
             $res = \Illuminate\Support\Facades\Http::timeout(10)
-                ->get("https://graph.facebook.com/v21.0/{$pageId}", [
-                    'fields'       => 'id,name,fan_count',
+                ->get('https://graph.facebook.com/v21.0/me', [
+                    'fields'       => 'id,name,category',
                     'access_token' => $token,
                 ]);
 
@@ -71,10 +73,10 @@ class IntegrationSettingsController extends Controller
 
             $page = $res->json();
             return response()->json([
-                'success' => true,
-                'name'    => $page['name'] ?? 'Página desconocida',
-                'id'      => $page['id'] ?? $pageId,
-                'fans'    => $page['fan_count'] ?? null,
+                'success'  => true,
+                'name'     => $page['name'] ?? 'Página desconocida',
+                'id'       => $page['id'] ?? $pageId,
+                'category' => $page['category'] ?? null,
             ]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()]);

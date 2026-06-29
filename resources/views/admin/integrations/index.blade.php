@@ -336,7 +336,7 @@ function testFbConnection() {
         result.style.alignItems = 'center';
         result.style.gap = '.35rem';
         if (data.success) {
-            result.innerHTML = '<span style="color:#15803d;font-weight:700;">&#10003; Conectado:</span> <span style="color:#374151;">' + data.name + ' (ID: ' + data.id + ')' + (data.fans ? ' · ' + Number(data.fans).toLocaleString() + ' seguidores' : '') + '</span>';
+            result.innerHTML = '<span style="color:#15803d;font-weight:700;">&#10003; Conectado:</span> <span style="color:#374151;">' + data.name + ' (ID: ' + data.id + ')' + (data.category ? ' · ' + data.category : '') + '</span>';
         } else {
             result.innerHTML = '<span style="color:#dc2626;font-weight:700;">&#10007; Error:</span> <span style="color:#374151;">' + data.error + '</span>';
         }
