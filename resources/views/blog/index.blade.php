@@ -2,8 +2,8 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Blog"
-        description="Noticias, consejos y novedades del sector inmobiliario en Ciudad de México."
+        title="Blog inmobiliario · Consejos para comprar, vender e invertir en Benito Juárez"
+        description="Artículos especializados sobre el mercado inmobiliario en Benito Juárez, CDMX. Precios por colonia, inversión, herencias, trámites y guías para comprar o vender."
         :canonical="url('/blog')"
     />
 @endsection

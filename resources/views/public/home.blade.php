@@ -6,6 +6,11 @@
         description="¿Quieres vender tu propiedad en la Benito Juárez? Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa. Firma inmobiliaria boutique en CDMX."
         :canonical="url('/')"
     />
+    {{-- Preload hero image for LCP --}}
+    @if($siteSettings?->hero_image_path)
+    <link rel="preload" as="image" href="{{ asset('storage/' . $siteSettings->hero_image_path) }}">
+    @endif
+
     <x-public.json-ld type="RealEstateAgent" :data="array_filter([
         'name'        => $siteSettings?->site_name ?? 'Home del Valle Bienes Raíces',
         'description' => $siteSettings?->site_tagline ?? 'Firma inmobiliaria boutique de alta precisión en Benito Juárez, CDMX.',
@@ -65,7 +70,7 @@
     {{-- ============================================ --}}
     <section class="relative overflow-hidden bg-brand-950" id="inicio">
         @if($siteSettings?->hero_image_path)
-        <img src="{{ asset('storage/' . $siteSettings->hero_image_path) }}" alt="Propiedades en Benito Juárez" class="absolute inset-0 w-full h-full object-cover opacity-20">
+        <img src="{{ asset('storage/' . $siteSettings->hero_image_path) }}" alt="Propiedades en Benito Juárez" class="absolute inset-0 w-full h-full object-cover opacity-20" fetchpriority="high" loading="eager">
         @endif
 
         <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900/90 to-brand-800/80"></div>

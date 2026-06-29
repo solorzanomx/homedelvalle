@@ -5,9 +5,14 @@
         :title="$post->meta_title ?: $post->title"
         :description="$post->meta_description ?: $post->excerpt"
         :canonical="url('/blog/' . $post->slug)"
-        :og-image="$post->featured_image ? Storage::url($post->featured_image) : null"
+        :og-image="$post->featured_image ? url(Storage::url($post->featured_image)) : null"
         og-type="article"
     />
+
+    {{-- Preload featured image for LCP --}}
+    @if($post->featured_image)
+    <link rel="preload" as="image" href="{{ url(Storage::url($post->featured_image)) }}">
+    @endif
 
     {{-- Article schema --}}
     <x-public.json-ld type="Article" :data="array_filter([
@@ -23,7 +28,7 @@
         ],
         'url'           => url('/blog/' . $post->slug),
         'description'   => $post->meta_description ?: $post->excerpt,
-        'image'         => $post->featured_image ? Storage::url($post->featured_image) : null,
+        'image'         => $post->featured_image ? url(Storage::url($post->featured_image)) : null,
     ])" />
 
     {{-- FAQPage schema — solo cuando el post tiene preguntas frecuentes configuradas --}}
@@ -60,7 +65,7 @@
             @if($post->featured_image_webp_lg)
             <source type="image/webp" srcset="{{ $post->featured_image_webp_lg }}">
             @endif
-            <img src="{{ Storage::url($post->featured_image) }}" alt="{{ $post->title }}" class="absolute inset-0 w-full h-full object-cover opacity-30">
+            <img src="{{ Storage::url($post->featured_image) }}" alt="{{ $post->title }}" class="absolute inset-0 w-full h-full object-cover opacity-30" fetchpriority="high" loading="eager">
         </picture>
         <div class="absolute inset-0 bg-gradient-to-t from-brand-950 via-brand-950/70 to-brand-950/40"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(59,130,196,0.12)_0%,_transparent_60%)]"></div>

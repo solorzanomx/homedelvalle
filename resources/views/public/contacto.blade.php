@@ -3,7 +3,7 @@
 @section('meta')
     <x-public.seo-meta
         title="Contacto"
-        description="Contáctanos para asesoría inmobiliaria personalizada en Ciudad de México. Estamos aquí para ayudarte."
+        description="Contacta a los especialistas inmobiliarios de Benito Juárez. Valuación gratuita, asesoría sin costo y respuesta en menos de 24 horas. Ubicados en Del Valle, CDMX."
         :canonical="route('contacto')"
     />
 @endsection

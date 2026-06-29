@@ -7,6 +7,15 @@
         :title="$meta['title'] ?? 'Vende tu propiedad'"
         :description="$meta['description'] ?? ''"
     />
+    @if(!empty($faqs))
+    <x-public.json-ld type="FAQPage" :data="[
+        'mainEntity' => collect($faqs)->map(fn($f) => [
+            '@type'          => 'Question',
+            'name'           => $f['q'] ?? '',
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f['a'] ?? ''],
+        ])->all(),
+    ]" />
+    @endif
 @endsection
 
 @section('content')

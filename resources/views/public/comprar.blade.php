@@ -7,6 +7,14 @@
         :title="$page?->meta_title ?? 'Búsqueda asistida de inmuebles en Benito Juárez'"
         :description="$page?->meta_description ?? 'Encuentra tu próximo hogar en Benito Juárez sin perder fines de semana en visitas. Asesoría personalizada de expertos.'"
     />
+    <x-public.json-ld type="FAQPage" :data="[
+        'mainEntity' => [
+            ['@type'=>'Question','name'=>'¿Cuál es el proceso de búsqueda?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Completas el formulario con tus preferencias, nuestro equipo analiza tu perfil y te presenta opciones de propiedades verificadas en menos de 24 horas.']],
+            ['@type'=>'Question','name'=>'¿Hay costo por la asesoría?','acceptedAnswer'=>['@type'=>'Answer','text'=>'No. La asesoría y búsqueda son completamente gratuitas. Solo si decides comprar a través de nosotros, aplicamos una comisión estándar del mercado.']],
+            ['@type'=>'Question','name'=>'¿Qué sucede después de enviar el formulario?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Uno de nuestros asesores especializados en Benito Juárez se pondrá en contacto contigo vía WhatsApp o teléfono en menos de 24 horas para validar tus requerimientos y comenzar la búsqueda.']],
+            ['@type'=>'Question','name'=>'¿Están todas las propiedades verificadas?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Sí. Todas nuestras propiedades son verificadas legalmente y cuentan con blindaje jurídico completo. Garantizamos la seguridad en cada operación.']],
+        ],
+    ]" />
 @endsection
 
 @section('content')
