@@ -191,6 +191,7 @@ class ValuationEngine
     {
         return array_filter([
             $this->factorAge($v),
+            $this->factorBuildingCondition($v),
             $this->factorCondition($v),
             $this->factorFloorElevator($v),
             $this->factorUnitPosition($v),
@@ -223,19 +224,69 @@ class ValuationEngine
         ];
     }
 
-    protected function factorCondition(PropertyValuation $v): array
+    /**
+     * Factor de condición del edificio (solo aplica a departamentos).
+     * Separado de la condición del departamento: el edificio puede estar
+     * bien conservado aunque el departamento esté por remodelar, o viceversa.
+     */
+    protected function factorBuildingCondition(PropertyValuation $v): ?array
     {
-        [$value, $label, $desc] = match($v->input_condition) {
-            'excellent' => [+0.15, 'Excelente / Remodelado',    'Inmueble en condición premium o remodelado recientemente. Prima de conservación.'],
-            'good'      => [0.00,  'Bueno',                     'Conservación buena. Sin ajuste.'],
-            'fair'      => [-0.08, 'Regular',                   'Requiere mantenimiento o mejoras menores. Descuento aplicado.'],
-            'poor'      => [-0.18, 'Necesita remodelación',     'Requiere inversión significativa. Descuento por condición.'],
-            default     => [0.00,  'Sin datos',                  ''],
+        // Solo aplica a departamentos y cuando se especificó la condición del edificio
+        if ($v->input_type !== 'apartment' || ! $v->input_building_condition) {
+            return null;
+        }
+
+        [$value, $label, $desc] = match($v->input_building_condition) {
+            'excellent' => [+0.06, 'Excelente',
+                'Edificio en condiciones premium, con mantenimiento óptimo y áreas comunes en muy buen estado. Prima por imagen del edificio.'],
+            'good'      => [0.00,  'Bueno',
+                'Edificio con buen nivel de conservación. Sin ajuste por estado del edificio.'],
+            'fair'      => [-0.06, 'Regular',
+                'Edificio con desgaste visible en áreas comunes o fachada. Descuento por percepción de mantenimiento.'],
+            'poor'      => [-0.12, 'Necesita remodelación',
+                'Edificio con deterioro significativo en estructura, fachada o instalaciones comunes. Descuento por riesgo e imagen.'],
+            default     => [0.00, '', ''],
         };
 
         return [
+            'key'         => 'building_condition',
+            'label'       => "Condición del edificio: {$label}",
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorCondition(PropertyValuation $v): array
+    {
+        $isApartment = $v->input_type === 'apartment';
+
+        [$value, $label, $desc] = match($v->input_condition) {
+            'excellent' => [+0.15, 'Excelente / Remodelado',
+                $isApartment
+                    ? 'Departamento en condición premium o remodelado recientemente. Prima por acabados.'
+                    : 'Inmueble en condición premium o remodelado recientemente. Prima de conservación.'],
+            'good'      => [0.00,  'Bueno',
+                $isApartment
+                    ? 'Conservación del departamento buena. Sin ajuste.'
+                    : 'Conservación buena. Sin ajuste.'],
+            'fair'      => [-0.08, 'Regular',
+                $isApartment
+                    ? 'Departamento requiere mantenimiento o mejoras menores. Descuento aplicado.'
+                    : 'Requiere mantenimiento o mejoras menores. Descuento aplicado.'],
+            'poor'      => [-0.18, 'Necesita remodelación',
+                $isApartment
+                    ? 'Departamento requiere inversión significativa. Descuento por condición.'
+                    : 'Requiere inversión significativa. Descuento por condición.'],
+            default     => [0.00,  'Sin datos', ''],
+        };
+
+        $factorLabel = $isApartment
+            ? "Condición del departamento: {$label}"
+            : "Estado de conservación: {$label}";
+
+        return [
             'key'         => 'condition',
-            'label'       => "Estado de conservación: {$label}",
+            'label'       => $factorLabel,
             'value'       => $value,
             'explanation' => $desc,
         ];
@@ -346,21 +397,47 @@ class ValuationEngine
         ];
     }
 
-    protected function factorParking(PropertyValuation $v): array    {
-        $parking = $v->input_parking;
+    protected function factorParking(PropertyValuation $v): array
+    {
+        $parking     = $v->input_parking;
+        $parkingType = $v->input_parking_type ?? 'regular';
 
-        [$value, $desc] = match(true) {
+        // Valor base por número de cajones
+        [$baseValue, $baseDesc] = match(true) {
             $parking === 0 => [-0.10, 'Sin cajón de estacionamiento. Alta penalización en BJ.'],
             $parking === 1 => [0.00,  '1 cajón de estacionamiento. Estándar de mercado.'],
             $parking === 2 => [+0.06, '2 cajones de estacionamiento. Prima por acceso adicional.'],
             default        => [+0.10, "{$parking} cajones de estacionamiento. Prima por oferta amplia."],
         };
 
+        // Penalización adicional por tipo de estacionamiento
+        [$typePenalty, $typeDesc] = match($parkingType) {
+            'tandem' => [-0.05, 'En fila (tándem): requiere mover un vehículo para acceder al otro. Penalización por inconveniencia percibida.'],
+            'lift'   => [-0.08, 'Eleva autos (elevador mecánico): menor percepción de calidad, riesgo de falla mecánica y lentitud de acceso. Penalización de mercado.'],
+            default  => [0.00,  ''],
+        };
+
+        $value = round(max($baseValue + $typePenalty, -0.15), 4);
+
+        $typeLabel = match($parkingType) {
+            'tandem' => ' en fila (tándem)',
+            'lift'   => ' con eleva autos',
+            default  => '',
+        };
+
+        $explanation = $parking === 0
+            ? $baseDesc
+            : trim($baseDesc . ($typeDesc ? " {$typeDesc}" : ''));
+
+        $countLabel = $parking === 0
+            ? 'Sin estacionamiento'
+            : "{$parking} cajón(es){$typeLabel}";
+
         return [
             'key'         => 'parking',
-            'label'       => $parking === 0 ? 'Sin estacionamiento' : "{$parking} cajón(es) de estacionamiento",
+            'label'       => $countLabel,
             'value'       => $value,
-            'explanation' => $desc,
+            'explanation' => $explanation,
         ];
     }
 

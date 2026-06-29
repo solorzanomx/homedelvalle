@@ -92,8 +92,28 @@
                             </select>
                         </div>
 
+                        {{-- Condición del edificio (solo departamentos) --}}
+                        <div class="form-group" x-show="propType === 'apartment'" x-transition>
+                            <label class="form-label">Estado del edificio</label>
+                            <select name="input_building_condition" class="form-select">
+                                <option value="">— No especificado —</option>
+                                @foreach(['excellent'=>'Excelente','good'=>'Bueno','fair'=>'Regular','poor'=>'Necesita remodelación'] as $val => $lbl)
+                                <option value="{{ $val }}"
+                                    {{ old('input_building_condition', $valuation->input_building_condition ?? '') === $val ? 'selected' : '' }}>
+                                    {{ $lbl }}
+                                </option>
+                                @endforeach
+                            </select>
+                            <div class="form-hint">Fachada, áreas comunes, estructura del edificio</div>
+                        </div>
+
+                        {{-- Condición de la unidad (siempre visible) --}}
                         <div class="form-group">
-                            <label class="form-label">Estado de conservación <span class="required">*</span></label>
+                            <label class="form-label">
+                                <span x-show="propType === 'apartment'">Estado del departamento</span>
+                                <span x-show="propType !== 'apartment'">Estado de conservación</span>
+                                <span class="required">*</span>
+                            </label>
                             <select name="input_condition" class="form-select">
                                 @foreach(['excellent'=>'Excelente / Remodelado','good'=>'Bueno','fair'=>'Regular','poor'=>'Necesita remodelación'] as $val => $lbl)
                                 <option value="{{ $val }}"
@@ -102,6 +122,7 @@
                                 </option>
                                 @endforeach
                             </select>
+                            <div class="form-hint" x-show="propType === 'apartment'">Interior del departamento: acabados, instalaciones, estado general</div>
                         </div>
                     </div>
                 </div>
@@ -158,8 +179,36 @@
                         <div class="form-group">
                             <label class="form-label">Cajones de estacionamiento <span class="required">*</span></label>
                             <input type="number" name="input_parking" class="form-input"
+                                   id="parkingCount"
                                    min="0" max="10"
-                                   value="{{ old('input_parking', $valuation->input_parking ?? $pParking ?? 0) }}">
+                                   value="{{ old('input_parking', $valuation->input_parking ?? $pParking ?? 0) }}"
+                                   onchange="toggleParkingType(this.value)">
+                        </div>
+
+                        {{-- Tipo de estacionamiento --}}
+                        <div class="form-group" id="parkingTypeGroup" style="{{ (old('input_parking', $valuation->input_parking ?? $pParking ?? 0)) > 0 ? '' : 'display:none;' }}">
+                            <label class="form-label">Tipo de estacionamiento</label>
+                            <div style="display:flex;flex-direction:column;gap:.4rem;margin-top:.35rem;">
+                                @php
+                                    $parkingTypeOptions = [
+                                        'regular' => ['label'=>'Independiente (cajones regulares)','desc'=>'Cada cajón es accesible de forma independiente. Sin penalización.','color'=>'#16a34a'],
+                                        'tandem'  => ['label'=>'En fila (tándem)','desc'=>'Un vehículo bloquea al otro — descuento -5% por inconveniencia percibida.','color'=>'#d97706'],
+                                        'lift'    => ['label'=>'Eleva autos (elevador mecánico)','desc'=>'Menor percepción de calidad, riesgo mecánico y acceso lento — descuento -8%.','color'=>'#dc2626'],
+                                    ];
+                                @endphp
+                                @foreach($parkingTypeOptions as $val => $cfg)
+                                @php $checked = old('input_parking_type', $valuation->input_parking_type ?? 'regular') === $val; @endphp
+                                <label style="display:flex;align-items:flex-start;gap:.65rem;cursor:pointer;padding:.5rem .7rem;border:1px solid {{ $checked ? $cfg['color'] : 'var(--border)' }};border-radius:var(--radius);background:{{ $checked ? $cfg['color'].'12' : 'var(--bg)' }};">
+                                    <input type="radio" name="input_parking_type" value="{{ $val }}"
+                                           {{ $checked ? 'checked' : '' }}
+                                           style="margin-top:2px;accent-color:{{ $cfg['color'] }};">
+                                    <div>
+                                        <div style="font-size:.83rem;font-weight:600;color:var(--text);">{{ $cfg['label'] }}</div>
+                                        <div style="font-size:.73rem;color:var(--text-muted);">{{ $cfg['desc'] }}</div>
+                                    </div>
+                                </label>
+                                @endforeach
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Piso del inmueble</label>
@@ -314,6 +363,11 @@ function syncColoniaRaw(select) {
     if (select.value) {
         document.querySelector('[name="input_colonia_raw"]').value = '';
     }
+}
+
+function toggleParkingType(count) {
+    var el = document.getElementById('parkingTypeGroup');
+    if (el) el.style.display = parseInt(count) > 0 ? '' : 'none';
 }
 </script>
 @endsection

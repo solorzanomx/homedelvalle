@@ -272,9 +272,14 @@
                     'm² construcción'=> $valuation->input_m2_const ? number_format($valuation->input_m2_const) . ' m²' : '—',
                     'Antigüedad'     => $valuation->input_age_years . ' años',
                     'Conservación'   => $valuation->condition_label,
+                ] + ($valuation->input_type === 'apartment' && $valuation->input_building_condition ? [
+                    'Cond. edificio' => $valuation->building_condition_label ?? '—',
+                ] : []) + [
                     'Recámaras'      => $valuation->input_bedrooms,
                     'Baños'          => $valuation->input_bathrooms,
-                    'Estacionamiento'=> $valuation->input_parking . ' cajón(es)',
+                    'Estacionamiento'=> $valuation->input_parking > 0
+                        ? $valuation->input_parking . ' cajón(es) — ' . $valuation->parking_type_label
+                        : 'Sin estacionamiento',
                     'Piso'           => $valuation->input_floor ?? '—',
                     'Elevador'       => $valuation->input_has_elevator ? 'Sí' : 'No',
                     'Rooftop'        => $valuation->input_has_rooftop ? 'Sí' : '—',
@@ -286,8 +291,8 @@
                     'Orientación'    => $valuation->input_orientation ? ucfirst($valuation->input_orientation) : '—',
                     'Historial sísmico' => match($valuation->input_seismic_status) {
                         'none'               => 'Sin daño conocido',
-                        'damaged_repaired'   => '⚠️ Dañado — reparado',
-                        'damaged_reinforced' => '🔧 Dañado — reforzado',
+                        'damaged_repaired'   => 'Dañado — reparado',
+                        'damaged_reinforced' => 'Dañado — reforzado',
                         'unknown'            => 'Desconocido',
                         default              => '—',
                     },
@@ -308,6 +313,97 @@
                 @endif
             </div>
         </div>
+
+        {{-- ══ AJUSTE DE PRECIO Y AUTORIZACIÓN ══ --}}
+        @if($valuation->diagnosis !== 'insufficient_data')
+        <div class="card" style="border-color:{{ $valuation->price_override_authorized ? '#86efac' : '#e2e8f0' }};">
+            <div class="card-header" style="{{ $valuation->price_override_authorized ? 'background:#f0fdf4;' : '' }}">
+                <h3 class="card-title" style="display:flex;align-items:center;gap:.5rem;">
+                    @if($valuation->price_override_authorized)
+                        <span style="color:#15803d;">&#10003;</span>
+                    @else
+                        <span>&#9998;</span>
+                    @endif
+                    Ajuste de precio y autorización
+                </h3>
+                @if($valuation->price_override_authorized)
+                <span style="font-size:.73rem;background:#dcfce7;color:#15803d;padding:.15rem .55rem;border-radius:999px;font-weight:600;">
+                    Autorizado para presentación
+                </span>
+                @endif
+            </div>
+            <div class="card-body">
+
+                {{-- Precio base calculado --}}
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem .85rem;background:#f8fafc;border-radius:8px;margin-bottom:1rem;">
+                    <span style="font-size:.82rem;color:var(--text-muted);">Precio calculado por el sistema</span>
+                    <span style="font-size:1rem;font-weight:700;color:#374151;">${{ number_format($valuation->suggested_list_price) }}</span>
+                </div>
+
+                @if($valuation->price_override_authorized)
+                {{-- Estado: autorizado --}}
+                <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:1rem;margin-bottom:1rem;">
+                    <div style="font-size:.85rem;font-weight:700;color:#15803d;margin-bottom:.25rem;">
+                        Precio de presentación autorizado
+                    </div>
+                    <div style="font-size:1.5rem;font-weight:800;color:#15803d;margin-bottom:.4rem;">
+                        ${{ number_format((int)$valuation->price_override) }}
+                    </div>
+                    @if($valuation->price_override_notes)
+                    <div style="font-size:.8rem;color:#374151;margin-bottom:.35rem;">
+                        <strong>Justificación:</strong> {{ $valuation->price_override_notes }}
+                    </div>
+                    @endif
+                    <div style="font-size:.75rem;color:#6b7280;">
+                        Autorizado por {{ $valuation->priceOverrideUser?->name ?? 'Sistema' }}
+                        · {{ $valuation->price_override_at?->format('d M Y H:i') }}
+                    </div>
+                </div>
+                @endif
+
+                {{-- Formulario de ajuste --}}
+                <div id="priceAdjustForm">
+                    <div style="margin-bottom:.85rem;">
+                        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.35rem;">
+                            Precio ajustado para presentación
+                        </label>
+                        <div style="position:relative;">
+                            <span style="position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-weight:600;">$</span>
+                            <input type="number" id="priceOverrideInput"
+                                   class="form-input" style="padding-left:1.75rem;"
+                                   value="{{ (int)($valuation->price_override ?? $valuation->suggested_list_price) }}"
+                                   step="1000" min="100000" max="999999999"
+                                   placeholder="{{ $valuation->suggested_list_price }}"
+                                   oninput="updatePriceDiff(this.value)">
+                        </div>
+                        <div id="priceDiff" style="font-size:.75rem;margin-top:.3rem;color:var(--text-muted);"></div>
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.35rem;">
+                            Justificación del ajuste
+                        </label>
+                        <textarea id="priceOverrideNotes" class="form-textarea" rows="2"
+                                  placeholder="Ej: Se ajusta por remodelación reciente no capturada en datos de mercado, o por contexto de negociación del cliente…">{{ $valuation->price_override_notes }}</textarea>
+                    </div>
+                    <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="saveOverride()" id="btnSaveOverride">
+                            Guardar ajuste
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="authorizeOverride()" id="btnAuthorize" style="flex:1;">
+                            &#10003; Autorizar para presentación
+                        </button>
+                        @if($valuation->price_override)
+                        <button type="button" class="btn btn-danger btn-sm" onclick="clearOverride()">
+                            &#215; Quitar ajuste
+                        </button>
+                        @endif
+                    </div>
+                    <div id="overrideMsg" style="font-size:.82rem;margin-top:.6rem;display:none;"></div>
+                </div>
+
+            </div>
+        </div>
+        @endif
 
     </div>{{-- /columna principal --}}
 
@@ -452,4 +548,84 @@
 
     </div>{{-- /sidebar --}}
 </div>
+@endsection
+
+@section('scripts')
+<script>
+const VALUATION_ID = {{ $valuation->id }};
+const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content;
+const SUGGESTED_PRICE = {{ $valuation->suggested_list_price ?? 0 }};
+
+function updatePriceDiff(val) {
+    const diff = parseInt(val) - SUGGESTED_PRICE;
+    const el = document.getElementById('priceDiff');
+    if (!el || !val || isNaN(diff)) { if(el) el.textContent = ''; return; }
+    const pct = ((diff / SUGGESTED_PRICE) * 100).toFixed(1);
+    el.textContent = (diff > 0 ? '↑ +' : '↓ ') + '$' + Math.abs(diff).toLocaleString() + ' (' + (diff > 0 ? '+' : '') + pct + '% respecto al precio calculado)';
+    el.style.color = diff > 0 ? '#16a34a' : (diff < 0 ? '#dc2626' : '#9ca3af');
+}
+
+async function saveOverride() {
+    await submitOverride('save');
+}
+
+async function authorizeOverride() {
+    if (!confirm('¿Autorizar este precio para presentación al cliente?')) return;
+    await submitOverride('authorize');
+}
+
+async function clearOverride() {
+    if (!confirm('¿Quitar el ajuste manual y volver al precio calculado?')) return;
+    await submitOverride('clear');
+}
+
+async function submitOverride(action) {
+    const price = document.getElementById('priceOverrideInput')?.value;
+    const notes = document.getElementById('priceOverrideNotes')?.value;
+    const msgEl = document.getElementById('overrideMsg');
+    const btnAuth = document.getElementById('btnAuthorize');
+    const btnSave = document.getElementById('btnSaveOverride');
+
+    if (btnAuth) btnAuth.disabled = true;
+    if (btnSave) btnSave.disabled = true;
+    if (msgEl) { msgEl.style.display = 'none'; }
+
+    try {
+        const res = await fetch(`/admin/valuations/${VALUATION_ID}/authorize`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ price_override: price, price_override_notes: notes, action }),
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#15803d';
+            msgEl.textContent = data.message;
+            if (data.authorized) {
+                setTimeout(() => window.location.reload(), 800);
+            }
+        } else {
+            msgEl.style.display = 'block';
+            msgEl.style.color = '#dc2626';
+            msgEl.textContent = data.message ?? 'Error';
+        }
+    } catch(e) {
+        if (msgEl) { msgEl.style.display = 'block'; msgEl.style.color = '#dc2626'; msgEl.textContent = 'Error de conexión'; }
+    } finally {
+        if (btnAuth) btnAuth.disabled = false;
+        if (btnSave) btnSave.disabled = false;
+    }
+}
+
+// Init diff display
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('priceOverrideInput');
+    if (input && input.value) updatePriceDiff(input.value);
+});
+</script>
 @endsection

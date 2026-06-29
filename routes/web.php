@@ -646,6 +646,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/{valuation}/edit',              [\App\Http\Controllers\Admin\ValuationController::class, 'edit'])->name('edit');
         Route::put('/{valuation}',                   [\App\Http\Controllers\Admin\ValuationController::class, 'update'])->name('update');
         Route::patch('/{valuation}/status',          [\App\Http\Controllers\Admin\ValuationController::class, 'updateStatus'])->name('status');
+        Route::patch('/{valuation}/authorize',       [\App\Http\Controllers\Admin\ValuationController::class, 'authorizePrice'])->name('authorize');
         Route::get('/{valuation}/pdf',           [\App\Http\Controllers\Admin\ValuationController::class, 'pdf'])->name('pdf');
         Route::post('/{valuation}/record-sale',  [\App\Http\Controllers\Admin\ValuationController::class, 'recordSale'])->name('record-sale');
         Route::delete('/{valuation}',                [\App\Http\Controllers\Admin\ValuationController::class, 'destroy'])->name('destroy');

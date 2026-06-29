@@ -81,6 +81,8 @@ class ValuationController extends Controller
             'input_bedrooms'       => 'required|integer|min:0|max:20',
             'input_bathrooms'      => 'required|integer|min:0|max:20',
             'input_parking'        => 'required|integer|min:0|max:10',
+            'input_parking_type'       => 'nullable|in:regular,tandem,lift',
+            'input_building_condition' => 'nullable|in:excellent,good,fair,poor',
             'input_floor'          => 'nullable|integer|min:1|max:50',
             'input_has_elevator'   => 'boolean',
             'input_has_rooftop'    => 'boolean',
@@ -104,6 +106,11 @@ class ValuationController extends Controller
             $data['input_unit_position']  = null;
             $data['input_orientation']    = null;
             $data['input_seismic_status'] = null;
+        }
+        $data['input_parking_type'] = $request->input('input_parking_type', 'regular');
+        // Only save building condition for apartments
+        if (($data['input_type'] ?? '') !== 'apartment') {
+            $data['input_building_condition'] = null;
         }
 
         $valuation = PropertyValuation::create($data);
@@ -155,6 +162,8 @@ class ValuationController extends Controller
             'input_bedrooms'       => 'required|integer|min:0|max:20',
             'input_bathrooms'      => 'required|integer|min:0|max:20',
             'input_parking'        => 'required|integer|min:0|max:10',
+            'input_parking_type'       => 'nullable|in:regular,tandem,lift',
+            'input_building_condition' => 'nullable|in:excellent,good,fair,poor',
             'input_floor'          => 'nullable|integer|min:1|max:50',
             'input_has_elevator'   => 'boolean',
             'input_has_rooftop'    => 'boolean',
@@ -176,6 +185,11 @@ class ValuationController extends Controller
             $data['input_unit_position']  = null;
             $data['input_orientation']    = null;
             $data['input_seismic_status'] = null;
+        }
+        $data['input_parking_type'] = $request->input('input_parking_type', 'regular');
+        // Only save building condition for apartments
+        if (($data['input_type'] ?? '') !== 'apartment') {
+            $data['input_building_condition'] = null;
         }
 
         $valuation->update($data);
@@ -255,6 +269,54 @@ class ValuationController extends Controller
         );
 
         return back()->with('success', 'Precio de cierre registrado. Comparable guardado.');
+    }
+
+    /** PATCH /{valuation}/authorize — ajuste de precio y autorización para presentación */
+    public function authorizePrice(Request $request, PropertyValuation $valuation): \Illuminate\Http\JsonResponse
+    {
+        $request->validate([
+            'price_override'       => 'nullable|numeric|min:100000|max:999999999',
+            'price_override_notes' => 'nullable|string|max:1000',
+            'action'               => 'required|in:save,authorize,clear',
+        ]);
+
+        $action = $request->input('action');
+
+        if ($action === 'clear') {
+            $valuation->update([
+                'price_override'            => null,
+                'price_override_notes'      => null,
+                'price_override_by'         => null,
+                'price_override_at'         => null,
+                'price_override_authorized' => false,
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Ajuste eliminado. Se usará el precio calculado.']);
+        }
+
+        $valuation->update([
+            'price_override'       => $request->input('price_override') ?: null,
+            'price_override_notes' => $request->input('price_override_notes') ?: null,
+        ]);
+
+        if ($action === 'authorize') {
+            $valuation->update([
+                'price_override_authorized' => true,
+                'price_override_by'         => auth()->id(),
+                'price_override_at'         => now(),
+            ]);
+
+            return response()->json([
+                'success'      => true,
+                'authorized'   => true,
+                'message'      => 'Precio autorizado para presentación.',
+                'authorized_by'=> auth()->user()->name,
+                'authorized_at'=> $valuation->price_override_at->format('d M Y H:i'),
+                'final_price'  => number_format((int) $request->input('price_override'), 0, '.', ','),
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Ajuste guardado.']);
     }
 
     /** Analytics dashboard — accuracy tracking by zone */

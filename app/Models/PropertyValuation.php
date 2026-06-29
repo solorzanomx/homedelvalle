@@ -15,12 +15,14 @@ class PropertyValuation extends Model
         'input_colonia_id', 'input_colonia_raw', 'input_type',
         'input_m2_total', 'input_m2_const', 'input_age_years',
         'input_condition', 'input_bedrooms', 'input_bathrooms', 'input_parking',
+        'input_parking_type', 'input_building_condition',
         'input_floor', 'input_has_elevator', 'input_has_rooftop',
         'input_has_balcony', 'input_has_service_room', 'input_has_storage',
         'input_unit_position', 'input_orientation', 'input_seismic_status',
         'input_notes',
         'base_price_m2', 'adjusted_price_m2',
         'total_value_low', 'total_value_mid', 'total_value_high', 'suggested_list_price',
+        'price_override', 'price_override_notes', 'price_override_by', 'price_override_at', 'price_override_authorized',
         'market_trend', 'diagnosis', 'confidence',
         'snapshot_id', 'zone_snapshot_id', 'snapshot_source',
         'used_perplexity', 'perplexity_query', 'perplexity_response',
@@ -41,6 +43,9 @@ class PropertyValuation extends Model
         'delivered_at'          => 'datetime',
         'sale_recorded_at'      => 'datetime',
         'ai_narrative'          => 'array',
+        'price_override'            => 'decimal:2',
+        'price_override_at'         => 'datetime',
+        'price_override_authorized' => 'boolean',
     ];
 
     // ── Relationships ──────────────────────────────────────────────────────
@@ -68,6 +73,11 @@ class PropertyValuation extends Model
     public function zoneSnapshot(): BelongsTo
     {
         return $this->belongsTo(MarketZoneSnapshot::class, 'zone_snapshot_id');
+    }
+
+    public function priceOverrideUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'price_override_by');
     }
 
     /** Devuelve el snapshot activo (zona o colonia) */
@@ -110,6 +120,34 @@ class PropertyValuation extends Model
             'poor'      => 'Necesita remodelación',
             default     => $this->input_condition,
         };
+    }
+
+    public function getParkingTypeLabelAttribute(): string
+    {
+        return match($this->input_parking_type ?? 'regular') {
+            'tandem' => 'En fila (tándem)',
+            'lift'   => 'Eleva autos (elevador mecánico)',
+            default  => 'Independiente (cajones regulares)',
+        };
+    }
+
+    public function getBuildingConditionLabelAttribute(): ?string
+    {
+        return match($this->input_building_condition) {
+            'excellent' => 'Excelente',
+            'good'      => 'Bueno',
+            'fair'      => 'Regular',
+            'poor'      => 'Necesita remodelación',
+            default     => null,
+        };
+    }
+
+    public function getFinalPriceAttribute(): ?int
+    {
+        if ($this->price_override && $this->price_override_authorized) {
+            return (int) $this->price_override;
+        }
+        return $this->suggested_list_price;
     }
 
     public function getDiagnosisLabelAttribute(): string
