@@ -2,8 +2,8 @@
 
 @section('meta')
     <x-public.seo-meta
-        title="Propiedades en Ciudad de México"
-        description="Explora nuestro catálogo de propiedades en CDMX. Casas, departamentos, terrenos y más en venta y renta."
+        title="Selección curada de propiedades en Benito Juárez | Home del Valle"
+        description="Trabajamos con pocos inmuebles a la vez para darte atención real en cada operación. {{ $totalAvailable }} {{ $totalAvailable === 1 ? 'propiedad disponible' : 'propiedades disponibles' }} en Benito Juárez, CDMX. Se actualiza el 1° de cada mes."
         :canonical="route('propiedades.index')"
     />
 @endsection
@@ -16,12 +16,31 @@
 
 @section('content')
     <x-public.hero
-        heading="{{ $siteSettings?->featured_heading ?? 'Propiedades en CDMX' }}"
-        subheading="{{ $siteSettings?->featured_subheading ?? 'Explora nuestro catálogo de casas, departamentos y terrenos disponibles.' }}"
+        heading="{{ $siteSettings?->featured_heading ?? 'Selección curada de propiedades' }}"
+        subheading="{{ $siteSettings?->featured_subheading ?? 'Trabajamos con pocos inmuebles a la vez para darte atención real en cada operación.' }}"
         :show-search="true"
         :compact="false"
         :breadcrumb-items="[['label' => 'Propiedades']]"
     />
+
+    {{-- Selección curada del mes --}}
+    <div class="bg-brand-50 border-y border-brand-100">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-sm">
+                <div class="flex items-center gap-2 font-semibold text-brand-700">
+                    <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-brand-600 text-white text-xs font-bold">{{ $totalAvailable }}</span>
+                    {{ $totalAvailable === 1 ? 'propiedad disponible ahora mismo' : 'propiedades disponibles ahora mismo' }}
+                </div>
+                <span class="hidden sm:block text-brand-300">·</span>
+                <div class="flex items-center gap-1.5 text-brand-600">
+                    <x-icon name="calendar" class="w-4 h-4 shrink-0" />
+                    Próxima incorporación: <span class="font-semibold">{{ $nextUpdateDate }}</span>
+                </div>
+                <span class="hidden sm:block text-brand-300">·</span>
+                <p class="text-brand-500 italic">Pocos inmuebles. Más control. Mejores resultados.</p>
+            </div>
+        </div>
+    </div>
 
     <section class="py-16 sm:py-20 bg-white">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

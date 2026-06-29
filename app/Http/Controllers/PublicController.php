@@ -44,9 +44,13 @@ class PublicController extends Controller
         };
 
         $totalCount = $query->count();
+        $totalAvailable = Property::available()->count(); // total sin filtros, para el contador de selección
         $properties = $query->paginate(12)->withQueryString();
 
-        return view('public.propiedades', compact('properties', 'totalCount'));
+        // Próxima incorporación: 1° del siguiente mes
+        $nextUpdateDate = now()->addMonthNoOverflow()->startOfMonth()->locale('es')->isoFormat('D [de] MMMM');
+
+        return view('public.propiedades', compact('properties', 'totalCount', 'totalAvailable', 'nextUpdateDate'));
     }
 
     public function propiedadShow(int $id, string $slug = null)
