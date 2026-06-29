@@ -19,6 +19,11 @@ class ClientEmailController extends Controller
      */
     public function compose(Client $client)
     {
+        if (!$client->email) {
+            return redirect()->route('clients.show', $client)
+                ->with('error', 'Este cliente no tiene correo electrónico registrado. Agrégalo antes de enviar un correo.');
+        }
+
         $properties = Property::orderBy('title')->get();
         $user = Auth::user();
 
@@ -67,6 +72,12 @@ class ClientEmailController extends Controller
         // Add tracking pixel to HTML
         $trackingUrl = route('email.track', $clientEmail->tracking_id);
         $bodyWithTracking = $bodyHtml . '<img src="' . $trackingUrl . '" width="1" height="1" style="display:none;" alt="">';
+
+        if (!$client->email) {
+            $clientEmail->update(['status' => 'failed']);
+            return redirect()->route('clients.show', $client)
+                ->with('error', 'Este cliente no tiene correo electrónico registrado.');
+        }
 
         // Send via EmailService with user's SMTP
         $emailService = app(EmailService::class);

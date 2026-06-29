@@ -302,7 +302,9 @@
                     <div style="font-size:.65rem;color:#9ca3af;">/m² · {{ $lastSale['label'] }}</div>
                 </div>
             </div>
-            <canvas id="chartSale" style="width:100%;height:160px;"></canvas>
+            <div style="position:relative;height:160px;">
+                <canvas id="chartSale"></canvas>
+            </div>
         </div>
         @endif
 
@@ -320,7 +322,9 @@
                     <div style="font-size:.65rem;color:#9ca3af;">/mes · {{ $lastRent['label'] }}</div>
                 </div>
             </div>
-            <canvas id="chartRent" style="width:100%;height:160px;"></canvas>
+            <div style="position:relative;height:160px;">
+                <canvas id="chartRent"></canvas>
+            </div>
         </div>
         @endif
 

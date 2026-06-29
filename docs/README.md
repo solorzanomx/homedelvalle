@@ -19,6 +19,22 @@ Ambas capas son fuente de verdad. La de `.claude/` se actualiza cuando cambia el
 
 ---
 
+## Playbook de revisión (capa estratégica antes de cualquier feature nueva)
+
+### 0. Playbook de Revisión en 3 Capas
+[`docs/00-PLAYBOOK-REVISION-3-CAPAS.md`](./00-PLAYBOOK-REVISION-3-CAPAS.md)
+
+**Cuándo usarlo:** antes de implementar cualquier proceso operativo nuevo, feature del CRM, landing pública, sección del Portal o integración con tercero. Tres capas en orden estricto: Especialista Inmobiliario (10 criterios A–J de negocio real) → UX Architect (7 criterios A–G de experiencia) → Código (cuando ambas capas dieron luz verde). Cada capa puede vetar el avance.
+
+**Audiencia:** Alex, Ana Laura, agentes senior, UX, Claude Code y devs externos.
+
+**Mantenedor:** Alex.
+
+### Revisiones aplicadas
+- [`docs/REVISION-05-PROCESO-DE-RENTA-2026-04-29.md`](./REVISION-05-PROCESO-DE-RENTA-2026-04-29.md) — primera aplicación del playbook al proceso de renta. 12 observaciones de Capa 1, 9 de Capa 2, 5 anotaciones de Capa 3.
+
+---
+
 ## Los cuatro manuales maestros
 
 ### 1. Manual de Marca y Voz

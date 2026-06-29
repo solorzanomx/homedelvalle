@@ -103,7 +103,7 @@ class ConstructorValuation extends Component
         $this->precioMultiplier = $multiplier;
         if ($this->observatorioPrice && $this->observatorioPrice > 0) {
             $mult = (float) $multiplier;
-            $this->precioVentaM2 = (string) (int) round($this->observatorioPrice * $mult);
+            $this->precioVentaM2 = number_format((int) round($this->observatorioPrice * $mult));
         }
         $this->recalculate();
     }
@@ -125,7 +125,7 @@ class ConstructorValuation extends Component
         // solo si el usuario no ingresó un precio manual diferente al obs anterior
         if ($obs > 0) {
             $mult = (float) $this->precioMultiplier ?: 1.20;
-            $this->precioVentaM2 = (string) (int) round($obs * $mult);
+            $this->precioVentaM2 = number_format((int) round($obs * $mult));
         }
 
         $this->recalculate();

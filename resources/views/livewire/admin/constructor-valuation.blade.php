@@ -388,9 +388,11 @@
         <div>
             <label class="cv-label">Precio total pedido (MXN) <span style="color:var(--danger)">*</span></label>
             <input wire:model.blur="precioTerreno" wire:change="recalculate"
+                   x-init="let v=$el.value.replace(/[^0-9]/g,'');$el.value=v?Number(v).toLocaleString('en-US'):'';"
+                   @input="let v=$event.target.value.replace(/[^0-9]/g,'');let f=v?Number(v).toLocaleString('en-US'):'';let diff=f.length-$event.target.value.length;let pos=Math.max(0,$event.target.selectionEnd+diff);$event.target.value=f;$event.target.setSelectionRange(pos,pos);"
                    type="text" inputmode="numeric" placeholder="4,500,000" class="cv-input">
             @if($derivedM2)<span class="cv-hint" style="color:#059669;">= ${{ number_format($derivedM2) }}/m² de terreno</span>
-            @else<span class="cv-hint">ej: 4500000 (sin comas ni puntos)</span>@endif
+            @else<span class="cv-hint">ej: 4,500,000</span>@endif
         </div>
         <div>
             <label class="cv-label">$/m² de terreno</label>
@@ -401,9 +403,11 @@
         <div>
             <label class="cv-label">Precio por m² de terreno <span style="color:var(--danger)">*</span></label>
             <input wire:model.blur="precioTerrenoM2" wire:change="recalculate"
+                   x-init="let v=$el.value.replace(/[^0-9]/g,'');$el.value=v?Number(v).toLocaleString('en-US'):'';"
+                   @input="let v=$event.target.value.replace(/[^0-9]/g,'');let f=v?Number(v).toLocaleString('en-US'):'';let diff=f.length-$event.target.value.length;let pos=Math.max(0,$event.target.selectionEnd+diff);$event.target.value=f;$event.target.setSelectionRange(pos,pos);"
                    type="text" inputmode="numeric" placeholder="22,500" class="cv-input">
             @if($derivedTot)<span class="cv-hint" style="color:#059669;">= ${{ number_format($derivedTot) }} total</span>
-            @else<span class="cv-hint">ej: 22500 (sin comas)</span>@endif
+            @else<span class="cv-hint">ej: 22,500</span>@endif
         </div>
         <div>
             <label class="cv-label">Total calculado</label>
@@ -464,8 +468,10 @@
 
     <div style="display:flex;align-items:center;gap:.5rem;">
         <input wire:model.blur="precioVentaM2" wire:change="recalculate"
+               x-init="let v=$el.value.replace(/[^0-9]/g,'');$el.value=v?Number(v).toLocaleString('en-US'):'';"
+               @input="let v=$event.target.value.replace(/[^0-9]/g,'');let f=v?Number(v).toLocaleString('en-US'):'';let diff=f.length-$event.target.value.length;let pos=Math.max(0,$event.target.selectionEnd+diff);$event.target.value=f;$event.target.setSelectionRange(pos,pos);"
                type="text" inputmode="numeric"
-               placeholder="{{ $coloniaId ? 'Se calcula automáticamente — o ingresa manualmente' : 'ej. 70000' }}"
+               placeholder="{{ $coloniaId ? 'Se calcula automáticamente — o ingresa manualmente' : 'ej. 70,000' }}"
                class="cv-input" style="flex:1;">
         @if($precioVentaM2 && $observatorioPrice)
         @php $pvNum = (int)str_replace([',',' '], '', $precioVentaM2); $pctVsObs = round(($pvNum - $observatorioPrice) / $observatorioPrice * 100); @endphp
