@@ -5,6 +5,7 @@
     @foreach($staticPages as $page)
     <url>
         <loc>{{ $page['url'] }}</loc>
+        @isset($page['lastmod'])<lastmod>{{ $page['lastmod'] }}</lastmod>@endisset
         <changefreq>{{ $page['changefreq'] }}</changefreq>
         <priority>{{ $page['priority'] }}</priority>
     </url>
@@ -39,19 +40,6 @@
         <priority>0.8</priority>
     </url>
     @endforeach
-
-    {{-- Precios hub --}}
-    <url>
-        <loc>{{ url('/precios') }}</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.9</priority>
-        <lastmod>{{ date('Y-m-d') }}</lastmod>
-    </url>
-    <url>
-        <loc>{{ url('/precios/opinion-de-valor') }}</loc>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
 
     {{-- Market zones (/precios) --}}
     @foreach($marketZones ?? [] as $zone)

@@ -10,16 +10,22 @@
 <link rel="canonical" href="{{ url('/precios') }}">
 
 {{-- Open Graph --}}
+@php $preciosOg = file_exists(storage_path('app/public/og/precios-og.jpg')) ? asset('storage/og/precios-og.jpg') : null; @endphp
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ $seoTitle }}">
 <meta property="og:description" content="{{ $seoDesc }}">
 <meta property="og:url" content="{{ url('/precios') }}">
-<meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
+@if($preciosOg)
+<meta property="og:image" content="{{ $preciosOg }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+@endif
 <meta property="og:locale" content="es_MX">
 <meta property="og:site_name" content="Home del Valle">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="{{ $preciosOg ? 'summary_large_image' : 'summary' }}">
 <meta name="twitter:title" content="{{ $seoTitle }}">
 <meta name="twitter:description" content="{{ $seoDesc }}">
+@if($preciosOg)<meta name="twitter:image" content="{{ $preciosOg }}">@endif
 
 {{-- Dataset Schema --}}
 <x-public.json-ld type="Dataset" :data="[

@@ -8,7 +8,12 @@
 
 @php
     $siteName = $siteSettings?->site_name ?? 'Home del Valle';
-    $fullTitle = $title ? "$title | $siteName" : $siteName;
+    // Evita duplicar el sufijo si el title ya termina con el nombre del sitio
+    if ($title) {
+        $fullTitle = str_ends_with(trim($title), $siteName) ? trim($title) : "$title | $siteName";
+    } else {
+        $fullTitle = $siteName;
+    }
     $metaDescription = $description ?? $siteSettings?->site_tagline ?? '';
 @endphp
 
