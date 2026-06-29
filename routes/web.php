@@ -391,6 +391,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/integrations', [IntegrationSettingsController::class, 'index'])->name('integrations.index');
         Route::post('/integrations', [IntegrationSettingsController::class, 'update'])->name('integrations.update');
         Route::post('/integrations/webhook/regenerate', [IntegrationSettingsController::class, 'regenerateWebhookKey'])->name('integrations.webhook.regenerate');
+        Route::post('/integrations/facebook/test', [IntegrationSettingsController::class, 'testFacebookConnection'])->name('integrations.facebook.test');
 
         // Automatizaciones
         Route::get('/automations', [AutomationController::class, 'index'])->name('automations.index');
@@ -568,6 +569,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/{post}/upload-bg',        [\App\Http\Controllers\Admin\FacebookPostController::class, 'uploadBackground'])->name('background.upload');
         Route::post('/{post}/render',           [\App\Http\Controllers\Admin\FacebookPostController::class, 'renderImage'])->name('render');
         Route::get('/{post}/download',          [\App\Http\Controllers\Admin\FacebookPostController::class, 'download'])->name('download');
+        Route::post('/{post}/publish',          [\App\Http\Controllers\Admin\FacebookPostController::class, 'publishToFacebook'])->name('publish');
     });
 
     // ===== CARRUSELES IG =====

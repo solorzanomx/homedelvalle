@@ -155,6 +155,77 @@
             </div>
         </div>
 
+        {{-- Facebook Publishing API --}}
+        <div class="card int-full">
+            <div class="card-header" style="display:flex;align-items:center;gap:.75rem;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.514c-1.491 0-1.956.93-1.956 1.887v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+                <h3 style="margin:0;">Facebook Publishing API</h3>
+            </div>
+            <div class="card-body">
+                <div class="int-toggle">
+                    <div class="int-toggle-label">
+                        <span class="int-status {{ ($settings && $settings->fb_api_enabled && $settings->fb_page_id && $settings->fb_page_access_token) ? 'on' : 'off' }}"></span>
+                        {{ ($settings && $settings->fb_api_enabled && $settings->fb_page_id && $settings->fb_page_access_token) ? 'Activo — listo para publicar' : 'Inactivo' }}
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="hidden" name="fb_api_enabled" value="0">
+                        <input type="checkbox" name="fb_api_enabled" value="1" {{ ($settings && $settings->fb_api_enabled) ? 'checked' : '' }} onchange="toggleFields(this, 'fbApiFields')">
+                        <span class="toggle-track"></span>
+                    </label>
+                </div>
+
+                <div id="fbApiFields" class="int-fields" style="{{ ($settings && $settings->fb_api_enabled) ? '' : 'display:none' }}">
+                    <div class="int-warning">
+                        <span>&#128274;</span>
+                        <span>El <strong>Access Token</strong> da acceso de escritura a tu página de Facebook. Trátalo como contraseña — no lo compartas. <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener" style="color:#92400e;font-weight:600;">Graph API Explorer →</a></span>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div class="form-group">
+                            <label class="form-label">App ID <span style="color:#ef4444">*</span></label>
+                            <input type="text" name="fb_app_id" class="form-input" value="{{ old('fb_app_id', $settings->fb_app_id ?? '') }}" placeholder="123456789012345">
+                            <p class="form-hint">ID de tu app en Meta for Developers.</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">App Secret</label>
+                            <input type="password" name="fb_app_secret" id="fbAppSecret" class="form-input" value="{{ old('fb_app_secret', $settings->fb_app_secret ?? '') }}" placeholder="••••••••••••••••">
+                            <p class="form-hint">Secret de tu app (Meta for Developers).</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label class="form-label">Page ID <span style="color:#ef4444">*</span></label>
+                        <input type="text" name="fb_page_id" id="fbPageId" class="form-input" value="{{ old('fb_page_id', $settings->fb_page_id ?? '') }}" placeholder="Ej: 123456789012345">
+                        <p class="form-hint">ID numérico de tu página de Facebook. Lo encuentras en Configuración → Información general de la página.</p>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:1rem;">
+                        <label class="form-label">Page Access Token <span style="color:#ef4444">*</span></label>
+                        <div style="display:flex;gap:.5rem;align-items:stretch;">
+                            <input type="password" name="fb_page_access_token" id="fbPageToken" class="form-input" value="{{ old('fb_page_access_token', $settings->fb_page_access_token ?? '') }}" placeholder="EAAxxxxxxxx…" style="font-family:monospace;font-size:.8rem;">
+                            <button type="button" onclick="toggleTokenVisibility()" class="btn btn-sm btn-outline" title="Mostrar/ocultar token" style="white-space:nowrap;flex-shrink:0;">&#128065;</button>
+                        </div>
+                        <p class="form-hint">Page Access Token de larga duración con permisos <code>pages_manage_posts</code> y <code>pages_read_engagement</code>.</p>
+                    </div>
+
+                    <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;padding:1rem;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+                        <button type="button" onclick="testFbConnection()" class="btn btn-sm btn-outline" id="fbTestBtn">
+                            &#10003; Verificar conexión
+                        </button>
+                        <div id="fbTestResult" style="font-size:.83rem;display:none;"></div>
+                    </div>
+
+                    <div style="margin-top:1rem;padding:.75rem 1rem;background:#eff6ff;border-radius:8px;border:1px solid #bfdbfe;font-size:.8rem;color:#1e40af;line-height:1.6;">
+                        <strong>¿Cómo obtener el Page Access Token?</strong><br>
+                        1. Ve a <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:#1d4ed8;">Meta Graph API Explorer</a><br>
+                        2. Selecciona tu App y genera un User Token con <code>pages_manage_posts</code><br>
+                        3. Haz GET <code>/me/accounts</code> para obtener el <strong>Page Access Token</strong><br>
+                        4. Para que sea de larga duración, usa el <a href="https://developers.facebook.com/tools/accesstoken/" target="_blank" style="color:#1d4ed8;">Access Token Debugger</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Custom Scripts --}}
         <div class="card int-full">
             <div class="card-header"><h3>Scripts Personalizados</h3></div>
@@ -237,6 +308,47 @@ function regenerateWebhookKey() {
       }).finally(function() {
           btn.disabled = false;
       });
+}
+
+function toggleTokenVisibility() {
+    var input = document.getElementById('fbPageToken');
+    if (input) input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function testFbConnection() {
+    var btn    = document.getElementById('fbTestBtn');
+    var result = document.getElementById('fbTestResult');
+    var token  = document.getElementById('fbPageToken')?.value;
+    var pageId = document.getElementById('fbPageId')?.value;
+
+    btn.disabled = true;
+    btn.textContent = 'Verificando…';
+    result.style.display = 'none';
+
+    fetch('{{ route("admin.integrations.facebook.test") }}', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ token, page_id: pageId }),
+    })
+    .then(r => r.json())
+    .then(data => {
+        result.style.display = 'flex';
+        result.style.alignItems = 'center';
+        result.style.gap = '.35rem';
+        if (data.success) {
+            result.innerHTML = '<span style="color:#15803d;font-weight:700;">&#10003; Conectado:</span> <span style="color:#374151;">' + data.name + ' (ID: ' + data.id + ')' + (data.fans ? ' · ' + Number(data.fans).toLocaleString() + ' seguidores' : '') + '</span>';
+        } else {
+            result.innerHTML = '<span style="color:#dc2626;font-weight:700;">&#10007; Error:</span> <span style="color:#374151;">' + data.error + '</span>';
+        }
+    })
+    .catch(() => {
+        result.style.display = 'block';
+        result.innerHTML = '<span style="color:#dc2626;">Error de conexión</span>';
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = '✓ Verificar conexión';
+    });
 }
 </script>
 @endsection

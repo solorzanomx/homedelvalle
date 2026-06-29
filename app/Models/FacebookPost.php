@@ -25,6 +25,8 @@ class FacebookPost extends Model
         'render_error',
         'status',
         'published_at',
+        'fb_page_post_id',
+        'fb_post_url',
     ];
 
     protected $casts = [

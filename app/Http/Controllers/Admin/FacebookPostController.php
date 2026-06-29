@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\FacebookPost\GenerateFacebookPostAction;
+use App\Actions\FacebookPost\PublishToFacebookAction;
 use App\Actions\FacebookPost\RenderFacebookPostAction;
 use App\Http\Controllers\Controller;
 use App\Models\FacebookPost;
 use App\Models\Post;
+use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
@@ -22,11 +24,15 @@ class FacebookPostController extends Controller
 
     // ── CRUD ─────────────────────────────────────────────────────────
 
-    public function index()
+    public function index(Request $request)
     {
-        $posts = FacebookPost::with('user')
-            ->latest()
-            ->paginate(20);
+        $query = FacebookPost::with('user')->latest();
+
+        if ($request->filled('status') && in_array($request->status, ['draft', 'review', 'published'])) {
+            $query->where('status', $request->status);
+        }
+
+        $posts = $query->paginate(20)->withQueryString();
 
         return view('admin.facebook-posts.index', compact('posts'));
     }
@@ -67,7 +73,11 @@ class FacebookPostController extends Controller
             ? Storage::disk('public')->url($post->rendered_image_path) . '?t=' . $post->updated_at->timestamp
             : null;
 
-        return view('admin.facebook-posts.show', compact('post', 'blogPosts', 'imageUrl'));
+        $fbApiConfigured = (bool) (SiteSetting::first()?->fb_api_enabled
+            && SiteSetting::first()?->fb_page_id
+            && SiteSetting::first()?->fb_page_access_token);
+
+        return view('admin.facebook-posts.show', compact('post', 'blogPosts', 'imageUrl', 'fbApiConfigured'));
     }
 
     public function update(Request $request, FacebookPost $post)
@@ -76,7 +86,7 @@ class FacebookPostController extends Controller
             'title'       => 'sometimes|string|max:200',
             'source_type' => 'sometimes|in:blog_post,perplexity,manual',
             'source_id'   => 'nullable|exists:posts,id',
-            'template'    => 'sometimes|in:fb-dark,fb-light,fb-foto,fb-gradient',
+            'template'    => 'sometimes|in:fb-dark,fb-light,fb-foto,fb-gradient,fb-split-dark',
             'headline'    => 'nullable|string|max:200',
             'subheadline' => 'nullable|string|max:300',
             'body_text'   => 'nullable|string|max:500',
@@ -266,5 +276,33 @@ class FacebookPostController extends Controller
         $filename     = 'hdv-facebook-' . $post->id . '.png';
 
         return response()->download($absolutePath, $filename);
+    }
+
+    /** POST /{post}/publish — publish to Facebook Page */
+    public function publishToFacebook(FacebookPost $post)
+    {
+        if ($post->render_status !== 'done') {
+            return response()->json(['success' => false, 'error' => 'Primero renderiza la imagen.'], 422);
+        }
+
+        try {
+            $action = new PublishToFacebookAction();
+            $result = $action->execute($post);
+
+            $post->update([
+                'status'          => 'published',
+                'published_at'    => now(),
+                'fb_page_post_id' => $result['fb_page_post_id'],
+                'fb_post_url'     => $result['fb_post_url'],
+            ]);
+
+            return response()->json([
+                'success'      => true,
+                'fb_post_url'  => $result['fb_post_url'],
+                'published_at' => $post->published_at->format('d M Y H:i'),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     }
 }
