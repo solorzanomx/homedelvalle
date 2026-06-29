@@ -134,7 +134,7 @@
                             @endif
                             @if($t->ticket)
                             <span class="inline-flex items-center gap-1 text-xs text-gray-500 font-medium">
-                                <x-icon name="banknote" class="w-3 h-3 shrink-0" /> {{ $t->ticket }}
+                                <x-icon name="landmark" class="w-3 h-3 shrink-0" /> {{ $t->ticket }}
                             </span>
                             @endif
                             @if($t->time_in_market)
