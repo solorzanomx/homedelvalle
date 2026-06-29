@@ -44,6 +44,11 @@ class Post extends Model
         return !empty($data['md']) ? Storage::disk('public')->url($data['md']) : null;
     }
 
+    protected static function booted(): void
+    {
+        static::observe(\App\Observers\PostObserver::class);
+    }
+
     public function author() { return $this->belongsTo(User::class, 'user_id'); }
     public function category() { return $this->belongsTo(PostCategory::class, 'category_id'); }
     public function tags() { return $this->belongsToMany(Tag::class); }

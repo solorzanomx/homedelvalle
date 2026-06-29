@@ -432,6 +432,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('content-calendar/events', [ContentCalendarController::class, 'events'])->name('content-calendar.events');
         Route::patch('content-calendar/{post}/date', [ContentCalendarController::class, 'updateDate'])->name('content-calendar.update-date');
         Route::resource('pages', PageController::class)->names('pages');
+        Route::resource('colonia-pages', \App\Http\Controllers\Admin\ColoniaPageController::class)->names('colonia-pages');
         Route::resource('post-categories', PostCategoryController::class)->names('post-categories')->only(['index', 'store', 'update', 'destroy']);
         Route::resource('tags', TagController::class)->names('tags')->only(['index', 'store', 'update', 'destroy']);
 
@@ -709,6 +710,12 @@ Route::middleware(['auth', 'admin'])->get('/test-google-docs', function () {
         ], 500, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     }
 });
+
+// ── Landing pages de colonias — DEBE IR AL FINAL (catch-all /{slug}) ──
+// Registrado después de todas las rutas específicas para no interferir con /login, /blog, etc.
+Route::get('/{slug}', [\App\Http\Controllers\ColoniaController::class, 'show'])
+    ->name('colonia.show')
+    ->where('slug', '[a-z][a-z0-9\-]*');  // solo letras/números/guiones
 
 // ── Preview emails V4 — solo en desarrollo local ─────────────────────
 if (app()->isLocal()) {

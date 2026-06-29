@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ColoniaPage;
 use App\Models\Post;
 use App\Models\Property;
 use Illuminate\Http\Response;
@@ -19,6 +20,10 @@ class SitemapController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get(['id', 'updated_at']);
 
+        $colonias = ColoniaPage::published()
+            ->orderBy('sort_order')
+            ->get(['slug', 'updated_at']);
+
         $staticPages = [
             ['url' => url('/'),                                        'priority' => '1.0', 'changefreq' => 'weekly'],
             ['url' => url('/propiedades'),                             'priority' => '0.9', 'changefreq' => 'daily'],
@@ -35,7 +40,7 @@ class SitemapController extends Controller
             ['url' => url('/contacto'),                                'priority' => '0.6', 'changefreq' => 'monthly'],
         ];
 
-        $content = view('sitemap', compact('staticPages', 'posts', 'properties'))->render();
+        $content = view('sitemap', compact('staticPages', 'posts', 'properties', 'colonias'))->render();
 
         return response($content, 200)
             ->header('Content-Type', 'application/xml');

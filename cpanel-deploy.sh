@@ -83,10 +83,11 @@ if [ "$1" == "--seed" ]; then
     echo "[OK] Seeders generales ejecutados"
 fi
 
-# Seeders idempotentes de presentación (seguros en cada deploy)
+# Seeders idempotentes (seguros en cada deploy — usan updateOrCreate)
 php artisan db:seed --class=PresentationTemplatesSeeder --force 2>&1 || echo "[WARN] PresentationTemplatesSeeder no existe o falló"
 php artisan db:seed --class=PresentationEmailTemplateSeeder --force 2>&1 || echo "[WARN] PresentationEmailTemplateSeeder no existe o falló"
-echo "[OK] Seeders de presentación"
+php artisan db:seed --class=ColoniaPageSeeder --force 2>&1 || echo "[WARN] ColoniaPageSeeder no existe o falló"
+echo "[OK] Seeders idempotentes"
 
 # 7. Verificación Browsershot
 echo "[7/7] Verificando Browsershot..."

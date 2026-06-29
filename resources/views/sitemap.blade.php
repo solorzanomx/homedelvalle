@@ -30,4 +30,14 @@
     </url>
     @endforeach
 
+    {{-- Colonia landing pages --}}
+    @foreach($colonias ?? [] as $colonia)
+    <url>
+        <loc>{{ url('/' . $colonia->slug) }}</loc>
+        <lastmod>{{ $colonia->updated_at->toAtomString() }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    @endforeach
+
 </urlset>
