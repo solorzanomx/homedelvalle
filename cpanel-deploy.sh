@@ -91,6 +91,11 @@ php artisan db:seed --class=MarketZoneDescripcionSeeder --force 2>&1 || echo "[W
 php artisan db:seed --class=SiteSettingsPatchSeeder --force 2>&1 || echo "[WARN] SiteSettingsPatchSeeder no existe o falló"
 echo "[OK] Seeders idempotentes"
 
+# OG Images — generación automática
+echo "OG Images..."
+php artisan og:generate-precios 2>&1 || echo "[WARN] og:generate-precios falló"
+echo "[OK] OG Images"
+
 # 7. Verificación Browsershot
 echo "[7/7] Verificando Browsershot..."
 NODE_BIN=$(php artisan tinker --execute="echo config('browsershot.node_path');" 2>/dev/null | tail -1)
