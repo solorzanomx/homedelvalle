@@ -1,9 +1,48 @@
 @extends('layouts.public')
 
 @section('meta')
+@php
+    $typeLabels  = ['House'=>'Casa','Apartment'=>'Departamento','Land'=>'Terreno','Office'=>'Oficina','Commercial'=>'Local comercial','Warehouse'=>'Bodega'];
+    $opLabels    = ['sale'=>'en venta','rental'=>'en renta','temporary_rental'=>'en renta temporal'];
+
+    // Título SEO: capitalizar + generar fallback si es slug crudo
+    $rawTitle    = \Illuminate\Support\Str::title($property->title);
+    $typeName    = $typeLabels[$property->property_type] ?? null;
+    $opName      = $opLabels[$property->operation_type] ?? null;
+    $location    = $property->colony ?: $property->city;
+
+    $seoTitle = $rawTitle;
+    if ($typeName && $opName && $location) {
+        $parts = array_filter([
+            $typeName . ' ' . $opName,
+            $location,
+            $property->bedrooms ? $property->bedrooms . ' rec.' : null,
+            $property->area ? number_format($property->area) . ' m²' : null,
+        ]);
+        $seoTitle = implode(' · ', $parts);
+    }
+
+    // Meta description: usar description del inmueble o generar automáticamente
+    $rawDesc = strip_tags($property->description ?? '');
+    if (strlen($rawDesc) > 30) {
+        $seoDesc = \Illuminate\Support\Str::limit($rawDesc, 110) . '. '
+                 . collect([$property->colony, 'Benito Juárez'])->filter()->join(', ')
+                 . '. ' . $property->formatted_price . '. Asesoría gratuita con Home del Valle.';
+    } else {
+        $parts = array_filter([
+            $typeName . ($opName ? ' ' . $opName : ''),
+            $location ? 'en ' . $location . ', Benito Juárez' : 'en Benito Juárez',
+            $property->bedrooms ? $property->bedrooms . ' recámaras' : null,
+            $property->area ? number_format($property->area) . ' m²' : null,
+            $property->formatted_price,
+        ]);
+        $seoDesc = implode('. ', $parts) . '. Asesoría gratuita con Home del Valle.';
+    }
+    $seoDesc = \Illuminate\Support\Str::limit(trim($seoDesc), 160);
+@endphp
     <x-public.seo-meta
-        title="{{ $property->title }}"
-        :description="Str::limit(strip_tags($property->description), 160)"
+        :title="$seoTitle"
+        :description="$seoDesc"
         :canonical="route('propiedades.show', ['id' => $property->id, 'slug' => $property->slug])"
         :og-image="$property->photo_url"
         og-type="product"
@@ -12,7 +51,7 @@
     {{-- RealEstateListing schema --}}
     <x-public.json-ld type="RealEstateListing" :data="array_filter([
         'name'        => $property->title,
-        'description' => strip_tags($property->description ?? ''),
+        'description' => (strip_tags($property->description ?? '') ?: null),
         'url'         => route('propiedades.show', ['id' => $property->id, 'slug' => $property->slug]),
         'image'       => $property->photo_url,
         'datePosted'  => $property->created_at?->toIso8601String(),

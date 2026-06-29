@@ -1,9 +1,25 @@
 @extends('layouts.public')
 
 @section('meta')
-<title>Observatorio de precios inmobiliarios en Benito Juárez, CDMX | Home del Valle</title>
-<meta name="description" content="Consulta los precios actuales por m² en las principales colonias de Benito Juárez. Datos actualizados mensualmente por Home del Valle.">
+@php
+    $seoTitle = 'Precio por m² en Benito Juárez ' . date('Y') . ' · Por colonia | Home del Valle';
+    $seoDesc  = 'Consulta el precio por m² en Narvarte, Del Valle, Portales y más colonias de Benito Juárez. Datos actualizados ' . now()->locale('es')->isoFormat('MMMM Y') . ' · Home del Valle.';
+@endphp
+<title>{{ $seoTitle }}</title>
+<meta name="description" content="{{ $seoDesc }}">
 <link rel="canonical" href="{{ url('/mercado') }}">
+
+{{-- Open Graph --}}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ $seoTitle }}">
+<meta property="og:description" content="{{ $seoDesc }}">
+<meta property="og:url" content="{{ url('/mercado') }}">
+<meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
+<meta property="og:locale" content="es_MX">
+<meta property="og:site_name" content="Home del Valle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $seoTitle }}">
+<meta name="twitter:description" content="{{ $seoDesc }}">
 @endsection
 
 @section('content')

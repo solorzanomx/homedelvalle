@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MarketZone extends Model
 {
     protected $fillable = [
-        'slug', 'name', 'short_description', 'long_description',
+        'slug', 'name', 'short_description', 'long_description', 'descripcion_seo',
         'lat_center', 'lng_center', 'sort_order', 'is_published',
     ];
 

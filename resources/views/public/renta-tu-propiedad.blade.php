@@ -6,6 +6,16 @@
         description="Renta tu inmueble en Benito Juárez con seguridad jurídica, póliza profesional y administración integral si la necesitas. Sin sorpresas, sin morosidad inesperada."
         :canonical="url('/renta-tu-propiedad')"
     />
+    <x-public.json-ld type="FAQPage" :data="[
+        'mainEntity' => [
+            ['@type'=>'Question','name'=>'¿Cuánto cuesta poner mi inmueble en renta con ustedes?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Cero por adelantado. Cobramos comisión sólo cuando se firma contrato. La comisión estándar de mercado en CDMX es un mes de renta, negociable según el caso.']],
+            ['@type'=>'Question','name'=>'¿En cuánto tiempo se renta un inmueble bien presentado?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Promedio en Benito Juárez: 15–30 días si el precio está alineado al mercado y la presentación es buena. Inmuebles muy específicos pueden tardar más; en la asesoría te decimos el plazo realista.']],
+            ['@type'=>'Question','name'=>'¿Qué pasa si el inquilino no paga?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Si tienes póliza jurídica activa, la afianzadora cubre y procede legalmente. Si optaste por aval, ejecutamos el aval con respaldo legal. En ambos casos te acompañamos hasta resolver.']],
+            ['@type'=>'Question','name'=>'¿Necesito firmar exclusividad?','acceptedAnswer'=>['@type'=>'Answer','text'=>'No exigimos exclusividad. Si decides trabajar con varias inmobiliarias está bien para nosotros. Sólo recuerda que múltiples publicaciones simultáneas pueden enviar señal de inmueble difícil de colocar.']],
+            ['@type'=>'Question','name'=>'¿Cómo funciona la administración integral?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Cobramos un porcentaje mensual (típicamente 6–10% de la renta dependiendo del servicio). Cubre: cobranza, atención al inquilino, mantenimiento, reportes mensuales e intervención legal si es necesario.']],
+            ['@type'=>'Question','name'=>'¿Aceptan rentas vacacionales o por días?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Hoy nuestro foco es renta tradicional (mínimo 6 meses). Si buscas vacacional, podemos referirte a operadores especializados con quienes trabajamos.']],
+        ],
+    ]" />
 @endsection
 
 @section('content')

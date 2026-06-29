@@ -7,6 +7,15 @@
         :title="$page?->meta_title ?? 'Captación de predios e inversión inmobiliaria en Benito Juárez'"
         :description="$page?->meta_description ?? 'Captación de terrenos y producto terminado en Benito Juárez bajo demanda activa. Red de inversionistas consolidada.'"
     />
+    <x-public.json-ld type="FAQPage" :data="[
+        'mainEntity' => [
+            ['@type'=>'Question','name'=>'¿Cuánto cuesta usar los servicios de Home del Valle?','acceptedAnswer'=>['@type'=>'Answer','text'=>'No cobramos por análisis ni asesoría inicial. Solo aplicamos una comisión por intermediación al cerrar exitosamente la operación, negociada según la complejidad y montos involucrados.']],
+            ['@type'=>'Question','name'=>'¿Qué tan rápido pueden colocar un proyecto?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Depende del tipo de activo. Terrenos calificados en zonas premium se colocan en 30–60 días. Producto terminado con demanda activa, en 15–45 días. Operaciones complejas requieren 60–90 días de negociación.']],
+            ['@type'=>'Question','name'=>'¿Cuáles son los requisitos para presentar un proyecto?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Información básica: ubicación exacta, m² totales y vendibles, tipo de proyecto, precio/presupuesto, documentos de propiedad, planos (si disponible) y timeline esperado. Luego se solicitan documentos complementarios según la etapa.']],
+            ['@type'=>'Question','name'=>'¿Cómo funciona la intermediación con compradores institucionales?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Evaluamos tu proyecto y lo presentamos selectivamente a inversionistas, fondos inmobiliarios y desarrolladores en nuestra cartera. Gestionamos la negociación, due diligence y cierre legal-financiero. Confidencialidad garantizada en todo el proceso.']],
+            ['@type'=>'Question','name'=>'¿Ofrecen asesoría en estructuración de operaciones?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Sí. Podemos asesorar en coinversión, financiamiento, garantías, esquemas fiscales y legales complejos. Trabajamos con abogados, notarios y asesores fiscales especializados para estructurar operaciones de alto valor.']],
+        ],
+    ]" />
 @endsection
 
 @section('content')

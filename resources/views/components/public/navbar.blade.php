@@ -128,7 +128,7 @@
 
                 {{-- Links planos --}}
                 @foreach([
-                    ['label' => 'Mercado',  'url' => '/mercado'],
+                    ['label' => 'Precios por colonia',  'url' => '/mercado'],
                     ['label' => 'Nosotros', 'url' => '/nosotros'],
                     ['label' => 'Blog',     'url' => '/blog'],
                 ] as $link)
@@ -206,7 +206,7 @@
             {{-- Links planos --}}
             <div class="mt-2 border-t border-gray-100/60 pt-2">
                 @foreach([
-                    ['label' => 'Mercado',   'url' => '/mercado'],
+                    ['label' => 'Precios por colonia', 'url' => '/mercado'],
                     ['label' => 'Nosotros',  'url' => '/nosotros'],
                     ['label' => 'Blog',      'url' => '/blog'],
                     ['label' => 'Contacto',  'url' => '/contacto'],

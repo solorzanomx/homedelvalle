@@ -1,11 +1,33 @@
 @extends('layouts.public')
 
 @section('meta')
-<title>Precios inmuebles en {{ $zone->name }}, Benito Juárez {{ now()->format('Y') }} | Home del Valle</title>
-<meta name="description" content="Precios por m² en {{ $zone->name }}: departamentos
-  @if(!empty($saleSnaps['apartment']['mid'])) desde ${{ number_format($saleSnaps['apartment']['mid']->price_m2_low) }}/m² @endif.
-  Datos actualizados {{ now()->isoFormat('MMMM Y') }}. Venta y renta.">
+@php
+    $year     = now()->format('Y');
+    $month    = now()->locale('es')->isoFormat('MMMM Y');
+    $priceAvg = !empty($saleSnaps['apartment']['mid']) ? number_format($saleSnaps['apartment']['mid']->price_m2_avg) : null;
+    $priceMin = !empty($saleSnaps['apartment']['mid']) ? number_format($saleSnaps['apartment']['mid']->price_m2_low) : null;
+    $priceMax = !empty($saleSnaps['apartment']['mid']) ? number_format($saleSnaps['apartment']['mid']->price_m2_high) : null;
+
+    $seoTitle = "Precio por m² en {$zone->name} {$year} · Departamentos y Casas | Home del Valle";
+
+    $seoDesc = "Precio promedio por m² en {$zone->name}: " . ($priceAvg ? "\${$priceAvg}/m² (depto seminuevo). " : '') . ($priceMin && $priceMax ? "Rango \${$priceMin}–\${$priceMax}/m². " : '') . "Datos actualizados {$month}. Venta y renta · Home del Valle Benito Juárez.";
+    $seoDesc = \Illuminate\Support\Str::limit(trim($seoDesc), 160);
+@endphp
+<title>{{ $seoTitle }}</title>
+<meta name="description" content="{{ $seoDesc }}">
 <link rel="canonical" href="{{ url('/mercado/' . $zone->slug) }}">
+
+{{-- Open Graph --}}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ $seoTitle }}">
+<meta property="og:description" content="{{ $seoDesc }}">
+<meta property="og:url" content="{{ url('/mercado/' . $zone->slug) }}">
+<meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
+<meta property="og:locale" content="es_MX">
+<meta property="og:site_name" content="Home del Valle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $seoTitle }}">
+<meta name="twitter:description" content="{{ $seoDesc }}">
 
 {{-- FAQ Schema.org para rich results en Google --}}
 <script type="application/ld+json">
@@ -116,6 +138,17 @@
         </div>
     </div>
 </section>
+
+{{-- ══════════════════════════════════════════════════════
+     DESCRIPCIÓN SEO — texto introductorio para Google
+════════════════════════════════════════════════════════ --}}
+@if($zone->descripcion_seo)
+<div style="background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:.85rem 1.5rem;">
+    <div style="max-width:960px;margin:0 auto;">
+        <p style="font-size:.82rem;color:#4b5563;line-height:1.7;margin:0;">{{ $zone->descripcion_seo }}</p>
+    </div>
+</div>
+@endif
 
 {{-- ══════════════════════════════════════════════════════
      NAV ZONAS

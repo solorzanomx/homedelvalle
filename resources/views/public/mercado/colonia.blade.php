@@ -1,12 +1,69 @@
 @extends('layouts.public')
 
 @section('meta')
-<title>Precios en {{ $colonia->name }}, {{ $zone->name }} {{ now()->format('Y') }} | Home del Valle</title>
-<meta name="description" content="Precio por m² en {{ $colonia->name }}, {{ $zone->name }}: departamentos
-  @if(!empty($saleSnaps['apartment']['mid'])) ~${{ number_format($saleSnaps['apartment']['mid']->price_m2_avg) }}/m² @endif.
-  Referencias actualizadas {{ now()->isoFormat('MMMM Y') }}. Home del Valle.">
+@php
+    $year     = now()->format('Y');
+    $month    = now()->locale('es')->isoFormat('MMMM Y');
+    $priceAvg = !empty($saleSnaps['apartment']['mid']) ? number_format($saleSnaps['apartment']['mid']->price_m2_avg) : null;
+    $rentAvg  = !empty($rentSnaps['apartment']['mid']) ? number_format((int)($rentSnaps['apartment']['mid']->price_m2_avg * 75)) : null;
+    $totalAnuncios = ($saleMeta['total_listings'] ?? 0) + ($rentMeta['total_listings'] ?? 0);
+
+    $seoTitle = "Precio por m² {$colonia->name} {$year} · Venta y Renta | Home del Valle";
+
+    $seoDesc = "Precio por m² en {$colonia->name}: " . ($priceAvg ? "~\${$priceAvg}/m²." : '') . ($totalAnuncios ? " Referencias de {$totalAnuncios} anuncios en Benito Juárez." : '') . " Actualizado {$month} · Home del Valle.";
+    $seoDesc = \Illuminate\Support\Str::limit(trim($seoDesc), 160);
+@endphp
+<title>{{ $seoTitle }}</title>
+<meta name="description" content="{{ $seoDesc }}">
 <link rel="canonical" href="{{ url('/mercado/' . $zone->slug . '/' . $colonia->slug) }}">
 
+{{-- Open Graph --}}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ $seoTitle }}">
+<meta property="og:description" content="{{ $seoDesc }}">
+<meta property="og:url" content="{{ url('/mercado/' . $zone->slug . '/' . $colonia->slug) }}">
+<meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
+<meta property="og:locale" content="es_MX">
+<meta property="og:site_name" content="Home del Valle">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $seoTitle }}">
+<meta name="twitter:description" content="{{ $seoDesc }}">
+
+{{-- FAQPage Schema — Nivel 2 colonia --}}
+<script type="application/ld+json">
+{!! json_encode(array_filter([
+    '@context'   => 'https://schema.org',
+    '@type'      => 'FAQPage',
+    'mainEntity' => array_values(array_filter([
+        $priceAvg ? [
+            '@type' => 'Question',
+            'name'  => '¿Cuánto cuesta un departamento en ' . $colonia->name . '?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text'  => 'El precio promedio por m² en ' . $colonia->name . ' es de $' . $priceAvg . '/m² para departamentos seminuevos. Un departamento típico de 90 m² tiene un valor aproximado de $' . number_format((int) str_replace(',', '', $priceAvg) * 90) . ' MXN. Fuente: Observatorio HDV, ' . $month . '.',
+            ],
+        ] : null,
+        $rentAvg ? [
+            '@type' => 'Question',
+            'name'  => '¿Cuánto se renta un departamento en ' . $colonia->name . '?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text'  => 'La renta promedio de un departamento de 75 m² en ' . $colonia->name . ' es de aproximadamente $' . $rentAvg . '/mes. Datos actualizados ' . $month . '.',
+            ],
+        ] : null,
+        [
+            '@type' => 'Question',
+            'name'  => '¿En qué alcaldía está ' . $colonia->name . '?',
+            'acceptedAnswer' => [
+                '@type' => 'Answer',
+                'text'  => $colonia->name . ' se ubica en la alcaldía Benito Juárez, Ciudad de México (CDMX), dentro de la zona ' . $zone->name . '.',
+            ],
+        ],
+    ])),
+]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+</script>
+
+{{-- BreadcrumbList --}}
 <script type="application/ld+json">
 {
   "@@context": "https://schema.org",

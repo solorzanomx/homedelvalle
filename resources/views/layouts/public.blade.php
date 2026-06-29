@@ -19,6 +19,43 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+    {{-- RealEstateAgent / LocalBusiness schema — presente en todas las páginas públicas --}}
+    <script type="application/ld+json">
+    {!! json_encode([
+        '@context'    => 'https://schema.org',
+        '@type'       => 'RealEstateAgent',
+        'name'        => $siteSettings?->site_name ?? 'Home del Valle',
+        'description' => 'Firma inmobiliaria boutique especializada en la alcaldía Benito Juárez, CDMX. Venta, renta, desarrollo y valuación de inmuebles.',
+        'url'         => url('/'),
+        'telephone'   => $siteSettings?->contact_phone ?? '+5215513450978',
+        'email'       => $siteSettings?->contact_email ?? 'contacto@homedelvalle.mx',
+        'address'     => [
+            '@type'           => 'PostalAddress',
+            'streetAddress'   => $siteSettings?->address ?? 'Heriberto Frías 903-A',
+            'addressLocality' => 'Colonia del Valle',
+            'addressRegion'   => 'Ciudad de México',
+            'postalCode'      => '03100',
+            'addressCountry'  => 'MX',
+        ],
+        'geo' => [
+            '@type'     => 'GeoCoordinates',
+            'latitude'  => 19.3738,
+            'longitude' => -99.1677,
+        ],
+        'openingHoursSpecification' => [
+            ['@type'=>'OpeningHoursSpecification','dayOfWeek'=>['Monday','Tuesday','Wednesday','Thursday','Friday'],'opens'=>'09:00','closes'=>'18:00'],
+            ['@type'=>'OpeningHoursSpecification','dayOfWeek'=>['Saturday'],'opens'=>'10:00','closes'=>'14:00'],
+        ],
+        'areaServed' => ['@type'=>'AdministrativeArea','name'=>'Alcaldía Benito Juárez, Ciudad de México'],
+        'memberOf'   => ['@type'=>'Organization','name'=>'AMPI - Asociación Mexicana de Profesionales Inmobiliarios'],
+        'sameAs'     => array_values(array_filter([
+            $siteSettings?->facebook_url  ?? null,
+            $siteSettings?->instagram_url ?? null,
+        ])),
+        'priceRange' => '$$',
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
+
     @livewireStyles
 
     {{-- Alpine.js viene incluido en Livewire 4 — no cargar desde CDN --}}
