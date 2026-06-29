@@ -282,55 +282,54 @@ class UserAdminController extends Controller
             return back()->with('error', 'No puedes cambiar tus propios permisos');
         }
 
-        // Sync RBAC role
-        $roleId = $request->input('rbac_role_id');
-        if ($roleId) {
-            $user->roles()->sync([$roleId]);
+        $roleId        = $request->input('rbac_role_id');
+        $permissionIds = array_map('intval', $request->input('permissions', []));
+
+        if (! $roleId) {
+            return back()->with('error', 'Selecciona un rol.');
         }
 
-        // Sync individual permission overrides
-        $permissionIds = $request->input('permissions', []);
-        // Get permissions from the assigned role
-        $role = $roleId ? Role::find($roleId) : $user->roles->first();
-        $rolePermissionIds = $role ? $role->permissions()->pluck('permissions.id')->toArray() : [];
+        $role = Role::find($roleId);
+        if (! $role) {
+            return back()->with('error', 'Rol no encontrado.');
+        }
 
-        // Merge: role permissions + any extra toggled permissions
-        // The user gets exactly what was checked in the form
-        // We attach extra permissions directly via a custom pivot if needed
-        // For simplicity: we sync the role AND adjust the role's permissions aren't touched,
-        // but we store the exact set the user should have via role assignment
+        // Compare submitted permissions with the role's default set
+        $rolePermIds   = $role->permissions()->pluck('permissions.id')
+                             ->map(fn($id) => (int) $id)->sort()->values()->toArray();
+        $submittedIds  = collect($permissionIds)->sort()->values()->toArray();
+        $matchesRole   = $rolePermIds === $submittedIds;
 
-        // If the selected permissions differ from the role default, we need to handle it.
-        // Approach: assign a role, but also allow the admin to customize.
-        // We'll sync the role and update its permissions for this user specifically
-        // by creating a direct user-permission relationship.
-
-        // Actually, the cleanest approach: just sync the role. The checkboxes
-        // reflect the role's permissions. If admin wants custom, they should create a custom role.
-        // But the user asked for per-user toggle, so let's handle it.
-
-        // We'll detach extra permissions from the role relationship and instead
-        // add a direct user<->permission pivot. But our current schema doesn't have that.
-        // The simplest approach: find/create a per-user role with the exact permissions.
-
-        // Simplest: update the assigned role's permissions if it's not a system role,
-        // or create a custom role for this user.
-
-        // PRAGMATIC approach: assign the role, then if permissions differ, create a custom role
-        if ($role && $role->is_system) {
+        if ($role->is_system && $matchesRole) {
+            // ── Assign system role directly (e.g. super_admin) ───────
+            $user->roles()->sync([$role->id]);
+        } elseif ($role->is_system) {
+            // ── Permissions differ from system role → custom role ────
             $customSlug = 'custom_user_' . $user->id;
             $customRole = Role::firstOrCreate(
                 ['slug' => $customSlug],
-                ['name' => 'Custom - ' . $user->name, 'is_system' => false]
+                ['name' => 'Custom — ' . $user->name, 'is_system' => false]
             );
             $customRole->permissions()->sync($permissionIds);
             $user->roles()->sync([$customRole->id]);
         } else {
-            // Non-system role or no role: directly sync permissions on it
-            if ($role) {
-                $role->permissions()->sync($permissionIds);
-                $user->roles()->sync([$role->id]);
-            }
+            // ── Non-system role: update its permissions and assign ───
+            $role->permissions()->sync($permissionIds);
+            $user->roles()->sync([$role->id]);
+        }
+
+        // Sync legacy role field so middleware stays in sync
+        $legacyMap = [
+            'super_admin'      => 'admin',
+            'broker_senior'    => 'broker',
+            'broker_direccion' => 'editor',
+            'asesor'           => 'viewer',
+            'user'             => 'user',
+            'client'           => 'client',
+        ];
+        $assignedSlug = $role->is_system ? $role->slug : null;
+        if ($assignedSlug && isset($legacyMap[$assignedSlug])) {
+            $user->update(['role' => $legacyMap[$assignedSlug]]);
         }
 
         $user->clearPermissionCache();
