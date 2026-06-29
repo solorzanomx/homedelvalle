@@ -344,15 +344,15 @@
             </div>
 
             <nav style="flex:1; padding: 0.75rem 0; overflow-y: auto;">
-                {{-- ===== PRINCIPAL ===== --}}
+
+                {{-- ===== 1: PRINCIPAL (sin label) ===== --}}
                 <div class="nav-section" data-section="principal">
-                    <span class="nav-label" onclick="toggleSection(this)">Principal <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
                     <div class="nav-items">
                         <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Dashboard
                         </a>
                         <a href="{{ route('admin.form-submissions.index') }}" class="nav-item {{ request()->routeIs('admin.form-submissions*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Leads
+                            <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Leads web
                             @php $unseenLeads = \App\Models\FormSubmission::whereNull('seen_at')->count(); @endphp
                             @if($unseenLeads > 0)
                             <span style="margin-left:auto;background:#f59e0b;color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:20px">{{ $unseenLeads > 99 ? '99+' : $unseenLeads }}</span>
@@ -372,20 +372,55 @@
                     </div>
                 </div>
 
-                {{-- ===== PROCESOS (venta) ===== --}}
+                {{-- ===== 2: VENTAS ===== --}}
                 <div class="nav-section" data-section="procesos">
-                    <span class="nav-label" onclick="toggleSection(this)">Procesos Venta <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <span class="nav-label" onclick="toggleSection(this)">Ventas <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
                     <div class="nav-items">
                         @if(Route::has('admin.captaciones.index'))
                         <a href="{{ route('admin.captaciones.index') }}" class="nav-item {{ request()->routeIs('admin.captaciones.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Evaluación de Propiedad
+                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Captaciones
                         </a>
                         @endif
                         @if(Route::has('operations.index'))
                         <a href="{{ route('operations.index') }}" class="nav-item {{ request()->routeIs('operations.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="circle-play" class="w-4 h-4" /></span> Operaciones
+                            <span class="nav-icon"><x-icon name="circle-play" class="w-4 h-4" /></span> Pipeline
                         </a>
                         @endif
+                        @if(Route::has('deals.index'))
+                        <a href="{{ route('deals.index') }}" class="nav-item {{ request()->routeIs('deals.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="diamond" class="w-4 h-4" /></span> Histórico Ventas
+                        </a>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ===== 3: RENTAS ===== --}}
+                @if(Route::has('admin.rentas.captaciones'))
+                <div class="nav-section" data-section="rentas">
+                    <span class="nav-label" onclick="toggleSection(this)">Rentas <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
+                        <a href="{{ route('admin.rentas.captaciones') }}" class="nav-item {{ request()->routeIs('admin.rentas.captaciones') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="search" class="w-4 h-4" /></span> Captaciones de Renta
+                        </a>
+                        <a href="{{ route('admin.rentas.activas') }}" class="nav-item {{ request()->routeIs('admin.rentas.activas') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="key" class="w-4 h-4" /></span> Colocación Activa
+                        </a>
+                        <a href="{{ route('admin.rentas.gestion') }}" class="nav-item {{ request()->routeIs('admin.rentas.gestion*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Post-Cierre
+                        </a>
+                        @if(Route::has('rentals.index'))
+                        <a href="{{ route('rentals.index') }}" class="nav-item {{ request()->routeIs('rentals.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Histórico Rentas
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+
+                {{-- ===== 4: VALUACIÓN ===== --}}
+                <div class="nav-section" data-section="valuacion">
+                    <span class="nav-label" onclick="toggleSection(this)">Valuación <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
                         @if(Route::has('admin.quick-quote'))
                         <a href="{{ route('admin.quick-quote') }}" class="nav-item {{ request()->routeIs('admin.quick-quote') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Valor Rápido
@@ -404,68 +439,7 @@
                     </div>
                 </div>
 
-                {{-- ===== RENTAS (Track B) ===== --}}
-                @if(Route::has('admin.rentas.captaciones'))
-                <div class="nav-section {{ request()->routeIs('admin.rentas.*') ? '' : '' }}" data-section="rentas">
-                    <span class="nav-label" onclick="toggleSection(this)">Rentas <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
-                    <div class="nav-items">
-                        <a href="{{ route('admin.rentas.captaciones') }}" class="nav-item {{ request()->routeIs('admin.rentas.captaciones') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="search" class="w-4 h-4" /></span> Captaciones de Renta
-                        </a>
-                        <a href="{{ route('admin.rentas.activas') }}" class="nav-item {{ request()->routeIs('admin.rentas.activas') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="key" class="w-4 h-4" /></span> Colocación Activa
-                        </a>
-                        <a href="{{ route('admin.rentas.gestion') }}" class="nav-item {{ request()->routeIs('admin.rentas.gestion*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Gestión Post-Cierre
-                        </a>
-                    </div>
-                </div>
-                @endif
-
-                {{-- ===== HISTORICO (collapsed by default) ===== --}}
-                @if(Route::has('deals.index') || Route::has('rentals.index'))
-                <div class="nav-section collapsed" data-section="historico">
-                    <span class="nav-label" onclick="toggleSection(this)">Historico <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
-                    <div class="nav-items">
-                        @if(Route::has('deals.index'))
-                        <a href="{{ route('deals.index') }}" class="nav-item {{ request()->routeIs('deals.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="diamond" class="w-4 h-4" /></span> Deals
-                        </a>
-                        @endif
-                        @if(Route::has('rentals.index'))
-                        <a href="{{ route('rentals.index') }}" class="nav-item {{ request()->routeIs('rentals.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Rentas
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endif
-
-                {{-- ===== EQUIPO ===== --}}
-                @permission('users.view')
-                <div class="nav-section" data-section="equipo">
-                    <span class="nav-label" onclick="toggleSection(this)">Equipo <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
-                    <div class="nav-items">
-                        <a href="{{ route('brokers.index') }}" class="nav-item {{ request()->routeIs('brokers.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="star" class="w-4 h-4" /></span> Brokers Externos
-                        </a>
-                        <a href="{{ route('broker-companies.index') }}" class="nav-item {{ request()->routeIs('broker-companies.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="building" class="w-4 h-4" /></span> Empresas
-                        </a>
-                        <a href="{{ route('referrers.index') }}" class="nav-item {{ request()->routeIs('referrers.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="link" class="w-4 h-4" /></span> Comisionistas
-                        </a>
-                        <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') && !request()->routeIs('admin.users.permissions') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="user-cog" class="w-4 h-4" /></span> Usuarios
-                        </a>
-                        <a href="{{ route('admin.users.permissions') }}" class="nav-item {{ request()->routeIs('admin.users.permissions') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="shield-alert" class="w-4 h-4" /></span> Permisos
-                        </a>
-                    </div>
-                </div>
-                @endpermission
-
-                {{-- ===== LEADS & MARKETING ===== --}}
+                {{-- ===== 5: MARKETING ===== --}}
                 @permission('marketing.view')
                 @if(Route::has('admin.submissions.index') || Route::has('admin.marketing.dashboard') || Route::has('admin.analytics'))
                 <div class="nav-section" data-section="marketing">
@@ -476,19 +450,14 @@
                             <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Analytics
                         </a>
                         @endif
-                        @if(Route::has('admin.submissions.index'))
-                        <a href="{{ route('admin.submissions.index') }}" class="nav-item {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Leads
+                        @if(Route::has('admin.marketing.campaigns'))
+                        <a href="{{ route('admin.marketing.campaigns') }}" class="nav-item {{ request()->routeIs('admin.marketing.campaigns*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="target" class="w-4 h-4" /></span> Campañas
                         </a>
                         @endif
                         @if(Route::has('admin.marketing.channels'))
                         <a href="{{ route('admin.marketing.channels') }}" class="nav-item {{ request()->routeIs('admin.marketing.channels*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="megaphone" class="w-4 h-4" /></span> Canales
-                        </a>
-                        @endif
-                        @if(Route::has('admin.marketing.campaigns'))
-                        <a href="{{ route('admin.marketing.campaigns') }}" class="nav-item {{ request()->routeIs('admin.marketing.campaigns*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="target" class="w-4 h-4" /></span> Campanas
                         </a>
                         @endif
                         @if(Route::has('admin.segments.index'))
@@ -521,12 +490,121 @@
                             <span class="nav-icon"><x-icon name="send" class="w-4 h-4" /></span> Newsletter
                         </a>
                         @endif
+                        @if(Route::has('admin.submissions.index'))
+                        <a href="{{ route('admin.submissions.index') }}" class="nav-item {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Leads histórico
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endif
                 @endpermission
 
-                {{-- ===== FINANZAS ===== --}}
+                {{-- ===== 6: CONTENIDO ===== --}}
+                @permission('cms.manage')
+                @if(Route::has('admin.posts.index'))
+                <div class="nav-section" data-section="cms">
+                    <span class="nav-label" onclick="toggleSection(this)">Contenido <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
+                        <a href="{{ route('admin.posts.index') }}" class="nav-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Blog
+                        </a>
+                        @if(Route::has('admin.content-calendar'))
+                        <a href="{{ route('admin.content-calendar') }}" class="nav-item {{ request()->routeIs('admin.content-calendar*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario
+                        </a>
+                        @endif
+                        @if(Route::has('admin.post-categories.index'))
+                        <a href="{{ route('admin.post-categories.index') }}" class="nav-item {{ request()->routeIs('admin.post-categories.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="list" class="w-4 h-4" /></span> Categorías
+                        </a>
+                        @endif
+                        @if(Route::has('admin.tags.index'))
+                        <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="flag" class="w-4 h-4" /></span> Etiquetas
+                        </a>
+                        @endif
+                        @if(Route::has('admin.media.index'))
+                        <a href="{{ route('admin.media.index') }}" class="nav-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="camera" class="w-4 h-4" /></span> Medios
+                        </a>
+                        @endif
+                        @if(Route::has('admin.carousels.index'))
+                        <a href="{{ route('admin.carousels.index') }}" class="nav-item {{ request()->routeIs('admin.carousels.index') || (request()->routeIs('admin.carousels.*') && !request()->routeIs('admin.carousels.image-test')) ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Carruseles IG
+                        </a>
+                        @endif
+                        @if(Route::has('admin.facebook.index'))
+                        <a href="{{ route('admin.facebook.index') }}" class="nav-item {{ request()->routeIs('admin.facebook.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="share-2" class="w-4 h-4" /></span> Posts Facebook
+                        </a>
+                        @endif
+                        @if(Route::has('admin.carousels.prompts'))
+                        <a href="{{ route('admin.carousels.prompts') }}" class="nav-item {{ request()->routeIs('admin.carousels.prompts') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="settings" class="w-4 h-4" /></span> Plantillas IA
+                        </a>
+                        @endif
+                        @if(Route::has('admin.carousels.image-test'))
+                        <a href="{{ route('admin.carousels.image-test') }}" class="nav-item {{ request()->routeIs('admin.carousels.image-test') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="image" class="w-4 h-4" /></span> Test imágenes IA
+                        </a>
+                        @endif
+                        @if(Route::has('admin.testimonials.index'))
+                        <a href="{{ route('admin.testimonials.index') }}" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="heart" class="w-4 h-4" /></span> Testimonios
+                        </a>
+                        @endif
+                        @if(Route::has('admin.forms.index'))
+                        <a href="{{ route('admin.forms.index') }}" class="nav-item {{ request()->routeIs('admin.forms.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Formularios
+                        </a>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- ===== 7: SITIO WEB ===== --}}
+                <div class="nav-section" data-section="sitio">
+                    <span class="nav-label" onclick="toggleSection(this)">Sitio Web <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
+                        <a href="{{ route('admin.homepage') }}" class="nav-item {{ request()->routeIs('admin.homepage') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Homepage
+                        </a>
+                        @if(Route::has('admin.servicios-page'))
+                        <a href="{{ route('admin.servicios-page') }}" class="nav-item {{ request()->routeIs('admin.servicios-page') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="briefcase" class="w-4 h-4" /></span> Pág. Servicios
+                        </a>
+                        @endif
+                        @if(Route::has('admin.nosotros-page'))
+                        <a href="{{ route('admin.nosotros-page') }}" class="nav-item {{ request()->routeIs('admin.nosotros-page') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="users-round" class="w-4 h-4" /></span> Pág. Nosotros
+                        </a>
+                        @endif
+                        @if(Route::has('admin.vender-page'))
+                        <a href="{{ route('admin.vender-page') }}" class="nav-item {{ request()->routeIs('admin.vender-page') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="tag" class="w-4 h-4" /></span> Pág. Vender
+                        </a>
+                        @endif
+                        @if(Route::has('admin.pages.index'))
+                        <a href="{{ route('admin.pages.index') }}" class="nav-item {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="list" class="w-4 h-4" /></span> Páginas
+                        </a>
+                        @endif
+                        @if(Route::has('admin.menus.index'))
+                        <a href="{{ route('admin.menus.index') }}" class="nav-item {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="menu" class="w-4 h-4" /></span> Menús
+                        </a>
+                        @endif
+                        @if(Route::has('admin.footer'))
+                        <a href="{{ route('admin.footer') }}" class="nav-item {{ request()->routeIs('admin.footer*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="panel-bottom" class="w-4 h-4" /></span> Footer
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                @endif
+                @endpermission
+
+                {{-- ===== 8: FINANZAS ===== --}}
                 @permission('finance.view')
                 @if(Route::has('admin.finance.dashboard'))
                 <div class="nav-section" data-section="finanzas">
@@ -550,100 +628,7 @@
                 @endif
                 @endpermission
 
-                {{-- ===== SITIO WEB / CMS ===== --}}
-                @permission('cms.manage')
-                @if(Route::has('admin.posts.index'))
-                <div class="nav-section" data-section="cms">
-                    <span class="nav-label" onclick="toggleSection(this)">Sitio Web <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
-                    <div class="nav-items">
-                        <a href="{{ route('admin.homepage') }}" class="nav-item {{ request()->routeIs('admin.homepage') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Homepage
-                        </a>
-                        @if(Route::has('admin.servicios-page'))
-                        <a href="{{ route('admin.servicios-page') }}" class="nav-item {{ request()->routeIs('admin.servicios-page') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="briefcase" class="w-4 h-4" /></span> Pag. Servicios
-                        </a>
-                        @endif
-                        @if(Route::has('admin.nosotros-page'))
-                        <a href="{{ route('admin.nosotros-page') }}" class="nav-item {{ request()->routeIs('admin.nosotros-page') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="users-round" class="w-4 h-4" /></span> Pag. Nosotros
-                        </a>
-                        @endif
-                        @if(Route::has('admin.vender-page'))
-                        <a href="{{ route('admin.vender-page') }}" class="nav-item {{ request()->routeIs('admin.vender-page') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="tag" class="w-4 h-4" /></span> Pag. Vender
-                        </a>
-                        @endif
-                        @if(Route::has('admin.pages.index'))
-                        <a href="{{ route('admin.pages.index') }}" class="nav-item {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="list" class="w-4 h-4" /></span> Paginas
-                        </a>
-                        @endif
-                        <a href="{{ route('admin.posts.index') }}" class="nav-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Blog
-                        </a>
-                        @if(Route::has('admin.carousels.index'))
-                        <a href="{{ route('admin.carousels.index') }}" class="nav-item {{ request()->routeIs('admin.carousels.index') || (request()->routeIs('admin.carousels.*') && !request()->routeIs('admin.carousels.image-test')) ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="layout-dashboard" class="w-4 h-4" /></span> Carruseles IG
-                        </a>
-                        <a href="{{ route('admin.carousels.image-test') }}" class="nav-item {{ request()->routeIs('admin.carousels.image-test') ? 'active' : '' }}" style="padding-left:2.75rem;font-size:.82rem;">
-                            <span class="nav-icon"><x-icon name="image" class="w-3.5 h-3.5" /></span> Test imágenes IA
-                        </a>
-                        <a href="{{ route('admin.carousels.prompts') }}" class="nav-item {{ request()->routeIs('admin.carousels.prompts') ? 'active' : '' }}" style="padding-left:2.75rem;font-size:.82rem;">
-                            <span class="nav-icon"><x-icon name="settings" class="w-3.5 h-3.5" /></span> Prompts IA
-                        </a>
-                        @endif
-                        @if(Route::has('admin.facebook.index'))
-                        <a href="{{ route('admin.facebook.index') }}" class="nav-item {{ request()->routeIs('admin.facebook.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="share-2" class="w-4 h-4" /></span> Posts Facebook
-                        </a>
-                        @endif
-                        @if(Route::has('admin.content-calendar'))
-                        <a href="{{ route('admin.content-calendar') }}" class="nav-item {{ request()->routeIs('admin.content-calendar*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
-                            <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario
-                        </a>
-                        @endif
-                        @if(Route::has('admin.post-categories.index'))
-                        <a href="{{ route('admin.post-categories.index') }}" class="nav-item {{ request()->routeIs('admin.post-categories.*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
-                            <span class="nav-icon"><x-icon name="list" class="w-4 h-4" /></span> Categorias
-                        </a>
-                        @endif
-                        @if(Route::has('admin.tags.index'))
-                        <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}" style="padding-left: 2.5rem;">
-                            <span class="nav-icon"><x-icon name="flag" class="w-4 h-4" /></span> Etiquetas
-                        </a>
-                        @endif
-                        @if(Route::has('admin.media.index'))
-                        <a href="{{ route('admin.media.index') }}" class="nav-item {{ request()->routeIs('admin.media.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="camera" class="w-4 h-4" /></span> Medios
-                        </a>
-                        @endif
-                        @if(Route::has('admin.menus.index'))
-                        <a href="{{ route('admin.menus.index') }}" class="nav-item {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="menu" class="w-4 h-4" /></span> Menus
-                        </a>
-                        @endif
-                        @if(Route::has('admin.forms.index'))
-                        <a href="{{ route('admin.forms.index') }}" class="nav-item {{ request()->routeIs('admin.forms.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Formularios
-                        </a>
-                        @endif
-                        @if(Route::has('admin.footer'))
-                        <a href="{{ route('admin.footer') }}" class="nav-item {{ request()->routeIs('admin.footer*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="panel-bottom" class="w-4 h-4" /></span> Footer
-                        </a>
-                        @endif
-                        @if(Route::has('admin.testimonials.index'))
-                        <a href="{{ route('admin.testimonials.index') }}" class="nav-item {{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="heart" class="w-4 h-4" /></span> Testimonios
-                        </a>
-                        @endif
-                    </div>
-                </div>
-                @endif
-                @endpermission
-
-                {{-- ===== LEGAL ===== --}}
+                {{-- ===== 9: LEGAL ===== --}}
                 @permission('system.config')
                 <div class="nav-section" data-section="legal">
                     <span class="nav-label" onclick="toggleSection(this)">Legal <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
@@ -667,10 +652,10 @@
                 </div>
                 @endpermission
 
-                {{-- ===== CONFIGURACION ===== --}}
+                {{-- ===== 10: CONFIGURACIÓN ===== --}}
                 @permission('system.config')
                 <div class="nav-section" data-section="config">
-                    <span class="nav-label" onclick="toggleSection(this)">Configuracion <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <span class="nav-label" onclick="toggleSection(this)">Configuración <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
                     <div class="nav-items">
                         <a href="{{ route('admin.settings') }}" class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="settings" class="w-4 h-4" /></span> General
@@ -701,11 +686,28 @@
                         <a href="{{ route('admin.integrations.index') }}" class="nav-item {{ request()->routeIs('admin.integrations.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="puzzle" class="w-4 h-4" /></span> Integraciones
                         </a>
+                        @permission('users.view')
+                        <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') && !request()->routeIs('admin.users.permissions') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="user-cog" class="w-4 h-4" /></span> Usuarios
+                        </a>
+                        <a href="{{ route('admin.users.permissions') }}" class="nav-item {{ request()->routeIs('admin.users.permissions') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="shield-alert" class="w-4 h-4" /></span> Permisos
+                        </a>
+                        <a href="{{ route('brokers.index') }}" class="nav-item {{ request()->routeIs('brokers.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="star" class="w-4 h-4" /></span> Brokers Externos
+                        </a>
+                        <a href="{{ route('broker-companies.index') }}" class="nav-item {{ request()->routeIs('broker-companies.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="building" class="w-4 h-4" /></span> Empresas
+                        </a>
+                        <a href="{{ route('referrers.index') }}" class="nav-item {{ request()->routeIs('referrers.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="link" class="w-4 h-4" /></span> Comisionistas
+                        </a>
+                        @endpermission
                     </div>
                 </div>
                 @endpermission
 
-                {{-- ===== AYUDA ===== --}}
+                {{-- ===== 11: AYUDA (sin label) ===== --}}
                 @if(Route::has('help.index'))
                 <div class="nav-section" data-section="ayuda">
                     <div class="nav-items">
@@ -715,6 +717,7 @@
                     </div>
                 </div>
                 @endif
+
             </nav>
 
             {{-- User card at bottom --}}
