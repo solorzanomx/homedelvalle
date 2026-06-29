@@ -20,13 +20,19 @@ class SitemapController extends Controller
             ->get(['id', 'updated_at']);
 
         $staticPages = [
-            ['url' => url('/'),                    'priority' => '1.0',  'changefreq' => 'weekly'],
-            ['url' => url('/blog'),                'priority' => '0.9',  'changefreq' => 'daily'],
-            ['url' => url('/propiedades'),         'priority' => '0.9',  'changefreq' => 'daily'],
-            ['url' => url('/vende-tu-propiedad'),  'priority' => '0.8',  'changefreq' => 'monthly'],
-            ['url' => url('/servicios'),           'priority' => '0.7',  'changefreq' => 'monthly'],
-            ['url' => url('/nosotros'),            'priority' => '0.6',  'changefreq' => 'monthly'],
-            ['url' => url('/contacto'),            'priority' => '0.6',  'changefreq' => 'monthly'],
+            ['url' => url('/'),                                        'priority' => '1.0', 'changefreq' => 'weekly'],
+            ['url' => url('/propiedades'),                             'priority' => '0.9', 'changefreq' => 'daily'],
+            ['url' => url('/blog'),                                    'priority' => '0.9', 'changefreq' => 'daily'],
+            ['url' => url('/mercado'),                                 'priority' => '0.8', 'changefreq' => 'monthly'],
+            ['url' => url('/vende-tu-propiedad'),                      'priority' => '0.8', 'changefreq' => 'monthly'],
+            ['url' => url('/comprar'),                                 'priority' => '0.8', 'changefreq' => 'monthly'],
+            ['url' => url('/rentar'),                                  'priority' => '0.8', 'changefreq' => 'monthly'],
+            ['url' => url('/renta-tu-propiedad'),                      'priority' => '0.8', 'changefreq' => 'monthly'],
+            ['url' => url('/desarrolladores-e-inversionistas'),        'priority' => '0.7', 'changefreq' => 'monthly'],
+            ['url' => url('/servicios'),                               'priority' => '0.7', 'changefreq' => 'monthly'],
+            ['url' => url('/nosotros'),                                'priority' => '0.6', 'changefreq' => 'monthly'],
+            ['url' => url('/testimonios'),                             'priority' => '0.6', 'changefreq' => 'monthly'],
+            ['url' => url('/contacto'),                                'priority' => '0.6', 'changefreq' => 'monthly'],
         ];
 
         $content = view('sitemap', compact('staticPages', 'posts', 'properties'))->render();

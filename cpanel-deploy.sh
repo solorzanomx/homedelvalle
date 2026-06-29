@@ -1,181 +1,108 @@
 #!/bin/bash
 # ============================================
-# Script de deploy para cPanel
-# Ejecutar en Terminal de cPanel:
-#   cd ~/repositories/homedelvalle
-#   bash cpanel-deploy.sh
+# Script de deploy para el servidor VPS actual
+# Ruta del proyecto: /www/wwwroot/homedelvalle.mx
+#
+# Uso:
+#   cd /www/wwwroot/homedelvalle.mx
+#   git pull && bash cpanel-deploy.sh
+#
+# Con reinstalación de composer:
+#   bash cpanel-deploy.sh --full
+#
+# Con seeders:
+#   bash cpanel-deploy.sh --seed
 # ============================================
 
-# Detectar home real automaticamente
-HOME_DIR="$(cd ~ && pwd -P)"
-REPO="$HOME_DIR/repositories/homedelvalle"
-PUBLIC_HTML="$HOME_DIR/public_html"
+set -e
+
+REPO="/www/wwwroot/homedelvalle.mx"
 
 echo "=== Deploy Home del Valle CRM ==="
+echo "Repo: $REPO"
+echo ""
 
-# 0. ELIMINAR index.html (Apache lo sirve ANTES que index.php)
-if [ -f "$PUBLIC_HTML/index.html" ]; then
-    rm -f "$PUBLIC_HTML/index.html"
-    echo "[OK] index.html eliminado (bloqueaba Laravel)"
+# Verificar que estamos en el directorio correcto
+if [ ! -f "$REPO/artisan" ]; then
+    echo "[ERROR] No se encontró artisan en $REPO — verifica la ruta del proyecto"
+    exit 1
 fi
 
-# 1. Crear index.php para cPanel
-cat > "$PUBLIC_HTML/index.php" << PHPEOF
-<?php
+cd "$REPO"
 
-use Illuminate\Http\Request;
-
-define('LARAVEL_START', microtime(true));
-
-\$basePath = '$REPO';
-
-if (file_exists(\$maintenance = \$basePath.'/storage/framework/maintenance.php')) {
-    require \$maintenance;
-}
-
-require \$basePath.'/vendor/autoload.php';
-
-\$app = require_once \$basePath.'/bootstrap/app.php';
-
-\$app->usePublicPath('$PUBLIC_HTML');
-
-\$app->handleRequest(Request::capture());
-PHPEOF
-echo "[OK] index.php creado (basePath: $REPO)"
-
-# 2. Copiar .htaccess con DirectoryIndex
-cat > "$PUBLIC_HTML/.htaccess" << 'HTEOF'
-DirectoryIndex index.php
-
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
-    RewriteEngine On
-
-    # Handle Authorization Header
-    RewriteCond %{HTTP:Authorization} .
-    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-
-    # Handle X-XSRF-Token Header
-    RewriteCond %{HTTP:x-xsrf-token} .
-    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
-
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
-
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
-</IfModule>
-HTEOF
-echo "[OK] .htaccess con DirectoryIndex"
-
-# 3. Copiar archivos estaticos
-cp "$REPO/public/favicon.ico" "$PUBLIC_HTML/" 2>/dev/null
-cp "$REPO/public/robots.txt" "$PUBLIC_HTML/" 2>/dev/null
-cp "$REPO/public/.user.ini"  "$PUBLIC_HTML/" 2>/dev/null
-echo "[OK] favicon, robots, .user.ini (php config)"
-
-# 4. Copiar build (CSS/JS compilados)
-rm -rf "$PUBLIC_HTML/build"
-if [ -d "$REPO/public/build" ]; then
-    cp -r "$REPO/public/build" "$PUBLIC_HTML/build"
-    echo "[OK] build/ copiado (CSS/JS)"
-else
-    echo "[WARN] No existe public/build/ en el repo"
-fi
-
-# 5. Storage: NO crear symlink/carpeta (Laravel sirve archivos via ruta /storage/{path})
-#    Apache bloquea symlinks en cPanel, asi que usamos la ruta storage.local de Laravel
-rm -rf "$PUBLIC_HTML/storage" 2>/dev/null
-echo "[OK] storage servido via Laravel (sin symlink)"
-
-# 6. Vendor assets publicos
-if [ -d "$REPO/public/vendor" ]; then
-    rm -rf "$PUBLIC_HTML/vendor"
-    cp -r "$REPO/public/vendor" "$PUBLIC_HTML/vendor"
-    echo "[OK] vendor/ publico"
-fi
-
-# 7. Permisos y directorios (incluyendo módulo de presentaciones)
-chmod -R 775 "$REPO/storage" 2>/dev/null
-chmod -R 775 "$REPO/bootstrap/cache" 2>/dev/null
+# 1. Permisos y directorios de storage
+echo "[1/7] Permisos y directorios..."
+chmod -R 775 "$REPO/storage" 2>/dev/null || true
+chmod -R 775 "$REPO/bootstrap/cache" 2>/dev/null || true
 mkdir -p "$REPO/storage/framework/sessions"
 mkdir -p "$REPO/storage/framework/views"
 mkdir -p "$REPO/storage/framework/cache"
 mkdir -p "$REPO/storage/logs"
 mkdir -p "$REPO/storage/app/public/avatars"
-mkdir -p "$REPO/storage/app/presentations"   # PDFs de presentaciones de captacion
-chmod 775 "$REPO/storage/app/presentations"
-echo "[OK] permisos y directorios"
+mkdir -p "$REPO/storage/app/presentations"
+chmod 775 "$REPO/storage/app/presentations" 2>/dev/null || true
+echo "[OK] Permisos y directorios"
 
-# 8. Composer install
-cd "$REPO"
+# 2. Composer install
+echo "[2/7] Composer..."
 if [ ! -d "$REPO/vendor" ] || [ "$1" == "--full" ]; then
     composer install --no-dev --optimize-autoloader 2>&1
-    echo "[OK] composer install"
+    echo "[OK] composer install completo"
 else
     echo "[SKIP] vendor/ existe (usa --full para reinstalar)"
 fi
 
-# 9. Verificar .env
+# 3. Verificar .env
+echo "[3/7] Variables de entorno..."
 if [ ! -f "$REPO/.env" ]; then
-    echo "[ERROR] No existe .env - crea uno con los datos de tu DB"
+    echo "[ERROR] No existe .env"
     echo "  cp $REPO/.env.example $REPO/.env"
     echo "  php artisan key:generate"
+    exit 1
 fi
+echo "[OK] .env existe"
 
-# 10. Limpiar cache
-php artisan config:clear 2>/dev/null
-php artisan cache:clear 2>/dev/null
-php artisan view:clear 2>/dev/null
-php artisan route:clear 2>/dev/null
-echo "[OK] cache limpiado"
+# 4. Limpiar y re-cachear
+echo "[4/7] Cache..."
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
+echo "[OK] Cache limpiado"
 
-# 11. Migraciones
-php artisan migrate --force 2>&1
-echo "[OK] migraciones"
+# 5. Migraciones
+echo "[5/7] Migraciones..."
+php artisan migrate --force
+echo "[OK] Migraciones aplicadas"
 
-# 12. Seeders (solo la primera vez con --seed, o siempre los idempotentes de presentacion)
+# 6. Seeders
+echo "[6/7] Seeders..."
 if [ "$1" == "--seed" ]; then
     php artisan db:seed --class=HelpCenterSeeder --force 2>&1
     php artisan db:seed --class=MarketingAutomationSeeder --force 2>&1
-    echo "[OK] seeders generales ejecutados"
+    echo "[OK] Seeders generales ejecutados"
 fi
 
-# Seeders de presentacion: son idempotentes (updateOrCreate) — seguros en cada deploy
-php artisan db:seed --class=PresentationTemplatesSeeder --force 2>&1
-php artisan db:seed --class=PresentationEmailTemplateSeeder --force 2>&1
-echo "[OK] seeders de presentacion"
+# Seeders idempotentes de presentación (seguros en cada deploy)
+php artisan db:seed --class=PresentationTemplatesSeeder --force 2>&1 || echo "[WARN] PresentationTemplatesSeeder no existe o falló"
+php artisan db:seed --class=PresentationEmailTemplateSeeder --force 2>&1 || echo "[WARN] PresentationEmailTemplateSeeder no existe o falló"
+echo "[OK] Seeders de presentación"
 
-# 12b. Verificar Browsershot/Puppeteer en el servidor
-echo ""
-echo "=== VERIFICACION BROWSERSHOT ==="
+# 7. Verificación Browsershot
+echo "[7/7] Verificando Browsershot..."
 NODE_BIN=$(php artisan tinker --execute="echo config('browsershot.node_path');" 2>/dev/null | tail -1)
 CHROME_BIN=$(php artisan tinker --execute="echo config('browsershot.chrome_path');" 2>/dev/null | tail -1)
-echo "  Node path: $NODE_BIN"
-echo "  Chrome path: $CHROME_BIN"
-[ -f "$NODE_BIN" ] && echo "  [OK] Node encontrado" || echo "  [WARN] Node NO encontrado en $NODE_BIN — actualiza BROWSERSHOT_NODE_PATH en .env"
-[ -f "$CHROME_BIN" ] && echo "  [OK] Chrome encontrado" || echo "  [WARN] Chrome NO encontrado en $CHROME_BIN — actualiza BROWSERSHOT_CHROME_PATH en .env"
+[ -f "$NODE_BIN" ] && echo "  [OK] Node: $NODE_BIN" || echo "  [WARN] Node no encontrado en '$NODE_BIN' — revisa BROWSERSHOT_NODE_PATH en .env"
+[ -f "$CHROME_BIN" ] && echo "  [OK] Chrome: $CHROME_BIN" || echo "  [WARN] Chrome no encontrado en '$CHROME_BIN' — revisa BROWSERSHOT_CHROME_PATH en .env"
 
-# 13. Verificacion final
+# Verificación final
 echo ""
-echo "=== VERIFICACION ==="
-echo "PHP: $(php -v 2>/dev/null | head -1)"
+echo "=== VERIFICACIÓN ==="
+echo "PHP:     $(php -v 2>/dev/null | head -1)"
 echo "Laravel: $(php artisan --version 2>/dev/null)"
-echo ""
-echo "Archivos en public_html:"
-echo "  index.php: $([ -f $PUBLIC_HTML/index.php ] && echo 'SI' || echo 'NO')"
-echo "  index.html: $([ -f $PUBLIC_HTML/index.html ] && echo 'SI (PROBLEMA!)' || echo 'NO (correcto)')"
-echo "  .htaccess: $([ -f $PUBLIC_HTML/.htaccess ] && echo 'SI' || echo 'NO')"
-echo "  build/: $([ -d $PUBLIC_HTML/build ] && echo 'SI' || echo 'NO')"
-echo "  CSS: $(ls $PUBLIC_HTML/build/assets/*.css 2>/dev/null | wc -l | tr -d ' ') archivos"
-echo "  JS: $(ls $PUBLIC_HTML/build/assets/*.js 2>/dev/null | wc -l | tr -d ' ') archivos"
+echo "Artisan: $([ -f $REPO/artisan ] && echo 'OK' || echo 'NO ENCONTRADO')"
+echo "Build:   $([ -d $REPO/public/build ] && echo "OK ($(ls $REPO/public/build/assets/ 2>/dev/null | wc -l | tr -d ' ') archivos en assets/)" || echo 'NO — ejecuta npm run build localmente y commitea')"
+echo ".env:    $([ -f $REPO/.env ] && echo 'OK' || echo 'FALTA')"
 echo ""
 echo "=== Deploy completado ==="
 echo "Visita https://homedelvalle.mx para verificar"
