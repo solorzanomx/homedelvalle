@@ -88,6 +88,7 @@ php artisan db:seed --class=PresentationTemplatesSeeder --force 2>&1 || echo "[W
 php artisan db:seed --class=PresentationEmailTemplateSeeder --force 2>&1 || echo "[WARN] PresentationEmailTemplateSeeder no existe o falló"
 php artisan db:seed --class=ColoniaPageSeeder --force 2>&1 || echo "[WARN] ColoniaPageSeeder no existe o falló"
 php artisan db:seed --class=MarketZoneDescripcionSeeder --force 2>&1 || echo "[WARN] MarketZoneDescripcionSeeder no existe o falló"
+php artisan db:seed --class=SiteSettingsPatchSeeder --force 2>&1 || echo "[WARN] SiteSettingsPatchSeeder no existe o falló"
 echo "[OK] Seeders idempotentes"
 
 # 7. Verificación Browsershot

@@ -29,7 +29,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-bold text-gray-900">Teléfono</p>
-                                <p class="text-sm text-gray-500 group-hover:text-brand-600 transition-colors duration-200">{{ $siteSettings->contact_phone }}</p>
+                                <p class="text-sm text-gray-500 group-hover:text-brand-600 transition-colors duration-200">{{ formatMxPhone($siteSettings->contact_phone) }}</p>
                             </div>
                         </a>
                         @endif

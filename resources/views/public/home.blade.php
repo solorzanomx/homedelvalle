@@ -653,7 +653,7 @@
                             </div>
                             <div>
                                 <p class="text-xs text-brand-400/60 uppercase tracking-wider font-medium">Teléfono</p>
-                                <p class="text-white font-semibold mt-0.5 group-hover:text-brand-200 transition-colors">{{ $siteSettings->contact_phone }}</p>
+                                <p class="text-white font-semibold mt-0.5 group-hover:text-brand-200 transition-colors">{{ formatMxPhone($siteSettings->contact_phone) }}</p>
                             </div>
                         </a>
                         @endif

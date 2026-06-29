@@ -100,7 +100,7 @@
                     @if($phone)
                     <li class="flex items-start gap-2.5">
                         <x-icon name="phone" class="w-4 h-4 mt-0.5 shrink-0 text-brand-500" />
-                        <a href="tel:{{ $phone }}" class="hover:text-brand-400 transition-colors duration-200">{{ $phone }}</a>
+                        <a href="tel:{{ $phone }}" class="hover:text-brand-400 transition-colors duration-200">{{ formatMxPhone($phone) }}</a>
                     </li>
                     @endif
                     @if($email)

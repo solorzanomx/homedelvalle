@@ -25,7 +25,7 @@ class ContactSegmentedForm extends Component
     protected function rules(): array
     {
         return [
-            'intento' => 'required|in:vender,comprar,b2b,admin,legal,otro',
+            'intento' => 'required|in:vender,comprar,rentar_inquilino,rentar_propietario,b2b,admin,legal,otro',
             'nombre' => 'required|string|max:120',
             'email' => 'required|email',
             'whatsapp' => ['required', 'regex:/^(\+?52)?\s?[0-9]{10}$/'],
@@ -52,21 +52,25 @@ class ContactSegmentedForm extends Component
         $this->isProcessing = true;
 
         $tagMap = [
-            'vender' => 'LEAD_VENDEDOR',
-            'comprar' => 'LEAD_COMPRADOR',
-            'b2b' => 'LEAD_B2B',
-            'admin' => 'LEAD_ADMIN',
-            'legal' => 'LEAD_LEGAL',
-            'otro' => 'LEAD_OTRO',
+            'vender'            => 'LEAD_VENDEDOR',
+            'comprar'           => 'LEAD_COMPRADOR',
+            'rentar_inquilino'  => 'LEAD_ARRENDATARIO',
+            'rentar_propietario'=> 'LEAD_PROPIETARIO_RENTA',
+            'b2b'               => 'LEAD_B2B',
+            'admin'             => 'LEAD_ADMIN',
+            'legal'             => 'LEAD_LEGAL',
+            'otro'              => 'LEAD_OTRO',
         ];
 
         $clientTypeMap = [
-            'vender' => 'owner',
-            'comprar' => 'buyer',
-            'b2b' => 'investor',
-            'admin' => 'owner',
-            'legal' => 'owner',
-            'otro' => null,
+            'vender'            => 'owner',
+            'comprar'           => 'buyer',
+            'rentar_inquilino'  => 'tenant',
+            'rentar_propietario'=> 'owner',
+            'b2b'               => 'investor',
+            'admin'             => 'owner',
+            'legal'             => 'owner',
+            'otro'              => null,
         ];
 
         $lockKey = 'form_submit_contacto_' . md5($data['email']);

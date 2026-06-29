@@ -27,7 +27,9 @@
                 <select wire:model.live="intento" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all">
                     <option value="">Selecciona una opción</option>
                     <option value="vender">Quiero vender mi propiedad</option>
-                    <option value="comprar">Estoy buscando dónde comprar o rentar</option>
+                    <option value="comprar">Quiero comprar una propiedad</option>
+                    <option value="rentar_inquilino">Quiero rentar un inmueble</option>
+                    <option value="rentar_propietario">Quiero rentar mi inmueble</option>
                     <option value="b2b">Soy desarrollador o inversionista</option>
                     <option value="admin">Administración de un inmueble</option>
                     <option value="legal">Asesoría legal o notarial</option>
@@ -65,7 +67,7 @@
             </div>
 
             {{-- Colonia (condicional) --}}
-            @if($intento === 'vender' || $intento === 'comprar')
+            @if(in_array($intento, ['vender', 'comprar', 'rentar_inquilino', 'rentar_propietario']))
                 <div>
                     <label class="block text-sm font-medium text-gray-900 mb-2">
                         Colonia de tu interés en Benito Juárez
