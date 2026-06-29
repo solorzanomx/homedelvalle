@@ -80,6 +80,7 @@ class ValuationController extends Controller
             'input_condition'      => 'required|in:excellent,good,fair,poor',
             'input_bedrooms'       => 'required|integer|min:0|max:20',
             'input_bathrooms'      => 'required|integer|min:0|max:20',
+            'input_half_bathrooms' => 'nullable|integer|min:0|max:10',
             'input_parking'        => 'required|integer|min:0|max:10',
             'input_parking_type'       => 'nullable|in:regular,tandem,lift',
             'input_building_condition' => 'nullable|in:excellent,good,fair,poor',
@@ -101,6 +102,7 @@ class ValuationController extends Controller
         $data['input_has_balcony']    = $request->boolean('input_has_balcony');
         $data['input_has_service_room'] = $request->boolean('input_has_service_room');
         $data['input_has_storage']    = $request->boolean('input_has_storage');
+        $data['input_half_bathrooms'] = (int) $request->input('input_half_bathrooms', 0);
         // Nullify apartment-specific fields when not apartment
         if (($data['input_type'] ?? '') !== 'apartment') {
             $data['input_unit_position']  = null;
@@ -161,6 +163,7 @@ class ValuationController extends Controller
             'input_condition'      => 'required|in:excellent,good,fair,poor',
             'input_bedrooms'       => 'required|integer|min:0|max:20',
             'input_bathrooms'      => 'required|integer|min:0|max:20',
+            'input_half_bathrooms' => 'nullable|integer|min:0|max:10',
             'input_parking'        => 'required|integer|min:0|max:10',
             'input_parking_type'       => 'nullable|in:regular,tandem,lift',
             'input_building_condition' => 'nullable|in:excellent,good,fair,poor',
@@ -181,6 +184,7 @@ class ValuationController extends Controller
         $data['input_has_balcony']     = $request->boolean('input_has_balcony');
         $data['input_has_service_room']= $request->boolean('input_has_service_room');
         $data['input_has_storage']     = $request->boolean('input_has_storage');
+        $data['input_half_bathrooms']  = (int) $request->input('input_half_bathrooms', 0);
         if (($data['input_type'] ?? '') !== 'apartment') {
             $data['input_unit_position']  = null;
             $data['input_orientation']    = null;

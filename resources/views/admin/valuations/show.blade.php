@@ -276,7 +276,7 @@
                     'Cond. edificio' => $valuation->building_condition_label ?? '—',
                 ] : []) + [
                     'Recámaras'      => $valuation->input_bedrooms,
-                    'Baños'          => $valuation->input_bathrooms,
+                    'Baños'          => $valuation->bathrooms_display,
                     'Estacionamiento'=> $valuation->input_parking > 0
                         ? $valuation->input_parking . ' cajón(es) — ' . $valuation->parking_type_label
                         : 'Sin estacionamiento',
@@ -386,17 +386,21 @@
                                   placeholder="Ej: Se ajusta por remodelación reciente no capturada en datos de mercado, o por contexto de negociación del cliente…">{{ $valuation->price_override_notes }}</textarea>
                     </div>
                     <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
-                        <button type="button" class="btn btn-outline btn-sm" onclick="saveOverride()" id="btnSaveOverride">
-                            Guardar ajuste
-                        </button>
                         <button type="button" class="btn btn-primary" onclick="authorizeOverride()" id="btnAuthorize" style="flex:1;">
-                            &#10003; Autorizar para presentación
+                            &#10003; {{ $valuation->price_override_authorized ? 'Re-autorizar con nuevo precio' : 'Fijar y autorizar precio' }}
+                        </button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="saveOverride()" id="btnSaveOverride">
+                            Guardar borrador
                         </button>
                         @if($valuation->price_override)
                         <button type="button" class="btn btn-danger btn-sm" onclick="clearOverride()">
-                            &#215; Quitar ajuste
+                            &#215; Quitar
                         </button>
                         @endif
+                    </div>
+                    <div style="font-size:.76rem;color:#9ca3af;margin-top:.4rem;">
+                        "Fijar y autorizar" establece el precio definitivo para presentar al cliente.
+                        Se puede cambiar cuantas veces sea necesario antes de entregar.
                     </div>
                     <div id="overrideMsg" style="font-size:.82rem;margin-top:.6rem;display:none;"></div>
                 </div>

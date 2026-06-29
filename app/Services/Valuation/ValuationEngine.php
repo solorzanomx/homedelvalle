@@ -194,6 +194,7 @@ class ValuationEngine
         return array_filter([
             $this->factorAge($v),
             $this->factorBuildingCondition($v),
+            $this->factorBathrooms($v),
             $this->factorCondition($v),
             $this->factorFloorElevator($v),
             $this->factorUnitPosition($v),
@@ -255,6 +256,35 @@ class ValuationEngine
             'label'       => "Condición del edificio: {$label}",
             'value'       => $value,
             'explanation' => $desc,
+        ];
+    }
+
+    protected function factorBathrooms(PropertyValuation $v): array
+    {
+        $full = (int) ($v->input_bathrooms ?? 1);
+        $half = (int) ($v->input_half_bathrooms ?? 0);
+
+        [$baseValue, $baseDesc] = match(true) {
+            $full === 0 => [-0.10, 'Sin baño completo. Penalización severa por habitabilidad.'],
+            $full === 1 => [0.00,  '1 baño completo. Estándar de mercado para unidades de hasta 2 recámaras.'],
+            $full === 2 => [+0.05, '2 baños completos. Prima por comodidad y funcionalidad para 2+ recámaras.'],
+            default     => [+0.08, "{$full} baños completos. Prima por privacidad y acceso múltiple en la unidad."],
+        };
+
+        $halfValue = $half >= 1 ? 0.025 : 0.00;
+        $halfDesc  = $half >= 1 ? " Más {$half} medio baño — ventaja funcional para visitas y convivencia diaria." : '';
+
+        $value = round(min($baseValue + $halfValue, 0.10), 4);
+
+        $label = $half > 0
+            ? "{$full} baño(s) completo(s) + {$half} medio(s)"
+            : "{$full} baño(s)";
+
+        return [
+            'key'         => 'bathrooms',
+            'label'       => $label,
+            'value'       => $value,
+            'explanation' => trim($baseDesc . $halfDesc),
         ];
     }
 

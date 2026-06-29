@@ -69,6 +69,12 @@ SYSTEM;
         $floor    = $valuation->input_floor ? "Piso {$valuation->input_floor}" : 'Planta baja o no especificado';
         $elevator = $valuation->input_has_elevator ? 'con elevador' : 'sin elevador';
         $parking  = $valuation->input_parking . ' cajón(es)';
+        $bedrooms = $valuation->input_bedrooms ?? '—';
+
+        $bathrooms = ($valuation->input_bathrooms ?? 1) . ' completo(s)';
+        if (($valuation->input_half_bathrooms ?? 0) > 0) {
+            $bathrooms .= ' + ' . $valuation->input_half_bathrooms . ' medio(s)';
+        }
 
         $amenities = collect([
             $valuation->input_has_rooftop      ? 'rooftop privado' : null,
@@ -101,6 +107,13 @@ SYSTEM;
                              substr($valuation->snapshot->notes, 0, 800);
         }
 
+        // Include internal advisor notes if present
+        $notesSection = '';
+        if (!empty(trim($valuation->input_notes ?? ''))) {
+            $notesSection = "\nNOTAS DEL ASESOR SOBRE ESTE INMUEBLE:\n" . trim($valuation->input_notes) .
+                            "\n(Considera estas notas: pueden indicar remodelaciones recientes, contexto de negociación, características especiales, alertas o ventajas no capturadas en los datos cuantitativos.)";
+        }
+
         return <<<PROMPT
 INMUEBLE A VALUAR:
 - Tipo: {$type}
@@ -109,6 +122,8 @@ INMUEBLE A VALUAR:
 - Antigüedad: {$age} años ({$ageCat})
 - Estado de conservación: {$condition}
 - {$floor}, {$elevator}
+- Recámaras: {$bedrooms}
+- Baños: {$bathrooms}
 - Estacionamiento: {$parking}
 - Amenidades: {$amenities}
 
@@ -122,11 +137,12 @@ RESULTADO DEL ANÁLISIS CUANTITATIVO:
 
 AJUSTES APLICADOS (waterfall):
 {$adjustmentsList}
-{$marketContext}
+{$marketContext}{$notesSection}
 
 Genera un análisis narrativo profesional en español para este inmueble específico.
 Sé concreto: usa las cifras del análisis, nombra la colonia, menciona características específicas.
 NO uses frases genéricas como "el mercado inmobiliario es dinámico". Sé directo y útil.
+Si hay notas del asesor, incorpóralas en tu análisis cuando sean relevantes.
 
 Responde ÚNICAMENTE con este JSON exacto, sin texto adicional ni markdown:
 {

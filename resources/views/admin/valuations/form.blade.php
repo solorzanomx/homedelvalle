@@ -186,10 +186,20 @@
                                    value="{{ old('input_bedrooms', $valuation->input_bedrooms ?? $pBedrooms ?? 2) }}">
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Baños <span class="required">*</span></label>
+                            <label class="form-label">Baños completos <span class="required">*</span></label>
                             <input type="number" name="input_bathrooms" class="form-input"
                                    min="0" max="20"
-                                   value="{{ old('input_bathrooms', $valuation->input_bathrooms ?? $pBathrooms ?? 1) }}">
+                                   value="{{ old('input_bathrooms', $valuation->input_bathrooms ?? $pBathrooms ?? 1) }}"
+                                   placeholder="Ej. 2">
+                            <div class="form-hint">Con regadera, W.C. y lavabo</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Medios baños</label>
+                            <input type="number" name="input_half_bathrooms" class="form-input"
+                                   min="0" max="10"
+                                   value="{{ old('input_half_bathrooms', $valuation->input_half_bathrooms ?? 0) }}"
+                                   placeholder="0">
+                            <div class="form-hint">Solo W.C. y lavabo, sin regadera</div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Cajones de estacionamiento <span class="required">*</span></label>

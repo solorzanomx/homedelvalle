@@ -14,7 +14,7 @@ class PropertyValuation extends Model
         'property_id', 'created_by',
         'input_colonia_id', 'input_colonia_raw', 'input_type',
         'input_m2_total', 'input_m2_const', 'input_age_years',
-        'input_condition', 'input_bedrooms', 'input_bathrooms', 'input_parking',
+        'input_condition', 'input_bedrooms', 'input_bathrooms', 'input_half_bathrooms', 'input_parking',
         'input_parking_type', 'input_building_condition',
         'input_floor', 'input_has_elevator', 'input_has_rooftop',
         'input_has_balcony', 'input_has_service_room', 'input_has_storage',
@@ -120,6 +120,16 @@ class PropertyValuation extends Model
             'poor'      => 'Necesita remodelación',
             default     => $this->input_condition,
         };
+    }
+
+    public function getBathroomsDisplayAttribute(): string
+    {
+        $full = (int) ($this->input_bathrooms ?? 1);
+        $half = (int) ($this->input_half_bathrooms ?? 0);
+        if ($half > 0) {
+            return "{$full} completo(s) + {$half} medio(s)";
+        }
+        return (string) $full;
     }
 
     public function getParkingTypeLabelAttribute(): string

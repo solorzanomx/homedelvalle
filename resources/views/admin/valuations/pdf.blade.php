@@ -913,7 +913,7 @@ html, body {
                     <tr><td>m² construcción</td><td>{{ number_format($valuation->input_m2_const, 1) }} m²</td></tr>
                     @endif
                     <tr><td>Recámaras</td><td>{{ $valuation->input_bedrooms ?? '—' }}</td></tr>
-                    <tr><td>Baños</td><td>{{ $valuation->input_bathrooms ?? '—' }}</td></tr>
+                    <tr><td>Baños</td><td>{{ $valuation->bathrooms_display }}</td></tr>
                     <tr><td>Estacionamientos</td><td>{{ $valuation->input_parking ?? 0 }} cajón(es)</td></tr>
                     @if($valuation->input_floor)
                     <tr><td>Piso</td><td>Piso {{ $valuation->input_floor }}</td></tr>
