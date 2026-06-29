@@ -7,19 +7,33 @@
 @endphp
 <title>{{ $seoTitle }}</title>
 <meta name="description" content="{{ $seoDesc }}">
-<link rel="canonical" href="{{ url('/mercado') }}">
+<link rel="canonical" href="{{ url('/precios') }}">
 
 {{-- Open Graph --}}
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ $seoTitle }}">
 <meta property="og:description" content="{{ $seoDesc }}">
-<meta property="og:url" content="{{ url('/mercado') }}">
+<meta property="og:url" content="{{ url('/precios') }}">
 <meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
 <meta property="og:locale" content="es_MX">
 <meta property="og:site_name" content="Home del Valle">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{ $seoTitle }}">
 <meta name="twitter:description" content="{{ $seoDesc }}">
+
+{{-- Dataset Schema --}}
+<x-public.json-ld type="Dataset" :data="[
+    'name'        => 'Precios por m² en Benito Juárez, CDMX — ' . date('Y'),
+    'description' => 'Referencias de precio por metro cuadrado para departamentos y casas en las principales zonas de la alcaldía Benito Juárez, Ciudad de México. Datos actualizados mensualmente.',
+    'url'         => url('/precios'),
+    'creator'     => ['@type'=>'Organization','name'=>'Home del Valle','url'=>url('/')],
+    'temporalCoverage' => date('Y'),
+    'spatialCoverage'  => ['@type'=>'Place','name'=>'Alcaldía Benito Juárez, Ciudad de México, México'],
+    'license'          => url('/legal/terminos-y-condiciones'),
+    'variableMeasured' => 'Precio por metro cuadrado (MXN)',
+    'measurementTechnique' => 'Análisis de anuncios publicados en portales inmobiliarios',
+    'dateModified' => now()->toIso8601String(),
+]" />
 @endsection
 
 @section('content')
@@ -31,13 +45,12 @@
             Benito Juárez · Ciudad de México
         </div>
         <h1 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:700;line-height:1.2;margin-bottom:1rem;">
-            Observatorio de precios<br>inmobiliarios
+            Precio por m² en Benito Juárez
         </h1>
         <p style="font-size:1rem;color:rgba(255,255,255,.7);max-width:560px;margin:0 auto 2rem;line-height:1.6;">
-            Referencias de mercado actualizadas mensualmente para las principales zonas de Benito Juárez.
-            No son avalúos formales, son datos de mercado para orientarte.
+            Referencias de mercado actualizadas por colonia para las principales zonas de la alcaldía Benito Juárez, CDMX.
         </p>
-        <a href="{{ route('mercado.opinion') }}"
+        <a href="{{ route('precios.opinion') }}"
            style="display:inline-block;background:#2563eb;color:#fff;padding:.75rem 1.75rem;border-radius:8px;font-weight:600;font-size:.9rem;text-decoration:none;">
             Solicitar opinión de valor personalizada →
         </a>
@@ -53,7 +66,7 @@
 
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.25rem;">
         @foreach($zones as $zone)
-        <a href="{{ route('mercado.zone', $zone->slug) }}"
+        <a href="{{ route('precios.zone', $zone->slug) }}"
            style="display:block;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1.5rem;text-decoration:none;transition:box-shadow .15s,transform .15s;"
            onmouseover="this.style.boxShadow='0 8px 24px rgba(0,0,0,.08)';this.style.transform='translateY(-2px)'"
            onmouseout="this.style.boxShadow='';this.style.transform=''">
@@ -86,7 +99,7 @@
         <strong style="color:#6b7280;">Nota metodológica:</strong>
         Los precios son referencias de mercado basadas en oferta publicada y transacciones recientes. Actualizados mensualmente.
         No constituyen un avalúo formal. Para una opinión de valor precisa sobre tu inmueble,
-        <a href="{{ route('mercado.opinion') }}" style="color:#2563eb;">contáctanos</a>.
+        <a href="{{ route('precios.opinion') }}" style="color:#2563eb;">contáctanos</a>.
     </div>
 </section>
 
@@ -100,7 +113,7 @@
             En Home del Valle preparamos una opinión de valor personalizada con análisis de mercado,
             ajustes por las características de tu inmueble y un precio sugerido de salida.
         </p>
-        <a href="{{ route('mercado.opinion') }}"
+        <a href="{{ route('precios.opinion') }}"
            style="display:inline-block;background:#111827;color:#fff;padding:.8rem 2rem;border-radius:8px;font-weight:600;font-size:.9rem;text-decoration:none;">
             Quiero mi opinión de valor →
         </a>

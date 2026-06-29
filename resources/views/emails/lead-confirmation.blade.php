@@ -11,7 +11,7 @@ Si tu caso es urgente o prefieres hablar directamente, contáctanos:
 - **Email:** contacto@homedelvalle.mx
 
 ## Mientras tanto
-Puedes explorar nuestras propiedades disponibles y el observatorio de precios de Benito Juárez en [homedelvalle.mx/mercado]({{ url('/mercado') }}).
+Puedes explorar nuestras propiedades disponibles y el observatorio de precios de Benito Juárez en [homedelvalle.mx/precios]({{ url('/precios') }}).
 
 ---
 

@@ -104,12 +104,33 @@ Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/p/{slug}', [BlogController::class, 'page'])->name('page.show');
 
+// ===== REDIRECTS 301: /mercado/* → /precios/* =====
+Route::redirect('/mercado', '/precios', 301);
+Route::redirect('/mercado/opinion-de-valor', '/precios/opinion-de-valor', 301);
+Route::get('/mercado/{zona}', function (string $zona) {
+    $map = ['narvarte-piedad' => 'narvarte'];
+    return redirect('/precios/' . ($map[$zona] ?? $zona), 301);
+});
+Route::get('/mercado/{zona}/{colonia}', function (string $zona, string $colonia) {
+    $map = ['narvarte-piedad' => 'narvarte'];
+    return redirect('/precios/' . ($map[$zona] ?? $zona) . '/' . $colonia, 301);
+});
+
 // ===== OBSERVATORIO DE MERCADO (público) =====
 Route::prefix('mercado')->name('mercado.')->group(function () {
     // opinion-de-valor DEBE ir ANTES del wildcard /{zona}
     Route::get('/opinion-de-valor',  [\App\Http\Controllers\MarketController::class, 'opinionForm'])->name('opinion');
     Route::post('/opinion-de-valor', [\App\Http\Controllers\ValuationLeadController::class, 'store'])->middleware('throttle:public-form')->name('opinion.store');
 
+    Route::get('/',               [\App\Http\Controllers\MarketController::class, 'index'])->name('index');
+    Route::get('/{zona}',         [\App\Http\Controllers\MarketController::class, 'zone'])->name('zone');
+    Route::get('/{zona}/{colonia}',[\App\Http\Controllers\MarketController::class, 'colonia'])->name('colonia');
+});
+
+// ===== OBSERVATORIO DE PRECIOS — URLs canónicas /precios/* =====
+Route::prefix('precios')->name('precios.')->group(function () {
+    Route::get('/opinion-de-valor',  [\App\Http\Controllers\MarketController::class, 'opinionForm'])->name('opinion');
+    Route::post('/opinion-de-valor', [\App\Http\Controllers\ValuationLeadController::class, 'store'])->middleware('throttle:public-form')->name('opinion.store');
     Route::get('/',               [\App\Http\Controllers\MarketController::class, 'index'])->name('index');
     Route::get('/{zona}',         [\App\Http\Controllers\MarketController::class, 'zone'])->name('zone');
     Route::get('/{zona}/{colonia}',[\App\Http\Controllers\MarketController::class, 'colonia'])->name('colonia');

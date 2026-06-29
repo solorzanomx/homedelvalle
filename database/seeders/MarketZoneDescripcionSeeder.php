@@ -14,7 +14,7 @@ class MarketZoneDescripcionSeeder extends Seeder
     public function run(): void
     {
         $descripciones = [
-            'narvarte-piedad' => 'Narvarte y Vértiz forman una de las zonas residenciales más consolidadas de la alcaldía Benito Juárez. Con alta conectividad al Metrobús y Metro, oferta gastronómica y comercial diversa, y una demografía de profesionistas y familias jóvenes, la zona mantiene una demanda de compra y renta sostenida que se refleja en su plusvalía constante. Los departamentos seminuevos son el segmento más activo del mercado, con precios que superan el promedio de la CDMX.',
+            'narvarte' => 'Narvarte y Vértiz forman una de las zonas residenciales más consolidadas de la alcaldía Benito Juárez. Con alta conectividad al Metrobús y Metro, oferta gastronómica y comercial diversa, y una demografía de profesionistas y familias jóvenes, la zona mantiene una demanda de compra y renta sostenida que se refleja en su plusvalía constante. Los departamentos seminuevos son el segmento más activo del mercado, con precios que superan el promedio de la CDMX.',
 
             'del-valle' => 'Del Valle es la colonia insignia de Benito Juárez y una de las más buscadas de la Ciudad de México. Su traza urbana planificada, avenidas arboladas y amplia oferta de servicios, colegios y transporte la convierten en destino preferente para familias y profesionistas. La plusvalía histórica de Del Valle supera consistentemente el promedio de la ciudad, con alta demanda tanto en venta como en renta de departamentos de 2 a 3 recámaras.',
 

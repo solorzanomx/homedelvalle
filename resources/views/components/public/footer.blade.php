@@ -71,7 +71,7 @@
                     <li><a href="{{ url('/renta-tu-propiedad') }}" class="hover:text-brand-400 transition-colors duration-200">Rentar mi inmueble</a></li>
                     <li><a href="{{ url('/desarrolladores-e-inversionistas') }}" class="hover:text-brand-400 transition-colors duration-200">Inversión & Desarrollo</a></li>
                     <li><a href="{{ route('propiedades.index') }}" class="hover:text-brand-400 transition-colors duration-200">Propiedades</a></li>
-                    <li><a href="{{ url('/mercado') }}" class="hover:text-brand-400 transition-colors duration-200">Precios de Mercado</a></li>
+                    <li><a href="{{ url('/precios') }}" class="hover:text-brand-400 transition-colors duration-200">Precios por m²</a></li>
                     <li><a href="{{ route('nosotros') }}" class="hover:text-brand-400 transition-colors duration-200">Nosotros</a></li>
                     @if(Route::has('blog.index'))
                     <li><a href="{{ route('blog.index') }}" class="hover:text-brand-400 transition-colors duration-200">Blog</a></li>

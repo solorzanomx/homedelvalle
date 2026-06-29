@@ -180,6 +180,19 @@
                 </div>
             </div>
 
+            {{-- Enlace al Observatorio si el post tiene zona relacionada --}}
+            @if($post->zona_mercado_slug)
+            @php $zonaNombre = ucwords(str_replace(['-', '_'], ' ', $post->zona_mercado_slug)); @endphp
+            <aside style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:1.25rem 1.5rem;margin:2rem 0;">
+                <p style="font-size:.75rem;color:#0369a1;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Datos de mercado relacionados</p>
+                <p style="font-size:.95rem;font-weight:600;color:#0c4a6e;margin-bottom:.75rem;">Consulta los precios actuales en {{ $zonaNombre }}</p>
+                <a href="{{ route('precios.zone', $post->zona_mercado_slug) }}"
+                   style="display:inline-flex;align-items:center;gap:.4rem;background:#0ea5e9;color:#fff;padding:.5rem 1.1rem;border-radius:8px;font-size:.85rem;font-weight:600;text-decoration:none;">
+                    Ver precio por m² →
+                </a>
+            </aside>
+            @endif
+
             {{-- Share buttons --}}
             <div class="mt-12 pt-8 border-t border-gray-100" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-gray-900 mb-4">Compartir este artículo</p>

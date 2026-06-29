@@ -40,4 +40,34 @@
     </url>
     @endforeach
 
+    {{-- Precios hub --}}
+    <url>
+        <loc>{{ url('/precios') }}</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.9</priority>
+        <lastmod>{{ date('Y-m-d') }}</lastmod>
+    </url>
+    <url>
+        <loc>{{ url('/precios/opinion-de-valor') }}</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    {{-- Market zones (/precios) --}}
+    @foreach($marketZones ?? [] as $zone)
+    <url>
+        <loc>{{ url('/precios/' . $zone->slug) }}</loc>
+        <lastmod>{{ $zone->updated_at->toAtomString() }}</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+    @foreach($zone->publishedColonias as $colonia)
+    <url>
+        <loc>{{ url('/precios/' . $zone->slug . '/' . $colonia->slug) }}</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    @endforeach
+    @endforeach
+
 </urlset>

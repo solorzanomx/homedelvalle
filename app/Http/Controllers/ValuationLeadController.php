@@ -30,7 +30,7 @@ class ValuationLeadController extends Controller
         ]));
 
         return redirect()
-            ->route('mercado.opinion')
+            ->route('precios.opinion')
             ->with('lead_success', true);
     }
 }

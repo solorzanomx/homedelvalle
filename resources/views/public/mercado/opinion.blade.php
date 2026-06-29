@@ -3,7 +3,7 @@
 @section('meta')
 <title>Opinión de valor gratuita en Benito Juárez | Home del Valle</title>
 <meta name="description" content="Solicita una opinión de valor personalizada para tu inmueble en Benito Juárez. Análisis de mercado con datos actualizados de colonias como Narvarte, Del Valle, Portales y más.">
-<link rel="canonical" href="{{ url('/mercado/opinion-de-valor') }}">
+<link rel="canonical" href="{{ url('/precios/opinion-de-valor') }}">
 @endsection
 
 @section('content')
@@ -23,7 +23,7 @@
                 Nuestro equipo preparará un análisis de mercado con datos comparables en tu colonia, ajustes por las características de tu inmueble y un precio sugerido de salida.
             </p>
         </div>
-        <a href="{{ route('mercado.index') }}"
+        <a href="{{ route('precios.index') }}"
            style="display:inline-block;background:#15803d;color:#fff;padding:.7rem 1.75rem;border-radius:8px;font-weight:600;font-size:.88rem;text-decoration:none;">
             Explorar precios en Benito Juárez →
         </a>
@@ -81,7 +81,7 @@
     </div>
     @endif
 
-    <form method="POST" action="{{ route('mercado.opinion.store') }}" style="display:flex;flex-direction:column;gap:1.25rem;">
+    <form method="POST" action="{{ route('precios.opinion.store') }}" style="display:flex;flex-direction:column;gap:1.25rem;">
         @csrf
 
         {{-- Datos de contacto --}}

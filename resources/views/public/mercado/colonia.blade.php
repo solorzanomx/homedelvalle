@@ -15,13 +15,13 @@
 @endphp
 <title>{{ $seoTitle }}</title>
 <meta name="description" content="{{ $seoDesc }}">
-<link rel="canonical" href="{{ url('/mercado/' . $zone->slug . '/' . $colonia->slug) }}">
+<link rel="canonical" href="{{ url('/precios/' . $zone->slug . '/' . $colonia->slug) }}">
 
 {{-- Open Graph --}}
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ $seoTitle }}">
 <meta property="og:description" content="{{ $seoDesc }}">
-<meta property="og:url" content="{{ url('/mercado/' . $zone->slug . '/' . $colonia->slug) }}">
+<meta property="og:url" content="{{ url('/precios/' . $zone->slug . '/' . $colonia->slug) }}">
 <meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
 <meta property="og:locale" content="es_MX">
 <meta property="og:site_name" content="Home del Valle">
@@ -69,9 +69,9 @@
   "@@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Observatorio", "item": "{{ url('/mercado') }}" },
-    { "@type": "ListItem", "position": 2, "name": "{{ $zone->name }}", "item": "{{ url('/mercado/' . $zone->slug) }}" },
-    { "@type": "ListItem", "position": 3, "name": "{{ $colonia->name }}", "item": "{{ url('/mercado/' . $zone->slug . '/' . $colonia->slug) }}" }
+    { "@type": "ListItem", "position": 1, "name": "Precios por m²", "item": "{{ url('/precios') }}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ $zone->name }}", "item": "{{ url('/precios/' . $zone->slug) }}" },
+    { "@type": "ListItem", "position": 3, "name": "{{ $colonia->name }}", "item": "{{ url('/precios/' . $zone->slug . '/' . $colonia->slug) }}" }
   ]
 }
 </script>
@@ -82,9 +82,9 @@
 {{-- BREADCRUMB --}}
 <div style="background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:.6rem 1.5rem;font-size:.78rem;color:#6b7280;">
     <div style="max-width:960px;margin:0 auto;">
-        <a href="{{ route('mercado.index') }}" style="color:#2563eb;">Observatorio</a>
+        <a href="{{ route('precios.index') }}" style="color:#2563eb;">Precios por m²</a>
         &nbsp;›&nbsp;
-        <a href="{{ route('mercado.zone', $zone->slug) }}" style="color:#2563eb;">{{ $zone->name }}</a>
+        <a href="{{ route('precios.zone', $zone->slug) }}" style="color:#2563eb;">{{ $zone->name }}</a>
         &nbsp;›&nbsp; {{ $colonia->name }}
     </div>
 </div>
@@ -98,7 +98,7 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1.25rem;">
             <div style="flex:1;min-width:240px;">
                 <h1 style="font-size:clamp(1.3rem,3vw,1.9rem);font-weight:700;margin-bottom:.5rem;">
-                    Colonia {{ $colonia->name }}
+                    Precio por m² en {{ $colonia->name }}
                 </h1>
                 @if($colonia->short_description)
                 <p style="font-size:.88rem;color:rgba(255,255,255,.6);max-width:480px;line-height:1.6;">
@@ -125,7 +125,7 @@
 <div style="background:#fff;border-bottom:2px solid #e5e7eb;overflow-x:auto;-webkit-overflow-scrolling:touch;">
     <div style="max-width:960px;margin:0 auto;display:flex;gap:0;padding:0 1rem;">
         @foreach($allZones as $z)
-        <a href="{{ route('mercado.zone', $z->slug) }}"
+        <a href="{{ route('precios.zone', $z->slug) }}"
            style="display:inline-block;padding:.6rem .8rem;font-size:.75rem;font-weight:500;white-space:nowrap;text-decoration:none;border-bottom:2px solid {{ $z->id === $zone->id ? '#2563eb' : 'transparent' }};margin-bottom:-2px;color:{{ $z->id === $zone->id ? '#2563eb' : '#6b7280' }};">
             {{ $z->name }}
         </a>
@@ -152,7 +152,7 @@
         <span>
             Los precios mostrados son la referencia de la <strong>Zona {{ $zone->name }}</strong>, que incluye {{ $zone->colonias->count() }} colonias con mercado similar.
             Las variaciones exactas por colonia pueden consultarse con nuestros agentes.
-            <a href="{{ route('mercado.zone', $zone->slug) }}" style="color:#1d4ed8;font-weight:600;">Ver datos completos de la zona →</a>
+            <a href="{{ route('precios.zone', $zone->slug) }}" style="color:#1d4ed8;font-weight:600;">Ver datos completos de la zona →</a>
         </span>
     </div>
 
@@ -217,7 +217,7 @@
     <div style="margin-top:1.25rem;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:.85rem 1.1rem;font-size:.78rem;color:#92400e;line-height:1.55;">
         <strong>Nota:</strong> Estas referencias se calculan a partir de anuncios publicados en portales inmobiliarios.
         El precio de tu inmueble específico depende de m², estado, piso, estacionamiento y amenidades.
-        <a href="{{ route('mercado.opinion') }}" style="color:#92400e;font-weight:600;">Solicita una opinión de valor personalizada →</a>
+        <a href="{{ route('precios.opinion') }}" style="color:#92400e;font-weight:600;">Solicita una opinión de valor personalizada →</a>
     </div>
 </section>
 
@@ -229,14 +229,14 @@
     </h2>
     <div style="display:flex;flex-wrap:wrap;gap:.5rem;">
         @foreach($siblings as $sib)
-        <a href="{{ route('mercado.colonia', [$zone->slug, $sib->slug]) }}"
+        <a href="{{ route('precios.colonia', [$zone->slug, $sib->slug]) }}"
            style="display:inline-block;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:.35rem .85rem;font-size:.8rem;color:#374151;text-decoration:none;transition:all .15s;"
            onmouseover="this.style.background='#eff6ff';this.style.borderColor='#bfdbfe';this.style.color='#1d4ed8'"
            onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#374151'">
             {{ $sib->name }}
         </a>
         @endforeach
-        <a href="{{ route('mercado.zone', $zone->slug) }}"
+        <a href="{{ route('precios.zone', $zone->slug) }}"
            style="display:inline-block;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:.35rem .85rem;font-size:.8rem;color:#2563eb;font-weight:600;text-decoration:none;">
             Ver toda la zona →
         </a>
@@ -255,7 +255,7 @@
             Sin costo, sin compromiso.
         </p>
         <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:.75rem;">
-            <a href="{{ route('mercado.opinion') }}?colonia={{ $colonia->id }}"
+            <a href="{{ route('precios.opinion') }}?colonia={{ $colonia->id }}"
                style="display:inline-block;background:#2563eb;color:#fff;padding:.7rem 1.6rem;border-radius:8px;font-weight:600;font-size:.9rem;text-decoration:none;">
                 Solicitar opinión de valor →
             </a>

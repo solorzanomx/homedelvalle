@@ -18,7 +18,7 @@ class WhatsAppHelper
             str_contains($currentPath, '/comprar')             => self::buyerOptions(),
             str_contains($currentPath, '/rentar')              => self::renterOptions(),
             str_contains($currentPath, '/desarrolladores')     => self::investorOptions(),
-            str_contains($currentPath, '/mercado')             => self::marketOptions(),
+            str_contains($currentPath, '/mercado') || str_contains($currentPath, '/precios')  => self::marketOptions(),
             str_contains($currentPath, '/servicios')           => self::servicesOptions(),
             str_contains($currentPath, '/contacto')            => self::generalOptions(),
             default                                            => self::homeOptions(),

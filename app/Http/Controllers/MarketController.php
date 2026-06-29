@@ -61,6 +61,17 @@ class MarketController extends Controller
         $isValidated = MarketZoneSnapshot::isZoneValidated($zone->id);
         $validatedBy = MarketZoneSnapshot::validatedBy($zone->id);
 
+        // Related blog posts (for blog ↔ precios interconnection)
+        $relatedPosts = \App\Models\Post::published()
+            ->where(function ($q) use ($zone) {
+                $q->where('title', 'like', '%' . $zone->name . '%')
+                  ->orWhere('focus_keyword', 'like', '%' . strtolower($zone->name) . '%')
+                  ->orWhere('zona_mercado_slug', $zone->slug);
+            })
+            ->latest('published_at')
+            ->take(3)
+            ->get(['id', 'title', 'slug', 'published_at']);
+
         return view('public.mercado.zone', compact(
             'zone', 'allZones', 'colonias',
             'saleSnaps', 'rentSnaps',
@@ -68,6 +79,7 @@ class MarketController extends Controller
             'heroPriceSale',
             'chartSale', 'chartRent',
             'isValidated', 'validatedBy',
+            'relatedPosts',
         ));
     }
 

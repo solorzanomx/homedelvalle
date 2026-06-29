@@ -15,13 +15,13 @@
 @endphp
 <title>{{ $seoTitle }}</title>
 <meta name="description" content="{{ $seoDesc }}">
-<link rel="canonical" href="{{ url('/mercado/' . $zone->slug) }}">
+<link rel="canonical" href="{{ url('/precios/' . $zone->slug) }}">
 
 {{-- Open Graph --}}
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ $seoTitle }}">
 <meta property="og:description" content="{{ $seoDesc }}">
-<meta property="og:url" content="{{ url('/mercado/' . $zone->slug) }}">
+<meta property="og:url" content="{{ url('/precios/' . $zone->slug) }}">
 <meta property="og:image" content="{{ $siteSettings?->logo_path ? asset('storage/' . $siteSettings->logo_path) : url('/images/og-mercado.jpg') }}">
 <meta property="og:locale" content="es_MX">
 <meta property="og:site_name" content="Home del Valle">
@@ -65,7 +65,7 @@
     @endif
     {
       "@type": "Question",
-      "name": "¿Son confiables los precios del Observatorio de Home del Valle?",
+      "name": "¿Son confiables los precios de Home del Valle?",
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Los precios se calculan con análisis estadístico de anuncios publicados en portales inmobiliarios (Inmuebles24, Lamudi, Propiedades.com, entre otros). {{ $saleMeta['total_listings'] > 0 ? 'Los datos de ' . $zone->name . ' se basan en ' . $saleMeta['total_listings'] . ' listings analizados.' : '' }} Son referencias de mercado, no avalúos formales. Para una estimación personalizada de tu inmueble, solicita una opinión de valor gratuita."
@@ -79,8 +79,8 @@
   "@@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "Observatorio", "item": "{{ url('/mercado') }}" },
-    { "@type": "ListItem", "position": 2, "name": "{{ $zone->name }}", "item": "{{ url('/mercado/' . $zone->slug) }}" }
+    { "@type": "ListItem", "position": 1, "name": "Precios por m²", "item": "{{ url('/precios') }}" },
+    { "@type": "ListItem", "position": 2, "name": "{{ $zone->name }}", "item": "{{ url('/precios/' . $zone->slug) }}" }
   ]
 }
 </script>
@@ -93,7 +93,7 @@
 ════════════════════════════════════════════════════════ --}}
 <div style="background:#f8fafc;border-bottom:1px solid #e5e7eb;padding:.6rem 1.5rem;font-size:.78rem;color:#6b7280;">
     <div style="max-width:960px;margin:0 auto;">
-        <a href="{{ route('mercado.index') }}" style="color:#2563eb;">Observatorio</a>
+        <a href="{{ route('precios.index') }}" style="color:#2563eb;">Precios por m²</a>
         &nbsp;›&nbsp; {{ $zone->name }}
     </div>
 </div>
@@ -109,14 +109,14 @@
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1.5rem;">
             <div style="flex:1;min-width:260px;">
                 <h1 style="font-size:clamp(1.5rem,3.5vw,2.2rem);font-weight:700;margin-bottom:.6rem;line-height:1.2;">
-                    Precios de inmuebles en<br>{{ $zone->name }}
+                    Precio por m² en<br>{{ $zone->name }}
                 </h1>
                 @if($zone->short_description)
                 <p style="font-size:.9rem;color:rgba(255,255,255,.65);max-width:500px;line-height:1.6;margin-bottom:1.25rem;">
                     {{ $zone->short_description }}
                 </p>
                 @endif
-                <a href="{{ route('mercado.opinion') }}"
+                <a href="{{ route('precios.opinion') }}"
                    style="display:inline-flex;align-items:center;gap:.5rem;background:#2563eb;color:#fff;padding:.65rem 1.4rem;border-radius:8px;font-weight:600;font-size:.88rem;text-decoration:none;">
                     ¿Cuánto vale tu inmueble aquí? →
                 </a>
@@ -156,7 +156,7 @@
 <div style="background:#fff;border-bottom:2px solid #e5e7eb;overflow-x:auto;-webkit-overflow-scrolling:touch;">
     <div style="max-width:960px;margin:0 auto;display:flex;gap:0;padding:0 1rem;">
         @foreach($allZones as $z)
-        <a href="{{ route('mercado.zone', $z->slug) }}"
+        <a href="{{ route('precios.zone', $z->slug) }}"
            style="display:inline-block;padding:.65rem .85rem;font-size:.78rem;font-weight:500;white-space:nowrap;text-decoration:none;border-bottom:2px solid {{ $z->id === $zone->id ? '#2563eb' : 'transparent' }};margin-bottom:-2px;color:{{ $z->id === $zone->id ? '#2563eb' : '#6b7280' }};">
             {{ $z->name }}
         </a>
@@ -301,7 +301,7 @@
                 @else
                 <div style="color:#9ca3af;font-size:.75rem;">
                     ⚠️ Estos son precios de referencia estadísticos, no avalúos formales. El valor real de un inmueble específico depende de sus características, estado de conservación y condiciones de negociación.
-                    <a href="{{ route('mercado.opinion') }}" style="color:#2563eb;font-weight:600;">Solicita una opinión de valor personalizada →</a>
+                    <a href="{{ route('precios.opinion') }}" style="color:#2563eb;font-weight:600;">Solicita una opinión de valor personalizada →</a>
                 </div>
                 @endif
             </div>
@@ -505,7 +505,7 @@
             </p>
         </div>
         <div style="display:flex;flex-direction:column;gap:.6rem;flex-shrink:0;">
-            <a href="{{ route('mercado.opinion') }}"
+            <a href="{{ route('precios.opinion') }}"
                style="display:inline-block;background:#2563eb;color:#fff;padding:.65rem 1.5rem;border-radius:8px;font-weight:600;font-size:.88rem;text-decoration:none;text-align:center;white-space:nowrap;">
                 Solicitar valuación gratuita →
             </a>
@@ -527,7 +527,7 @@
     </p>
     <div style="display:flex;flex-wrap:wrap;gap:.6rem;">
         @foreach($colonias as $colonia)
-        <a href="{{ route('mercado.colonia', [$zone->slug, $colonia->slug]) }}"
+        <a href="{{ route('precios.colonia', [$zone->slug, $colonia->slug]) }}"
            style="display:inline-flex;align-items:center;gap:.4rem;background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:.4rem .9rem;font-size:.82rem;color:#374151;text-decoration:none;transition:all .15s;"
            onmouseover="this.style.background='#eff6ff';this.style.borderColor='#bfdbfe';this.style.color='#1d4ed8'"
            onmouseout="this.style.background='#fff';this.style.borderColor='#e5e7eb';this.style.color='#374151'">
@@ -606,6 +606,27 @@
 </section>
 
 {{-- ══════════════════════════════════════════════════════
+     ARTÍCULOS RELACIONADOS DEL BLOG
+════════════════════════════════════════════════════════ --}}
+@if(isset($relatedPosts) && $relatedPosts->isNotEmpty())
+<section style="max-width:960px;margin:0 auto;padding:0 1.5rem 3rem;">
+    <h2 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Guías sobre {{ $zone->name }} en nuestro blog</h2>
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+        @foreach($relatedPosts as $blogPost)
+        <a href="{{ route('blog.show', $blogPost->slug) }}"
+           style="display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:#fff;border:1px solid #e5e7eb;border-radius:10px;text-decoration:none;transition:all .15s;"
+           onmouseover="this.style.borderColor='#bfdbfe';this.style.background='#eff6ff'"
+           onmouseout="this.style.borderColor='#e5e7eb';this.style.background='#fff'">
+            <span style="font-size:1.1rem;flex-shrink:0;">📖</span>
+            <span style="font-size:.88rem;font-weight:500;color:#1d4ed8;">{{ $blogPost->title }}</span>
+            <span style="margin-left:auto;color:#9ca3af;font-size:.75rem;flex-shrink:0;">Leer →</span>
+        </a>
+        @endforeach
+    </div>
+</section>
+@endif
+
+{{-- ══════════════════════════════════════════════════════
      CTA FINAL
 ════════════════════════════════════════════════════════ --}}
 <section style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:3.5rem 1.5rem;text-align:center;">
@@ -620,7 +641,7 @@
             Sin anticipos, sin sorpresas.
         </p>
         <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:.75rem;">
-            <a href="{{ route('mercado.opinion') }}"
+            <a href="{{ route('precios.opinion') }}"
                style="display:inline-block;background:#2563eb;color:#fff;padding:.75rem 1.75rem;border-radius:8px;font-weight:600;font-size:.9rem;text-decoration:none;">
                 Solicitar opinión de valor →
             </a>

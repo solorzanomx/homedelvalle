@@ -14,7 +14,7 @@
             </p>
             @endif
             <p class="mt-5 text-xs text-gray-400">
-                Mientras tanto, consulta el <a href="{{ url('/mercado') }}" class="text-brand-500 font-medium underline">observatorio de precios de Benito Juárez</a>.
+                Mientras tanto, consulta el <a href="{{ url('/precios') }}" class="text-brand-500 font-medium underline">observatorio de precios de Benito Juárez</a>.
             </p>
         </div>
     @else
