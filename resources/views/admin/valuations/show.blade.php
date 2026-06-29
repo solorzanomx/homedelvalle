@@ -286,7 +286,29 @@
                     'Balcón'         => $valuation->input_has_balcony ? 'Sí' : '—',
                     'Cuarto servicio'=> $valuation->input_has_service_room ? 'Sí' : '—',
                     'Bodega'         => $valuation->input_has_storage ? 'Sí' : '—',
-                ] + ($valuation->input_type === 'apartment' ? [
+                ] + (($valuation->input_has_gym || $valuation->input_has_pool || $valuation->input_has_lobby) ? [
+                    'Gimnasio'       => $valuation->input_has_gym   ? 'Sí' : '—',
+                    'Alberca'        => $valuation->input_has_pool  ? 'Sí' : '—',
+                    'Lobby'          => $valuation->input_has_lobby ? 'Sí' : '—',
+                ] : []) + (($valuation->input_has_doorman || $valuation->input_has_security_cameras || $valuation->input_has_intercom || $valuation->input_has_alarm) ? [
+                    'Portero/Guardia'=> $valuation->input_has_doorman ? 'Sí' : '—',
+                    'Cámaras'        => $valuation->input_has_security_cameras ? 'Sí' : '—',
+                    'Intercomunicador'=> $valuation->input_has_intercom ? 'Sí' : '—',
+                    'Alarma'         => $valuation->input_has_alarm ? 'Sí' : '—',
+                ] : []) + (($valuation->input_has_natural_gas || $valuation->input_has_cistern) ? [
+                    'Gas natural'    => $valuation->input_has_natural_gas ? 'Sí' : '—',
+                    'Cisterna'       => $valuation->input_has_cistern ? 'Sí' : '—',
+                ] : []) + ($valuation->input_street_type ? [
+                    'Entorno'        => $valuation->street_type_label,
+                ] : []) + ($valuation->input_views ? [
+                    'Vistas'         => $valuation->views_label,
+                ] : []) + ($valuation->input_legal_status ? [
+                    'Estado legal'   => $valuation->legal_status_label,
+                ] : []) + ($valuation->input_maintenance_fee ? [
+                    'Mantenimiento'  => '$' . number_format($valuation->input_maintenance_fee) . '/mes',
+                ] : []) + ($valuation->input_renovation_year ? [
+                    'Remodelación'   => (string) $valuation->input_renovation_year,
+                ] : []) + ($valuation->input_type === 'apartment' ? [
                     'Posición'       => match($valuation->input_unit_position) { 'exterior'=>'Exterior','interior'=>'Interior', default=>'—' },
                     'Orientación'    => $valuation->input_orientation ? ucfirst($valuation->input_orientation) : '—',
                     'Historial sísmico' => match($valuation->input_seismic_status) {

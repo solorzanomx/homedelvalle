@@ -18,6 +18,11 @@ class PropertyValuation extends Model
         'input_parking_type', 'input_building_condition',
         'input_floor', 'input_has_elevator', 'input_has_rooftop',
         'input_has_balcony', 'input_has_service_room', 'input_has_storage',
+        'input_has_doorman', 'input_has_intercom', 'input_has_security_cameras', 'input_has_alarm',
+        'input_has_gym', 'input_has_pool', 'input_has_lobby',
+        'input_has_natural_gas', 'input_has_cistern',
+        'input_street_type', 'input_views', 'input_legal_status',
+        'input_maintenance_fee', 'input_renovation_year',
         'input_unit_position', 'input_orientation', 'input_seismic_status',
         'input_notes',
         'base_price_m2', 'adjusted_price_m2',
@@ -32,12 +37,21 @@ class PropertyValuation extends Model
     ];
 
     protected $casts = [
-        'input_has_elevator'    => 'boolean',
-        'input_has_rooftop'     => 'boolean',
-        'input_has_balcony'     => 'boolean',
-        'input_has_service_room'=> 'boolean',
-        'input_has_storage'     => 'boolean',
-        'used_perplexity'       => 'boolean',
+        'input_has_elevator'           => 'boolean',
+        'input_has_rooftop'            => 'boolean',
+        'input_has_balcony'            => 'boolean',
+        'input_has_service_room'       => 'boolean',
+        'input_has_storage'            => 'boolean',
+        'input_has_doorman'            => 'boolean',
+        'input_has_intercom'           => 'boolean',
+        'input_has_security_cameras'   => 'boolean',
+        'input_has_alarm'              => 'boolean',
+        'input_has_gym'                => 'boolean',
+        'input_has_pool'               => 'boolean',
+        'input_has_lobby'              => 'boolean',
+        'input_has_natural_gas'        => 'boolean',
+        'input_has_cistern'            => 'boolean',
+        'used_perplexity'              => 'boolean',
         'base_price_m2'         => 'decimal:2',
         'adjusted_price_m2'     => 'decimal:2',
         'delivered_at'          => 'datetime',
@@ -212,5 +226,40 @@ class PropertyValuation extends Model
         if ($years <= 10)  return 'new';
         if ($years <= 30)  return 'mid';
         return 'old';
+    }
+
+    public function getStreetTypeLabelAttribute(): string
+    {
+        return match($this->input_street_type) {
+            'quiet'       => 'Calle tranquila / interior',
+            'residential' => 'Calle residencial',
+            'principal'   => 'Avenida principal',
+            'commercial'  => 'Zona comercial / concurrida',
+            'dead_end'    => 'Callejón / cerrada',
+            default       => '—',
+        };
+    }
+
+    public function getViewsLabelAttribute(): string
+    {
+        return match($this->input_views) {
+            'city'    => 'Vista a la ciudad / panorámica',
+            'park'    => 'Vista a parque o área verde',
+            'garden'  => 'Vista a jardín / patio',
+            'street'  => 'Vista a calle',
+            'interior'=> 'Vista a patio interior',
+            default   => '—',
+        };
+    }
+
+    public function getLegalStatusLabelAttribute(): string
+    {
+        return match($this->input_legal_status) {
+            'clear'        => 'Libre de gravámenes',
+            'mortgage'     => 'Con hipoteca / gravamen',
+            'pending_deed' => 'Escrituración pendiente',
+            'unknown'      => 'Estado legal desconocido',
+            default        => '—',
+        };
     }
 }

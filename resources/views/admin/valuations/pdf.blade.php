@@ -729,10 +729,10 @@ html, body {
     {{-- HEADER --}}
     <div class="hd">
         <div class="hd-logo">
-            @if($logoSrcLight)
-                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
-            @elseif($logoSrc)
+            @if($logoSrc)
                 <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
+            @elseif($logoSrcLight)
+                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
             @else
                 <div class="hd-logo-txt">HOME DEL VALLE</div>
             @endif
@@ -880,10 +880,10 @@ html, body {
 
     <div class="mhd">
         <div class="mhd-logo">
-            @if($logoSrcLight)
-                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
-            @elseif($logoSrc)
+            @if($logoSrc)
                 <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
+            @elseif($logoSrcLight)
+                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
             @else
                 <div class="mhd-logo-txt">HOME DEL VALLE</div>
             @endif
@@ -925,10 +925,37 @@ html, body {
                         $valuation->input_has_balcony      ? 'Balcón'           : null,
                         $valuation->input_has_service_room ? 'Cuarto servicio'  : null,
                         $valuation->input_has_storage      ? 'Bodega'           : null,
+                        $valuation->input_has_gym          ? 'Gimnasio'         : null,
+                        $valuation->input_has_pool         ? 'Alberca'          : null,
+                        $valuation->input_has_lobby        ? 'Lobby'            : null,
+                    ]));
+                    $securityList = implode(', ', array_filter([
+                        $valuation->input_has_doorman          ? 'Guardia 24h'      : null,
+                        $valuation->input_has_security_cameras  ? 'Cámaras CCTV'    : null,
+                        $valuation->input_has_intercom          ? 'Intercomunicador' : null,
+                        $valuation->input_has_alarm             ? 'Alarma'           : null,
                     ]));
                     @endphp
                     @if($amenList)
                     <tr><td>Amenidades</td><td>{{ $amenList }}</td></tr>
+                    @endif
+                    @if($securityList)
+                    <tr><td>Seguridad</td><td>{{ $securityList }}</td></tr>
+                    @endif
+                    @if($valuation->input_has_natural_gas || $valuation->input_has_cistern)
+                    <tr><td>Infraestructura</td><td>{{ implode(', ', array_filter([$valuation->input_has_natural_gas ? 'Gas natural' : null, $valuation->input_has_cistern ? 'Cisterna' : null])) }}</td></tr>
+                    @endif
+                    @if($valuation->input_street_type)
+                    <tr><td>Entorno</td><td>{{ $valuation->street_type_label }}</td></tr>
+                    @endif
+                    @if($valuation->input_views)
+                    <tr><td>Vistas</td><td>{{ $valuation->views_label }}</td></tr>
+                    @endif
+                    @if($valuation->input_legal_status)
+                    <tr><td>Estado legal</td><td>{{ $valuation->legal_status_label }}</td></tr>
+                    @endif
+                    @if($valuation->input_maintenance_fee)
+                    <tr><td>Mantenimiento</td><td>${{ number_format($valuation->input_maintenance_fee) }}/mes</td></tr>
                     @endif
                     @if($valuation->input_type === 'apartment')
                         @if($valuation->input_unit_position)
@@ -1064,10 +1091,10 @@ html, body {
 
     <div class="mhd">
         <div class="mhd-logo">
-            @if($logoSrcLight)
-                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
-            @elseif($logoSrc)
+            @if($logoSrc)
                 <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
+            @elseif($logoSrcLight)
+                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
             @else
                 <div class="mhd-logo-txt">HOME DEL VALLE</div>
             @endif

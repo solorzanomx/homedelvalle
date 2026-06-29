@@ -90,6 +90,20 @@ class ValuationController extends Controller
             'input_has_balcony'    => 'boolean',
             'input_has_service_room' => 'boolean',
             'input_has_storage'    => 'boolean',
+            'input_has_doorman'    => 'boolean',
+            'input_has_intercom'   => 'boolean',
+            'input_has_security_cameras' => 'boolean',
+            'input_has_alarm'      => 'boolean',
+            'input_has_gym'        => 'boolean',
+            'input_has_pool'       => 'boolean',
+            'input_has_lobby'      => 'boolean',
+            'input_has_natural_gas'=> 'boolean',
+            'input_has_cistern'    => 'boolean',
+            'input_street_type'    => 'nullable|in:quiet,residential,principal,commercial,dead_end',
+            'input_views'          => 'nullable|in:city,park,garden,street,interior',
+            'input_legal_status'   => 'nullable|in:clear,mortgage,pending_deed,unknown',
+            'input_maintenance_fee'=> 'nullable|integer|min:0|max:99999',
+            'input_renovation_year'=> 'nullable|integer|min:1900|max:' . date('Y'),
             'input_unit_position'  => 'nullable|in:exterior,interior',
             'input_orientation'    => 'nullable|in:norte,noreste,este,sureste,sur,suroeste,oeste,noroeste',
             'input_seismic_status' => 'nullable|in:none,damaged_repaired,damaged_reinforced,unknown',
@@ -102,6 +116,15 @@ class ValuationController extends Controller
         $data['input_has_balcony']    = $request->boolean('input_has_balcony');
         $data['input_has_service_room'] = $request->boolean('input_has_service_room');
         $data['input_has_storage']    = $request->boolean('input_has_storage');
+        $data['input_has_doorman']    = $request->boolean('input_has_doorman');
+        $data['input_has_intercom']   = $request->boolean('input_has_intercom');
+        $data['input_has_security_cameras'] = $request->boolean('input_has_security_cameras');
+        $data['input_has_alarm']      = $request->boolean('input_has_alarm');
+        $data['input_has_gym']        = $request->boolean('input_has_gym');
+        $data['input_has_pool']       = $request->boolean('input_has_pool');
+        $data['input_has_lobby']      = $request->boolean('input_has_lobby');
+        $data['input_has_natural_gas']= $request->boolean('input_has_natural_gas');
+        $data['input_has_cistern']    = $request->boolean('input_has_cistern');
         $data['input_half_bathrooms'] = (int) $request->input('input_half_bathrooms', 0);
         // Nullify apartment-specific fields when not apartment
         if (($data['input_type'] ?? '') !== 'apartment') {
@@ -173,6 +196,20 @@ class ValuationController extends Controller
             'input_has_balcony'    => 'boolean',
             'input_has_service_room' => 'boolean',
             'input_has_storage'    => 'boolean',
+            'input_has_doorman'    => 'boolean',
+            'input_has_intercom'   => 'boolean',
+            'input_has_security_cameras' => 'boolean',
+            'input_has_alarm'      => 'boolean',
+            'input_has_gym'        => 'boolean',
+            'input_has_pool'       => 'boolean',
+            'input_has_lobby'      => 'boolean',
+            'input_has_natural_gas'=> 'boolean',
+            'input_has_cistern'    => 'boolean',
+            'input_street_type'    => 'nullable|in:quiet,residential,principal,commercial,dead_end',
+            'input_views'          => 'nullable|in:city,park,garden,street,interior',
+            'input_legal_status'   => 'nullable|in:clear,mortgage,pending_deed,unknown',
+            'input_maintenance_fee'=> 'nullable|integer|min:0|max:99999',
+            'input_renovation_year'=> 'nullable|integer|min:1900|max:' . date('Y'),
             'input_unit_position'  => 'nullable|in:exterior,interior',
             'input_orientation'    => 'nullable|in:norte,noreste,este,sureste,sur,suroeste,oeste,noroeste',
             'input_seismic_status' => 'nullable|in:none,damaged_repaired,damaged_reinforced,unknown',
@@ -184,6 +221,15 @@ class ValuationController extends Controller
         $data['input_has_balcony']     = $request->boolean('input_has_balcony');
         $data['input_has_service_room']= $request->boolean('input_has_service_room');
         $data['input_has_storage']     = $request->boolean('input_has_storage');
+        $data['input_has_doorman']     = $request->boolean('input_has_doorman');
+        $data['input_has_intercom']    = $request->boolean('input_has_intercom');
+        $data['input_has_security_cameras'] = $request->boolean('input_has_security_cameras');
+        $data['input_has_alarm']       = $request->boolean('input_has_alarm');
+        $data['input_has_gym']         = $request->boolean('input_has_gym');
+        $data['input_has_pool']        = $request->boolean('input_has_pool');
+        $data['input_has_lobby']       = $request->boolean('input_has_lobby');
+        $data['input_has_natural_gas'] = $request->boolean('input_has_natural_gas');
+        $data['input_has_cistern']     = $request->boolean('input_has_cistern');
         $data['input_half_bathrooms']  = (int) $request->input('input_half_bathrooms', 0);
         if (($data['input_type'] ?? '') !== 'apartment') {
             $data['input_unit_position']  = null;

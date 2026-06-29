@@ -76,12 +76,42 @@ SYSTEM;
             $bathrooms .= ' + ' . $valuation->input_half_bathrooms . ' medio(s)';
         }
 
-        $amenities = collect([
-            $valuation->input_has_rooftop      ? 'rooftop privado' : null,
-            $valuation->input_has_balcony       ? 'balcón' : null,
-            $valuation->input_has_service_room  ? 'cuarto de servicio' : null,
-            $valuation->input_has_storage       ? 'bodega' : null,
+        $unitAmenities = collect([
+            $valuation->input_has_rooftop       ? 'rooftop privado' : null,
+            $valuation->input_has_balcony        ? 'balcón' : null,
+            $valuation->input_has_service_room   ? 'cuarto de servicio' : null,
+            $valuation->input_has_storage        ? 'bodega' : null,
         ])->filter()->join(', ') ?: 'ninguna';
+
+        $buildingAmenities = collect([
+            $valuation->input_has_gym    ? 'gimnasio' : null,
+            $valuation->input_has_pool   ? 'alberca' : null,
+            $valuation->input_has_lobby  ? 'lobby/recepción' : null,
+        ])->filter()->join(', ') ?: 'ninguna';
+
+        $security = collect([
+            $valuation->input_has_doorman          ? 'portero/guardia 24h' : null,
+            $valuation->input_has_security_cameras  ? 'cámaras de seguridad' : null,
+            $valuation->input_has_intercom          ? 'intercomunicador' : null,
+            $valuation->input_has_alarm             ? 'alarma' : null,
+        ])->filter()->join(', ') ?: 'sin seguridad adicional';
+
+        $infrastructure = collect([
+            $valuation->input_has_natural_gas ? 'gas natural (red)' : null,
+            $valuation->input_has_cistern     ? 'cisterna propia' : null,
+        ])->filter()->join(', ') ?: 'estándar';
+
+        $streetType = $valuation->street_type_label ?? '—';
+        $views      = $valuation->views_label ?? '—';
+        $legalStatus = $valuation->legal_status_label ?? '—';
+        $maintenanceFee = $valuation->input_maintenance_fee
+            ? '$' . number_format($valuation->input_maintenance_fee) . '/mes'
+            : 'no especificada';
+        $renovationYear = $valuation->input_renovation_year
+            ? (string) $valuation->input_renovation_year
+            : 'no especificado';
+
+        $amenities = $unitAmenities; // backward compat alias
 
         $base      = number_format($valuation->base_price_m2 ?? 0);
         $adjusted  = number_format($valuation->adjusted_price_m2 ?? 0);
@@ -120,12 +150,20 @@ INMUEBLE A VALUAR:
 - Colonia: {$colonia}, Zona: {$zone}, Benito Juárez, CDMX
 - Superficie: {$m2} m² ({$m2Type})
 - Antigüedad: {$age} años ({$ageCat})
+- Última remodelación: {$renovationYear}
 - Estado de conservación: {$condition}
 - {$floor}, {$elevator}
 - Recámaras: {$bedrooms}
 - Baños: {$bathrooms}
 - Estacionamiento: {$parking}
-- Amenidades: {$amenities}
+- Amenidades de la unidad: {$unitAmenities}
+- Amenidades del edificio: {$buildingAmenities}
+- Seguridad: {$security}
+- Infraestructura: {$infrastructure}
+- Entorno / tipo de calle: {$streetType}
+- Vistas: {$views}
+- Estado legal: {$legalStatus}
+- Cuota de mantenimiento: {$maintenanceFee}
 
 RESULTADO DEL ANÁLISIS CUANTITATIVO:
 - Precio base de mercado: \${$base}/m²

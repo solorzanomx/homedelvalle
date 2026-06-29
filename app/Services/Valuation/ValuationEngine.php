@@ -202,6 +202,11 @@ class ValuationEngine
             $this->factorSeismic($v),
             $this->factorParking($v),
             $this->factorAmenities($v),
+            $this->factorSecurity($v),
+            $this->factorViews($v),
+            $this->factorStreetType($v),
+            $this->factorLegalStatus($v),
+            $this->factorMaintenanceFee($v),
             $this->factorSize($v),
         ], fn($f) => $f !== null);
     }
@@ -475,28 +480,192 @@ class ValuationEngine
 
     protected function factorAmenities(PropertyValuation $v): ?array
     {
-        $extras = [];
-        if ($v->input_has_rooftop)      $extras[] = 'rooftop privado';
-        if ($v->input_has_balcony)      $extras[] = 'balcón';
-        if ($v->input_has_service_room) $extras[] = 'cuarto de servicio';
-        if ($v->input_has_storage)      $extras[] = 'bodega';
+        // Amenidades de la unidad
+        $unitExtras = [];
+        if ($v->input_has_rooftop)      $unitExtras[] = 'rooftop privado';
+        if ($v->input_has_balcony)      $unitExtras[] = 'balcón';
+        if ($v->input_has_service_room) $unitExtras[] = 'cuarto de servicio';
+        if ($v->input_has_storage)      $unitExtras[] = 'bodega';
 
-        if (empty($extras)) return null;
+        // Amenidades del edificio
+        $buildingExtras = [];
+        if ($v->input_has_gym)   $buildingExtras[] = 'gimnasio';
+        if ($v->input_has_pool)  $buildingExtras[] = 'alberca';
+        if ($v->input_has_lobby) $buildingExtras[] = 'lobby';
 
-        // Cada amenidad suma; se limita al total a +8%
+        $allExtras = array_merge($unitExtras, $buildingExtras);
+        if (empty($allExtras)) return null;
+
         $raw = 0.0;
+        // Unidad
         if ($v->input_has_rooftop)      $raw += 0.040;
         if ($v->input_has_balcony)      $raw += 0.025;
         if ($v->input_has_service_room) $raw += 0.030;
         if ($v->input_has_storage)      $raw += 0.020;
+        // Edificio
+        if ($v->input_has_gym)   $raw += 0.030;
+        if ($v->input_has_pool)  $raw += 0.040;
+        if ($v->input_has_lobby) $raw += 0.020;
 
-        $value = min($raw, 0.08); // cap
+        $value = min($raw, 0.12); // cap ampliado para incluir amenidades de edificio
 
         return [
             'key'         => 'amenities',
-            'label'       => 'Amenidades: ' . implode(', ', $extras),
+            'label'       => 'Amenidades: ' . implode(', ', $allExtras),
             'value'       => round($value, 4),
-            'explanation' => 'Prima por características adicionales: ' . implode(', ', $extras) . '.',
+            'explanation' => 'Prima por amenidades de unidad y edificio: ' . implode(', ', $allExtras) . '.',
+        ];
+    }
+
+    protected function factorSecurity(PropertyValuation $v): ?array
+    {
+        $items = [];
+        if ($v->input_has_doorman)            $items[] = 'portero/guardia 24h';
+        if ($v->input_has_security_cameras)   $items[] = 'cámaras de seguridad';
+        if ($v->input_has_intercom)           $items[] = 'intercomunicador';
+        if ($v->input_has_alarm)              $items[] = 'alarma';
+
+        if (empty($items)) return null;
+
+        $raw = 0.0;
+        if ($v->input_has_doorman)            $raw += 0.035;
+        if ($v->input_has_security_cameras)   $raw += 0.015;
+        if ($v->input_has_intercom)           $raw += 0.010;
+        if ($v->input_has_alarm)              $raw += 0.005;
+
+        $value = min($raw, 0.055); // cap
+
+        return [
+            'key'         => 'security',
+            'label'       => 'Seguridad: ' . implode(', ', $items),
+            'value'       => round($value, 4),
+            'explanation' => 'Prima por sistemas de seguridad: ' . implode(', ', $items) . '. Mayor percepción de seguridad y acceso controlado aumenta el atractivo para compradores.',
+        ];
+    }
+
+    protected function factorViews(PropertyValuation $v): ?array
+    {
+        if (!$v->input_views) return null;
+
+        [$value, $desc] = match($v->input_views) {
+            'city'     => [+0.050, 'Vista a la ciudad o panorámica. Prima por exclusividad y percepción de amplitud.'],
+            'park'     => [+0.035, 'Vista a parque o área verde. Prima por bienestar y rareza en zona urbana.'],
+            'garden'   => [+0.020, 'Vista a jardín o patio abierto. Prima moderada por privacidad y ambiente.'],
+            'street'   => [+0.010, 'Vista a calle. Ajuste positivo menor: iluminación y presencia urbana.'],
+            'interior' => [0.000,  'Vista a patio interior. Sin ajuste por vistas.'],
+            default    => [0.000,  ''],
+        };
+
+        if ($value === 0.0 && $v->input_views === 'interior') {
+            // Still record it for transparency but as neutral
+            return [
+                'key'         => 'views',
+                'label'       => 'Vistas: patio interior',
+                'value'       => 0.0,
+                'explanation' => $desc,
+            ];
+        }
+
+        if ($value === 0.0) return null;
+
+        $label = match($v->input_views) {
+            'city'   => 'Vistas: ciudad / panorámica',
+            'park'   => 'Vistas: parque / área verde',
+            'garden' => 'Vistas: jardín',
+            'street' => 'Vistas: calle',
+            default  => 'Vistas: ' . $v->input_views,
+        };
+
+        return [
+            'key'         => 'views',
+            'label'       => $label,
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorStreetType(PropertyValuation $v): ?array
+    {
+        if (!$v->input_street_type) return null;
+
+        [$value, $label, $desc] = match($v->input_street_type) {
+            'quiet'       => [+0.020, 'Calle tranquila / interior',
+                'Calle de bajo tráfico sin salida o interior de privada. Prima por tranquilidad, seguridad y calidad de vida.'],
+            'residential' => [+0.010, 'Calle residencial',
+                'Calle residencial de tráfico moderado. Ajuste positivo menor por entorno habitacional.'],
+            'commercial'  => [-0.015, 'Zona comercial / concurrida',
+                'Calle comercial con alto tráfico, ruido y saturación de estacionamiento. Descuento por calidad de vida reducida.'],
+            'principal'   => [-0.020, 'Avenida principal',
+                'Avenida principal de alto tráfico (ej. Insurgentes, División del Norte). Descuento por ruido, contaminación y acceso complicado para peatones.'],
+            'dead_end'    => [-0.030, 'Callejón / cerrada sin infraestructura',
+                'Callejón o cerrada de difícil acceso, sin imagen urbana adecuada. Descuento por menor demanda y percepción de seguridad.'],
+            default       => [0.00, '', ''],
+        };
+
+        return [
+            'key'         => 'street_type',
+            'label'       => "Entorno: {$label}",
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorLegalStatus(PropertyValuation $v): ?array
+    {
+        if (!$v->input_legal_status || $v->input_legal_status === 'clear') return null;
+
+        [$value, $label, $desc] = match($v->input_legal_status) {
+            'mortgage'     => [
+                -0.015,
+                'Con hipoteca / gravamen activo',
+                'Inmueble con hipoteca vigente. Requiere liquidación previa al traspaso; limita el perfil de compradores y alarga el proceso. Descuento leve por complejidad legal.',
+            ],
+            'pending_deed' => [
+                -0.030,
+                'Escrituración pendiente',
+                'Inmueble sin escritura o en proceso de regularización. Riesgo legal real para el comprador. Descuento significativo por incertidumbre jurídica.',
+            ],
+            'unknown'      => [
+                -0.010,
+                'Estado legal desconocido',
+                'No se cuenta con información verificable sobre el estado legal del inmueble. Descuento de precaución.',
+            ],
+            default => [0.00, '', ''],
+        };
+
+        return [
+            'key'         => 'legal_status',
+            'label'       => "Estado legal: {$label}",
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    protected function factorMaintenanceFee(PropertyValuation $v): ?array
+    {
+        // Solo aplica a departamentos con cuota de mantenimiento alta
+        if ($v->input_type !== 'apartment') return null;
+        $fee = (int) ($v->input_maintenance_fee ?? 0);
+        if ($fee <= 0) return null;
+
+        [$value, $label, $desc] = match(true) {
+            $fee <= 1500 => [0.00, 'Mantenimiento bajo',
+                "Cuota de \${$fee}/mes. Mantenimiento accesible, sin impacto negativo en la valuación."],
+            $fee <= 2500 => [-0.010, 'Mantenimiento moderado',
+                "Cuota de \${$fee}/mes. Impacto leve en poder de compra del adquirente."],
+            $fee <= 4000 => [-0.020, 'Mantenimiento elevado',
+                "Cuota de \${$fee}/mes. Reduce el perfil de compradores y eleva el costo total de posesión."],
+            default      => [-0.035, 'Mantenimiento muy alto',
+                "Cuota de \${$fee}/mes. Cuota significativa que restringe el mercado potencial y puede frenar la decisión de compra."],
+        };
+
+        if ($value === 0.0) return null; // bajo mantenimiento no cambia precio
+
+        return [
+            'key'         => 'maintenance_fee',
+            'label'       => "Mantenimiento: \${$fee}/mes ({$label})",
+            'value'       => $value,
+            'explanation' => $desc,
         ];
     }
 

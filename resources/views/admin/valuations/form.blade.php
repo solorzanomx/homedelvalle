@@ -321,6 +321,152 @@
                 </div>
             </div>
 
+            {{-- Seguridad --}}
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Seguridad</h3></div>
+                <div class="card-body">
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;">
+                        @foreach([
+                            'input_has_doorman'           => 'Portero / Guardia 24h (+3.5%)',
+                            'input_has_security_cameras'  => 'Cámaras de seguridad (+1.5%)',
+                            'input_has_intercom'          => 'Intercomunicador / Videoportero (+1%)',
+                            'input_has_alarm'             => 'Alarma (+0.5%)',
+                        ] as $field => $label)
+                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;padding:.35rem 0;">
+                            <input type="hidden" name="{{ $field }}" value="0">
+                            <input type="checkbox" name="{{ $field }}" value="1"
+                                   {{ old($field, $valuation->{$field} ?? false) ? 'checked' : '' }}>
+                            {{ $label }}
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            {{-- Amenidades del edificio + Infraestructura --}}
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Amenidades del edificio e infraestructura</h3></div>
+                <div class="card-body">
+                    <div style="font-size:.76rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem;">
+                        Amenidades comunales
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-bottom:1rem;">
+                        @foreach([
+                            'input_has_gym'   => 'Gimnasio (+3%)',
+                            'input_has_pool'  => 'Alberca (+4%)',
+                            'input_has_lobby' => 'Lobby / Recepción (+2%)',
+                        ] as $field => $label)
+                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;padding:.35rem 0;">
+                            <input type="hidden" name="{{ $field }}" value="0">
+                            <input type="checkbox" name="{{ $field }}" value="1"
+                                   {{ old($field, $valuation->{$field} ?? false) ? 'checked' : '' }}>
+                            {{ $label }}
+                        </label>
+                        @endforeach
+                    </div>
+                    <div style="font-size:.76rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.6rem;border-top:1px solid var(--border);padding-top:.85rem;">
+                        Infraestructura básica
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;">
+                        @foreach([
+                            'input_has_natural_gas' => 'Gas natural (red)',
+                            'input_has_cistern'     => 'Cisterna propia',
+                        ] as $field => $label)
+                        <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;padding:.35rem 0;">
+                            <input type="hidden" name="{{ $field }}" value="0">
+                            <input type="checkbox" name="{{ $field }}" value="1"
+                                   {{ old($field, $valuation->{$field} ?? false) ? 'checked' : '' }}>
+                            {{ $label }}
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            {{-- Entorno, vistas y estado legal --}}
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Entorno, vistas y situación legal</h3></div>
+                <div class="card-body">
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label class="form-label">Tipo de calle / entorno</label>
+                            <select name="input_street_type" class="form-select">
+                                <option value="">— No especificado —</option>
+                                @foreach([
+                                    'quiet'       => ['Calle tranquila / interior','Sin salida o privada, bajo tráfico. +2%','#16a34a'],
+                                    'residential' => ['Calle residencial','Tráfico moderado, entorno habitacional. +1%','#2563eb'],
+                                    'principal'   => ['Avenida principal','Alto tráfico, ruido. -2%','#dc2626'],
+                                    'commercial'  => ['Zona comercial / concurrida','Comercios, tráfico alto. -1.5%','#d97706'],
+                                    'dead_end'    => ['Callejón / cerrada sin infraestructura','Difícil acceso. -3%','#6b7280'],
+                                ] as $val => [$lbl, $hint, $color])
+                                <option value="{{ $val }}"
+                                    {{ old('input_street_type', $valuation->input_street_type ?? '') === $val ? 'selected' : '' }}>
+                                    {{ $lbl }} — {{ $hint }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Vistas principales</label>
+                            <select name="input_views" class="form-select">
+                                <option value="">— No especificado —</option>
+                                @foreach([
+                                    'city'     => 'Vista a la ciudad / panorámica (+5%)',
+                                    'park'     => 'Vista a parque / área verde (+3.5%)',
+                                    'garden'   => 'Vista a jardín (+2%)',
+                                    'street'   => 'Vista a calle (+1%)',
+                                    'interior' => 'Vista a patio interior (sin ajuste)',
+                                ] as $val => $lbl)
+                                <option value="{{ $val }}"
+                                    {{ old('input_views', $valuation->input_views ?? '') === $val ? 'selected' : '' }}>
+                                    {{ $lbl }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Estado legal</label>
+                            <select name="input_legal_status" class="form-select">
+                                <option value="">— No especificado —</option>
+                                @foreach([
+                                    'clear'        => ['Libre de gravámenes (escriturado)','Sin ajuste','#16a34a'],
+                                    'mortgage'     => ['Con hipoteca / gravamen activo','-1.5%','#d97706'],
+                                    'pending_deed' => ['Escrituración pendiente','-3%','#dc2626'],
+                                    'unknown'      => ['Estado legal desconocido','-1%','#6b7280'],
+                                ] as $val => [$lbl, $adj, $color])
+                                <option value="{{ $val }}"
+                                    {{ old('input_legal_status', $valuation->input_legal_status ?? '') === $val ? 'selected' : '' }}>
+                                    {{ $lbl }} ({{ $adj }})
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group" x-show="propType === 'apartment'" x-transition>
+                            <label class="form-label">Cuota de mantenimiento (MXN/mes)</label>
+                            <input type="number" name="input_maintenance_fee" class="form-input"
+                                   min="0" max="99999" step="100"
+                                   value="{{ old('input_maintenance_fee', $valuation->input_maintenance_fee ?? '') }}"
+                                   placeholder="Ej. 1800">
+                            <div class="form-hint">Afecta la valuación si supera $1,500/mes</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Año de última remodelación</label>
+                            <input type="number" name="input_renovation_year" class="form-input"
+                                   min="1900" max="{{ date('Y') }}"
+                                   value="{{ old('input_renovation_year', $valuation->input_renovation_year ?? '') }}"
+                                   placeholder="Ej. 2019">
+                            <div class="form-hint">Opcional — se incluye en el análisis narrativo</div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
             {{-- Notas --}}
             <div class="card">
                 <div class="card-header"><h3 class="card-title">Notas internas</h3></div>
@@ -367,11 +513,15 @@
                     <strong style="color:#374151;display:block;margin-bottom:.4rem;">¿Cómo funciona?</strong>
                     Se toma el precio base por m² de la colonia, luego se aplican ajustes por:
                     <ul style="margin:.4rem 0 0 1rem;display:flex;flex-direction:column;gap:.15rem;">
-                        <li>Antigüedad del inmueble</li>
-                        <li>Estado de conservación</li>
+                        <li>Antigüedad y conservación</li>
+                        <li>Baños completos y medios</li>
                         <li>Piso y elevador</li>
-                        <li>Estacionamiento</li>
-                        <li>Amenidades extras</li>
+                        <li>Estacionamiento (tipo)</li>
+                        <li>Amenidades (unidad + edificio)</li>
+                        <li>Seguridad y vigilancia</li>
+                        <li>Vistas y entorno</li>
+                        <li>Estado legal</li>
+                        <li>Mantenimiento mensual</li>
                         <li>Superficie</li>
                     </ul>
                 </div>
