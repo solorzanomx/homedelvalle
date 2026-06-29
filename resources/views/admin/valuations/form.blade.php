@@ -43,6 +43,20 @@
         <input type="hidden" name="property_id" value="{{ $property->id }}">
     @endif
 
+    {{-- Errores de validación --}}
+    @if($errors->any())
+    <div class="alert alert-error" style="margin-bottom:1.25rem;">
+        <div>
+            <strong>Hay errores en el formulario. Por favor corrígelos antes de guardar:</strong>
+            <ul style="margin:.35rem 0 0 1.25rem;font-size:.85rem;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+    @endif
+
     <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start;">
 
         {{-- ══ COLUMNA PRINCIPAL ══ --}}
@@ -150,10 +164,11 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Antigüedad (años) <span class="required">*</span></label>
-                            <input type="number" name="input_age_years" class="form-input"
+                            <input type="number" name="input_age_years" class="form-input {{ $errors->has('input_age_years') ? 'border-red-400' : '' }}"
                                    min="0" max="150"
                                    value="{{ old('input_age_years', $valuation->input_age_years ?? $pAge ?? '') }}"
                                    placeholder="Ej. 25">
+                            @error('input_age_years')<div style="font-size:.75rem;color:#dc2626;margin-top:.2rem;">{{ $message }}</div>@enderror
                         </div>
                     </div>
                 </div>
@@ -212,10 +227,11 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Piso del inmueble</label>
-                            <input type="number" name="input_floor" class="form-input"
+                            <input type="number" name="input_floor" class="form-input {{ $errors->has('input_floor') ? 'border-red-400' : '' }}"
                                    min="1" max="50"
                                    value="{{ old('input_floor', $valuation->input_floor ?? '') }}"
                                    placeholder="Ej. 4">
+                            @error('input_floor')<div style="font-size:.75rem;color:#dc2626;margin-top:.2rem;">{{ $message }}</div>@enderror
                             <div class="form-hint">Dejar vacío si es casa o dato desconocido</div>
                         </div>
                     </div>

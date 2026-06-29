@@ -24,6 +24,8 @@ class ValuationEngine
         $basePrice = $snapshot ? (float) $snapshot->price_m2_avg : 0.0;
 
         if ($basePrice === 0.0) {
+            // Limpiar adjustments obsoletos para no mostrar labels con valores de un cálculo anterior
+            $valuation->adjustments()->delete();
             return ValuationResult::insufficientData($valuation);
         }
 
