@@ -37,9 +37,13 @@ class PreviewEmailV4Controller extends Controller
             mensaje: 'Estoy muy interesado en vender mi propiedad en Benito Juárez. He visto que manejan pocos inmuebles y eso me atrae porque indica calidad.'
         );
 
+        $iniciales = collect(explode(' ', trim($data->nombre)))->take(2)->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))->join('');
+
         return view('emails.v4.lead-interno', [
-            'data' => $data,
-            'logoUrl' => $this->getLogoUrl(),
+            'data'      => $data,
+            'logoUrl'   => $this->getLogoUrl(),
+            'iniciales' => $iniciales,
+            'crmUrl'    => url('/clients?search=' . urlencode($data->email)),
         ]);
     }
 

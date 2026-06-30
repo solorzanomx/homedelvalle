@@ -29,10 +29,21 @@ class LeadInternoMail extends Mailable
         return new Content(
             view: 'emails.v4.lead-interno',
             with: [
-                'data' => $this->data,
-                'logoUrl' => $this->getLogoUrl(),
+                'data'      => $this->data,
+                'logoUrl'   => $this->getLogoUrl(),
+                'iniciales' => $this->getIniciales(),
+                'crmUrl'    => url('/clients?search=' . urlencode($this->data->email)),
             ]
         );
+    }
+
+    private function getIniciales(): string
+    {
+        $words = array_filter(explode(' ', trim($this->data->nombre)));
+        return collect($words)
+            ->take(2)
+            ->map(fn($w) => mb_strtoupper(mb_substr($w, 0, 1)))
+            ->join('');
     }
 
     private function getLogoUrl(): ?string
