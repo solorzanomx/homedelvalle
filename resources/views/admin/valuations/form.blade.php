@@ -94,6 +94,14 @@
                             </div>
                         </div>
 
+                        <div class="form-group full-width">
+                            <label class="form-label">Dirección del inmueble</label>
+                            <input type="text" name="input_address" class="form-input"
+                                   placeholder="Ej. Calle Moctezuma 45, Narvarte Poniente"
+                                   value="{{ old('input_address', $valuation->input_address ?? $property?->address ?? '') }}">
+                            <div class="form-hint">Se usará para centrar el mapa en el PDF — incluye calle y número</div>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">Tipo de inmueble <span class="required">*</span></label>
                             <select name="input_type" class="form-select" x-model="propType">

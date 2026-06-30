@@ -12,7 +12,7 @@ class PropertyValuation extends Model
 {
     protected $fillable = [
         'property_id', 'created_by',
-        'input_colonia_id', 'input_colonia_raw', 'input_type',
+        'input_colonia_id', 'input_colonia_raw', 'input_address', 'input_type',
         'input_m2_total', 'input_m2_const', 'input_age_years',
         'input_condition', 'input_bedrooms', 'input_bathrooms', 'input_half_bathrooms', 'input_parking',
         'input_parking_type', 'input_building_condition',

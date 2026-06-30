@@ -73,6 +73,7 @@ class ValuationController extends Controller
             'property_id'          => 'nullable|exists:properties,id',
             'input_colonia_id'     => 'nullable|exists:market_colonias,id',
             'input_colonia_raw'    => 'nullable|string|max:150',
+            'input_address'        => 'nullable|string|max:250',
             'input_type'           => 'required|in:apartment,house,land,office',
             'input_m2_total'       => 'required|numeric|min:10|max:5000',
             'input_m2_const'       => 'nullable|numeric|min:10|max:5000',
@@ -179,6 +180,7 @@ class ValuationController extends Controller
         $data = $request->validate([
             'input_colonia_id'     => 'nullable|exists:market_colonias,id',
             'input_colonia_raw'    => 'nullable|string|max:150',
+            'input_address'        => 'nullable|string|max:250',
             'input_type'           => 'required|in:apartment,house,land,office',
             'input_m2_total'       => 'required|numeric|min:10|max:5000',
             'input_m2_const'       => 'nullable|numeric|min:10|max:5000',

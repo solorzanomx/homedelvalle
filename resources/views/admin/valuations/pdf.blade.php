@@ -79,9 +79,16 @@ $confidLabel = ['high'=>'Alta','medium'=>'Media','low'=>'Baja'][$valuation->conf
 
 // ─── Mapa estático ────────────────────────────────────────────────────────────
 $mapKey    = config('services.google_maps.key');
-$mapCenter = urlencode($colonia . ', Benito Juárez, Ciudad de México, Mexico');
+// Usar dirección exacta si fue capturada; de lo contrario, colonia
+$mapAddress = $valuation->input_address
+    ?? $valuation->property?->address
+    ?? null;
+$mapCenter  = $mapAddress
+    ? urlencode($mapAddress . ', Benito Juárez, Ciudad de México, Mexico')
+    : urlencode($colonia . ', Benito Juárez, Ciudad de México, Mexico');
+$mapZoom    = $mapAddress ? 16 : 15;
 $mapUrl    = $mapKey
-    ? "https://maps.googleapis.com/maps/api/staticmap?center={$mapCenter}&zoom=15&size=560x260&scale=2&maptype=roadmap"
+    ? "https://maps.googleapis.com/maps/api/staticmap?center={$mapCenter}&zoom={$mapZoom}&size=560x260&scale=2&maptype=roadmap"
       . "&style=feature:all|element:geometry|color:0xf2f2f2"
       . "&style=feature:road|element:geometry|color:0xffffff"
       . "&style=feature:road.arterial|element:geometry|color:0xe8e8e8"
@@ -187,7 +194,7 @@ html, body {
 }
 
 .p1-hd-logo { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
-.p1-hd-logo img { height: 32px; width: auto; display: block; filter: brightness(0) invert(1); }
+.p1-hd-logo img { height: 32px; width: auto; display: block; }
 .p1-hd-logo-txt {
     font-size: 15px;
     font-weight: 800;
@@ -1397,6 +1404,13 @@ html, body {
 
         @endif
 
+        @if($valuation->input_notes)
+        <div class="notes-box" style="max-height:52px;overflow:hidden;">
+            <div class="notes-lbl">Notas del analista</div>
+            <div class="notes-text">{{ $valuation->input_notes }}</div>
+        </div>
+        @endif
+
         {{-- CONTACTO --}}
         <div class="sec-lbl">Contacto</div>
         <div class="contact-strip">
@@ -1425,13 +1439,6 @@ html, body {
                 <div class="contact-val">Vence {{ $validity }}</div>
             </div>
         </div>
-
-        @if($valuation->input_notes)
-        <div class="notes-box">
-            <div class="notes-lbl">Notas del analista</div>
-            <div class="notes-text">{{ $valuation->input_notes }}</div>
-        </div>
-        @endif
 
     </div>{{-- /p3-body --}}
 
