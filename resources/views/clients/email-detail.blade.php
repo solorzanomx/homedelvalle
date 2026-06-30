@@ -36,7 +36,7 @@
             @endif
         </div>
         <div style="padding:1.5rem;">
-            <iframe id="emailPreview" style="width:100%; border:none; min-height:500px;" srcdoc="{{ e($email->body_html) }}"></iframe>
+            <iframe id="emailPreview" style="width:100%; border:none; min-height:500px;" srcdoc="{{ $email->body_html }}"></iframe>
         </div>
     </div>
 </div>
