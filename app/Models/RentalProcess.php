@@ -6,7 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class RentalProcess extends Model
 {
-    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'notes', 'status', 'completed_at', 'cancelled_at',];
+    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at'];
+
+    const PAYMENT_FREQUENCIES = [
+        'mensual'     => 'Mensual',
+        'trimestral'  => 'Trimestral',
+        'semestral'   => 'Semestral',
+        'anual'       => 'Anual por adelantado',
+    ];
+
+    const ANNUAL_INCREASE_TYPES = [
+        'none'  => 'Sin incremento',
+        'inpc'  => 'INPC (inflación)',
+        'fixed' => 'Porcentaje fijo',
+    ];
     const STAGES = [
         'captacion' => 'Captacion',
         'verificacion' => 'Verificacion de Documentos',
@@ -46,6 +59,9 @@ class RentalProcess extends Model
             'deposit_amount' => 'decimal:2',
             'commission_amount' => 'decimal:2',
             'commission_percentage' => 'decimal:2',
+            'broker_commission_amount' => 'decimal:2',
+            'annual_increase_percentage' => 'decimal:2',
+            'payment_day' => 'integer',
             'lease_start_date' => 'date',
             'lease_end_date' => 'date',
             'completed_at' => 'datetime',
