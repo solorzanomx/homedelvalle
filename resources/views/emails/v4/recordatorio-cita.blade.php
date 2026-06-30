@@ -149,7 +149,7 @@ a{text-decoration:none}
                         {{-- Asesor --}}
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td width="34" valign="middle" style="width:34px;">
+                                <td width="34" valign="top" style="width:34px;padding-top:2px;">
                                     <table width="34" cellpadding="0" cellspacing="0" border="0"
                                            style="background:#0E304B;border-radius:17px;">
                                         <tr>
@@ -158,9 +158,19 @@ a{text-decoration:none}
                                     </table>
                                 </td>
                                 <td width="12">&nbsp;</td>
-                                <td valign="middle">
-                                    <div style="font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#9AA6B5;font-weight:800;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">Te acompaña</div>
+                                <td valign="top">
+                                    <div style="font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:#9AA6B5;font-weight:800;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">Tu asesor</div>
                                     <div style="font-size:15px;font-weight:700;color:#0E304B;margin-top:2px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">{{ $data->asesor }}</div>
+                                    @if($data->asesor_phone)
+                                    <div style="margin-top:4px;">
+                                        <a href="tel:{{ preg_replace('/[^0-9+]/', '', $data->asesor_phone) }}" style="font-size:13px;color:#2270B0;font-weight:600;text-decoration:none;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">{{ $data->asesor_phone }}</a>
+                                    </div>
+                                    @endif
+                                    @if($data->asesor_email)
+                                    <div style="margin-top:2px;">
+                                        <a href="mailto:{{ $data->asesor_email }}" style="font-size:13px;color:#2270B0;font-weight:600;text-decoration:none;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">{{ $data->asesor_email }}</a>
+                                    </div>
+                                    @endif
                                 </td>
                             </tr>
                         </table>
@@ -206,28 +216,10 @@ a{text-decoration:none}
 
     {{-- Footer --}}
     <tr>
-        <td style="background:#0E304B;padding:30px 34px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr>
-                    <td valign="top" style="font-size:11.5px;color:#9FB0C6;line-height:1.85;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
-                        <span style="font-weight:700;color:#fff;font-size:12px;">+52 55 1345 0978</span><br>
-                        <a href="mailto:contacto@homedelvalle.mx" style="color:#7FB0DF;font-weight:700;text-decoration:none;">contacto@homedelvalle.mx</a><br>
-                        Heriberto Frías 903-A, Col. del Valle, CDMX
-                    </td>
-                    <td valign="top" align="right">
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
-                            <tr>
-                                <td><a href="https://facebook.com/homedelvalle" style="display:inline-block;width:34px;height:34px;line-height:34px;border-radius:10px;background:rgba(255,255,255,.07);color:#9FB0C6;font-size:12px;font-weight:700;text-align:center;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">f</a></td>
-                                <td style="padding-left:8px;"><a href="https://instagram.com/homedelvalle" style="display:inline-block;width:34px;height:34px;line-height:34px;border-radius:10px;background:rgba(255,255,255,.07);color:#9FB0C6;font-size:12px;font-weight:700;text-align:center;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">ig</a></td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-            <div style="height:1px;background:rgba(255,255,255,.12);margin:22px 0 16px;"></div>
+        <td style="background:#0E304B;padding:22px 34px;">
             <div style="text-align:center;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
                 <div style="font-size:11.5px;color:#C4D0E0;font-weight:600;">© Home del Valle 2026</div>
-                <div style="font-size:11px;color:#7E8DA6;margin-top:7px;">Políticas de privacidad &middot; Términos y condiciones</div>
+                <div style="font-size:11px;color:#7E8DA6;margin-top:6px;">Políticas de privacidad &middot; Términos y condiciones</div>
             </div>
         </td>
     </tr>

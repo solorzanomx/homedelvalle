@@ -284,7 +284,12 @@
                     </div>
                     <div>
                         <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Asesor que acompaña</label>
-                        <input type="text" name="asesor_nombre" class="form-input" placeholder="Nombre del asesor" style="width:100%;">
+                        <select name="asesor_id" class="form-select" style="width:100%;">
+                            <option value="">— Sin asesor —</option>
+                            @foreach($users as $u)
+                            <option value="{{ $u->id }}" {{ $u->id === auth()->id() ? 'selected' : '' }}>{{ $u->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;background:#fff;border-radius:8px;border:1px solid var(--border,#E6EAF1);">

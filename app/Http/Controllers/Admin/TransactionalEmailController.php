@@ -161,7 +161,9 @@ class TransactionalEmailController extends Controller
                 colonia: 'Bosques de las Lomas',
                 asesor: 'María García Rodríguez',
                 visit_token: 'preview-token-123',
-                maps_url: 'https://maps.google.com',
+                maps_url: 'https://www.google.com/maps/search/?api=1&query=Paseo+de+los+Tamarindos+400,+Bosques+de+las+Lomas,+CDMX',
+                asesor_email: 'maria.garcia@homedelvalle.mx',
+                asesor_phone: '+52 55 1234 5678',
             )),
             'recordatorio-cita' => new RecordatorioCitaMail(new RecordatorioCitaData(
                 email: 'cliente@example.com',
@@ -176,8 +178,10 @@ class TransactionalEmailController extends Controller
                 colonia: 'Bosques de las Lomas',
                 asesor: 'María García Rodríguez',
                 visit_token: 'preview-token-123',
-                maps_url: 'https://maps.google.com',
+                maps_url: 'https://www.google.com/maps/search/?api=1&query=Paseo+de+los+Tamarindos+400,+Bosques+de+las+Lomas,+CDMX',
                 is_today: 'hoy',
+                asesor_email: 'maria.garcia@homedelvalle.mx',
+                asesor_phone: '+52 55 1234 5678',
             )),
             'comprador' => new CompradorMail(new CompradorData(
                 email: 'cliente@example.com',

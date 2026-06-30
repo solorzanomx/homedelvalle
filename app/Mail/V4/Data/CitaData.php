@@ -18,5 +18,7 @@ readonly class CitaData
         public string $asesor,
         public string $visit_token,
         public string $maps_url = '',
+        public string $asesor_email = '',
+        public string $asesor_phone = '',
     ) {}
 }

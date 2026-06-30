@@ -1137,7 +1137,12 @@ function ebAction(action) {
                 </div>
                 <div class="vm-field">
                     <label>Asesor que acompaña</label>
-                    <input type="text" name="asesor_nombre" value="{{ auth()->user()->name ?? '' }}" placeholder="Nombre del asesor">
+                    <select name="asesor_id">
+                        <option value="">— Sin asesor —</option>
+                        @foreach($users as $u)
+                        <option value="{{ $u->id }}" {{ $u->id === auth()->id() ? 'selected' : '' }}>{{ $u->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
 

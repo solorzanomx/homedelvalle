@@ -19,5 +19,7 @@ readonly class RecordatorioCitaData
         public string $visit_token,
         public string $maps_url = '',
         public string $is_today = 'hoy',
+        public string $asesor_email = '',
+        public string $asesor_phone = '',
     ) {}
 }

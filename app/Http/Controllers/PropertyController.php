@@ -105,9 +105,10 @@ class PropertyController extends Controller
         $valuations = $property->valuations()->with('creator', 'colonia')->latest()->get();
 
         $clients = Client::orderBy('name')->select('id', 'name', 'email')->get();
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->select('id', 'name', 'email', 'phone')->get();
 
         return view('properties.show', compact(
-            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients'
+            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients', 'users'
         ));
     }
 
@@ -322,12 +323,18 @@ class PropertyController extends Controller
             'scheduled_at_date'       => 'required|date',
             'scheduled_at_time'       => 'required|date_format:H:i',
             'duracion'                => 'nullable|integer|in:30,60,90,120',
-            'asesor_nombre'           => 'nullable|string|max:100',
+            'asesor_id'               => 'nullable|exists:users,id',
             'send_confirmation_email' => 'nullable|boolean',
         ]);
 
         $client = Client::findOrFail($validated['client_id']);
         $scheduled = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $validated['scheduled_at_time']);
+
+        // Resolve asesor user data
+        $asesorUser   = !empty($validated['asesor_id']) ? \App\Models\User::find($validated['asesor_id']) : null;
+        $asesorNombre = $asesorUser?->name ?? auth()->user()->name ?? 'Tu asesor';
+        $asesorEmail  = $asesorUser?->email ?? '';
+        $asesorPhone  = $asesorUser?->phone ?? '';
 
         $interaction = \App\Models\Interaction::create([
             'client_id'               => $client->id,
@@ -355,10 +362,9 @@ class PropertyController extends Controller
         // Send confirmation email
         if ($interaction->send_confirmation_email && $client->email) {
             try {
-                $asesor = $validated['asesor_nombre'] ?? auth()->user()->name ?? 'Tu asesor';
                 $duracion = (string) ($validated['duracion'] ?? '30');
-                $addressParts = array_filter([$property->address ?? '', $property->colony ?? '']);
-                $address = urlencode(implode(' ', $addressParts));
+                $addressParts = array_filter([$property->address ?? '', $property->colony ?? '', $property->city ?? 'CDMX']);
+                $address = urlencode(implode(', ', $addressParts));
                 $mapsUrl = $address ? "https://www.google.com/maps/search/?api=1&query={$address}" : '';
 
                 \Illuminate\Support\Facades\Mail::to($client->email)->send(
@@ -374,9 +380,11 @@ class PropertyController extends Controller
                             duracion: $duracion,
                             direccion: $property->address ?? 'A coordinar',
                             colonia: $property->colony ?? '',
-                            asesor: $asesor,
+                            asesor: $asesorNombre,
                             visit_token: $interaction->visit_token,
                             maps_url: $mapsUrl,
+                            asesor_email: $asesorEmail,
+                            asesor_phone: $asesorPhone,
                         )
                     )
                 );

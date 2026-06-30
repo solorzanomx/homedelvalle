@@ -282,11 +282,13 @@ class ClientController extends Controller
 
         $allDocCategories = \App\Models\Document::CATEGORIES;
 
+        $users = User::where('is_active', true)->orderBy('name')->select('id', 'name', 'email', 'phone')->get();
+
         return view('clients.show', compact(
             'client', 'emails', 'interactions', 'emailsSent', 'emailsOpened',
             'timeline', 'ownedProperties', 'dealProperties', 'emailProperties',
             'confidencialidadRequest', 'captacion', 'clientDocs', 'allDocCategories',
-            'allActiveProperties'
+            'allActiveProperties', 'users'
         ));
     }
 
@@ -367,10 +369,16 @@ class ClientController extends Controller
             'scheduled_at_date'      => 'required_if:type,visit|nullable|date',
             'scheduled_at_time'      => 'required_if:type,visit|nullable|date_format:H:i',
             'duracion'               => 'nullable|integer|in:30,60,90,120',
-            'asesor_nombre'          => 'nullable|string|max:100',
+            'asesor_id'              => 'nullable|exists:users,id',
             'property_id'            => 'nullable|exists:properties,id',
             'send_confirmation_email'=> 'nullable|boolean',
         ]);
+
+        // Resolve asesor user data
+        $asesorUser = !empty($validated['asesor_id']) ? User::find($validated['asesor_id']) : null;
+        $asesorNombre = $asesorUser?->name ?? auth()->user()->name ?? 'Tu asesor';
+        $asesorEmail  = $asesorUser?->email ?? '';
+        $asesorPhone  = $asesorUser?->phone ?? '';
 
         $interactionData = [
             'client_id'    => $client->id,
@@ -423,15 +431,16 @@ class ClientController extends Controller
         if ($interaction->isVisit() && $interaction->scheduled_at && $interaction->send_confirmation_email && $client->email) {
             try {
                 $scheduled = $interaction->scheduled_at;
-                $asesor = $validated['asesor_nombre'] ?? auth()->user()->name ?? 'Tu asesor';
                 $duracion = (string) ($validated['duracion'] ?? '30');
+                $prop = $interaction->property;
 
-                // Build Google Maps URL
+                // Build Google Maps URL with full address
                 $addressParts = array_filter([
-                    $interaction->property?->address ?? '',
-                    $interaction->property?->colonia ?? '',
+                    $prop?->address ?? '',
+                    $prop?->colony ?? '',
+                    $prop?->city ?? 'CDMX',
                 ]);
-                $address = urlencode(implode(' ', $addressParts));
+                $address = urlencode(implode(', ', $addressParts));
                 $mapsUrl = $address ? "https://www.google.com/maps/search/?api=1&query={$address}" : '';
 
                 \Illuminate\Support\Facades\Mail::to($client->email)->send(
@@ -445,11 +454,13 @@ class ClientController extends Controller
                             anio: (string) $scheduled->year,
                             hora: $scheduled->format('g:i A'),
                             duracion: $duracion,
-                            direccion: $interaction->property?->address ?? 'A coordinar',
-                            colonia: $interaction->property?->colonia ?? '',
-                            asesor: $asesor,
+                            direccion: $prop?->address ?? 'A coordinar',
+                            colonia: $prop?->colony ?? '',
+                            asesor: $asesorNombre,
                             visit_token: $interaction->visit_token,
                             maps_url: $mapsUrl,
+                            asesor_email: $asesorEmail,
+                            asesor_phone: $asesorPhone,
                         )
                     )
                 );
