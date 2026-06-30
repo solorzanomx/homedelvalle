@@ -117,6 +117,23 @@ class Property extends Model
         return $this->photo ? Storage::url($this->photo) : null;
     }
 
+    /**
+     * URL de la foto de portada: primero busca en PropertyPhoto, luego en el campo legacy.
+     * Requiere que 'photos' esté eager-loaded para evitar N+1.
+     */
+    public function getCoverPhotoUrlAttribute(): ?string
+    {
+        // Si la relación ya está cargada, usarla (no lanza query extra)
+        if ($this->relationLoaded('photos')) {
+            $primary = $this->photos->firstWhere('is_primary', true) ?? $this->photos->first();
+            if ($primary) {
+                return Storage::url($primary->path);
+            }
+        }
+        // Fallback al campo legacy
+        return $this->photo ? Storage::url($this->photo) : null;
+    }
+
     public function getOperationLabelAttribute(): string
     {
         return match ($this->operation_type) {

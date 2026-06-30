@@ -1,12 +1,11 @@
 @php
-    $mapsKey  = config('services.google_maps.key');
     $addrParts = array_filter([
         $property->address ?? null,
         $property->colony  ?? null,
         $property->city    ?? 'Benito Juárez, CDMX',
         'México',
     ]);
-    $hasLocation = $mapsKey && count($addrParts) >= 2;
+    $hasLocation = count($addrParts) >= 2;
     $addrStr     = implode(', ', $addrParts);
     $addrEncoded = $hasLocation ? urlencode($addrStr) : null;
     $addrDisplay = implode(', ', array_filter([
@@ -18,17 +17,13 @@
         ? 'https://www.google.com/maps/search/?api=1&query=' . $addrEncoded
         : null;
 
-    // Google Maps Embed API URLs (interactive)
+    // Embed URLs sin API key — aceptan dirección de texto directamente
     $streetViewEmbed = $hasLocation
-        ? 'https://www.google.com/maps/embed/v1/streetview?key=' . $mapsKey
-            . '&location=' . $addrEncoded
-            . '&fov=90&pitch=5'
+        ? 'https://maps.google.com/maps?q=' . $addrEncoded . '&layer=c&output=embed'
         : null;
 
     $mapEmbed = $hasLocation
-        ? 'https://www.google.com/maps/embed/v1/place?key=' . $mapsKey
-            . '&q=' . $addrEncoded
-            . '&zoom=16&maptype=roadmap'
+        ? 'https://maps.google.com/maps?q=' . $addrEncoded . '&output=embed&z=16'
         : null;
 @endphp
 

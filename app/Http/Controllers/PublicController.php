@@ -45,7 +45,7 @@ class PublicController extends Controller
 
         $totalCount = $query->count();
         $totalAvailable = Property::available()->count(); // total sin filtros, para el contador de selección
-        $properties = $query->paginate(12)->withQueryString();
+        $properties = $query->with('photos')->paginate(12)->withQueryString();
 
         // Próxima incorporación: 1° del siguiente mes
         $nextUpdateDate = now()->addMonthNoOverflow()->startOfMonth()->locale('es')->isoFormat('D [de] MMMM');
@@ -57,7 +57,7 @@ class PublicController extends Controller
     {
         $property = Property::with('photos')->findOrFail($id);
 
-        $similar = Property::available()
+        $similar = Property::with('photos')->available()
             ->where('id', '!=', $property->id)
             ->where(fn($q) => $q->where('operation_type', $property->operation_type)
                                 ->orWhere('property_type', $property->property_type))

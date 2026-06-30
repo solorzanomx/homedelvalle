@@ -1,7 +1,7 @@
 @props(['property'])
 
 @php
-    $photo = $property->photo_url;
+    $photo = $property->cover_photo_url;
     $typeLabels = ['House'=>'Casa','Apartment'=>'Depto','Land'=>'Terreno','Office'=>'Oficina','Commercial'=>'Comercial','Warehouse'=>'Bodega','Building'=>'Edificio'];
     $opLabels = ['sale'=>'Venta','rental'=>'Renta','temporary_rental'=>'Renta Temporal'];
 @endphp

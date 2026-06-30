@@ -18,7 +18,7 @@ class ColoniaController extends Controller
 
         // Properties available in this colonia
         $terms = $colonia->getSearchTermsArray();
-        $properties = Property::available()
+        $properties = Property::with('photos')->available()
             ->where(function ($q) use ($terms) {
                 foreach ($terms as $term) {
                     $q->orWhere('colony', 'like', "%{$term}%");
