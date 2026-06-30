@@ -399,15 +399,32 @@
 @php
     $interests   = $portalClient->interest_types ?? [];
     $isVenta     = !empty(array_intersect(['venta','venta_propietario'], $interests));
+    $isRenta     = !empty(array_intersect(['renta_propietario', 'renta_inquilino'], $interests));
     $etapa       = $portalCaptacion->portal_etapa ?? 0;
     $etapa4Done  = $portalCaptacion ? $portalCaptacion->isEtapa4Complete() : false;
 
+    // Rental processes for sidebar
+    $portalRentals = collect();
+    if ($isRenta && $portalClient) {
+        $portalRentals = \App\Models\RentalProcess::with('property')
+            ->where(function($q) use ($portalClient) {
+                $q->where('owner_client_id', $portalClient->id)
+                  ->orWhere('tenant_client_id', $portalClient->id);
+            })
+            ->where('status', 'active')
+            ->orderByDesc('created_at')
+            ->get();
+    }
+    $activeRental = $portalRentals->first();
+
     // Stage route groups
-    $onCaptacion = request()->routeIs('portal.captacion*') || request()->routeIs('portal.captacion');
-    $onValuacion = request()->routeIs('portal.valuacion*');
-    $onDocs      = request()->routeIs('portal.documents.*');
-    $onAccount   = request()->routeIs('portal.account');
-    $onDashboard = request()->routeIs('portal.dashboard');
+    $onCaptacion  = request()->routeIs('portal.captacion*') || request()->routeIs('portal.captacion');
+    $onValuacion  = request()->routeIs('portal.valuacion*');
+    $onDocs       = request()->routeIs('portal.documents.*');
+    $onAccount    = request()->routeIs('portal.account');
+    $onDashboard  = request()->routeIs('portal.dashboard');
+    $onRental     = request()->routeIs('portal.rentals.*');
+    $onMiInmueble = request()->routeIs('portal.mi-inmueble');
 
     // Stage status helper
     // 0=locked, 1=done, 2=active
@@ -460,6 +477,14 @@
         <div class="sb-property">
             <div class="sb-property-label">Tu inmueble</div>
             <div class="sb-property-addr">{{ $portalCaptacion->property_address ?? 'Inmueble en proceso' }}</div>
+        </div>
+        @elseif($activeRental?->property)
+        <div class="sb-property">
+            <div class="sb-property-label">Tu inmueble en renta</div>
+            <div class="sb-property-addr">{{ $activeRental->property->address ?? 'Inmueble en proceso' }}</div>
+            @if($activeRental->property->colony)
+            <div class="sb-property-colonia">{{ $activeRental->property->colony }}</div>
+            @endif
         </div>
         @endif
 
@@ -566,14 +591,62 @@
         </div>
         @endif
 
+        {{-- ── Secciones de renta ── --}}
+        @if($isRenta)
+        <div class="sb-section">
+            <div class="sb-section-label">Mi proceso de renta</div>
+
+            @if($activeRental)
+            @php
+                $rentalStages = \App\Models\RentalProcess::STAGES;
+                $stageKeys    = array_keys($rentalStages);
+                $currentStageIdx = array_search($activeRental->stage, $stageKeys);
+            @endphp
+            @foreach($rentalStages as $sk => $sl)
+            @php
+                $sIdx   = array_search($sk, $stageKeys);
+                $isDone = $sIdx < $currentStageIdx;
+                $isAct  = $sk === $activeRental->stage;
+            @endphp
+            <a href="{{ route('portal.rentals.show', $activeRental->id) }}"
+               class="sb-item {{ $isAct ? 'active' : ($isDone ? 'done' : '') }}">
+                <span class="sb-stage-num">
+                    @if($isDone)<span class="sb-stage-check">&#10003;</span>
+                    @else {{ $sIdx + 1 }}
+                    @endif
+                </span>
+                {{ $sl }}
+            </a>
+            @endforeach
+
+            @if($activeRental->investigation?->visible_to_owner && $activeRental->investigation?->owner_decision === 'pending')
+            <a href="{{ route('portal.rentals.investigacion', $activeRental->id) }}"
+               class="sb-item {{ request()->routeIs('portal.rentals.investigacion') ? 'active' : '' }}"
+               style="border-left-color:#f59e0b;background:rgba(245,158,11,.06);">
+                <span>&#128100;</span>
+                <span>Candidato pendiente</span>
+                <span style="margin-left:auto;width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
+            </a>
+            @endif
+
+            @else
+            <a href="{{ route('portal.rentals.index') }}"
+               class="sb-item {{ $onRental ? 'active' : '' }}">
+                <span>&#127968;</span>
+                Mis Rentas
+            </a>
+            @endif
+        </div>
+        @endif
+
         {{-- Divider --}}
         <div class="sb-divider" style="margin-top:.5rem;"></div>
 
         {{-- Bottom links --}}
         <div style="padding:.5rem 0;">
-            @if($isVenta)
+            @if($isVenta || $isRenta)
             <a href="{{ route('portal.mi-inmueble') }}"
-               class="sb-item {{ request()->routeIs('portal.mi-inmueble') ? 'active' : '' }}">
+               class="sb-item {{ $onMiInmueble ? 'active' : '' }}">
                 <span>📊</span>
                 Mi Inmueble
             </a>

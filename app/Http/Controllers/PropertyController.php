@@ -177,6 +177,15 @@ class PropertyController extends Controller
             }
         }
 
+        // Auto-fetch Street View if no photo was provided
+        if (!$request->hasFile('photo') && !$request->hasFile('photos') && $property->address) {
+            try {
+                app(\App\Actions\Property\FetchStreetViewPhotoAction::class)->execute($property);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Auto Street View fetch failed for property ' . $property->id . ': ' . $e->getMessage());
+            }
+        }
+
         return redirect()->route('properties.edit', $property)->with('success', 'Propiedad creada exitosamente.');
     }
 
