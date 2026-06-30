@@ -39,9 +39,32 @@
     @csrf
     @if($editing) @method('PUT') @endif
 
-    @if($property)
-        <input type="hidden" name="property_id" value="{{ $property->id }}">
-    @endif
+    {{-- Selector de propiedad vinculada --}}
+    <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header"><h3 class="card-title">Inmueble vinculado</h3></div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">Propiedad del sistema <span style="color:var(--text-muted);font-weight:400;">(opcional)</span></label>
+                <select name="property_id" class="form-select"
+                        onchange="this.form.querySelector('#prop-link-hint').textContent = this.options[this.selectedIndex].dataset.sub ?? ''">
+                    <option value="">— Sin vincular (valuación independiente) —</option>
+                    @foreach($properties ?? [] as $prop)
+                    <option value="{{ $prop->id }}"
+                            data-sub="{{ $prop->address ?? $prop->colony ?? '' }}{{ $prop->owner ? ' · ' . $prop->owner->name : '' }}"
+                            {{ old('property_id', $property?->id ?? ($editing ? $valuation->property_id : null)) == $prop->id ? 'selected' : '' }}>
+                        {{ $prop->title }}{{ $prop->owner ? ' — ' . $prop->owner->name : '' }}
+                    </option>
+                    @endforeach
+                </select>
+                <p id="prop-link-hint" style="font-size:.78rem;color:var(--text-muted);margin-top:.3rem;">
+                    {{ $property ? ($property->address ?? $property->colony ?? '') . ($property->owner ? ' · ' . $property->owner->name : '') : '' }}
+                </p>
+                <p style="font-size:.78rem;color:var(--text-muted);margin-top:.25rem;">
+                    Al vincular un inmueble, la valuación aparecerá en su ficha y en el perfil del propietario.
+                </p>
+            </div>
+        </div>
+    </div>
 
     {{-- Errores de validación --}}
     @if($errors->any())

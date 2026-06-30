@@ -475,6 +475,12 @@
                 </a>
                 @endif
 
+                @if($captacion ?? null)
+                <a href="{{ route('admin.captaciones.show', $captacion) }}" class="btn btn-outline" style="width:100%;text-align:center;">
+                    📋 Ver captación
+                </a>
+                @endif
+
                 <form method="POST" action="{{ route('admin.valuations.destroy', $valuation) }}"
                       onsubmit="return confirm('¿Eliminar esta valuación?')">
                     @csrf @method('DELETE')
@@ -484,6 +490,36 @@
                 </form>
             </div>
         </div>
+
+        {{-- Propietario / Cliente vinculado --}}
+        @if($valuation->property?->owner)
+        @php $owner = $valuation->property->owner; @endphp
+        <div class="card">
+            <div class="card-header"><h3 class="card-title">Propietario</h3></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:.4rem;">
+                <div style="font-size:.88rem;font-weight:600;color:var(--text, #111827);">
+                    {{ $owner->name }}
+                </div>
+                @if($owner->email)
+                <div style="font-size:.78rem;color:var(--text-muted, #6b7280);">{{ $owner->email }}</div>
+                @endif
+                @if($owner->phone)
+                <div style="font-size:.78rem;color:var(--text-muted, #6b7280);">{{ $owner->phone }}</div>
+                @endif
+                @if($owner->whatsapp)
+                <a href="https://wa.me/{{ preg_replace('/\D/', '', $owner->whatsapp) }}?text=Hola%20{{ urlencode($owner->name) }},%20te%20comparto%20la%20opini%C3%B3n%20de%20valor%20de%20tu%20inmueble."
+                   target="_blank"
+                   class="btn btn-outline" style="font-size:.75rem;padding:4px 10px;text-align:center;margin-top:.25rem;">
+                    WhatsApp →
+                </a>
+                @endif
+                <a href="{{ route('clients.show', $owner) }}" class="btn btn-outline"
+                   style="font-size:.75rem;padding:4px 10px;text-align:center;">
+                    Ver perfil del cliente →
+                </a>
+            </div>
+        </div>
+        @endif
 
         {{-- Registrar cierre real --}}
         @if(!$valuation->actual_sale_price && $valuation->suggested_list_price)

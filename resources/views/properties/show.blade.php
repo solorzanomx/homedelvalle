@@ -610,6 +610,53 @@
                 @endforelse
             </div>
         </div>
+
+        {{-- ═══════════════════════════════════════════════════════ --}}
+        {{-- CRM SECTION: Opiniones de Valor                        --}}
+        {{-- ═══════════════════════════════════════════════════════ --}}
+        <div class="crm-section">
+            <div class="crm-section-header" style="display:flex;justify-content:space-between;align-items:center;">
+                <h4>&#128200; Opiniones de Valor</h4>
+                <div style="display:flex;gap:.5rem;align-items:center;">
+                    @if($valuations->count())
+                    <span class="side-card-count">{{ $valuations->count() }}</span>
+                    @endif
+                    <a href="{{ route('admin.valuations.create', ['property' => $property->id]) }}"
+                       class="btn btn-sm btn-primary" style="font-size:.75rem;padding:3px 10px;">+ Nueva</a>
+                </div>
+            </div>
+            <div class="crm-section-body">
+                @forelse($valuations as $val)
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid var(--border);">
+                    <div style="min-width:0;flex:1;">
+                        <div style="font-size:.82rem;font-weight:600;color:var(--text);">
+                            @if($val->suggested_list_price)
+                                ${{ number_format($val->suggested_list_price) }}
+                                <span style="font-weight:400;color:var(--text-muted);font-size:.75rem;">MXN</span>
+                            @else
+                                <span style="color:var(--text-muted);">Sin precio aún</span>
+                            @endif
+                        </div>
+                        <div style="font-size:.75rem;color:var(--text-muted);margin-top:2px;">
+                            {{ $val->created_at->format('d/m/Y') }}
+                            &middot; {{ $val->creator->name ?? '—' }}
+                            &middot;
+                            <span style="color:{{ ['draft'=>'#92400e','final'=>'#1e3a8a','delivered'=>'#14532d'][$val->status] ?? '#374151' }};font-weight:600;">
+                                {{ $val->status_label }}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.valuations.show', $val) }}"
+                       style="flex-shrink:0;font-size:.75rem;color:var(--primary);margin-left:.75rem;">Ver →</a>
+                </div>
+                @empty
+                <div class="crm-empty">Sin opiniones de valor.
+                    <a href="{{ route('admin.valuations.create', ['property' => $property->id]) }}">Crear una</a>
+                </div>
+                @endforelse
+            </div>
+        </div>
+
     </div>
 
     {{-- RIGHT: Sidebar --}}

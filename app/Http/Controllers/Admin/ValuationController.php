@@ -64,7 +64,13 @@ class ValuationController extends Controller
             ];
         }
 
-        return view('admin.valuations.form', compact('property', 'colonias', 'prefill'));
+        // Propiedades disponibles para vincular (selector en el form)
+        $properties = Property::with('owner')
+            ->orderBy('title')
+            ->select('id', 'title', 'client_id', 'address', 'colony')
+            ->get();
+
+        return view('admin.valuations.form', compact('property', 'colonias', 'prefill', 'properties'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -157,9 +163,12 @@ class ValuationController extends Controller
 
     public function show(PropertyValuation $valuation): View
     {
-        $valuation->load(['property', 'creator', 'colonia.zone', 'snapshot', 'adjustments', 'comparables']);
+        $valuation->load(['property.owner', 'creator', 'colonia.zone', 'snapshot', 'adjustments', 'comparables']);
 
-        return view('admin.valuations.show', compact('valuation'));
+        // Captación que referencia esta valuación (si existe)
+        $captacion = \App\Models\Captacion::where('etapa3_valuation_id', $valuation->id)->first();
+
+        return view('admin.valuations.show', compact('valuation', 'captacion'));
     }
 
     public function edit(PropertyValuation $valuation): View
@@ -172,7 +181,12 @@ class ValuationController extends Controller
 
         $property = $valuation->property;
 
-        return view('admin.valuations.form', compact('valuation', 'colonias', 'property'));
+        $properties = Property::with('owner')
+            ->orderBy('title')
+            ->select('id', 'title', 'client_id', 'address', 'colony')
+            ->get();
+
+        return view('admin.valuations.form', compact('valuation', 'colonias', 'property', 'properties'));
     }
 
     public function update(Request $request, PropertyValuation $valuation): RedirectResponse

@@ -100,8 +100,11 @@ class PropertyController extends Controller
             ->unique('id')
             ->values();
 
+        // Opiniones de valor vinculadas a esta propiedad
+        $valuations = $property->valuations()->with('creator', 'colonia')->latest()->get();
+
         return view('properties.show', compact(
-            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients'
+            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations'
         ));
     }
 
