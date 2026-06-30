@@ -51,8 +51,8 @@ $address = $valuation->input_address
         ? ($valuation->property->address . ($valuation->property->city ? ', ' . $valuation->property->city : ''))
         : null);
 
-// Lo que se muestra grande en el header (siempre hay algo)
-$addressDisplay = $address ?? ($typeLabel . ' en ' . $colonia . ', ' . $zone . ', CDMX');
+// Lo que se muestra grande en el header (siempre hay algo), primera letra mayúscula
+$addressDisplay = ucfirst($address ?? ($typeLabel . ' en ' . $colonia . ', ' . $zone . ', CDMX'));
 // Subtítulo solo cuando hay dirección real (para no duplicar info)
 $addressSubline = $address ? ($typeLabel . '  ·  ' . $colonia . '  ·  ' . $zone . ', Benito Juárez, CDMX') : null;
 
@@ -120,7 +120,6 @@ if ($adjTotal < -15)
 elseif ($adjTotal > 10)
     $considerations[] = 'Atributos diferenciales elevan el valor por encima del precio base de la zona.';
 $considerations[] = 'Vigencia 90 días — vence el ' . $validity . '. No sustituye avalúo formal (INDAABIN / SHF).';
-$totalPages = $valuation->input_notes ? 4 : 3;
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -232,7 +231,7 @@ html, body {
     line-height: 1.2;
 }
 .p1-hd-subtitle {
-    font-size: 11px;
+    font-size: 12px;
     color: rgba(255,255,255,0.82);
     margin-top: 5px;
     letter-spacing: 0.2px;
@@ -1113,7 +1112,7 @@ html, body {
     <div class="p1-footer">
         <div class="p1-ft-l">{{ $siteUrl }}</div>
         <div class="p1-ft-c">Home del Valle · Opinión de Valor</div>
-        <div class="p1-ft-r">{{ $folio }} · Página 1 de {{ $totalPages }} · Confidencial</div>
+        <div class="p1-ft-r">{{ $folio }} · Página 1 de 3 · Confidencial</div>
     </div>
 
 </div>{{-- /page-1 --}}
@@ -1322,7 +1321,7 @@ html, body {
     <div class="dark-footer">
         <div class="dark-footer-top">
             <div class="dark-footer-brand">{{ $siteName }} — {{ $siteUrl }}</div>
-            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 2 de {{ $totalPages }} &nbsp;|&nbsp; Confidencial</div>
+            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 2 de 3 &nbsp;|&nbsp; Confidencial</div>
         </div>
     </div>
 
@@ -1332,7 +1331,7 @@ html, body {
 {{-- ═══════════════════════════════════════════════════════════════════════════
      PÁGINA 3 — Análisis de mercado
      ═══════════════════════════════════════════════════════════════════════════ --}}
-<div class="page {{ $valuation->input_notes ? 'page-break' : '' }}">
+<div class="page">
 
     <div class="mhd">
         <div class="mhd-logo">
@@ -1455,65 +1454,19 @@ html, body {
     <div class="dark-footer">
         <div class="dark-footer-top">
             <div class="dark-footer-brand">{{ $siteName }} — {{ $siteUrl }}</div>
-            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 3 de {{ $totalPages }} &nbsp;|&nbsp; Confidencial</div>
+            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 3 de 3 &nbsp;|&nbsp; Confidencial</div>
         </div>
-        @if(!$valuation->input_notes)
         <div class="dark-footer-legal">
             Esta Opinión de Valor es elaborada por {{ $siteName }} con base en datos de oferta publicada en portales inmobiliarios y ajustes estadísticos descritos en este documento.
             <strong style="color:rgba(255,255,255,0.38);">No constituye un avalúo formal</strong> con efectos fiscales, notariales o de crédito hipotecario.
             Para dichos efectos se requiere valuador certificado (INDAABIN / SHF / AMPI). El valor de cierre depende de las condiciones de cada negociación.
             &nbsp;·&nbsp; &copy; {{ now()->year }} {{ $siteName }} · Todos los derechos reservados.
         </div>
-        @endif
     </div>
 
 </div>{{-- /page-3 --}}
 
 
-{{-- ═══════════════════════════════════════════════════════════════════════════
-     PÁGINA 4 — Notas del analista (solo si hay notas)
-     ═══════════════════════════════════════════════════════════════════════════ --}}
-@if($valuation->input_notes)
-<div class="page">
-
-    <div class="mhd">
-        <div class="mhd-logo">
-            @if($logoSrc)
-                <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
-            @elseif($logoSrcLight)
-                <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
-            @else
-                <div class="mhd-logo-txt">HOME DEL VALLE</div>
-            @endif
-        </div>
-        <div class="mhd-right">
-            <div class="mhd-folio">{{ $folio }}</div>
-            <div class="mhd-section">Notas del Analista</div>
-        </div>
-    </div>
-
-    <div style="padding: 28px 48px 20px; overflow: auto;">
-        <div class="notes-box" style="max-height: none; overflow: visible;">
-            <div class="notes-lbl">Notas del analista</div>
-            <div class="notes-text" style="white-space: pre-wrap;">{{ $valuation->input_notes }}</div>
-        </div>
-    </div>
-
-    <div class="dark-footer">
-        <div class="dark-footer-top">
-            <div class="dark-footer-brand">{{ $siteName }} — {{ $siteUrl }}</div>
-            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 4 de 4 &nbsp;|&nbsp; Confidencial</div>
-        </div>
-        <div class="dark-footer-legal">
-            Esta Opinión de Valor es elaborada por {{ $siteName }} con base en datos de oferta publicada en portales inmobiliarios y ajustes estadísticos descritos en este documento.
-            <strong style="color:rgba(255,255,255,0.38);">No constituye un avalúo formal</strong> con efectos fiscales, notariales o de crédito hipotecario.
-            Para dichos efectos se requiere valuador certificado (INDAABIN / SHF / AMPI). El valor de cierre depende de las condiciones de cada negociación.
-            &nbsp;·&nbsp; &copy; {{ now()->year }} {{ $siteName }} · Todos los derechos reservados.
-        </div>
-    </div>
-
-</div>{{-- /page-4 --}}
-@endif
 
 </body>
 </html>
