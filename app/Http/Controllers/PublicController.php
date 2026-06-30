@@ -55,7 +55,7 @@ class PublicController extends Controller
 
     public function propiedadShow(int $id, string $slug = null)
     {
-        $property = Property::findOrFail($id);
+        $property = Property::with('photos')->findOrFail($id);
 
         $similar = Property::available()
             ->where('id', '!=', $property->id)

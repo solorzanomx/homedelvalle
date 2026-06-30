@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Actions\Property\FetchStreetViewPhotoAction;
 use App\Models\Captacion;
 use App\Models\Client;
 use App\Models\Operation;
@@ -18,7 +19,7 @@ class CaptacionIntakeService
      */
     public function createFromCall(array $data, User $agent): Captacion
     {
-        return DB::transaction(function () use ($data, $agent) {
+        $captacion = DB::transaction(function () use ($data, $agent) {
             $client    = $this->findOrCreateClient($data, $agent);
             $property  = $this->createProperty($data, $client, $agent);
             $operation = $this->createOperation($client, $property, $data, $agent);
@@ -43,6 +44,16 @@ class CaptacionIntakeService
 
             return $captacion;
         });
+
+        // Intentar guardar foto de fachada (Street View) FUERA de la transacción
+        // para no bloquearla durante la llamada HTTP a Google
+        try {
+            app(FetchStreetViewPhotoAction::class)->execute($captacion->property);
+        } catch (\Throwable) {
+            // Silencioso — no queremos romper el flujo de captación por esto
+        }
+
+        return $captacion;
     }
 
     // ─── Helpers privados ─────────────────────────────────────────────────────

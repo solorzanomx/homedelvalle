@@ -158,6 +158,7 @@
             @endif
 
             @include('public.propiedad._description', ['property' => $property])
+            @include('public.propiedad._location', ['property' => $property])
 
             {{-- Contact form --}}
             <div class="mt-12 rounded-2xl border border-gray-200/60 p-8 shadow-premium-lg" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
@@ -205,6 +206,7 @@
 
                     @include('public.propiedad._share', ['property' => $property])
                     @include('public.propiedad._description', ['property' => $property])
+                    @include('public.propiedad._location', ['property' => $property])
                 </div>
 
                 {{-- Sidebar (2/5) --}}
@@ -265,6 +267,7 @@
                     @endif
 
                     @include('public.propiedad._description', ['property' => $property])
+                    @include('public.propiedad._location', ['property' => $property])
                 </div>
 
                 {{-- Sidebar --}}
