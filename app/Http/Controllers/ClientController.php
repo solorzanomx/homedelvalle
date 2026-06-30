@@ -125,7 +125,7 @@ class ClientController extends Controller
         $this->authorize('view', $client);
 
         $emails = $client->emails()->with('user')->latest()->get();
-        $interactions = $client->interactions()->with('user')->latest()->get();
+        $interactions = $client->interactions()->with(['user', 'valuation'])->latest()->get();
 
         // Properties where this client is the owner
         $ownedProperties = $client->ownedProperties()->with('broker')->get();
@@ -140,7 +140,6 @@ class ClientController extends Controller
         $emailProperties = $emailPropertyIds->isNotEmpty()
             ? Property::whereIn('id', $emailPropertyIds)->get()
             : collect();
-        $interactions = $client->interactions()->with('user')->latest()->get();
 
         $emailsSent = $emails->where('status', 'sent')->count();
         $emailsOpened = $emails->whereNotNull('opened_at')->count();
@@ -181,18 +180,26 @@ class ClientController extends Controller
             'email'                 => ['dot' => 'email',        'color' => '#3b82f6', 'label' => 'Correo'],
             'presentation_email'    => ['dot' => 'presentation', 'color' => '#667eea', 'label' => 'Presentación Email'],
             'presentation_whatsapp' => ['dot' => 'presentation', 'color' => '#667eea', 'label' => 'Presentación WhatsApp'],
+            'valuation'             => ['dot' => 'valuation',    'color' => '#0c1a2e', 'label' => 'Opinión de Valor'],
         ];
 
         foreach ($interactions as $interaction) {
             $config = $typeConfig[$interaction->type] ?? ['dot' => 'system', 'color' => '#94a3b8', 'label' => ucfirst($interaction->type)];
 
+            $bodyHtml = MentionHelper::render($interaction->description);
+
+            // Si la interacción tiene valuación vinculada, agregar link
+            if ($interaction->valuation_id) {
+                $bodyHtml .= ' <a href="' . route('admin.valuations.show', $interaction->valuation_id) . '" style="color:var(--primary);font-size:.78rem;">Ver valuación →</a>';
+            }
+
             $timeline->push([
-                'date' => $interaction->created_at,
-                'dot' => $config['dot'],
-                'color' => $config['color'],
+                'date'       => $interaction->created_at,
+                'dot'        => $config['dot'],
+                'color'      => $config['color'],
                 'type_label' => $config['label'],
-                'body' => MentionHelper::render($interaction->description),
-                'meta' => 'Por ' . e($interaction->user->name ?? ''),
+                'body'       => $bodyHtml,
+                'meta'       => 'Por ' . e($interaction->user->name ?? ''),
             ]);
         }
 
@@ -253,13 +260,13 @@ class ClientController extends Controller
             $hasCaptacionCol = \Illuminate\Support\Facades\Schema::hasColumn('documents', 'captacion_id');
             $clientDocsQuery = \App\Models\Document::where('client_id', $client->id);
             if ($hasCaptacionCol) {
-                // Excluir docs de captación excepto las presentaciones PDF (que queremos mostrar aquí)
+                // Excluir docs de captación excepto presentaciones PDF y opiniones de valor
                 $clientDocsQuery->where(function ($q) {
                     $q->whereNull('captacion_id')
-                      ->orWhere('category', 'presentation_pdf');
+                      ->orWhereIn('category', ['presentation_pdf', 'opinion_valor']);
                 });
             }
-            $clientDocs = $clientDocsQuery->with(['uploader', 'captacion'])->latest()->get();
+            $clientDocs = $clientDocsQuery->with(['uploader', 'captacion', 'valuation', 'property'])->latest()->get();
         } catch (\Throwable $e) {
             $clientDocs = collect();
         }

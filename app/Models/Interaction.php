@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Interaction extends Model
 {
-    protected $fillable = ['client_id', 'property_id', 'user_id', 'type', 'description', 'scheduled_at', 'completed_at'];
+    protected $fillable = ['client_id', 'property_id', 'valuation_id', 'user_id', 'type', 'description', 'scheduled_at', 'completed_at'];
     protected function casts(): array
     {
         return [
@@ -17,5 +17,6 @@ class Interaction extends Model
 
     public function client() { return $this->belongsTo(Client::class); }
     public function property() { return $this->belongsTo(Property::class); }
+    public function valuation() { return $this->belongsTo(PropertyValuation::class, 'valuation_id'); }
     public function user() { return $this->belongsTo(User::class); }
 }

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Document extends Model
 {
-    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by',];
+    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'valuation_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by',];
     const CATEGORIES = [
         'commission_contract' => 'Contrato de Comision',
         'escritura' => 'Escritura',
@@ -27,6 +27,7 @@ class Document extends Model
         'poliza_contract' => 'Poliza Juridica',
         'other' => 'Otro',
         'presentation_pdf' => 'Presentación Inicial PDF',
+        'opinion_valor'    => 'Opinión de Valor PDF',
     ];
 
     const STATUSES = [
@@ -48,6 +49,7 @@ class Document extends Model
     public function client() { return $this->belongsTo(Client::class); }
     public function property() { return $this->belongsTo(Property::class); }
     public function captacion() { return $this->belongsTo(Captacion::class); }
+    public function valuation() { return $this->belongsTo(PropertyValuation::class, 'valuation_id'); }
     public function uploader() { return $this->belongsTo(User::class, 'uploaded_by'); }
     public function verifier() { return $this->belongsTo(User::class, 'verified_by'); }
 

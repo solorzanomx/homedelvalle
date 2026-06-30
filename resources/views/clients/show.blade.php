@@ -457,7 +457,34 @@
         @endif
 
         {{-- General docs --}}
-        @php $otrosDocs = $clientDocsAll->where('category', '!=', 'presentation_pdf'); @endphp
+        {{-- Opiniones de Valor PDF --}}
+        @php $valuacionDocs = $clientDocsAll->where('category', 'opinion_valor'); @endphp
+        @if($valuacionDocs->isNotEmpty())
+        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;margin-top:.25rem;">Opiniones de Valor</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;">
+            @foreach($valuacionDocs as $doc)
+            <div style="padding:.65rem .85rem;background:linear-gradient(135deg,#f0f9ff 0%,#f8fcff 100%);border:1px solid #bfdbfe;border-radius:var(--radius);">
+                <div style="display:flex;align-items:center;gap:.6rem;">
+                    <span style="font-size:1.1rem;">&#128200;</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:600;font-size:.85rem;">{{ $doc->label ?? $doc->file_name }}</div>
+                        <div style="font-size:.72rem;color:var(--text-muted);">
+                            {{ $doc->created_at->format('d/m/Y') }}
+                            @if($doc->uploader) &middot; {{ $doc->uploader->name }}@endif
+                            @if($doc->property) &middot; {{ $doc->property->title }}@endif
+                        </div>
+                    </div>
+                    @if($doc->valuation_id)
+                    <a href="{{ route('admin.valuations.show', $doc->valuation_id) }}" class="btn btn-sm btn-outline" style="flex-shrink:0;font-size:.72rem;">Ver →</a>
+                    @endif
+                    <a href="{{ route('admin.valuations.pdf', $doc->valuation_id ?? 0) }}" target="_blank" class="btn btn-sm btn-outline" style="flex-shrink:0;">&#8615; PDF</a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @endif
+
+        @php $otrosDocs = $clientDocsAll->whereNotIn('category', ['presentation_pdf', 'opinion_valor']); @endphp
         @if($otrosDocs->isNotEmpty())
         <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted);margin-bottom:.5rem;">Otros documentos</div>
         <div style="display:flex;flex-direction:column;gap:.4rem;">

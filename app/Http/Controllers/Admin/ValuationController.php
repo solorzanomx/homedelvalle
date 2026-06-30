@@ -150,6 +150,9 @@ class ValuationController extends Controller
         // Calcular inmediatamente
         $result = $this->engine->calculate($valuation);
 
+        // Registrar actividad si hay propiedad con dueño vinculado
+        $this->recordValuationActivity($valuation, 'created');
+
         if ($result->isInsufficient()) {
             return redirect()
                 ->route('admin.valuations.show', $valuation)
@@ -258,9 +261,15 @@ class ValuationController extends Controller
             $data['input_building_condition'] = null;
         }
 
+        $oldPropertyId = $valuation->property_id;
         $valuation->update($data);
 
         $result = $this->engine->calculate($valuation->fresh());
+
+        // Si se vinculó (o cambió) la propiedad, registrar actividad
+        if ($valuation->property_id && $valuation->property_id !== $oldPropertyId) {
+            $this->recordValuationActivity($valuation->fresh(), 'linked');
+        }
 
         $msg = $result->isInsufficient()
             ? 'Datos actualizados. Sin precios de mercado para recalcular.'
@@ -313,6 +322,12 @@ class ValuationController extends Controller
 
         // Save path for future reference
         $valuation->update(['pdf_path' => 'valuations/' . $filename]);
+
+        // Registrar documento en el perfil del cliente/propiedad
+        $this->recordValuationDocument($valuation, $filename);
+
+        // Registrar actividad de descarga en el timeline del cliente
+        $this->recordValuationActivity($valuation, 'pdf_generated');
 
         return response($pdf, 200, [
             'Content-Type'        => 'application/pdf',
@@ -409,5 +424,70 @@ class ValuationController extends Controller
         $ownComparables = MarketComparable::where('source', 'own')->count();
 
         return view('admin.valuations.analytics', compact('closedValuations', 'zoneStats', 'ownComparables'));
+    }
+
+    // ── Helpers privados ────────────────────────────────────────────────────────
+
+    /**
+     * Registra una interacción en el timeline del cliente dueño del inmueble.
+     * $event: 'created' | 'linked' | 'pdf_generated'
+     */
+    private function recordValuationActivity(PropertyValuation $valuation, string $event): void
+    {
+        $property = $valuation->property ?? $valuation->load('property.owner')->property;
+        $client   = $property?->owner;
+
+        if (! $client) return;
+
+        $folio  = 'OV-' . str_pad($valuation->id, 5, '0', STR_PAD_LEFT);
+        $colonia = $valuation->colonia?->name ?? $valuation->input_colonia_raw ?? 'inmueble';
+        $precio  = $valuation->suggested_list_price
+            ? ' — Valor estimado: $' . number_format($valuation->suggested_list_price) . ' MXN'
+            : '';
+
+        $description = match($event) {
+            'created'       => "Se generó la Opinión de Valor {$folio} para {$colonia}{$precio}.",
+            'linked'        => "La Opinión de Valor {$folio} fue vinculada a este inmueble ({$colonia}{$precio}).",
+            'pdf_generated' => "Se generó el PDF de la Opinión de Valor {$folio} ({$colonia}{$precio}).",
+            default         => "Actividad en Opinión de Valor {$folio}.",
+        };
+
+        \App\Models\Interaction::create([
+            'client_id'    => $client->id,
+            'property_id'  => $property->id,
+            'valuation_id' => $valuation->id,
+            'user_id'      => auth()->id(),
+            'type'         => 'valuation',
+            'description'  => $description,
+        ]);
+    }
+
+    /**
+     * Crea/actualiza un registro de Document tipo 'opinion_valor' para el cliente.
+     */
+    private function recordValuationDocument(PropertyValuation $valuation, string $filename): void
+    {
+        $property = $valuation->property;
+        $client   = $property?->owner;
+
+        if (! $client) return;
+
+        $folio = 'OV-' . str_pad($valuation->id, 5, '0', STR_PAD_LEFT);
+
+        // Upsert: si ya existe un doc de esta valuación, actualizarlo
+        \App\Models\Document::updateOrCreate(
+            ['valuation_id' => $valuation->id, 'category' => 'opinion_valor'],
+            [
+                'client_id'   => $client->id,
+                'property_id' => $property?->id,
+                'uploaded_by' => auth()->id(),
+                'label'       => "Opinión de Valor {$folio}",
+                'file_path'   => 'valuations/' . $filename,
+                'file_name'   => $filename,
+                'mime_type'   => 'application/pdf',
+                'file_size'   => 0,
+                'status'      => 'verified',
+            ]
+        );
     }
 }
