@@ -2,16 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\V4\Mailables\RescheduleNotificacionMail;
+use App\Mail\V4\Mailables\VisitaConfirmadaNotificacionMail;
 use App\Models\Interaction;
 use App\Models\Notification;
 use Illuminate\Http\Request;
-use App\Notifications\VisitResponseNotification;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class VisitResponseController extends Controller
 {
     public function confirm(string $token)
     {
-        $interaction = Interaction::where('visit_token', $token)->firstOrFail();
+        $interaction = Interaction::with(['client', 'property', 'user'])
+            ->where('visit_token', $token)
+            ->firstOrFail();
 
         if ($interaction->confirmed_at) {
             return view('visit-response.already-confirmed');
@@ -19,7 +24,7 @@ class VisitResponseController extends Controller
 
         $interaction->update(['confirmed_at' => now()]);
 
-        // Fire visit_completed scoring for the interested client
+        // Lead scoring
         if ($interaction->client_id) {
             app(\App\Services\LeadScoringService::class)->processEvent(
                 $interaction->client_id,
@@ -28,7 +33,7 @@ class VisitResponseController extends Controller
             );
         }
 
-        // Notify the broker via custom notifications table + mail
+        // Notify broker: bell notification + custom HDV email
         if ($interaction->user_id) {
             $client = $interaction->client;
             $name   = $client?->name ?? 'El cliente';
@@ -41,24 +46,27 @@ class VisitResponseController extends Controller
                 'data'    => ['url' => $client ? route('clients.show', $client) : null, 'interaction_id' => $interaction->id],
             ]);
 
-            try {
-                $interaction->user->notify(new VisitResponseNotification($interaction, 'confirmed'));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('VisitResponse mail failed: ' . $e->getMessage());
+            if ($interaction->user?->email) {
+                try {
+                    Mail::to($interaction->user->email)
+                        ->send(new VisitaConfirmadaNotificacionMail($interaction));
+                } catch (\Exception $e) {
+                    Log::warning('VisitaConfirmadaNotificacionMail failed: ' . $e->getMessage());
+                }
             }
         }
 
-        // Notify the property owner via portal prefs (email only if they opted in)
+        // Notify property owner if opted in
         if ($interaction->property?->owner?->portalUser) {
             $ownerUser = $interaction->property->owner->portalUser;
             $prefs = \App\Models\PortalNotificationPreference::forUser($ownerUser->id);
             if ($prefs->notify_visit_confirmed) {
                 try {
-                    \Illuminate\Support\Facades\Mail::to($ownerUser->email)->send(
+                    Mail::to($ownerUser->email)->send(
                         new \App\Mail\Portal\VisitConfirmedOwnerMail($interaction)
                     );
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('VisitConfirmedOwnerMail failed: ' . $e->getMessage());
+                    Log::warning('VisitConfirmedOwnerMail failed: ' . $e->getMessage());
                 }
             }
         }
@@ -74,7 +82,9 @@ class VisitResponseController extends Controller
 
     public function rescheduleSubmit(Request $request, string $token)
     {
-        $interaction = Interaction::where('visit_token', $token)->firstOrFail();
+        $interaction = Interaction::with(['client', 'property', 'user'])
+            ->where('visit_token', $token)
+            ->firstOrFail();
 
         $request->validate(['mensaje' => 'required|string|max:500']);
 
@@ -83,7 +93,7 @@ class VisitResponseController extends Controller
             'reschedule_message'      => $request->mensaje,
         ]);
 
-        // Scoring: reagendar es señal de interés activo del cliente
+        // Scoring: reagendar es interés activo del cliente
         if ($interaction->client_id) {
             app(\App\Services\LeadScoringService::class)->processEvent(
                 $interaction->client_id,
@@ -92,7 +102,7 @@ class VisitResponseController extends Controller
             );
         }
 
-        // Notify the broker via custom notifications table + mail
+        // Notify broker: bell notification + custom HDV email
         if ($interaction->user_id) {
             $client = $interaction->client;
             $name   = $client?->name ?? 'El cliente';
@@ -105,24 +115,27 @@ class VisitResponseController extends Controller
                 'data'    => ['url' => $client ? route('clients.show', $client) : null, 'interaction_id' => $interaction->id],
             ]);
 
-            try {
-                $interaction->user->notify(new VisitResponseNotification($interaction, 'reschedule'));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('VisitResponse mail failed: ' . $e->getMessage());
+            if ($interaction->user?->email) {
+                try {
+                    Mail::to($interaction->user->email)
+                        ->send(new RescheduleNotificacionMail($interaction));
+                } catch (\Exception $e) {
+                    Log::warning('RescheduleNotificacionMail failed: ' . $e->getMessage());
+                }
             }
         }
 
-        // Notify the property owner if they opted in for rescheduled notifications
+        // Notify property owner if opted in
         if ($interaction->property?->owner?->portalUser) {
             $ownerUser = $interaction->property->owner->portalUser;
             $prefs = \App\Models\PortalNotificationPreference::forUser($ownerUser->id);
             if ($prefs->notify_visit_rescheduled) {
                 try {
-                    \Illuminate\Support\Facades\Mail::to($ownerUser->email)->send(
+                    Mail::to($ownerUser->email)->send(
                         new \App\Mail\Portal\VisitRescheduledOwnerMail($interaction)
                     );
                 } catch (\Exception $e) {
-                    \Illuminate\Support\Facades\Log::warning('VisitRescheduledOwnerMail failed: ' . $e->getMessage());
+                    Log::warning('VisitRescheduledOwnerMail failed: ' . $e->getMessage());
                 }
             }
         }
