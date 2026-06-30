@@ -98,7 +98,7 @@
                     </div>
                 </div>
                 <div style="padding:0.55rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:0.4rem">
-                    <a href="{{ route('admin.acuse-configs.preview', $type) }}" target="_blank" class="btn btn-outline btn-sm" style="flex:1;text-align:center">Vista previa</a>
+                    <a href="{{ route('admin.acuse-configs.preview', $type) }}" class="btn btn-outline btn-sm" style="flex:1;text-align:center">Vista previa</a>
                     <a href="{{ route('admin.acuse-configs.edit', $type) }}" class="btn btn-primary btn-sm" style="flex:1;text-align:center">Editar</a>
                 </div>
             </div>
