@@ -546,7 +546,7 @@
                         @endif
                         @if(Route::has('admin.social.calendar'))
                         <a href="{{ route('admin.social.calendar') }}" class="nav-item {{ request()->routeIs('admin.social.calendar') || request()->routeIs('admin.social.upcoming') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="calendar-days" class="w-4 h-4" /></span> Calendario Social
+                            <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario Social
                         </a>
                         @endif
                         @if(Route::has('admin.carousels.prompts'))
