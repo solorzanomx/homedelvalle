@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="x-apple-disable-message-reformatting">
-<title>Tu visita está agendada</title>
+<title>Recordatorio: Tu visita es hoy</title>
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -25,12 +25,12 @@ a{text-decoration:none}
 <body style="margin:0;padding:0;background:#F1F4F8;">
 
 {{-- Preheader --}}
-<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F1F4F8;">Tu visita está agendada para {{ $data->dia_semana }}, {{ $data->dia }} de {{ $data->mes }} a las {{ $data->hora }}.</div>
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;font-size:1px;line-height:1px;color:#F1F4F8;">Recordatorio: tu visita es hoy a las {{ $data->hora }}. Confirma tu asistencia.</div>
 
 @php
     $logoSrc = $logoUrl ?? ($iconBase . 'logo-azul.png');
+    $confirmUrl = 'https://homedelvalle.mx/visit/' . $data->visit_token . '/confirm';
     $rescheduleUrl = 'https://homedelvalle.mx/visit/' . $data->visit_token . '/reschedule';
-    $calendarUrl = $data->maps_url ?: '#';
     // Asesor initials: first letter of first two words
     $asesorWords = preg_split('/\s+/', trim($data->asesor));
     $initials = strtoupper(substr($asesorWords[0] ?? 'A', 0, 1) . substr($asesorWords[1] ?? 'X', 0, 1));
@@ -60,15 +60,15 @@ a{text-decoration:none}
             <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
                 <tr>
                     <td style="background:#EAF3FB;border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:800;letter-spacing:1.5px;color:#2270B0;text-transform:uppercase;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
-                        Visita Confirmada
+                        Recordatorio
                     </td>
                 </tr>
             </table>
             <h1 style="font-size:27px;font-weight:800;color:#0E304B;margin:11px 0 0;letter-spacing:-.5px;line-height:1.15;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
-                Tu visita está agendada
+                Tu visita es hoy
             </h1>
             <p style="font-size:15.5px;line-height:1.6;color:#5A6573;margin:13px auto 0;max-width:44ch;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
-                Te esperamos. Aquí están los detalles para que llegues sin contratiempos.
+                Confirma tu asistencia para que tu asesor esté listo a tiempo.
             </p>
         </td>
     </tr>
@@ -85,6 +85,9 @@ a{text-decoration:none}
                                 <td valign="middle">
                                     <div style="color:#8FA9D2;font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">{{ $data->dia_semana }} {{ $data->dia }} de {{ $data->mes }}</div>
                                     <div style="color:#fff;font-size:22px;font-weight:800;margin-top:3px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">{{ $data->hora }} <span style="color:#C4D2E9;font-weight:600;font-size:15px;">&middot; {{ $data->duracion }} min</span></div>
+                                </td>
+                                <td valign="middle" align="right">
+                                    <span style="display:inline-block;background:#2E80C6;color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:999px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">Hoy</span>
                                 </td>
                             </tr>
                         </table>
@@ -173,26 +176,26 @@ a{text-decoration:none}
         <td class="px" style="padding:28px 34px 34px;">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                    {{-- Reagendar (primary, navy) --}}
+                    {{-- Confirmo que voy (primary, navy) --}}
                     <td class="stack" valign="top">
-                        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $rescheduleUrl }}" style="height:52px;v-text-anchor:middle;width:240px;" arcsize="24%" stroke="f" fillcolor="#0E304B"><w:anchorlock/><center style="color:#FFFFFF;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Reagendar</center></v:roundrect><![endif]-->
+                        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $confirmUrl }}" style="height:52px;v-text-anchor:middle;width:240px;" arcsize="24%" stroke="f" fillcolor="#0E304B"><w:anchorlock/><center style="color:#FFFFFF;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Confirmo que voy</center></v:roundrect><![endif]-->
                         <!--[if !mso]><!-->
-                        <a href="{{ $rescheduleUrl }}"
+                        <a href="{{ $confirmUrl }}"
                            style="display:block;background:#0E304B;border-radius:12px;color:#FFFFFF;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;line-height:50px;text-align:center;text-decoration:none;">
-                            Reagendar
+                            Confirmo que voy
                         </a>
                         <!--<![endif]-->
                     </td>
 
                     <td class="btnh" width="12" style="width:12px;">&nbsp;</td>
 
-                    {{-- Agregar al calendario (secondary, white border) --}}
+                    {{-- Necesito reagendar (secondary, white border) --}}
                     <td class="stack" valign="top">
-                        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $calendarUrl }}" style="height:52px;v-text-anchor:middle;width:240px;" arcsize="24%" strokecolor="#D5DCE7" strokeweight="1.5px" fillcolor="#FFFFFF"><w:anchorlock/><center style="color:#0E304B;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Agregar al calendario</center></v:roundrect><![endif]-->
+                        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ $rescheduleUrl }}" style="height:52px;v-text-anchor:middle;width:240px;" arcsize="24%" strokecolor="#D5DCE7" strokeweight="1.5px" fillcolor="#FFFFFF"><w:anchorlock/><center style="color:#0E304B;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">Necesito reagendar</center></v:roundrect><![endif]-->
                         <!--[if !mso]><!-->
-                        <a href="{{ $calendarUrl }}"
+                        <a href="{{ $rescheduleUrl }}"
                            style="display:block;background:#FFFFFF;border:1.5px solid #D5DCE7;border-radius:12px;color:#0E304B;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;line-height:50px;text-align:center;text-decoration:none;">
-                            Agregar al calendario
+                            Necesito reagendar
                         </a>
                         <!--<![endif]-->
                     </td>

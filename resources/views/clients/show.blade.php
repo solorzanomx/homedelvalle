@@ -216,11 +216,43 @@
             <div class="quick-note-type">
                 @foreach(['note'=>'Nota','call'=>'Llamada','visit'=>'Visita','meeting'=>'Reunion','whatsapp'=>'WhatsApp'] as $type => $label)
                 <label class="note-type-btn {{ $type === 'note' ? 'active' : '' }}">
-                    <input type="radio" name="type" value="{{ $type }}" {{ $type === 'note' ? 'checked' : '' }} style="display:none;" onchange="this.closest('.quick-note-type').querySelectorAll('.note-type-btn').forEach(b => b.classList.remove('active')); this.parentElement.classList.add('active');">
+                    <input type="radio" name="type" value="{{ $type }}" {{ $type === 'note' ? 'checked' : '' }} style="display:none;" onchange="this.closest('.quick-note-type').querySelectorAll('.note-type-btn').forEach(b => b.classList.remove('active')); this.parentElement.classList.add('active'); document.getElementById('visit-fields').style.display = (this.value === 'visit') ? 'block' : 'none';">
                     {{ $label }}
                 </label>
                 @endforeach
             </div>
+
+            {{-- Visit-only fields --}}
+            <div id="visit-fields" style="display:none;margin-top:12px;padding:14px 16px;background:var(--bg, #F6F8FB);border-radius:10px;border:1px solid var(--border, #E6EAF1);">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Fecha de la visita</label>
+                        <input type="date" name="scheduled_at_date" class="form-input" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Hora</label>
+                        <input type="time" name="scheduled_at_time" class="form-input" value="10:00" style="width:100%;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Duración</label>
+                        <select name="duracion" class="form-select" style="width:100%;">
+                            <option value="30">30 min</option>
+                            <option value="60">1 hora</option>
+                            <option value="90">1:30 h</option>
+                            <option value="120">2 horas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Asesor que acompaña</label>
+                        <input type="text" name="asesor_nombre" class="form-input" placeholder="Nombre del asesor" style="width:100%;">
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;background:#fff;border-radius:8px;border:1px solid var(--border,#E6EAF1);">
+                    <input type="checkbox" name="send_confirmation_email" id="send_confirmation_email" value="1" checked style="width:16px;height:16px;accent-color:#0E304B;cursor:pointer;">
+                    <label for="send_confirmation_email" style="font-size:13px;font-weight:600;cursor:pointer;color:var(--ink,#0E304B);">Enviar correo de confirmación al cliente</label>
+                </div>
+            </div>
+
             <div class="quick-note-row" style="position:relative;">
                 <textarea name="description" class="form-textarea" rows="2" placeholder="Agregar nota... usa @ para mencionar" required id="noteInput"></textarea>
                 <button type="submit" class="btn btn-primary" style="align-self:flex-end;">Agregar</button>

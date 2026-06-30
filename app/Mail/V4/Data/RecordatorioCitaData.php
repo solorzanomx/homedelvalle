@@ -2,7 +2,7 @@
 
 namespace App\Mail\V4\Data;
 
-readonly class CitaData
+readonly class RecordatorioCitaData
 {
     public function __construct(
         public string $email,
@@ -18,5 +18,6 @@ readonly class CitaData
         public string $asesor,
         public string $visit_token,
         public string $maps_url = '',
+        public string $is_today = 'hoy',
     ) {}
 }

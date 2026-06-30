@@ -352,17 +352,36 @@ class ClientController extends Controller
     public function storeInteraction(Request $request, Client $client)
     {
         $validated = $request->validate([
-            'type' => 'required|in:note,call,visit,meeting,whatsapp',
-            'description' => 'required|string|max:1000',
+            'type'                   => 'required|in:note,call,visit,meeting,whatsapp',
+            'description'            => 'required|string|max:1000',
+            'scheduled_at_date'      => 'required_if:type,visit|nullable|date',
+            'scheduled_at_time'      => 'required_if:type,visit|nullable|date_format:H:i',
+            'duracion'               => 'nullable|integer|in:30,60,90,120',
+            'asesor_nombre'          => 'nullable|string|max:100',
+            'property_id'            => 'nullable|exists:properties,id',
+            'send_confirmation_email'=> 'nullable|boolean',
         ]);
 
-        $interaction = Interaction::create([
-            'client_id' => $client->id,
-            'user_id' => Auth::id(),
-            'type' => $validated['type'],
-            'description' => $validated['description'],
-            'completed_at' => now(),
-        ]);
+        $interactionData = [
+            'client_id'    => $client->id,
+            'user_id'      => Auth::id(),
+            'type'         => $validated['type'],
+            'description'  => $validated['description'],
+            'completed_at' => $validated['type'] !== 'visit' ? now() : null,
+        ];
+
+        if ($validated['type'] === 'visit' && !empty($validated['scheduled_at_date'])) {
+            $time = $validated['scheduled_at_time'] ?? '10:00';
+            $interactionData['scheduled_at'] = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $time);
+            $interactionData['visit_token'] = \Illuminate\Support\Str::uuid()->toString();
+            $interactionData['send_confirmation_email'] = $request->boolean('send_confirmation_email', true);
+        }
+
+        if (!empty($validated['property_id'])) {
+            $interactionData['property_id'] = $validated['property_id'];
+        }
+
+        $interaction = Interaction::create($interactionData);
 
         // Score the interaction
         $eventMap = ['call' => 'call_completed', 'visit' => 'visit_completed', 'meeting' => 'visit_completed', 'whatsapp' => 'message_sent'];
@@ -373,6 +392,45 @@ class ClientController extends Controller
 
         // Parse @mentions and create notifications
         $this->processMentions($validated['description'], $interaction, $client);
+
+        // Send confirmation email for visits
+        if ($interaction->isVisit() && $interaction->scheduled_at && $interaction->send_confirmation_email && $client->email) {
+            try {
+                $scheduled = $interaction->scheduled_at;
+                $asesor = $validated['asesor_nombre'] ?? auth()->user()->name ?? 'Tu asesor';
+                $duracion = (string) ($validated['duracion'] ?? '30');
+
+                // Build Google Maps URL
+                $addressParts = array_filter([
+                    $interaction->property?->address ?? '',
+                    $interaction->property?->colonia ?? '',
+                ]);
+                $address = urlencode(implode(' ', $addressParts));
+                $mapsUrl = $address ? "https://www.google.com/maps/search/?api=1&query={$address}" : '';
+
+                \Illuminate\Support\Facades\Mail::to($client->email)->send(
+                    new \App\Mail\V4\Mailables\CitaMail(
+                        new \App\Mail\V4\Data\CitaData(
+                            email: $client->email,
+                            nombre: $client->name,
+                            dia_semana: $scheduled->locale('es')->dayName,
+                            dia: (string) $scheduled->day,
+                            mes: $scheduled->locale('es')->monthName,
+                            anio: (string) $scheduled->year,
+                            hora: $scheduled->format('g:i A'),
+                            duracion: $duracion,
+                            direccion: $interaction->property?->address ?? 'A coordinar',
+                            colonia: $interaction->property?->colonia ?? '',
+                            asesor: $asesor,
+                            visit_token: $interaction->visit_token,
+                            maps_url: $mapsUrl,
+                        )
+                    )
+                );
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Visit confirmation email failed: ' . $e->getMessage());
+            }
+        }
 
         return redirect()->route('clients.show', $client)->with('success', 'Nota agregada.');
     }

@@ -11,6 +11,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('social:publish-scheduled')->everyMinute()->withoutOverlapping();
         $schedule->command('blog:publish-scheduled')->everyMinute()->withoutOverlapping();
+        $schedule->command('visits:send-reminders')->dailyAt('07:00');
     }
 
     protected function commands(): void

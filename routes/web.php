@@ -71,6 +71,12 @@ use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalDocumentController;
 use App\Http\Controllers\Admin\PropertyQrController;
+use App\Http\Controllers\VisitResponseController;
+
+// Visit response (public — no auth required)
+Route::get('/visit/{token}/confirm', [VisitResponseController::class, 'confirm'])->name('visit.confirm');
+Route::get('/visit/{token}/reschedule', [VisitResponseController::class, 'reschedule'])->name('visit.reschedule');
+Route::post('/visit/{token}/reschedule', [VisitResponseController::class, 'rescheduleSubmit'])->name('visit.reschedule.submit');
 
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');

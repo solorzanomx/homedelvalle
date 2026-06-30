@@ -8,12 +8,14 @@ use App\Mail\V4\Data\AcuseData;
 use App\Mail\V4\Data\CitaData;
 use App\Mail\V4\Data\CompradorData;
 use App\Mail\V4\Data\BienvenidaData;
+use App\Mail\V4\Data\RecordatorioCitaData;
 use App\Mail\V4\Mailables\LeadInternoMail;
 use App\Mail\V4\Mailables\AcuseMail;
 use App\Mail\V4\Mailables\CitaMail;
 use App\Mail\V4\Mailables\CompradorMail;
 use App\Mail\V4\Mailables\BienvenidaMail;
 use App\Mail\V4\Mailables\DbTemplateMail;
+use App\Mail\V4\Mailables\RecordatorioCitaMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -56,6 +58,11 @@ class TransactionalEmailController extends Controller
                 'id' => 'captacion-declined',
                 'name' => 'Gracias por tu confianza · Declive amistoso',
                 'description' => 'Se envía al propietario cuando se declina una captación',
+            ],
+            [
+                'id' => 'recordatorio-cita',
+                'name' => 'Recordatorio de Cita',
+                'description' => 'Se envía automáticamente el día de la visita para que el cliente confirme',
             ],
         ];
 
@@ -141,6 +148,7 @@ class TransactionalEmailController extends Controller
             )),
             'cita' => new CitaMail(new CitaData(
                 email: 'cliente@example.com',
+                nombre: 'Juan Pérez López',
                 dia_semana: 'Lunes',
                 dia: '15',
                 mes: 'abril',
@@ -149,7 +157,25 @@ class TransactionalEmailController extends Controller
                 duracion: '30',
                 direccion: 'Paseo de los Tamarindos 400, Depto 1501',
                 colonia: 'Bosques de las Lomas',
-                asesor: 'María García Rodríguez'
+                asesor: 'María García Rodríguez',
+                visit_token: 'preview-token-123',
+                maps_url: 'https://maps.google.com',
+            )),
+            'recordatorio-cita' => new RecordatorioCitaMail(new RecordatorioCitaData(
+                email: 'cliente@example.com',
+                nombre: 'Juan Pérez López',
+                dia_semana: 'Lunes',
+                dia: '15',
+                mes: 'abril',
+                anio: '2026',
+                hora: '10:00 AM',
+                duracion: '30',
+                direccion: 'Paseo de los Tamarindos 400, Depto 1501',
+                colonia: 'Bosques de las Lomas',
+                asesor: 'María García Rodríguez',
+                visit_token: 'preview-token-123',
+                maps_url: 'https://maps.google.com',
+                is_today: 'hoy',
             )),
             'comprador' => new CompradorMail(new CompradorData(
                 email: 'cliente@example.com',
@@ -219,15 +245,28 @@ class TransactionalEmailController extends Controller
                 'name' => 'Confirmación de Cita',
                 'description' => 'Confirmación de cita agendada',
                 'variables' => [
-                    'email' => 'Email del cliente',
-                    'dia_semana' => 'Día de la semana',
-                    'dia' => 'Número del día',
-                    'mes' => 'Nombre del mes',
-                    'hora' => 'Hora de la cita',
-                    'duracion' => 'Duración en minutos',
-                    'direccion' => 'Dirección del inmueble',
-                    'colonia' => 'Colonia/zona',
-                    'asesor' => 'Nombre del asesor',
+                    'email'       => 'Email del cliente',
+                    'nombre'      => 'Nombre del cliente',
+                    'dia_semana'  => 'Día de la semana',
+                    'dia'         => 'Número del día',
+                    'mes'         => 'Nombre del mes',
+                    'hora'        => 'Hora de la cita',
+                    'duracion'    => 'Duración en minutos',
+                    'direccion'   => 'Dirección del inmueble',
+                    'colonia'     => 'Colonia/zona',
+                    'asesor'      => 'Nombre del asesor',
+                    'visit_token' => 'Token único para confirm/reagendar',
+                    'maps_url'    => 'URL de Google Maps (opcional)',
+                ],
+            ],
+            'recordatorio-cita' => [
+                'name' => 'Recordatorio de Cita',
+                'description' => 'Se envía automáticamente el día de la visita para que el cliente confirme',
+                'variables' => [
+                    'nombre'      => 'Nombre del cliente',
+                    'hora'        => 'Hora de la visita',
+                    'direccion'   => 'Dirección del inmueble',
+                    'visit_token' => 'Token único para confirm/reagendar',
                 ],
             ],
             'comprador' => [
