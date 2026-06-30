@@ -12,9 +12,12 @@ use App\Models\LeadEvent;
 use App\Services\AutomationEngine;
 use App\Services\LeadScoringService;
 use App\Models\ContractTemplate;
+use App\Models\TenantInvestigation;
 use App\Helpers\MentionHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class RentalProcessController extends Controller
 {
@@ -116,6 +119,7 @@ class RentalProcessController extends Controller
             'property', 'ownerClient', 'tenantClient', 'broker', 'user',
             'documents.uploader', 'stageLogs.user', 'tasks.user',
             'poliza.events.user', 'contracts.template', 'contracts.signer',
+            'investigation.tenantClient',
         ])->findOrFail($id);
 
         // Build timeline from stage logs + documents + tasks
@@ -282,5 +286,89 @@ class RentalProcessController extends Controller
     {
         RentalProcess::findOrFail($id)->delete();
         return redirect()->route('rentals.index')->with('success', 'Proceso eliminado.');
+    }
+
+    public function storeInvestigation(Request $request, string $id)
+    {
+        $rental = RentalProcess::with(['investigation', 'ownerClient.portalUser'])->findOrFail($id);
+
+        $validated = $request->validate([
+            'tenant_client_id'      => 'nullable|exists:clients,id',
+            'occupation'            => 'nullable|string|max:150',
+            'employer'              => 'nullable|string|max:150',
+            'employment_years'      => 'nullable|integer|min:0|max:99',
+            'income_type'           => 'nullable|in:employed,self_employed,business_owner,pension,other',
+            'monthly_income'        => 'nullable|numeric|min:0',
+            'income_verified'       => 'boolean',
+            'credit_status'         => 'nullable|in:excellent,good,regular,poor',
+            'bureau_checked'        => 'boolean',
+            'credit_notes'          => 'nullable|string|max:500',
+            'references_count'      => 'nullable|integer|min:0|max:10',
+            'references_ok'         => 'boolean',
+            'references_notes'      => 'nullable|string|max:500',
+            'asesor_recommendation' => 'nullable|in:approve,conditional,decline',
+            'asesor_notes'          => 'nullable|string|max:1000',
+        ]);
+
+        $validated['income_verified'] = $request->boolean('income_verified');
+        $validated['bureau_checked']  = $request->boolean('bureau_checked');
+        $validated['references_ok']   = $request->boolean('references_ok');
+        $validated['created_by']      = Auth::id();
+
+        if ($rental->investigation) {
+            $rental->investigation->update($validated);
+        } else {
+            $validated['rental_process_id'] = $rental->id;
+            TenantInvestigation::create($validated);
+        }
+
+        return back()->with('success', 'Investigación guardada.');
+    }
+
+    public function toggleInvestigation(Request $request, string $id)
+    {
+        $rental = RentalProcess::with(['investigation', 'ownerClient.portalUser'])->findOrFail($id);
+
+        if (!$rental->investigation) {
+            return back()->with('error', 'Completa la investigación antes de presentarla.');
+        }
+
+        $inv = $rental->investigation;
+        $nowVisible = !$inv->visible_to_owner;
+
+        $inv->update([
+            'visible_to_owner' => $nowVisible,
+            'presented_at'     => $nowVisible ? now() : null,
+        ]);
+
+        if ($nowVisible) {
+            $rental->update(['proposed_tenant_at' => now()]);
+
+            // Bell notification al propietario
+            $ownerPortalUser = $rental->ownerClient?->portalUser;
+            if ($ownerPortalUser) {
+                Notification::create([
+                    'user_id' => $ownerPortalUser->id,
+                    'type'    => 'system',
+                    'title'   => 'Tenemos un candidato para tu inmueble',
+                    'body'    => 'Hemos completado la investigación. Ingresa al portal para revisar el perfil y dar tu respuesta.',
+                    'data'    => ['url' => null],
+                ]);
+
+                // Email al propietario
+                if ($ownerPortalUser->email) {
+                    try {
+                        Mail::to($ownerPortalUser->email)
+                            ->send(new \App\Mail\Portal\TenantProposedOwnerMail($rental->load('investigation.tenantClient', 'property')));
+                    } catch (\Exception $e) {
+                        Log::warning('TenantProposedOwnerMail failed: ' . $e->getMessage());
+                    }
+                }
+            }
+
+            return back()->with('success', 'Candidato presentado al propietario. Se envió notificación.');
+        }
+
+        return back()->with('success', 'Candidato ocultado del portal.');
     }
 }

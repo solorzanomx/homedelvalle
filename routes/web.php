@@ -233,6 +233,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('rentals', RentalProcessController::class);
     Route::patch('rentals/{rental}/stage', [RentalProcessController::class, 'updateStage'])->name('rentals.update-stage');
     Route::post('rentals/{rental}/documents', [RentalDocumentController::class, 'store'])->name('rentals.documents.store');
+    // Investigación de candidato
+    Route::post('rentals/{rental}/investigacion',        [RentalProcessController::class, 'storeInvestigation'])->name('rentals.investigacion.store');
+    Route::patch('rentals/{rental}/investigacion/toggle',[RentalProcessController::class, 'toggleInvestigation'])->name('rentals.investigacion.toggle');
     Route::patch('documents/{document}/status', [RentalDocumentController::class, 'updateStatus'])->name('documents.update-status');
     Route::get('documents/{document}/download', [RentalDocumentController::class, 'download'])->name('documents.download');
     Route::delete('documents/{document}', [RentalDocumentController::class, 'destroy'])->name('documents.destroy');

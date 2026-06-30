@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RentalProcess extends Model
 {
-    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at'];
+    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at'];
 
     const PAYMENT_FREQUENCIES = [
         'mensual'     => 'Mensual',
@@ -64,8 +64,10 @@ class RentalProcess extends Model
             'payment_day' => 'integer',
             'lease_start_date' => 'date',
             'lease_end_date' => 'date',
-            'completed_at' => 'datetime',
-            'cancelled_at' => 'datetime',
+            'completed_at'       => 'datetime',
+            'cancelled_at'       => 'datetime',
+            'proposed_tenant_at' => 'datetime',
+            'tenant_approved_at' => 'datetime',
         ];
     }
 
@@ -79,6 +81,7 @@ class RentalProcess extends Model
     public function stageLogs() { return $this->hasMany(RentalStageLog::class); }
     public function tasks() { return $this->hasMany(Task::class); }
     public function poliza() { return $this->hasOne(PolizaJuridica::class); }
+    public function investigation() { return $this->hasOne(TenantInvestigation::class); }
     public function contracts() { return $this->hasMany(Contract::class); }
     public function payments()  { return $this->hasMany(RentalPayment::class)->orderBy('period'); }
 

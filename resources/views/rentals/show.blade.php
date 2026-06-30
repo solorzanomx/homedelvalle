@@ -241,6 +241,16 @@
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('timeline')">Timeline</button>
             <button class="tab-btn" onclick="switchTab('documents')">Documentos ({{ $rental->documents->count() }})</button>
+            <button class="tab-btn" onclick="switchTab('investigacion')" style="{{ $rental->stage === 'investigacion' ? 'color:var(--primary);font-weight:600;' : '' }}">
+                Investigación
+                @if($rental->investigation?->owner_decision === 'approved')
+                    <span style="background:#dcfce7;color:#166534;font-size:.65rem;font-weight:700;padding:.1rem .35rem;border-radius:10px;margin-left:.3rem;">Aprobado</span>
+                @elseif($rental->investigation?->owner_decision === 'declined')
+                    <span style="background:#fee2e2;color:#991b1b;font-size:.65rem;font-weight:700;padding:.1rem .35rem;border-radius:10px;margin-left:.3rem;">Declinado</span>
+                @elseif($rental->investigation?->visible_to_owner)
+                    <span style="background:#fef3c7;color:#92400e;font-size:.65rem;font-weight:700;padding:.1rem .35rem;border-radius:10px;margin-left:.3rem;">Pendiente</span>
+                @endif
+            </button>
             <button class="tab-btn" onclick="switchTab('poliza')">Poliza</button>
             <button class="tab-btn" onclick="switchTab('contracts')">Contratos ({{ $rental->contracts->count() }})</button>
             <button class="tab-btn" onclick="switchTab('tasks')">Tareas ({{ $rental->tasks->count() }})</button>
@@ -273,6 +283,174 @@
                 </div>
             @endif
         </div>
+
+        {{-- TAB: Investigación de candidato --}}
+        <div class="tab-content" id="tab-investigacion">
+        @php $inv = $rental->investigation; @endphp
+
+        {{-- Estado actual --}}
+        @if($inv)
+        <div style="background:{{ $inv->visible_to_owner ? '#f0fdf4' : '#f8fafc' }};border:1px solid {{ $inv->visible_to_owner ? '#bbf7d0' : 'var(--border)' }};border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+            <div style="display:flex;align-items:center;gap:.75rem;">
+                <span style="font-size:1.25rem;">{{ $inv->visible_to_owner ? '👁️' : '🔒' }}</span>
+                <div>
+                    <div style="font-size:.85rem;font-weight:700;color:var(--text);">
+                        {{ $inv->visible_to_owner ? 'Visible para el propietario' : 'No presentada al propietario aún' }}
+                    </div>
+                    @if($inv->presented_at)
+                    <div style="font-size:.75rem;color:var(--text-muted);">Presentada el {{ $inv->presented_at->format('d/m/Y H:i') }}</div>
+                    @endif
+                    @if($inv->owner_decision !== 'pending')
+                    <div style="font-size:.78rem;font-weight:600;margin-top:.2rem;color:{{ $inv->owner_decision === 'approved' ? '#166534' : ($inv->owner_decision === 'declined' ? '#991b1b' : '#92400e') }};">
+                        Decisión del propietario: {{ $inv->owner_decision_label }}
+                        @if($inv->owner_decision_at) · {{ $inv->owner_decision_at->format('d/m/Y H:i') }} @endif
+                    </div>
+                    @if($inv->owner_decision_notes)
+                    <div style="font-size:.78rem;color:var(--text-muted);margin-top:.2rem;">Nota: "{{ $inv->owner_decision_notes }}"</div>
+                    @endif
+                    @endif
+                </div>
+            </div>
+            <form method="POST" action="{{ route('rentals.investigacion.toggle', $rental->id) }}">
+                @csrf @method('PATCH')
+                <button type="submit" class="btn btn-sm {{ $inv->visible_to_owner ? 'btn-outline' : 'btn-primary' }}">
+                    {{ $inv->visible_to_owner ? '🔒 Ocultar del portal' : '📤 Presentar al propietario' }}
+                </button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Formulario --}}
+        <form method="POST" action="{{ route('rentals.investigacion.store', $rental->id) }}">
+            @csrf
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+                {{-- Candidato --}}
+                <div class="card" style="grid-column:1/-1;">
+                    <div class="card-header"><h3>Candidato</h3></div>
+                    <div class="card-body">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                            <div class="form-group" style="grid-column:1/-1;">
+                                <label class="form-label">Cliente (inquilino propuesto)</label>
+                                <select name="tenant_client_id" class="form-select">
+                                    <option value="">— Seleccionar cliente —</option>
+                                    @foreach(\App\Models\Client::orderBy('name')->select('id','name','email')->get() as $c)
+                                        <option value="{{ $c->id }}" {{ ($inv?->tenant_client_id ?? $rental->tenant_client_id) == $c->id ? 'selected' : '' }}>
+                                            {{ $c->name }}{{ $c->email ? ' · ' . $c->email : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ocupación / Puesto</label>
+                                <input type="text" name="occupation" class="form-input" value="{{ $inv?->occupation }}" placeholder="Ej. Gerente de Ventas">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Empresa / Empleador</label>
+                                <input type="text" name="employer" class="form-input" value="{{ $inv?->employer }}" placeholder="Ej. Grupo Comercial XYZ">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Antigüedad (años)</label>
+                                <input type="number" name="employment_years" class="form-input" value="{{ $inv?->employment_years }}" min="0" max="99">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tipo de ingreso</label>
+                                <select name="income_type" class="form-select">
+                                    <option value="">— Seleccionar —</option>
+                                    @foreach(\App\Models\TenantInvestigation::INCOME_TYPES as $k => $v)
+                                        <option value="{{ $k }}" {{ $inv?->income_type === $k ? 'selected' : '' }}>{{ $v }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Perfil financiero --}}
+                <div class="card">
+                    <div class="card-header"><h3>Perfil Financiero</h3></div>
+                    <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="form-group" style="grid-column:1/-1;">
+                            <label class="form-label">Ingreso mensual (MXN)</label>
+                            <input type="number" name="monthly_income" class="form-input" value="{{ $inv?->monthly_income }}" min="0" step="100" placeholder="45000">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex;align-items:center;gap:.5rem;">
+                                <input type="checkbox" name="income_verified" value="1" {{ $inv?->income_verified ? 'checked' : '' }}>
+                                Ingreso verificado
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex;align-items:center;gap:.5rem;">
+                                <input type="checkbox" name="bureau_checked" value="1" {{ $inv?->bureau_checked ? 'checked' : '' }}>
+                                Buró consultado
+                            </label>
+                        </div>
+                        <div class="form-group" style="grid-column:1/-1;">
+                            <label class="form-label">Historial crediticio</label>
+                            <select name="credit_status" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach(\App\Models\TenantInvestigation::CREDIT_STATUSES as $k => $v)
+                                    <option value="{{ $k }}" {{ $inv?->credit_status === $k ? 'selected' : '' }}>{{ $v }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column:1/-1;">
+                            <label class="form-label">Notas de crédito</label>
+                            <textarea name="credit_notes" class="form-textarea" rows="2" placeholder="Observaciones del historial crediticio...">{{ $inv?->credit_notes }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Referencias --}}
+                <div class="card">
+                    <div class="card-header"><h3>Referencias</h3></div>
+                    <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="form-group">
+                            <label class="form-label">Núm. de referencias</label>
+                            <input type="number" name="references_count" class="form-input" value="{{ $inv?->references_count ?? 0 }}" min="0" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="display:flex;align-items:center;gap:.5rem;">
+                                <input type="checkbox" name="references_ok" value="1" {{ $inv?->references_ok ? 'checked' : '' }}>
+                                Referencias positivas
+                            </label>
+                        </div>
+                        <div class="form-group" style="grid-column:1/-1;">
+                            <label class="form-label">Notas de referencias</label>
+                            <textarea name="references_notes" class="form-textarea" rows="2" placeholder="Resultados de las referencias...">{{ $inv?->references_notes }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Opinión del asesor --}}
+                <div class="card" style="grid-column:1/-1;">
+                    <div class="card-header"><h3>Tu opinión (visible para el propietario)</h3></div>
+                    <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div class="form-group">
+                            <label class="form-label">Recomendación</label>
+                            <select name="asesor_recommendation" class="form-select">
+                                <option value="">— Seleccionar —</option>
+                                @foreach(\App\Models\TenantInvestigation::RECOMMENDATIONS as $k => $v)
+                                    <option value="{{ $k }}" {{ $inv?->asesor_recommendation === $k ? 'selected' : '' }}>{{ $v }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group" style="grid-column:1/-1;">
+                            <label class="form-label">Carta al propietario <span style="font-weight:400;color:var(--text-muted);">(explica tu recomendación)</span></label>
+                            <textarea name="asesor_notes" class="form-textarea" rows="4"
+                                      placeholder="Ej. María cumple con todos los requisitos. Su relación renta/ingreso es adecuada, cuenta con póliza jurídica aprobada y sus referencias laborales son excelentes. Recomiendo proceder con el contrato.">{{ $inv?->asesor_notes }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>{{-- /grid --}}
+
+            <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+                <button type="submit" class="btn btn-primary">&#10003; Guardar investigación</button>
+            </div>
+        </form>
+        </div>{{-- /tab-investigacion --}}
 
         {{-- TAB: Documents --}}
         <div class="tab-content" id="tab-documents">

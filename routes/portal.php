@@ -50,8 +50,10 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     Route::post('/documentos/subir',         [PortalDocumentController::class, 'upload'])->name('documents.upload');
 
     // Rentas
-    Route::get('/mi-renta',                  [PortalRentalController::class, 'index'])->name('rentals.index');
-    Route::get('/mi-renta/{id}',             [PortalRentalController::class, 'show'])->name('rentals.show');
+    Route::get('/mi-renta',                        [PortalRentalController::class, 'index'])->name('rentals.index');
+    Route::get('/mi-renta/{id}',                   [PortalRentalController::class, 'show'])->name('rentals.show');
+    Route::get('/mi-renta/{id}/candidato',         [PortalRentalController::class, 'investigacion'])->name('rentals.investigacion');
+    Route::post('/mi-renta/{id}/candidato/decision',[PortalRentalController::class, 'submitDecision'])->name('rentals.investigacion.decision');
 
     // Captación (propietario vendedor)
     Route::get('/captacion',                 [PortalCaptacionController::class, 'show'])->name('captacion');
