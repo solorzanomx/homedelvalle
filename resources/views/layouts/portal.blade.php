@@ -10,21 +10,20 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --primary:      {{ $siteSettings->primary_color ?? '#667eea' }};
-            --primary-dark: {{ $siteSettings->secondary_color ?? '#764ba2' }};
-            --hdv-navy:     #0C1A2E;
-            --hdv-navy2:    #112236;
-            --hdv-blue:     #1D4ED8;
-            --hdv-blue50:   #EFF6FF;
-            --bg:           #f8fafc;
-            --card:         #ffffff;
-            --text:         #1e293b;
-            --text-muted:   #64748b;
-            --border:       #e2e8f0;
-            --success:      #10b981;
-            --danger:       #ef4444;
-            --radius:       8px;
-            --sidebar-w:    240px;
+            --primary:       {{ $siteSettings->primary_color ?? '#667eea' }};
+            --primary-dark:  {{ $siteSettings->secondary_color ?? '#764ba2' }};
+            --sidebar-bg:    #1e1b4b;
+            --sidebar-hover: #312e81;
+            --sidebar-text:  #c7d2fe;
+            --bg:            #f8fafc;
+            --card:          #ffffff;
+            --text:          #1e293b;
+            --text-muted:    #64748b;
+            --border:        #e2e8f0;
+            --success:       #10b981;
+            --danger:        #ef4444;
+            --radius:        8px;
+            --sidebar-w:     260px;
         }
 
         body {
@@ -45,7 +44,8 @@
         /* ─── Sidebar ─── */
         .portal-sidebar {
             width: var(--sidebar-w);
-            background: var(--hdv-navy);
+            background: var(--sidebar-bg);
+            color: var(--sidebar-text);
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -58,106 +58,105 @@
 
         /* ─── Sidebar: logo zone ─── */
         .sb-logo {
-            padding: 1.25rem 1rem 1rem;
-            border-bottom: 1px solid rgba(255,255,255,.07);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            min-height: 66px;
+            display: flex;
+            align-items: center;
         }
         .sb-logo a {
             display: flex;
             align-items: center;
-            gap: .6rem;
+            gap: .75rem;
+            width: 100%;
         }
+        .sb-logo img { max-height: 36px; max-width: 85%; object-fit: contain; }
         .sb-logo-mark {
             width: 34px; height: 34px;
-            border-radius: 9px;
-            background: var(--hdv-blue);
+            border-radius: 8px;
+            background: var(--primary);
             display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 1rem; font-weight: 800;
+            color: #fff; font-size: 18px; font-weight: 700;
             flex-shrink: 0;
         }
         .sb-logo-text {
-            font-size: .82rem;
+            font-size: 1.1rem;
             font-weight: 700;
-            color: rgba(255,255,255,.9);
-            letter-spacing: -.2px;
+            color: #fff;
+            letter-spacing: -.3px;
         }
         .sb-logo-sub {
             font-size: .65rem;
-            color: rgba(255,255,255,.38);
+            color: var(--sidebar-text);
+            opacity: .5;
             font-weight: 400;
             display: block;
         }
 
         /* ─── Sidebar: property strip ─── */
         .sb-property {
-            padding: .85rem 1rem .75rem;
-            border-bottom: 1px solid rgba(255,255,255,.07);
+            padding: .75rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,.08);
         }
         .sb-property-label {
-            font-size: .58rem;
-            font-weight: 700;
+            font-size: .65rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: .6px;
-            color: rgba(255,255,255,.28);
+            letter-spacing: 1.2px;
+            color: rgba(199,210,254,.4);
             margin-bottom: .3rem;
         }
         .sb-property-addr {
-            font-size: .75rem;
+            font-size: .82rem;
             font-weight: 600;
-            color: rgba(255,255,255,.8);
+            color: #fff;
             line-height: 1.35;
         }
         .sb-property-colonia {
-            font-size: .68rem;
-            color: rgba(255,255,255,.4);
+            font-size: .72rem;
+            color: var(--sidebar-text);
+            opacity: .6;
             margin-top: .15rem;
         }
 
         /* ─── Sidebar: nav sections ─── */
-        .sb-section {
-            padding: .9rem 0 .25rem;
-        }
+        .sb-section { margin-bottom: .5rem; }
         .sb-section-label {
-            font-size: .58rem;
-            font-weight: 700;
+            display: flex; align-items: center;
+            padding: .75rem 1.5rem .4rem;
+            font-size: .65rem;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: .7px;
-            color: rgba(255,255,255,.28);
-            padding: 0 1rem .5rem;
+            letter-spacing: 1.2px;
+            color: rgba(199,210,254,.4);
         }
 
-        /* ─── Sidebar: nav items ─── */
+        /* ─── Sidebar: nav items — match CRM exactly ─── */
         .sb-item {
             display: flex;
             align-items: center;
-            gap: .65rem;
-            padding: .58rem 1rem;
-            margin: 0 .45rem;
-            border-radius: 7px;
-            font-size: .8rem;
-            font-weight: 500;
-            color: rgba(255,255,255,.5);
-            cursor: pointer;
+            gap: .75rem;
+            padding: .6rem 1.5rem;
+            font-size: .88rem;
+            font-weight: 400;
+            color: var(--sidebar-text);
+            border-left: 3px solid transparent;
             transition: background .15s, color .15s;
             position: relative;
+            cursor: pointer;
+            border-radius: 0;
+            margin: 0;
         }
-        .sb-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); }
+        .sb-item:hover { background: var(--sidebar-hover); color: #fff; }
         .sb-item.active {
-            background: rgba(29,78,216,.25);
+            background: rgba(255,255,255,.08);
             color: #fff;
-            font-weight: 600;
+            font-weight: 500;
+            border-left-color: var(--primary);
         }
-        .sb-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 20%; bottom: 20%;
-            width: 3px;
-            background: var(--hdv-blue);
-            border-radius: 0 3px 3px 0;
-            margin-left: -.45rem;
-        }
-        .sb-item.done { color: rgba(255,255,255,.55); }
+        .sb-item.done { color: var(--sidebar-text); opacity: .8; }
         .sb-item.locked {
-            opacity: .38;
+            opacity: .35;
             cursor: default;
             pointer-events: none;
         }
@@ -171,14 +170,14 @@
             font-weight: 700;
             flex-shrink: 0;
             background: rgba(255,255,255,.08);
-            color: rgba(255,255,255,.4);
+            color: rgba(199,210,254,.5);
         }
         .sb-item.done .sb-stage-num {
             background: rgba(16,185,129,.2);
             color: #10b981;
         }
         .sb-item.active .sb-stage-num {
-            background: var(--hdv-blue);
+            background: var(--primary);
             color: #fff;
         }
         .sb-stage-check { font-size: .7rem; }
@@ -186,66 +185,57 @@
         /* ─── Sidebar: divider ─── */
         .sb-divider {
             height: 1px;
-            background: rgba(255,255,255,.07);
-            margin: .5rem .75rem;
+            background: rgba(255,255,255,.08);
+            margin: .5rem 0;
         }
 
-        /* ─── Sidebar: bottom links ─── */
-        .sb-bottom {
-            margin-top: auto;
-            padding: .5rem 0 1rem;
-            border-top: 1px solid rgba(255,255,255,.07);
-        }
-        .sb-bottom-item {
-            display: flex;
-            align-items: center;
-            gap: .65rem;
-            padding: .5rem 1.45rem;
-            font-size: .78rem;
-            color: rgba(255,255,255,.42);
-            transition: color .15s;
-        }
-        .sb-bottom-item:hover { color: rgba(255,255,255,.75); }
-        .sb-bottom-item.active { color: rgba(255,255,255,.85); }
-        .sb-bottom-icon { font-size: .85rem; }
-
-        /* ─── Sidebar: user strip ─── */
+        /* ─── Sidebar: user card (matches CRM) ─── */
         .sb-user {
+            padding: .75rem;
+            border-top: 1px solid rgba(255,255,255,.08);
+            margin-top: auto;
+        }
+        .sb-user-card {
             display: flex;
             align-items: center;
-            gap: .65rem;
-            padding: .85rem 1rem .7rem;
-            border-top: 1px solid rgba(255,255,255,.07);
+            gap: .75rem;
+            padding: .5rem;
+            border-radius: var(--radius);
+            transition: background .15s;
         }
+        .sb-user-card:hover { background: var(--sidebar-hover); }
         .sb-avatar {
-            width: 30px; height: 30px;
+            width: 36px; height: 36px;
             border-radius: 50%;
-            background: var(--hdv-blue);
+            background: var(--primary);
             display: flex; align-items: center; justify-content: center;
-            color: #fff; font-weight: 700; font-size: .7rem;
+            color: #fff; font-weight: 600; font-size: .85rem;
             flex-shrink: 0;
         }
+        .sb-user-meta { flex: 1; min-width: 0; }
         .sb-user-name {
-            font-size: .75rem;
+            font-size: .82rem;
             font-weight: 600;
-            color: rgba(255,255,255,.75);
-            flex: 1;
-            min-width: 0;
+            color: #fff;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
         }
-        .sb-logout {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: rgba(255,255,255,.3);
-            font-size: .78rem;
-            padding: .25rem .4rem;
-            border-radius: 5px;
-            transition: color .15s;
+        .sb-user-role {
+            font-size: .68rem;
+            color: var(--sidebar-text);
         }
-        .sb-logout:hover { color: rgba(255,255,255,.7); }
+        .sb-footer-actions {
+            display: flex; gap: .35rem; margin-top: .4rem;
+        }
+        .sb-footer-btn {
+            display: inline-flex; align-items: center; gap: .3rem;
+            padding: .25rem .55rem; border-radius: 4px;
+            font-size: .68rem; font-weight: 500; font-family: inherit;
+            cursor: pointer; transition: all .15s; border: none;
+            background: none; color: rgba(199,210,254,.45);
+        }
+        .sb-footer-btn:hover { background: rgba(239,68,68,.15); color: #fca5a5; }
 
         /* ─── Mobile top bar ─── */
         .portal-topbar {
@@ -253,7 +243,7 @@
             position: fixed;
             top: 0; left: 0; right: 0;
             height: 52px;
-            background: var(--hdv-navy);
+            background: var(--sidebar-bg);
             z-index: 150;
             align-items: center;
             padding: 0 1rem;
@@ -450,15 +440,17 @@
         {{-- Logo --}}
         <div class="sb-logo">
             <a href="{{ route('portal.dashboard') }}">
-                @if($siteSettings->logo_path ?? false)
-                    <img src="{{ asset('storage/' . $siteSettings->logo_path) }}" alt="" style="max-height:28px;">
+                @if($siteSettings->logo_path_dark ?? false)
+                    <img src="{{ Storage::url($siteSettings->logo_path_dark) }}" alt="{{ $siteSettings->site_name ?? 'Home del Valle' }}">
+                @elseif($siteSettings->logo_path ?? false)
+                    <img src="{{ asset('storage/' . $siteSettings->logo_path) }}" alt="{{ $siteSettings->site_name ?? 'Home del Valle' }}" style="max-height:36px;">
                 @else
                     <div class="sb-logo-mark">H</div>
+                    <div>
+                        <span class="sb-logo-text">{{ $siteSettings->site_name ?? 'Home del Valle' }}</span>
+                        <span class="sb-logo-sub">Portal del Propietario</span>
+                    </div>
                 @endif
-                <div>
-                    <span class="sb-logo-text">{{ $siteSettings->site_name ?? 'Home del Valle' }}</span>
-                    <span class="sb-logo-sub">Portal del Propietario</span>
-                </div>
             </a>
         </div>
 
@@ -606,12 +598,19 @@
 
         {{-- User strip + logout --}}
         <div class="sb-user">
-            <div class="sb-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
-            <span class="sb-user-name">{{ Auth::user()->name }}</span>
-            <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                @csrf
-                <button type="submit" class="sb-logout" title="Cerrar sesión">&#10005;</button>
-            </form>
+            <div class="sb-user-card">
+                <div class="sb-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
+                <div class="sb-user-meta">
+                    <div class="sb-user-name">{{ Auth::user()->name }}</div>
+                    <div class="sb-user-role">Portal del Propietario</div>
+                </div>
+            </div>
+            <div class="sb-footer-actions">
+                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="sb-footer-btn">&#10005; Cerrar sesión</button>
+                </form>
+            </div>
         </div>
 
     </aside>
