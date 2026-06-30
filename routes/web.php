@@ -356,6 +356,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/email/acuse-configs/{formType}/edit', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'edit'])->name('acuse-configs.edit');
         Route::put('/email/acuse-configs/{formType}', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'update'])->name('acuse-configs.update');
         Route::get('/email/acuse-configs/{formType}/preview', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'preview'])->name('acuse-configs.preview');
+        Route::get('/email/acuse-configs/{formType}/render', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'renderHtml'])->name('acuse-configs.render');
         Route::post('/email/acuse-configs/{formType}/send-test', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'sendTest'])->name('acuse-configs.send-test');
 
         // Custom Email Templates

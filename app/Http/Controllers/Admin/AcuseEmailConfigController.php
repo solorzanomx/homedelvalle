@@ -63,27 +63,37 @@ class AcuseEmailConfigController extends Controller {
         return redirect()->route('admin.acuse-configs.index')->with('success', 'Configuración guardada.');
     }
 
+    private array $samplePayloads = [
+        'vendedor'          => ['colonia' => 'Del Valle', 'tipo_propiedad' => 'departamento', 'timing' => 'inmediato'],
+        'comprador'         => ['tipo_inmueble' => ['departamento'], 'zonas' => ['Del Valle', 'Narvarte'], 'presupuesto' => '4m_6m'],
+        'arrendatario'      => ['tipo_inmueble' => ['departamento'], 'zonas' => ['Del Valle'], 'renta_mensual' => '15k_25k', 'mascotas' => 'perro'],
+        'propietario_renta' => ['colonia' => 'Del Valle', 'tipo_propiedad' => 'departamento', 'renta_esperada' => '18000'],
+        'b2b'               => ['tipo_operacion' => ['compra_terminado'], 'zonas' => ['Benito Juárez'], 'presupuesto' => '50m_120m'],
+        'contacto'          => ['message' => 'Quisiera más información sobre sus servicios.'],
+    ];
+
     public function preview(string $formType) {
         abort_unless(array_key_exists($formType, AcuseEmailConfig::labels()), 404);
 
-        $samplePayloads = [
-            'vendedor'          => ['colonia' => 'Del Valle', 'tipo_propiedad' => 'departamento', 'timing' => 'inmediato'],
-            'comprador'         => ['tipo_inmueble' => ['departamento'], 'zonas' => ['Del Valle', 'Narvarte'], 'presupuesto' => '4m_6m'],
-            'arrendatario'      => ['tipo_inmueble' => ['departamento'], 'zonas' => ['Del Valle'], 'renta_mensual' => '15k_25k', 'mascotas' => 'perro'],
-            'propietario_renta' => ['colonia' => 'Del Valle', 'tipo_propiedad' => 'departamento', 'renta_esperada' => '18000'],
-            'b2b'               => ['tipo_operacion' => ['compra_terminado'], 'zonas' => ['Benito Juárez'], 'presupuesto' => '50m_120m'],
-            'contacto'          => ['message' => 'Quisiera más información sobre sus servicios.'],
-        ];
+        $types  = AcuseEmailConfig::labels();
+        $label  = $types[$formType];
+        $config = AcuseEmailConfig::forType($formType);
+
+        return view('admin.email.acuse-configs.preview', compact('formType', 'label', 'types', 'config'));
+    }
+
+    public function renderHtml(string $formType) {
+        abort_unless(array_key_exists($formType, AcuseEmailConfig::labels()), 404);
 
         $mailable = new AcuseMail(new AcuseData(
-            folio:     'preview-001',
+            folio:     'preview-' . strtoupper(substr($formType, 0, 3)) . '-001',
             email:     'preview@homedelvalle.mx',
             form_type: $formType,
             nombre:    'Juan Pérez López',
-            payload:   $samplePayloads[$formType] ?? [],
+            payload:   $this->samplePayloads[$formType] ?? [],
         ));
 
-        return $mailable->render();
+        return response($mailable->render())->header('Content-Type', 'text/html; charset=utf-8');
     }
 
     public function sendTest(Request $request, string $formType) {
@@ -91,21 +101,12 @@ class AcuseEmailConfigController extends Controller {
 
         $email = $request->input('email', auth()->user()->email);
 
-        $samplePayloads = [
-            'vendedor'          => ['colonia' => 'Del Valle', 'tipo_propiedad' => 'departamento', 'timing' => 'inmediato'],
-            'comprador'         => ['tipo_inmueble' => ['departamento'], 'zonas' => ['Del Valle', 'Narvarte'], 'presupuesto' => '4m_6m'],
-            'arrendatario'      => ['tipo_inmueble' => ['departamento'], 'zonas' => ['Del Valle'], 'renta_mensual' => '15k_25k', 'mascotas' => 'perro'],
-            'propietario_renta' => ['colonia' => 'Del Valle', 'tipo_propiedad' => 'departamento', 'renta_esperada' => '18000'],
-            'b2b'               => ['tipo_operacion' => ['compra_terminado'], 'zonas' => ['Benito Juárez']],
-            'contacto'          => ['message' => 'Consulta de prueba.'],
-        ];
-
         Mail::to($email)->send(new AcuseMail(new AcuseData(
             folio:     'test-' . time(),
             email:     $email,
             form_type: $formType,
             nombre:    'Juan Prueba López',
-            payload:   $samplePayloads[$formType] ?? [],
+            payload:   $this->samplePayloads[$formType] ?? [],
         )));
 
         return back()->with('success', "Correo de prueba enviado a {$email}");
