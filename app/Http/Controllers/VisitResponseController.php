@@ -83,6 +83,15 @@ class VisitResponseController extends Controller
             'reschedule_message'      => $request->mensaje,
         ]);
 
+        // Scoring: reagendar es señal de interés activo del cliente
+        if ($interaction->client_id) {
+            app(\App\Services\LeadScoringService::class)->processEvent(
+                $interaction->client_id,
+                'message_sent',
+                ['source' => 'visit_reschedule_request', 'interaction_id' => $interaction->id]
+            );
+        }
+
         // Notify the broker via custom notifications table + mail
         if ($interaction->user_id) {
             $client = $interaction->client;

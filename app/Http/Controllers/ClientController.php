@@ -202,6 +202,37 @@ class ClientController extends Controller
                 $bodyHtml .= ' <a href="' . route('admin.valuations.show', $interaction->valuation_id) . '" style="color:var(--primary);font-size:.78rem;">Ver valuación →</a>';
             }
 
+            // Enriquecer visitas con todos sus datos relevantes
+            if ($interaction->type === 'visit') {
+                // Fecha y hora agendada
+                if ($interaction->scheduled_at) {
+                    $bodyHtml .= '<div style="margin-top:5px;font-size:.82rem;color:#5a6573;">📅 '
+                        . e($interaction->scheduled_at->format('d/m/Y · H:i')) . ' h'
+                        . ($interaction->duracion ? ' · ' . $interaction->duracion . ' min' : '')
+                        . '</div>';
+                }
+                // Inmueble
+                if ($interaction->property_id && $interaction->property) {
+                    $bodyHtml .= '<div style="font-size:.82rem;color:#5a6573;margin-top:2px;">🏠 '
+                        . e($interaction->property->address ?? 'Inmueble vinculado')
+                        . ($interaction->property->colony ? ', ' . e($interaction->property->colony) : '')
+                        . '</div>';
+                }
+                // Badge de estado
+                if ($interaction->confirmed_at) {
+                    $bodyHtml .= '<div style="margin-top:6px;"><span style="display:inline-block;background:#d1fae5;color:#065f46;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;">✓ Visita confirmada · ' . e($interaction->confirmed_at->format('d/m H:i')) . '</span></div>';
+                } elseif ($interaction->reschedule_requested_at) {
+                    $bodyHtml .= '<div style="margin-top:6px;"><span style="display:inline-block;background:#fef3c7;color:#92400e;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;">↩ Solicitud de reagendamiento · ' . e($interaction->reschedule_requested_at->format('d/m H:i')) . '</span></div>';
+                    if ($interaction->reschedule_message) {
+                        $bodyHtml .= '<div style="margin-top:4px;font-size:.82rem;color:#5a6573;background:#fffbeb;padding:6px 10px;border-radius:6px;border-left:3px solid #f59e0b;">'
+                            . '"' . e($interaction->reschedule_message) . '"'
+                            . '</div>';
+                    }
+                } elseif ($interaction->scheduled_at && $interaction->scheduled_at->isFuture()) {
+                    $bodyHtml .= '<div style="margin-top:6px;"><span style="display:inline-block;background:#eff6ff;color:#1d4ed8;font-size:.75rem;font-weight:700;padding:2px 8px;border-radius:99px;">⏳ Pendiente de confirmar</span></div>';
+                }
+            }
+
             $timeline->push([
                 'date'       => $interaction->created_at,
                 'dot'        => $config['dot'],
