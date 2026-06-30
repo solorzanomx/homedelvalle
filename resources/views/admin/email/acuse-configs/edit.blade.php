@@ -21,7 +21,7 @@
 </div>
 @endif
 
-<div style="display:grid;grid-template-columns:1fr 280px;gap:1.25rem;align-items:start;">
+<div style="display:grid;grid-template-columns:1fr 310px;gap:1.25rem;align-items:start;">
 
 <div>
 <form action="{{ route('admin.acuse-configs.update', $formType) }}" method="POST">
@@ -145,11 +145,22 @@
 <div class="card" style="margin-bottom:1rem;">
 <div class="card-body">
 <h4 style="font-size:0.82rem;font-weight:700;text-transform:uppercase;color:var(--text-muted);margin:0 0 0.75rem;letter-spacing:.05em;">Variables disponibles</h4>
-<div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.78rem;">
-    @foreach(['{{nombre}}' => 'Nombre completo', '{{colonia}}' => 'Colonia (si aplica)', '{{tipo_propiedad}}' => 'Tipo de propiedad', '{{tipo_inmueble}}' => 'Tipo de inmueble', '{{zonas}}' => 'Zonas de interés', '{{presupuesto}}' => 'Presupuesto', '{{mascotas_texto}}' => 'Texto mascotas (arrendatario)'] as $var => $desc)
-    <div style="display:flex;gap:0.5rem;align-items:center;">
-        <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:0.72rem;flex-shrink:0;">{{ $var }}</code>
-        <span style="color:var(--text-muted);">{{ $desc }}</span>
+@php
+$sidebarVars = [
+    '{{nombre}}'         => 'Nombre completo',
+    '{{colonia}}'        => 'Colonia (si aplica)',
+    '{{tipo_propiedad}}' => 'Tipo de propiedad',
+    '{{tipo_inmueble}}'  => 'Tipo de inmueble',
+    '{{zonas}}'          => 'Zonas de interés',
+    '{{presupuesto}}'    => 'Presupuesto',
+    '{{mascotas_texto}}' => 'Texto mascotas (arrendatario)',
+];
+@endphp
+<div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.78rem;">
+    @foreach($sidebarVars as $var => $desc)
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:0.5rem;align-items:start;">
+        <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:0.7rem;white-space:nowrap;color:var(--primary);">{{ $var }}</code>
+        <span style="color:var(--text-muted);line-height:1.35;padding-top:2px;">{{ $desc }}</span>
     </div>
     @endforeach
 </div>
