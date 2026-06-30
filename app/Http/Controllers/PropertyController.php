@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Property\FetchStreetViewPhotoAction;
 use App\Models\Broker;
 use App\Models\Client;
 use App\Models\ClientEmail;
@@ -249,6 +250,25 @@ class PropertyController extends Controller
     {
         $property->delete();
         return redirect()->route('properties.index')->with('success', 'Propiedad eliminada exitosamente');
+    }
+
+    public function fetchStreetView(Property $property, FetchStreetViewPhotoAction $action)
+    {
+        $property->load('photos');
+        $saved = $action->execute($property, forceReplace: false);
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => $saved,
+                'message' => $saved ? 'Foto de fachada generada.' : 'No se encontró imagery de Street View para esta dirección.',
+                'photo_url' => $saved ? $property->photos()->latest()->first()?->path : null,
+            ]);
+        }
+
+        return back()->with(
+            $saved ? 'success' : 'warning',
+            $saved ? 'Foto de fachada generada desde Street View.' : 'No hay imágenes de Street View para esta dirección. Verifica que la dirección sea correcta.'
+        );
     }
 
     public function publishToEasyBroker(Property $property, EasyBrokerService $ebService)

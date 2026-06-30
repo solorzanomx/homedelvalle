@@ -255,7 +255,17 @@
     @endphp
     <div class="prop-gallery {{ $galClass }}">
         @if($photoCount === 0)
-            <div class="prop-gallery-item"><div class="gal-placeholder">&#8962;</div></div>
+            <div class="prop-gallery-item" style="position:relative;">
+                <div class="gal-placeholder">&#8962;</div>
+                @if(config('services.google_maps.key') && ($property->address || $property->colony))
+                <form method="POST" action="{{ route('properties.fetch-street-view', $property) }}" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);">
+                    @csrf
+                    <button type="submit" class="btn btn-outline" style="background:rgba(255,255,255,.92);font-size:.75rem;padding:.35rem .85rem;white-space:nowrap;backdrop-filter:blur(4px);">
+                        📍 Generar foto de fachada
+                    </button>
+                </form>
+                @endif
+            </div>
         @elseif($photoCount === 1)
             <div class="prop-gallery-item" onclick="openLightbox(0)">
                 <img src="{{ asset('storage/' . $photos[0]->path) }}" alt="{{ $property->title }}">
