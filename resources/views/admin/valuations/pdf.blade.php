@@ -45,9 +45,16 @@ $ageLabel   = match($valuation->age_category) {
     default => $valuation->age_category ?? '—',
 };
 
-$address = $valuation->property?->address
-    ? ($valuation->property->address . ($valuation->property->city ? ', ' . $valuation->property->city : ''))
-    : ($typeLabel . ' en ' . $colonia . ', ' . $zone . ', CDMX');
+// Dirección concreta: input_address > property->address > fallback descriptivo
+$address = $valuation->input_address
+    ?? ($valuation->property?->address
+        ? ($valuation->property->address . ($valuation->property->city ? ', ' . $valuation->property->city : ''))
+        : null);
+
+// Lo que se muestra grande en el header (siempre hay algo)
+$addressDisplay = $address ?? ($typeLabel . ' en ' . $colonia . ', ' . $zone . ', CDMX');
+// Subtítulo solo cuando hay dirección real (para no duplicar info)
+$addressSubline = $address ? ($typeLabel . '  ·  ' . $colonia . '  ·  ' . $zone . ', Benito Juárez, CDMX') : null;
 
 $diagLabel = $valuation->diagnosis_label;
 [$diagBg, $diagColor, $diagBorder] = match($valuation->diagnosis) {
@@ -79,14 +86,11 @@ $confidLabel = ['high'=>'Alta','medium'=>'Media','low'=>'Baja'][$valuation->conf
 
 // ─── Mapa estático ────────────────────────────────────────────────────────────
 $mapKey    = config('services.google_maps.key');
-// Usar dirección exacta si fue capturada; de lo contrario, colonia
-$mapAddress = $valuation->input_address
-    ?? $valuation->property?->address
-    ?? null;
-$mapCenter  = $mapAddress
-    ? urlencode($mapAddress . ', Benito Juárez, Ciudad de México, Mexico')
+// Mismo punto que se muestra en el header del PDF
+$mapCenter = $address
+    ? urlencode($address . ', Benito Juárez, Ciudad de México, Mexico')
     : urlencode($colonia . ', Benito Juárez, Ciudad de México, Mexico');
-$mapZoom    = $mapAddress ? 16 : 15;
+$mapZoom   = $address ? 16 : 15;
 $mapUrl    = $mapKey
     ? "https://maps.googleapis.com/maps/api/staticmap?center={$mapCenter}&zoom={$mapZoom}&size=560x260&scale=2&maptype=roadmap"
       . "&style=feature:all|element:geometry|color:0xf2f2f2"
@@ -227,11 +231,11 @@ html, body {
     line-height: 1.2;
 }
 .p1-hd-subtitle {
-    font-size: 8.5px;
-    color: rgba(255,255,255,0.35);
+    font-size: 9.5px;
+    color: rgba(255,255,255,0.60);
     margin-top: 5px;
-    letter-spacing: 1px;
-    font-style: italic;
+    letter-spacing: 0.3px;
+    font-weight: 500;
 }
 
 .p1-hd-right { text-align: right; flex-shrink: 0; }
@@ -277,8 +281,16 @@ html, body {
     font-weight: 800;
     color: #0C1A2E;
     letter-spacing: -0.4px;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     line-height: 1.2;
+}
+.prop-address-sub {
+    font-size: 10px;
+    color: #6B7280;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    margin-bottom: 6px;
+    line-height: 1.4;
 }
 .prop-chips { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
 .prop-chip {
@@ -966,7 +978,7 @@ html, body {
         <div class="p1-hd-center">
             <div class="p1-hd-eyebrow">Documento Técnico Confidencial</div>
             <div class="p1-hd-title">Opinión de Valor Inmobiliario</div>
-            <div class="p1-hd-subtitle">Benito Juárez · Ciudad de México</div>
+            <div class="p1-hd-subtitle">{{ $addressDisplay }}</div>
         </div>
 
         <div class="p1-hd-right">
@@ -982,8 +994,11 @@ html, body {
         {{-- PROPERTY BAND --}}
         <div class="prop-band">
             <div class="prop-band-left">
-                <div class="prop-address">{{ $address }}</div>
-                <div class="prop-chips">
+                <div class="prop-address">{{ $addressDisplay }}</div>
+                @if($addressSubline)
+                <div class="prop-address-sub">{{ $addressSubline }}</div>
+                @endif
+                <div class="prop-chips" style="{{ $addressSubline ? 'margin-top:5px;' : '' }}">
                     <span class="prop-chip">{{ $typeLabel }}</span>
                     <span class="prop-chip">{{ $colonia }} · {{ $zone }}</span>
                     <span class="prop-chip">{{ $ageLabel }}</span>
@@ -1132,6 +1147,7 @@ html, body {
         @php
         // Build rows of cells (4 per row) — only non-null values
         $charCells = [];
+        if ($address) $charCells[] = ['Dirección', $address];
         $charCells[] = ['Colonia', $colonia];
         $charCells[] = ['Zona', $zone . ', Benito Juárez'];
         $charCells[] = ['Tipo', $typeLabel];
