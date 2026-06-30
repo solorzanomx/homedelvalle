@@ -539,6 +539,16 @@
                             <span class="nav-icon"><x-icon name="share-2" class="w-4 h-4" /></span> Posts Facebook
                         </a>
                         @endif
+                        @if(Route::has('admin.social.stories.index'))
+                        <a href="{{ route('admin.social.stories.index') }}" class="nav-item {{ request()->routeIs('admin.social.stories.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="image" class="w-4 h-4" /></span> Historias
+                        </a>
+                        @endif
+                        @if(Route::has('admin.social.calendar'))
+                        <a href="{{ route('admin.social.calendar') }}" class="nav-item {{ request()->routeIs('admin.social.calendar') || request()->routeIs('admin.social.upcoming') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="calendar-days" class="w-4 h-4" /></span> Calendario Social
+                        </a>
+                        @endif
                         @if(Route::has('admin.carousels.prompts'))
                         <a href="{{ route('admin.carousels.prompts') }}" class="nav-item {{ request()->routeIs('admin.carousels.prompts') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="settings" class="w-4 h-4" /></span> Plantillas IA

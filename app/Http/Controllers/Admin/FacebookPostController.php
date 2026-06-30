@@ -28,7 +28,7 @@ class FacebookPostController extends Controller
     {
         $query = FacebookPost::with('user')->latest();
 
-        if ($request->filled('status') && in_array($request->status, ['draft', 'review', 'published'])) {
+        if ($request->filled('status') && in_array($request->status, ['draft', 'review', 'scheduled', 'published'])) {
             $query->where('status', $request->status);
         }
 
@@ -73,9 +73,10 @@ class FacebookPostController extends Controller
             ? Storage::disk('public')->url($post->rendered_image_path) . '?t=' . $post->updated_at->timestamp
             : null;
 
-        $fbApiConfigured = (bool) (SiteSetting::first()?->fb_api_enabled
-            && SiteSetting::first()?->fb_page_id
-            && SiteSetting::first()?->fb_page_access_token);
+        $settings = SiteSetting::first();
+        $fbApiConfigured = (bool) ($settings?->fb_api_enabled
+            && $settings?->fb_page_id
+            && $settings?->fb_page_access_token);
 
         return view('admin.facebook-posts.show', compact('post', 'blogPosts', 'imageUrl', 'fbApiConfigured'));
     }
@@ -94,13 +95,21 @@ class FacebookPostController extends Controller
             'hashtags'            => 'nullable|array',
             'hashtags.*'          => 'string|max:50',
             'bg_overlay_opacity'  => 'nullable|numeric|min:0|max:1',
+            'scheduled_at'        => 'nullable|date',
         ]);
 
-        $post->update($request->only([
+        $updateData = $request->only([
             'title', 'source_type', 'source_id', 'template',
             'headline', 'subheadline', 'body_text', 'caption', 'hashtags',
-            'bg_overlay_opacity',
-        ]));
+            'bg_overlay_opacity', 'scheduled_at',
+        ]);
+
+        // Auto-set status to scheduled if scheduled_at is provided
+        if ($request->has('scheduled_at') && $request->input('scheduled_at') && $post->status === 'draft') {
+            $updateData['status'] = 'scheduled';
+        }
+
+        $post->update($updateData);
 
         // If template changed and image was already rendered, mark as stale
         if ($request->has('template') && $post->rendered_image_path) {

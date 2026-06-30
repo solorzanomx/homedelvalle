@@ -636,6 +636,26 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::delete('/{carousel}/slides/{slide}/background',          [\App\Http\Controllers\Admin\CarouselSlideController::class, 'removeBackground'])->name('slides.background.remove');
     });
 
+    // ===== SOCIAL CALENDAR + STORIES =====
+    Route::prefix('social')->name('social.')->group(function () {
+        Route::get('/calendar',                                         [\App\Http\Controllers\Admin\SocialCalendarController::class, 'index'])->name('calendar');
+        Route::get('/upcoming',                                         [\App\Http\Controllers\Admin\SocialCalendarController::class, 'upcoming'])->name('upcoming');
+        Route::post('/quick-schedule',                                  [\App\Http\Controllers\Admin\SocialCalendarController::class, 'quickSchedule'])->name('quick-schedule');
+
+        Route::prefix('stories')->name('stories.')->group(function () {
+            Route::get('/',                                             [\App\Http\Controllers\Admin\SocialStoryController::class, 'index'])->name('index');
+            Route::get('/create',                                       [\App\Http\Controllers\Admin\SocialStoryController::class, 'create'])->name('create');
+            Route::post('/',                                            [\App\Http\Controllers\Admin\SocialStoryController::class, 'store'])->name('store');
+            Route::get('/{story}',                                      [\App\Http\Controllers\Admin\SocialStoryController::class, 'show'])->name('show');
+            Route::patch('/{story}',                                    [\App\Http\Controllers\Admin\SocialStoryController::class, 'update'])->name('update');
+            Route::delete('/{story}',                                   [\App\Http\Controllers\Admin\SocialStoryController::class, 'destroy'])->name('destroy');
+            Route::post('/{story}/upload-bg',                           [\App\Http\Controllers\Admin\SocialStoryController::class, 'uploadBackground'])->name('upload-bg');
+            Route::post('/{story}/render',                              [\App\Http\Controllers\Admin\SocialStoryController::class, 'renderStory'])->name('render');
+            Route::post('/{story}/publish',                             [\App\Http\Controllers\Admin\SocialStoryController::class, 'publishStory'])->name('publish');
+            Route::get('/{story}/download',                             [\App\Http\Controllers\Admin\SocialStoryController::class, 'download'])->name('download');
+        });
+    });
+
     // ===== OPINIÓN DE VALOR =====
     Route::prefix('valuations')->name('valuations.')->group(function () {
         Route::get('/',                              [\App\Http\Controllers\Admin\ValuationController::class, 'index'])->name('index');

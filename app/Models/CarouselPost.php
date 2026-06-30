@@ -26,14 +26,16 @@ class CarouselPost extends Model
         'approved_version_id',
         'approved_at',
         'published_at',
+        'scheduled_at',
     ];
 
     protected function casts(): array
     {
         return [
             'hashtags'    => 'array',
-            'approved_at' => 'datetime',
-            'published_at'=> 'datetime',
+            'approved_at'  => 'datetime',
+            'published_at' => 'datetime',
+            'scheduled_at' => 'datetime',
         ];
     }
 

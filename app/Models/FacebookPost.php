@@ -25,6 +25,7 @@ class FacebookPost extends Model
         'render_error',
         'status',
         'published_at',
+        'scheduled_at',
         'fb_page_post_id',
         'fb_post_url',
     ];
@@ -32,6 +33,7 @@ class FacebookPost extends Model
     protected $casts = [
         'hashtags'           => 'array',
         'published_at'       => 'datetime',
+        'scheduled_at'       => 'datetime',
         'bg_overlay_opacity' => 'float',
     ];
 
@@ -51,6 +53,28 @@ class FacebookPost extends Model
     public function sourcePost(): BelongsTo
     {
         return $this->belongsTo(Post::class, 'source_id');
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match ($this->status) {
+            'draft'      => 'Borrador',
+            'review'     => 'En revisión',
+            'scheduled'  => 'Programado',
+            'published'  => 'Publicado',
+            default      => $this->status,
+        };
+    }
+
+    public function getStatusColorAttribute(): string
+    {
+        return match ($this->status) {
+            'draft'      => 'yellow',
+            'review'     => 'orange',
+            'scheduled'  => 'purple',
+            'published'  => 'green',
+            default      => 'gray',
+        };
     }
 
     public function hashtagsString(): string

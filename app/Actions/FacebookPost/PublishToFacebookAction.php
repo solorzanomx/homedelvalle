@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
  * Requiere en SiteSetting:
  *   fb_api_enabled       = true
  *   fb_page_id           = ID numérico de la página
- *   fb_page_access_token = Page Access Token con pages_manage_posts + pages_read_engagement
+ *   fb_page_access_token = Page Access Token con pages_manage_posts + pages_show_list
  */
 class PublishToFacebookAction
 {
