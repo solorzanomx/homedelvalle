@@ -685,6 +685,9 @@
                         <a href="{{ route('admin.email.assets.index') }}" class="nav-item {{ request()->routeIs('admin.email.assets*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="image" class="w-4 h-4" /></span> Assets Email
                         </a>
+                        <a href="{{ route('admin.acuse-configs.index') }}" class="nav-item {{ request()->routeIs('admin.acuse-configs*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="mail" class="w-4 h-4" /></span> Acuses de Recibo
+                        </a>
                         @if(Route::has('admin.checklists.index'))
                         <a href="{{ route('admin.checklists.index') }}" class="nav-item {{ request()->routeIs('admin.checklists.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="square-check" class="w-4 h-4" /></span> Checklists

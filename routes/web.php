@@ -351,6 +351,13 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/email/transactional-emails/{templateId}/send-test', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'sendTest'])->name('transactional-emails.send-test');
         Route::get('/email/transactional-emails/{templateId}/render', [\App\Http\Controllers\Admin\TransactionalEmailController::class, 'renderHtml'])->name('transactional-emails.render');
 
+        // Acuse Email Configs
+        Route::get('/email/acuse-configs', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'index'])->name('acuse-configs.index');
+        Route::get('/email/acuse-configs/{formType}/edit', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'edit'])->name('acuse-configs.edit');
+        Route::put('/email/acuse-configs/{formType}', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'update'])->name('acuse-configs.update');
+        Route::get('/email/acuse-configs/{formType}/preview', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'preview'])->name('acuse-configs.preview');
+        Route::post('/email/acuse-configs/{formType}/send-test', [\App\Http\Controllers\Admin\AcuseEmailConfigController::class, 'sendTest'])->name('acuse-configs.send-test');
+
         // Custom Email Templates
         Route::prefix('email/custom-templates')->name('custom-templates.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Admin\CustomEmailTemplateController::class, 'index'])->name('index');
