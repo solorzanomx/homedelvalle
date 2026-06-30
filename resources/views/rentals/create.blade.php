@@ -37,7 +37,7 @@
                         <select name="property_id" class="form-select" required>
                             <option value="">Seleccionar propiedad...</option>
                             @foreach($properties as $property)
-                                <option value="{{ $property->id }}" {{ old('property_id') == $property->id ? 'selected' : '' }}>{{ $property->title ?? 'Propiedad #'.$property->id }}</option>
+                                <option value="{{ $property->id }}" {{ old('property_id', $prefill['property_id']) == $property->id ? 'selected' : '' }}>{{ $property->title ?? 'Propiedad #'.$property->id }}</option>
                             @endforeach
                         </select>
                         <div class="form-hint">Solo propiedades tipo renta</div>
@@ -47,7 +47,16 @@
                         <select name="owner_client_id" class="form-select">
                             <option value="">Seleccionar cliente...</option>
                             @foreach($clients as $client)
-                                <option value="{{ $client->id }}" {{ old('owner_client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
+                                <option value="{{ $client->id }}" {{ old('owner_client_id', $prefill['owner_client_id']) == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Arrendatario</label>
+                        <select name="tenant_client_id" class="form-select">
+                            <option value="">Seleccionar cliente...</option>
+                            @foreach($clients as $client)
+                                <option value="{{ $client->id }}" {{ old('tenant_client_id', $prefill['tenant_client_id']) == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -55,12 +55,19 @@ class RentalProcessController extends Controller
         return view('rentals.index', compact('rentals', 'stages', 'rentalsByStage', 'stats', 'brokers'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $properties = Property::whereIn('operation_type', ['rental', 'temporary_rental'])->get();
         $clients = Client::orderBy('name')->get();
         $brokers = Broker::where('status', 'active')->get();
-        return view('rentals.create', compact('properties', 'clients', 'brokers'));
+
+        $prefill = [
+            'property_id'      => $request->query('property'),
+            'owner_client_id'  => $request->query('owner'),
+            'tenant_client_id' => $request->query('tenant'),
+        ];
+
+        return view('rentals.create', compact('properties', 'clients', 'brokers', 'prefill'));
     }
 
     public function store(Request $request)
@@ -68,6 +75,7 @@ class RentalProcessController extends Controller
         $validated = $request->validate([
             'property_id' => 'required|exists:properties,id',
             'owner_client_id' => 'nullable|exists:clients,id',
+            'tenant_client_id' => 'nullable|exists:clients,id',
             'broker_id' => 'nullable|exists:brokers,id',
             'monthly_rent' => 'nullable|numeric|min:0',
             'currency' => 'nullable|in:MXN,USD',

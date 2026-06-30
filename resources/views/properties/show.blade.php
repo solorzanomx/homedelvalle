@@ -348,6 +348,9 @@
                 &#9733; {{ $property->is_featured ? 'Destacada' : 'Destacar' }}
             </button>
         </form>
+        @if(in_array($property->operation_type, ['rental', 'temporary_rental']))
+            <a href="{{ route('rentals.create', array_filter(['property' => $property->id, 'owner' => $property->client_id])) }}" class="btn btn-outline">&#127968; Nueva renta</a>
+        @endif
         @if($property->broker && $property->broker->phone)
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $property->broker->phone) }}" target="_blank" class="btn btn-outline" style="color:#25d366; border-color:#25d366;">&#128172; Broker</a>
         @endif

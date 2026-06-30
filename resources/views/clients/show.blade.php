@@ -203,6 +203,7 @@
             <a href="{{ route('clients.email.compose', $client) }}" class="btn btn-outline">&#9993; Email</a>
         @endif
         <a href="{{ route('clients.edit', $client) }}" class="btn btn-outline">&#9998; Editar</a>
+        <a href="{{ route('rentals.create', ['owner' => $client->id]) }}" class="btn btn-outline">&#127968; Nueva renta</a>
     </div>
 </div>
 
