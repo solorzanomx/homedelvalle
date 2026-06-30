@@ -354,9 +354,18 @@
         @if($property->broker && $property->broker->phone)
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $property->broker->phone) }}" target="_blank" class="btn btn-outline" style="color:#25d366; border-color:#25d366;">&#128172; Broker</a>
         @endif
+        <button type="button" onclick="document.getElementById('visitModal').style.display='flex'" class="btn btn-outline" style="color:#f59e0b;border-color:#f59e0b;">&#128197; Agendar Visita</button>
         <a href="{{ route('properties.index') }}" class="btn btn-outline">Volver</a>
     </div>
 </div>
+
+{{-- Flash message --}}
+@if(session('success'))
+<div style="position:fixed;top:1.25rem;right:1.25rem;z-index:9999;background:#d1fae5;border:1px solid #6ee7b7;color:#047857;padding:.85rem 1.25rem;border-radius:8px;font-size:.9rem;max-width:380px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
+    {{ session('success') }}
+</div>
+<script>setTimeout(function(){ var el = document.querySelector('[style*="d1fae5"]'); if(el) el.remove(); }, 5000);</script>
+@endif
 
 {{-- Lightbox --}}
 <div class="lb-overlay" id="lightbox" onclick="if(event.target===this) closeLightbox()">
@@ -1076,5 +1085,86 @@ function ebAction(action) {
 </script>
 <style>
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Visit Modal */
+#visitModal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:2000; align-items:center; justify-content:center; }
+.visit-modal-box { background:#fff; border-radius:14px; padding:2rem; width:100%; max-width:480px; box-shadow:0 20px 60px rgba(0,0,0,.2); position:relative; }
+.visit-modal-box h3 { margin:0 0 1.25rem; font-size:1.1rem; }
+.vm-field { margin-bottom:.85rem; }
+.vm-field label { display:block; font-size:.8rem; font-weight:700; color:#6b7280; margin-bottom:.3rem; text-transform:uppercase; letter-spacing:.04em; }
+.vm-field input, .vm-field select, .vm-field textarea { width:100%; padding:.6rem .75rem; border:1px solid #e5e7eb; border-radius:8px; font-size:.9rem; box-sizing:border-box; }
+.vm-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.vm-close { position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.4rem; cursor:pointer; color:#9ca3af; line-height:1; }
+.vm-close:hover { color:#374151; }
 </style>
+
+{{-- Agendar Visita Modal --}}
+<div id="visitModal">
+    <div class="visit-modal-box">
+        <button class="vm-close" onclick="document.getElementById('visitModal').style.display='none'">&times;</button>
+        <h3>&#128197; Agendar Visita — {{ $property->address }}</h3>
+
+        <form method="POST" action="{{ route('properties.schedule-visit', $property) }}">
+            @csrf
+
+            <div class="vm-field">
+                <label>Cliente</label>
+                <select name="client_id" required>
+                    <option value="">— Selecciona un cliente —</option>
+                    @foreach($clients as $c)
+                    <option value="{{ $c->id }}">{{ $c->name }}{{ $c->email ? ' · ' . $c->email : '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="vm-grid">
+                <div class="vm-field">
+                    <label>Fecha</label>
+                    <input type="date" name="scheduled_at_date" required min="{{ date('Y-m-d') }}">
+                </div>
+                <div class="vm-field">
+                    <label>Hora</label>
+                    <input type="time" name="scheduled_at_time" value="10:00" required>
+                </div>
+                <div class="vm-field">
+                    <label>Duración</label>
+                    <select name="duracion">
+                        <option value="30">30 min</option>
+                        <option value="60">1 hora</option>
+                        <option value="90">1:30 h</option>
+                        <option value="120">2 horas</option>
+                    </select>
+                </div>
+                <div class="vm-field">
+                    <label>Asesor que acompaña</label>
+                    <input type="text" name="asesor_nombre" value="{{ auth()->user()->name ?? '' }}" placeholder="Nombre del asesor">
+                </div>
+            </div>
+
+            <div class="vm-field">
+                <label>Notas de la visita (opcional)</label>
+                <textarea name="description" rows="2" placeholder="Interés del cliente, preferencias..."></textarea>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;margin-bottom:1.25rem;">
+                <input type="checkbox" name="send_confirmation_email" id="vm_send_email" value="1" checked style="width:auto;accent-color:#667eea;">
+                <label for="vm_send_email" style="font-size:.85rem;color:#374151;font-weight:500;cursor:pointer;margin:0;text-transform:none;letter-spacing:0;">
+                    Enviar correo de confirmación al cliente
+                </label>
+            </div>
+
+            <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('visitModal').style.display='none'" class="btn btn-outline">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Agendar visita</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Close modal on backdrop click
+document.getElementById('visitModal').addEventListener('click', function(e) {
+    if (e.target === this) this.style.display = 'none';
+});
+</script>
 @endsection

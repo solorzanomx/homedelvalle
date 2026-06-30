@@ -180,6 +180,7 @@ Route::middleware('auth')->group(function () {
 
     // CRUD protegido por autenticación
     Route::resource('properties', PropertyController::class);
+    Route::post('properties/{property}/schedule-visit', [PropertyController::class, 'scheduleVisit'])->name('properties.schedule-visit');
     Route::post('properties/{property}/fetch-street-view', [PropertyController::class, 'fetchStreetView'])->name('properties.fetch-street-view');
     Route::post('properties/{property}/publish-easybroker', [PropertyController::class, 'publishToEasyBroker'])->name('properties.publish-easybroker');
     Route::post('properties/{property}/unpublish-easybroker', [PropertyController::class, 'unpublishFromEasyBroker'])->name('properties.unpublish-easybroker');

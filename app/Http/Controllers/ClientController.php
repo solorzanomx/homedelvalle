@@ -135,6 +135,15 @@ class ClientController extends Controller
             ->with('broker')
             ->get();
 
+        // Full inventory for visit scheduling (exclude client's own and deal props to avoid dupes)
+        $excludedIds = $ownedProperties->pluck('id')->merge($dealProperties->pluck('id'))->unique();
+        $allActiveProperties = Property::where('status', 'available')
+            ->whereNotIn('id', $excludedIds)
+            ->orderBy('address')
+            ->select('id', 'address', 'colony')
+            ->limit(200)
+            ->get();
+
         // Properties sent via email
         $emailPropertyIds = $emails->pluck('property_ids')->filter()->flatten()->unique()->values();
         $emailProperties = $emailPropertyIds->isNotEmpty()
@@ -276,7 +285,8 @@ class ClientController extends Controller
         return view('clients.show', compact(
             'client', 'emails', 'interactions', 'emailsSent', 'emailsOpened',
             'timeline', 'ownedProperties', 'dealProperties', 'emailProperties',
-            'confidencialidadRequest', 'captacion', 'clientDocs', 'allDocCategories'
+            'confidencialidadRequest', 'captacion', 'clientDocs', 'allDocCategories',
+            'allActiveProperties'
         ));
     }
 

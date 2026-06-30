@@ -104,8 +104,10 @@ class PropertyController extends Controller
         // Opiniones de valor vinculadas a esta propiedad
         $valuations = $property->valuations()->with('creator', 'colonia')->latest()->get();
 
+        $clients = Client::orderBy('name')->select('id', 'name', 'email')->get();
+
         return view('properties.show', compact(
-            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations'
+            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients'
         ));
     }
 
@@ -310,5 +312,79 @@ class PropertyController extends Controller
             : "\"{$property->title}\" ya no es Destacada.";
 
         return back()->with('success', $msg);
+    }
+
+    public function scheduleVisit(Request $request, Property $property)
+    {
+        $validated = $request->validate([
+            'client_id'               => 'required|exists:clients,id',
+            'description'             => 'nullable|string|max:1000',
+            'scheduled_at_date'       => 'required|date',
+            'scheduled_at_time'       => 'required|date_format:H:i',
+            'duracion'                => 'nullable|integer|in:30,60,90,120',
+            'asesor_nombre'           => 'nullable|string|max:100',
+            'send_confirmation_email' => 'nullable|boolean',
+        ]);
+
+        $client = Client::findOrFail($validated['client_id']);
+        $scheduled = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $validated['scheduled_at_time']);
+
+        $interaction = \App\Models\Interaction::create([
+            'client_id'               => $client->id,
+            'property_id'             => $property->id,
+            'user_id'                 => \Illuminate\Support\Facades\Auth::id(),
+            'type'                    => 'visit',
+            'description'             => $validated['description'] ?? "Visita agendada para {$property->address}",
+            'scheduled_at'            => $scheduled,
+            'visit_token'             => \Illuminate\Support\Str::uuid()->toString(),
+            'send_confirmation_email' => $request->boolean('send_confirmation_email', true),
+        ]);
+
+        // Lead scoring
+        app(\App\Services\LeadScoringService::class)->processEvent($client->id, 'visit_scheduled', ['source' => 'interaction']);
+
+        // Passive scoring for property owner
+        if ($property->owner && $property->owner->id !== $client->id) {
+            app(\App\Services\LeadScoringService::class)->processEvent(
+                $property->owner->id,
+                'message_sent',
+                ['source' => 'property_visit_scheduled', 'property_id' => $property->id]
+            );
+        }
+
+        // Send confirmation email
+        if ($interaction->send_confirmation_email && $client->email) {
+            try {
+                $asesor = $validated['asesor_nombre'] ?? auth()->user()->name ?? 'Tu asesor';
+                $duracion = (string) ($validated['duracion'] ?? '30');
+                $addressParts = array_filter([$property->address ?? '', $property->colony ?? '']);
+                $address = urlencode(implode(' ', $addressParts));
+                $mapsUrl = $address ? "https://www.google.com/maps/search/?api=1&query={$address}" : '';
+
+                \Illuminate\Support\Facades\Mail::to($client->email)->send(
+                    new \App\Mail\V4\Mailables\CitaMail(
+                        new \App\Mail\V4\Data\CitaData(
+                            email: $client->email,
+                            nombre: $client->name,
+                            dia_semana: $scheduled->locale('es')->dayName,
+                            dia: (string) $scheduled->day,
+                            mes: $scheduled->locale('es')->monthName,
+                            anio: (string) $scheduled->year,
+                            hora: $scheduled->format('g:i A'),
+                            duracion: $duracion,
+                            direccion: $property->address ?? 'A coordinar',
+                            colonia: $property->colony ?? '',
+                            asesor: $asesor,
+                            visit_token: $interaction->visit_token,
+                            maps_url: $mapsUrl,
+                        )
+                    )
+                );
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('Visit confirmation email failed: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('properties.show', $property)->with('success', "Visita agendada para {$client->name} el {$scheduled->format('d/m/Y')} a las {$scheduled->format('H:i')}.");
     }
 }

@@ -251,6 +251,17 @@
                             @endforeach
                         </optgroup>
                         @endif
+                        @if(isset($allActiveProperties) && $allActiveProperties->count())
+                        <optgroup label="Inventario disponible">
+                            @foreach($allActiveProperties as $prop)
+                            <option value="{{ $prop->id }}"
+                                    data-address="{{ $prop->address }}"
+                                    data-colonia="{{ $prop->colony ?? '' }}">
+                                {{ $prop->address }}{{ $prop->colony ? ' — ' . $prop->colony : '' }}
+                            </option>
+                            @endforeach
+                        </optgroup>
+                        @endif
                     </select>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
