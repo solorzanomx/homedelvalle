@@ -91,7 +91,7 @@
         ],
     };
 
-    $iconBase = asset('img/email/');
+    $iconBase = rtrim(asset('img/email'), '/') . '/';
 @endphp
 <!DOCTYPE html>
 <html lang="es" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -131,7 +131,7 @@ a{text-decoration:none}
     {{-- Header: Logo --}}
     <tr>
         <td class="px" align="center" style="padding:24px 34px;border-bottom:1px solid #EEF1F6;">
-            <img src="{{ $iconBase }}logo-azul.png" width="116" height="40" alt="Home del Valle"
+            <img src="{{ $logoUrl ?? $iconBase . 'logo-azul.png' }}" width="116" height="40" alt="Home del Valle"
                  style="width:116px;height:40px;margin:0 auto;">
             <div style="font-size:11px;color:#7A8594;font-weight:700;letter-spacing:.4px;margin-top:9px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
                 Pocos inmuebles &middot; Más control &middot; Mejores resultados
