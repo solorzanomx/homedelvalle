@@ -138,20 +138,28 @@ html, body {
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
 }
+@media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
 
-/* ── PALETA ──────────────────────────────────────────────────────────────────
-   #0C1A2E  navy — footer bg, títulos primarios
-   #1D4ED8  azul vibrante — acento primario, precio sugerido
-   #2563A0  azul medio — labels, barras, borders
-   #3B82F6  azul claro — fills secundarios
-   #EFF6FF  azul 50 — fondos de sección acento
-   #F9FAFB  gris 50 — fondos alternos
-   #E5E7EB  gris 200 — divisores
-   #6B7280  gris 500 — texto secundario
-   #111827  gris 900 — texto principal
-────────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   PALETTE
+   #0C1A2E  navy       — header/footer bg, primary titles
+   #1D4ED8  blue       — accents, CTAs, highlights
+   #EFF6FF  blue-50    — hero section bg
+   #DBEAFE  blue-100   — hero section bg gradient
+   #BFDBFE  blue-200   — borders, fills
+   #F9FAFB  gray-50    — section alt backgrounds
+   #E5E7EB  gray-200   — dividers, borders
+   #111827  gray-900   — primary text
+   #374151  gray-700   — secondary text
+   #6B7280  gray-500   — muted text
+   #9CA3AF  gray-400   — labels, placeholders
+   #15803D  green      — positive values
+   #DC2626  red        — negative values
+═══════════════════════════════════════════════════════════════════════════ */
 
-/* ── LAYOUT DE PÁGINA (CSS Grid) ─────────────────────────────────────────── */
+/* ── PAGE LAYOUT ──────────────────────────────────────────────────────────── */
 .page {
     width: 100%;
     height: 297mm;
@@ -162,233 +170,306 @@ html, body {
 }
 .page-break { break-after: page; page-break-after: always; }
 
-/* ── HEADER PRINCIPAL ─────────────────────────────────────────────────────── */
-.hd {
-    padding: 18px 48px 16px;
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE 1 — EXECUTIVE COVER
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── P1 DARK HEADER BAND ──────────────────────────────────────────────────── */
+.p1-header {
+    background: #0C1A2E;
+    padding: 0 48px;
+    height: 82px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    border-bottom: 2px solid #1D4ED8;
+    gap: 24px;
+    flex-shrink: 0;
 }
-.hd-logo { flex-shrink: 0; }
-.hd-logo img { height: 34px; width: auto; display: block; }
-.hd-logo-txt { font-size: 14px; font-weight: 800; color: #0C1A2E; letter-spacing: -0.3px; }
-.hd-logo-sub { font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF; margin-top: 4px; }
-.hd-center { flex: 1; text-align: center; }
-.hd-eyebrow { font-size: 8px; text-transform: uppercase; letter-spacing: 4.5px; color: #9CA3AF; font-weight: 600; margin-bottom: 3px; }
-.hd-title { font-size: 17px; font-weight: 800; color: #0C1A2E; letter-spacing: -0.4px; line-height: 1.2; }
-.hd-right { text-align: right; flex-shrink: 0; }
-.hd-folio-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF; }
-.hd-folio { font-size: 14px; font-weight: 800; color: #0C1A2E; margin-top: 1px; font-feature-settings: "tnum"; }
-.hd-date { font-size: 10px; color: #6B7280; margin-top: 3px; }
 
-/* ── MINI HEADER (págs 2 y 3) ────────────────────────────────────────────── */
-.mhd {
-    padding: 12px 48px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid #1D4ED8;
-    background: #F9FAFB;
+.p1-hd-logo { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
+.p1-hd-logo img { height: 32px; width: auto; display: block; filter: brightness(0) invert(1); }
+.p1-hd-logo-txt {
+    font-size: 15px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
 }
-.mhd-logo img { height: 22px; width: auto; display: block; }
-.mhd-logo-txt { font-size: 12px; font-weight: 800; color: #0C1A2E; }
-.mhd-right { text-align: right; }
-.mhd-folio { font-size: 8px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.5px; }
-.mhd-section { font-size: 10px; font-weight: 700; color: #1D4ED8; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+.p1-hd-logo-sub {
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+}
 
-/* ── BODY WRAPPER ─────────────────────────────────────────────────────────── */
-.body { overflow: hidden; }
+.p1-hd-center { flex: 1; text-align: center; }
+.p1-hd-eyebrow {
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.p1-hd-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+.p1-hd-subtitle {
+    font-size: 8.5px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 5px;
+    letter-spacing: 1px;
+    font-style: italic;
+}
+
+.p1-hd-right { text-align: right; flex-shrink: 0; }
+.p1-hd-folio-lbl {
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.35);
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.p1-hd-folio {
+    font-size: 13px;
+    font-weight: 800;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-feature-settings: "tnum";
+    letter-spacing: 0.5px;
+}
+.p1-hd-date {
+    font-size: 9px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 4px;
+}
+
+/* ── P1 BODY ─────────────────────────────────────────────────────────────── */
+.p1-body { overflow: hidden; display: flex; flex-direction: column; }
 
 /* ── PROPERTY BAND ────────────────────────────────────────────────────────── */
 .prop-band {
-    background: #F9FAFB;
+    background: #fff;
     border-bottom: 1px solid #E5E7EB;
     padding: 14px 48px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 20px;
+    flex-shrink: 0;
 }
+.prop-band-left { min-width: 0; flex: 1; }
 .prop-address {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 800;
     color: #0C1A2E;
-    letter-spacing: -0.3px;
-    margin-bottom: 7px;
-    line-height: 1.25;
+    letter-spacing: -0.4px;
+    margin-bottom: 8px;
+    line-height: 1.2;
 }
-.prop-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.prop-chips { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
 .prop-chip {
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 600;
     color: #374151;
-    background: #fff;
+    background: #F9FAFB;
     border: 1px solid #E5E7EB;
-    border-radius: 2px;
-    padding: 2px 8px;
+    border-radius: 3px;
+    padding: 3px 9px;
     white-space: nowrap;
 }
-.prop-chip-light { color: #6B7280; background: transparent; border-color: transparent; padding-left: 0; }
+.prop-chip-muted {
+    font-size: 9.5px;
+    font-weight: 500;
+    color: #9CA3AF;
+    background: transparent;
+    border: 1px solid #F3F4F6;
+    border-radius: 3px;
+    padding: 3px 9px;
+    white-space: nowrap;
+}
 .diag-badge {
-    display: inline-block;
-    padding: 5px 14px;
-    font-size: 9px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    font-size: 8.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     border: 1px solid {{ $diagBorder }};
     background: {{ $diagBg }};
     color: {{ $diagColor }};
-    border-radius: 2px;
+    border-radius: 3px;
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 /* ── PRICE HERO ───────────────────────────────────────────────────────────── */
-.price-section {
+.price-hero {
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE 60%, #EFF6FF);
     padding: 22px 48px 18px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid #BFDBFE;
     display: flex;
-    align-items: flex-end;
+    align-items: stretch;
     justify-content: space-between;
-    gap: 24px;
-}
-.price-left { flex: 1; min-width: 0; }
-.price-eyebrow {
-    font-size: 8.5px;
-    text-transform: uppercase;
-    letter-spacing: 3.5px;
-    color: #1D4ED8;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-.price-num {
-    font-size: 56px;
-    font-weight: 900;
-    color: #0C1A2E;
-    letter-spacing: -3.5px;
-    line-height: 1;
-    font-feature-settings: "tnum";
-    white-space: nowrap;
-}
-.price-cur {
-    font-size: 22px;
-    font-weight: 400;
-    color: #9CA3AF;
-    vertical-align: top;
-    line-height: 56px;
-    margin-right: 2px;
-}
-.price-mxn {
-    font-size: 11px;
-    font-weight: 500;
-    color: #9CA3AF;
-    letter-spacing: 1px;
-    margin-left: 8px;
-    vertical-align: middle;
-}
-.price-sub {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #6B7280;
-    line-height: 1.4;
-}
-
-/* ── KPI CARDS ────────────────────────────────────────────────────────────── */
-.kpi-row {
-    display: flex;
-    gap: 0;
-    border: 1px solid #E5E7EB;
-    border-radius: 4px;
-    overflow: hidden;
+    gap: 32px;
     flex-shrink: 0;
 }
-.kpi {
-    padding: 10px 16px;
-    border-right: 1px solid #E5E7EB;
-    text-align: center;
-    min-width: 88px;
+.price-hero-left { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.price-eyebrow {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: #1D4ED8;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
-.kpi:last-child { border-right: none; }
-.kpi:first-child { border-left: 3px solid #1D4ED8; }
-.kpi-v {
-    display: block;
-    font-size: 16px;
+.price-figure {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+.price-dollar {
+    font-size: 26px;
+    font-weight: 400;
+    color: #6B7280;
+    margin-top: 6px;
+    margin-right: 2px;
+    font-feature-settings: "tnum";
+}
+.price-amount {
+    font-size: 52px;
+    font-weight: 900;
+    color: #0C1A2E;
+    letter-spacing: -3px;
+    font-feature-settings: "tnum";
+    line-height: 1;
+}
+.price-mxn-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9CA3AF;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 8px;
+    margin-left: 6px;
+    align-self: flex-end;
+    padding-bottom: 6px;
+}
+.price-meta {
+    font-size: 11.5px;
+    color: #6B7280;
+    line-height: 1.5;
+}
+.price-meta strong { color: #0C1A2E; font-weight: 700; }
+
+/* ── KPI 2×2 GRID ─────────────────────────────────────────────────────────── */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    border: 1px solid #BFDBFE;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+    width: 248px;
+    background: rgba(255,255,255,0.7);
+}
+.kpi-cell {
+    padding: 12px 14px;
+    border-right: 1px solid #BFDBFE;
+    border-bottom: 1px solid #BFDBFE;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.kpi-cell:nth-child(2n) { border-right: none; }
+.kpi-cell:nth-child(3),
+.kpi-cell:nth-child(4) { border-bottom: none; }
+.kpi-cell:first-child { border-left: 3px solid #1D4ED8; }
+.kpi-label {
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #6B7280;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.kpi-value {
+    font-size: 15px;
     font-weight: 800;
     color: #0C1A2E;
     letter-spacing: -0.5px;
     font-feature-settings: "tnum";
     line-height: 1.1;
 }
-.kpi-v-pos { color: #15803D; }
-.kpi-v-neg { color: #DC2626; }
-.kpi-l {
-    display: block;
-    font-size: 7.5px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #9CA3AF;
-    font-weight: 600;
-    margin-top: 4px;
-}
+.kpi-value-pos { color: #15803D; }
+.kpi-value-neg { color: #DC2626; }
 
 /* ── RANGE VISUALIZATION ──────────────────────────────────────────────────── */
 .range-section {
-    padding: 20px 48px 16px;
+    padding: 18px 48px 14px;
     border-bottom: 1px solid #E5E7EB;
+    flex-shrink: 0;
+    background: #fff;
 }
 .range-eyebrow {
-    font-size: 8.5px;
+    font-size: 8px;
     text-transform: uppercase;
-    letter-spacing: 3.5px;
+    letter-spacing: 4px;
     color: #1D4ED8;
     font-weight: 700;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
-.rv {
+.rv-outer {
     position: relative;
-    margin: 0 8px;
+    margin: 0 10px;
 }
 .rv-track {
     position: relative;
-    height: 6px;
+    height: 8px;
     background: #E5E7EB;
-    border-radius: 3px;
-    margin: 28px 0 32px;
+    border-radius: 4px;
+    margin: 30px 0 34px;
 }
 .rv-fill {
     position: absolute;
     top: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #BFDBFE, #1D4ED8);
-    border-radius: 3px;
-    opacity: 0.5;
+    height: 8px;
+    background: linear-gradient(90deg, #BFDBFE 0%, #1D4ED8 100%);
+    border-radius: 4px;
+    opacity: 0.45;
 }
-/* dots on track */
 .rv-dot {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: #fff;
-    border: 2px solid #9CA3AF;
+    border: 2.5px solid #9CA3AF;
     z-index: 2;
 }
 .rv-dot-accent {
-    width: 16px;
-    height: 16px;
+    width: 17px;
+    height: 17px;
     background: #1D4ED8;
     border: 3px solid #fff;
     box-shadow: 0 0 0 2px #1D4ED8;
+    z-index: 3;
 }
-/* labels above track */
-.rv-lbl-top {
+.rv-lbl {
     position: absolute;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% + 10px);
     transform: translateX(-50%);
     font-size: 7.5px;
     text-transform: uppercase;
@@ -397,16 +478,15 @@ html, body {
     font-weight: 600;
     white-space: nowrap;
 }
-.rv-lbl-top-accent {
+.rv-lbl-accent {
     color: #1D4ED8;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 8px;
     letter-spacing: 1.5px;
 }
-/* prices below track */
-.rv-price-bot {
+.rv-price {
     position: absolute;
-    top: calc(100% + 10px);
+    top: calc(100% + 11px);
     transform: translateX(-50%);
     font-size: 11px;
     font-weight: 700;
@@ -414,28 +494,28 @@ html, body {
     white-space: nowrap;
     font-feature-settings: "tnum";
 }
-.rv-price-bot-accent {
-    font-size: 13px;
+.rv-price-accent {
+    font-size: 12.5px;
     font-weight: 800;
     color: #1D4ED8;
 }
 
-/* ── ZONA / MAPA + CONSIDERACIONES ───────────────────────────────────────── */
+/* ── ZONE SPLIT ───────────────────────────────────────────────────────────── */
 .zone-split {
     display: flex;
-    gap: 0;
-    margin: 0;
     flex: 1;
     min-height: 0;
+    overflow: hidden;
 }
-.zone-map-wrap {
-    flex: 1;
+.zone-map-col {
+    flex: 0 0 58%;
     border-right: 1px solid #E5E7EB;
     overflow: hidden;
+    position: relative;
     display: flex;
     align-items: stretch;
 }
-.zone-map-wrap img {
+.zone-map-col img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -449,215 +529,314 @@ html, body {
     justify-content: center;
     background: #F9FAFB;
     background-image:
-        linear-gradient(rgba(29,78,216,.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(29,78,216,.05) 1px, transparent 1px);
-    background-size: 20px 20px;
-    padding: 20px;
+        linear-gradient(rgba(29,78,216,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29,78,216,0.04) 1px, transparent 1px);
+    background-size: 22px 22px;
+    padding: 24px;
     text-align: center;
+    gap: 0;
 }
-.zone-placeholder-dot {
-    width: 12px;
-    height: 12px;
+.zone-ph-pin {
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: #1D4ED8;
-    margin: 0 auto 10px;
-    box-shadow: 0 0 0 5px rgba(29,78,216,0.12);
+    margin: 0 auto 12px;
+    box-shadow: 0 0 0 6px rgba(29,78,216,0.1), 0 0 0 12px rgba(29,78,216,0.05);
 }
-.zone-placeholder-name { font-size: 15px; font-weight: 800; color: #0C1A2E; margin-bottom: 4px; }
-.zone-placeholder-sub  { font-size: 9px; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1.2px; }
+.zone-ph-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0C1A2E;
+    margin-bottom: 5px;
+    letter-spacing: -0.3px;
+}
+.zone-ph-sub {
+    font-size: 9px;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
 
-.zone-notes {
-    width: 42%;
-    padding: 18px 24px;
+.zone-notes-col {
+    flex: 0 0 42%;
+    padding: 20px 26px;
     background: #fff;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow: hidden;
 }
-.zone-notes-title {
-    font-size: 8.5px;
+.zone-notes-header {
+    font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 3px;
     color: #1D4ED8;
     font-weight: 700;
     padding-bottom: 10px;
     border-bottom: 1px solid #E5E7EB;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
-.zone-note {
+.zone-note-item {
     display: flex;
-    gap: 10px;
+    gap: 11px;
     align-items: flex-start;
-    margin-bottom: 10px;
+    margin-bottom: 11px;
 }
-.zone-note:last-child { margin-bottom: 0; }
-.zone-note-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #1D4ED8;
+.zone-note-item:last-child { margin-bottom: 0; }
+.zone-note-num {
     flex-shrink: 0;
-    margin-top: 5px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1D4ED8;
+    font-size: 8.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    flex: none;
 }
-.zone-note-txt { font-size: 11.5px; color: #374151; line-height: 1.6; }
+.zone-note-text {
+    font-size: 11px;
+    color: #374151;
+    line-height: 1.65;
+}
 
-/* ── FOOTER PÁGINA 1 ─────────────────────────────────────────────────────── */
-.ft {
+/* ── PAGE 1 FOOTER ────────────────────────────────────────────────────────── */
+.p1-footer {
     background: #0C1A2E;
-    padding: 8px 48px;
+    height: 32px;
+    padding: 0 48px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 2px solid #1D4ED8;
+    flex-shrink: 0;
 }
-.ft-l { font-size: 8.5px; color: rgba(255,255,255,.3); text-transform: uppercase; letter-spacing: 2px; }
-.ft-c { font-size: 8.5px; color: rgba(255,255,255,.55); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
-.ft-r { font-size: 8.5px; color: rgba(255,255,255,.3); text-align: right; }
-
-/* ── FOOTER PÁGS 2 y 3 ───────────────────────────────────────────────────── */
-.ft2 {
-    background: #0C1A2E;
-    padding: 7px 48px;
-    border-top: 2px solid #1D4ED8;
-}
-.ft2-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.ft2-brand { font-size: 8.5px; color: rgba(255,255,255,.55); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
-.ft2-page  { font-size: 8px; color: rgba(255,255,255,.3); }
-.ft2-legal { font-size: 7.5px; color: rgba(255,255,255,.22); line-height: 1.6; }
+.p1-ft-l { font-size: 8px; color: rgba(255,255,255,0.28); text-transform: uppercase; letter-spacing: 2px; }
+.p1-ft-c { font-size: 8px; color: rgba(255,255,255,0.5); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
+.p1-ft-r { font-size: 8px; color: rgba(255,255,255,0.28); text-align: right; }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   PÁGINA 2 — Análisis técnico
+   PAGES 2 & 3 — SHARED ELEMENTS
    ══════════════════════════════════════════════════════════════════════════ */
 
-.p2-body { padding: 18px 48px 14px; overflow: hidden; }
+/* ── MINI HEADER ──────────────────────────────────────────────────────────── */
+.mhd {
+    background: #fff;
+    padding: 11px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #1D4ED8;
+    flex-shrink: 0;
+}
+.mhd-logo { display: flex; align-items: center; gap: 0; }
+.mhd-logo img { height: 22px; width: auto; display: block; }
+.mhd-logo-txt { font-size: 12px; font-weight: 800; color: #0C1A2E; letter-spacing: -0.3px; }
+.mhd-right { text-align: right; }
+.mhd-folio {
+    font-size: 8px;
+    color: #9CA3AF;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
+}
+.mhd-section {
+    font-size: 10px;
+    font-weight: 700;
+    color: #1D4ED8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
 
-/* sección label genérico */
+/* ── SECTION LABEL ────────────────────────────────────────────────────────── */
 .sec-lbl {
     font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 3.5px;
     color: #1D4ED8;
     font-weight: 700;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
-/* dos columnas */
-.two-col { display: flex; gap: 28px; margin-bottom: 16px; }
-.col-left  { flex: 1; min-width: 0; }
-.col-right { width: 38%; flex-shrink: 0; }
-.col-hd {
-    font-size: 8px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-    color: #1D4ED8;
-    font-weight: 700;
-    padding-bottom: 7px;
-    border-bottom: 2px solid #1D4ED8;
-    margin-bottom: 8px;
-}
-
-/* tabla de especificaciones */
-.spec-tbl { width: 100%; border-collapse: collapse; }
-.spec-tbl td {
-    padding: 4px 0;
-    border-bottom: 1px solid #F3F4F6;
-    font-size: 11.5px;
-    vertical-align: middle;
-}
-.spec-tbl td:first-child {
-    color: #6B7280;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    font-weight: 600;
-    width: 46%;
-}
-.spec-tbl td:last-child { font-weight: 700; color: #0C1A2E; text-align: right; }
-
-/* waterfall compacto (col derecha) */
-.wfc { width: 100%; border-collapse: collapse; }
-.wfc td {
-    padding: 4px 0;
-    border-bottom: 1px solid #F3F4F6;
-    font-size: 11.5px;
-    vertical-align: middle;
-}
-.wfc td:first-child { color: #6B7280; width: 56%; font-size: 10.5px; }
-.wfc td:last-child  { font-weight: 700; color: #0C1A2E; text-align: right; }
-.wfc .r-base td { background: #F9FAFB; font-weight: 700; padding: 4px 6px; }
-.wfc .r-total td { background: #EFF6FF; font-weight: 800; padding: 5px 6px; color: #1D4ED8; border-top: 1.5px solid #BFDBFE; border-bottom: none; }
-
-/* total box */
-.total-box {
-    margin-top: 10px;
-    padding: 10px 12px;
-    border: 1px solid #E5E7EB;
-    border-left: 3px solid #1D4ED8;
-    background: #F9FAFB;
-    border-radius: 0 2px 2px 0;
-}
-.total-box-lbl  { font-size: 7.5px; color: #6B7280; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px; }
-.total-box-amt  { font-size: 22px; font-weight: 900; color: #0C1A2E; letter-spacing: -1px; font-feature-settings: "tnum"; line-height: 1.1; }
-.total-box-rng  { font-size: 10px; color: #6B7280; margin-top: 3px; }
-
-/* nota validez */
-.valid-note {
-    margin-top: 10px;
-    padding: 7px 10px;
-    background: #FFFBEB;
-    border-left: 2px solid #F59E0B;
-    font-size: 9.5px;
-    color: #78350F;
-    line-height: 1.6;
-}
-
-/* waterfall detallado */
-.wf { width: 100%; border-collapse: collapse; font-size: 11.5px; }
-.wf th {
+/* ── DARK FOOTER (pages 2 & 3) ───────────────────────────────────────────── */
+.dark-footer {
     background: #0C1A2E;
-    color: rgba(255,255,255,.6);
-    padding: 6px 8px;
+    padding: 7px 48px;
+    border-top: 2px solid #1D4ED8;
+    flex-shrink: 0;
+}
+.dark-footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.dark-footer-brand {
+    font-size: 8px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+.dark-footer-page {
+    font-size: 8px;
+    color: rgba(255,255,255,0.28);
+}
+.dark-footer-legal {
+    font-size: 7px;
+    color: rgba(255,255,255,0.2);
+    line-height: 1.65;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PAGE 2 — TECHNICAL ANALYSIS
+   ══════════════════════════════════════════════════════════════════════════ */
+.p2-body { padding: 18px 48px 14px; overflow: hidden; }
+
+/* ── CHARACTERISTICS DATA GRID ────────────────────────────────────────────── */
+.chars-grid {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #E5E7EB;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.chars-grid td {
+    padding: 7px 12px;
+    border-right: 1px solid #E5E7EB;
+    border-bottom: 1px solid #E5E7EB;
+    vertical-align: top;
+    width: 25%;
+}
+.chars-grid tr:last-child td { border-bottom: none; }
+.chars-grid td:last-child { border-right: none; }
+.char-label {
+    display: block;
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #9CA3AF;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.char-value {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0C1A2E;
+    line-height: 1.3;
+}
+
+/* ── TAGS ROW ─────────────────────────────────────────────────────────────── */
+.tags-row {
+    margin-bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+.tags-group-lbl {
+    font-size: 7.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #9CA3AF;
+    font-weight: 700;
+    margin-right: 2px;
+}
+.tag-pill {
+    display: inline-block;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    padding: 2px 9px;
+    font-size: 9.5px;
+    color: #1D4ED8;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+/* ── WATERFALL TABLE ──────────────────────────────────────────────────────── */
+.wf {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+.wf thead th {
+    background: #0C1A2E;
+    color: rgba(255,255,255,0.55);
+    padding: 7px 10px;
     font-size: 7.5px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     font-weight: 700;
     text-align: left;
 }
-.wf th:nth-child(n+3) { text-align: right; }
-.wf td {
-    padding: 4px 8px;
+.wf thead th:nth-child(n+3) { text-align: right; }
+.wf tbody td {
+    padding: 5px 10px;
     border-bottom: 1px solid #F3F4F6;
     vertical-align: middle;
 }
-.wf td:nth-child(n+3) { text-align: right; font-weight: 700; }
-.wf .r-base td { background: #F9FAFB; font-weight: 700; }
-.wf .r-total td { background: #EFF6FF; font-weight: 800; border-top: 1.5px solid #BFDBFE; color: #0C1A2E; }
-.wf-bar-wrap { width: 66px; }
-.wf-bar { height: 5px; border-radius: 2px; }
-.wf-bar-pos { background: #15803D; }
-.wf-bar-neg { background: #DC2626; }
-.wf-bar-neu { background: #E5E7EB; width: 100% !important; }
-.wf-sub { font-size: 9px; color: #9CA3AF; margin-top: 1px; }
+.wf tbody td:nth-child(n+3) { text-align: right; font-weight: 700; }
+.wf .r-base td { background: #F9FAFB; }
+.wf .r-base td:first-child { font-weight: 700; color: #374151; }
+.wf .r-total td {
+    background: #1D4ED8;
+    color: #fff;
+    font-weight: 800;
+    border-top: none;
+    border-bottom: none;
+}
+.wf .r-total td:first-child { color: #fff; }
+.wf-factor-name { font-weight: 600; color: #111827; font-size: 11px; }
+.wf-factor-sub { font-size: 8.5px; color: #9CA3AF; margin-top: 1px; line-height: 1.4; }
+.wf-bar-wrap { width: 108px; }
+.wf-bar-bg {
+    background: #F3F4F6;
+    height: 7px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.wf-bar-inner {
+    height: 7px;
+    border-radius: 3px;
+    min-width: 3px;
+}
+.wf-bar-pos { background: linear-gradient(90deg, #86EFAC, #15803D); }
+.wf-bar-neg { background: linear-gradient(90deg, #FCA5A5, #DC2626); }
+.wf-bar-neu { background: #E5E7EB; }
+.wf-sub { font-size: 9px; color: #9CA3AF; margin-top: 2px; }
 .pct-pos { color: #15803D; }
 .pct-neg { color: #DC2626; }
+.price-muted { color: #9CA3AF; font-size: 10px; font-weight: 500; }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   PÁGINA 3 — Análisis de mercado
+   PAGE 3 — MARKET ANALYSIS
    ══════════════════════════════════════════════════════════════════════════ */
-.p3-body { padding: 18px 48px 16px; overflow: hidden; }
+.p3-body { padding: 20px 48px 16px; overflow: hidden; }
 
-.narr-lead { font-size: 13px; color: #374151; line-height: 1.8; margin-bottom: 14px; }
+.narr-lead {
+    font-size: 13.5px;
+    color: #374151;
+    line-height: 1.8;
+    margin-bottom: 16px;
+}
 
-.str-risk { display: flex; gap: 12px; margin-bottom: 14px; }
+.str-risk-row { display: flex; gap: 14px; margin-bottom: 16px; }
 .sr-card {
     flex: 1;
-    padding: 12px 14px;
+    padding: 13px 16px;
     background: #F9FAFB;
     border-top: 3px solid;
-    border-radius: 0 0 2px 2px;
+    border-radius: 0 0 3px 3px;
 }
 .sr-card-pos { border-top-color: #1D4ED8; }
-.sr-card-neg { border-top-color: #6B7280; }
+.sr-card-neg { border-top-color: #9CA3AF; }
 .sr-eyebrow {
     font-size: 8px;
     font-weight: 700;
@@ -667,26 +846,45 @@ html, body {
 }
 .sr-eyebrow-pos { color: #1D4ED8; }
 .sr-eyebrow-neg { color: #6B7280; }
-.sr-txt { font-size: 12px; color: #374151; line-height: 1.75; }
+.sr-text { font-size: 12px; color: #374151; line-height: 1.75; }
 
 .rec-box {
-    padding: 14px 18px;
+    padding: 16px 20px;
     background: #EFF6FF;
     border: 1px solid #BFDBFE;
     border-left: 4px solid #1D4ED8;
-    margin-bottom: 14px;
-    border-radius: 0 2px 2px 0;
+    margin-bottom: 16px;
+    border-radius: 0 3px 3px 0;
 }
-.rec-eyebrow { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #1D4ED8; margin-bottom: 6px; }
-.rec-txt { font-size: 13px; color: #1E3A8A; line-height: 1.8; font-weight: 500; }
+.rec-eyebrow {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #1D4ED8;
+    margin-bottom: 7px;
+}
+.rec-text {
+    font-size: 13px;
+    color: #1E3A8A;
+    line-height: 1.8;
+    font-weight: 500;
+}
 
-.pills-wrap { margin-bottom: 14px; }
-.pills-lbl { font-size: 7.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #9CA3AF; margin-bottom: 6px; }
-.pill {
+.key-factors-wrap { margin-bottom: 16px; }
+.key-factors-lbl {
+    font-size: 7.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #9CA3AF;
+    margin-bottom: 7px;
+}
+.kf-pill {
     display: inline-block;
     background: #EFF6FF;
     border: 1px solid #BFDBFE;
-    padding: 3px 11px;
+    padding: 3px 12px;
     font-size: 10px;
     color: #1D4ED8;
     font-weight: 600;
@@ -694,12 +892,13 @@ html, body {
     border-radius: 20px;
 }
 
-/* contact strip */
+.rule { border: none; border-top: 1px solid #E5E7EB; margin: 14px 0; }
+
+/* ── CONTACT STRIP ────────────────────────────────────────────────────────── */
 .contact-strip {
     display: flex;
-    gap: 0;
     border: 1px solid #E5E7EB;
-    border-radius: 4px;
+    border-radius: 5px;
     overflow: hidden;
     margin-top: 14px;
 }
@@ -709,14 +908,32 @@ html, body {
     border-right: 1px solid #E5E7EB;
 }
 .contact-item:last-child { border-right: none; }
-.contact-lbl { font-size: 7.5px; text-transform: uppercase; letter-spacing: 1.2px; color: #9CA3AF; font-weight: 700; margin-bottom: 3px; }
-.contact-val { font-size: 12px; font-weight: 700; color: #0C1A2E; }
-
-.rule { border: none; border-top: 1px solid #E5E7EB; margin: 12px 0; }
-
-@media print {
-    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.contact-item:first-child { border-left: 3px solid #1D4ED8; }
+.contact-lbl {
+    font-size: 7px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #9CA3AF;
+    font-weight: 700;
+    margin-bottom: 4px;
 }
+.contact-val {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #0C1A2E;
+    line-height: 1.35;
+}
+
+/* ── NOTES ────────────────────────────────────────────────────────────────── */
+.notes-box {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #FFFBEB;
+    border-left: 3px solid #F59E0B;
+    border-radius: 0 3px 3px 0;
+}
+.notes-lbl { font-size: 7.5px; text-transform: uppercase; letter-spacing: 1.5px; color: #92400E; font-weight: 700; margin-bottom: 4px; }
+.notes-text { font-size: 11.5px; color: #78350F; line-height: 1.65; }
 </style>
 </head>
 <body>
@@ -726,41 +943,45 @@ html, body {
      ═══════════════════════════════════════════════════════════════════════════ --}}
 <div class="page page-break">
 
-    {{-- HEADER --}}
-    <div class="hd">
-        <div class="hd-logo">
-            @if($logoSrc)
-                <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
-            @elseif($logoSrcLight)
+    {{-- DARK NAVY HEADER BAND --}}
+    <div class="p1-header">
+        <div class="p1-hd-logo">
+            @if($logoSrcLight)
                 <img src="{{ $logoSrcLight }}" alt="{{ $siteName }}">
+            @elseif($logoSrc)
+                <img src="{{ $logoSrc }}" alt="{{ $siteName }}">
             @else
-                <div class="hd-logo-txt">HOME DEL VALLE</div>
+                <div class="p1-hd-logo-txt">HOME DEL VALLE</div>
             @endif
-            <div class="hd-logo-sub">Inmobiliaria Boutique</div>
+            <div class="p1-hd-logo-sub">Inmobiliaria Boutique</div>
         </div>
-        <div class="hd-center">
-            <div class="hd-eyebrow">Documento Técnico</div>
-            <div class="hd-title">Opinión de Valor Inmobiliario</div>
+
+        <div class="p1-hd-center">
+            <div class="p1-hd-eyebrow">Documento Técnico Confidencial</div>
+            <div class="p1-hd-title">Opinión de Valor Inmobiliario</div>
+            <div class="p1-hd-subtitle">Benito Juárez · Ciudad de México</div>
         </div>
-        <div class="hd-right">
-            <div class="hd-folio-lbl">Folio</div>
-            <div class="hd-folio">{{ $folio }}</div>
-            <div class="hd-date">{{ $today }}</div>
+
+        <div class="p1-hd-right">
+            <div class="p1-hd-folio-lbl">Folio</div>
+            <div class="p1-hd-folio">{{ $folio }}</div>
+            <div class="p1-hd-date">{{ $today }}</div>
         </div>
     </div>
 
-    <div class="body">
+    {{-- BODY --}}
+    <div class="p1-body">
 
         {{-- PROPERTY BAND --}}
         <div class="prop-band">
-            <div>
+            <div class="prop-band-left">
                 <div class="prop-address">{{ $address }}</div>
-                <div class="prop-meta">
+                <div class="prop-chips">
                     <span class="prop-chip">{{ $typeLabel }}</span>
                     <span class="prop-chip">{{ $colonia }} · {{ $zone }}</span>
                     <span class="prop-chip">{{ $ageLabel }}</span>
                     <span class="prop-chip">Conservación: {{ $condLabel }}</span>
-                    <span class="prop-chip-light prop-chip">Confianza {{ $confidLabel }}</span>
+                    <span class="prop-chip-muted">Confianza {{ $confidLabel }}</span>
                 </div>
             </div>
             <div class="diag-badge">{{ $diagLabel }}</div>
@@ -768,34 +989,36 @@ html, body {
 
         {{-- PRICE HERO --}}
         @if($sug)
-        <div class="price-section">
-            <div class="price-left">
+        <div class="price-hero">
+            <div class="price-hero-left">
                 <div class="price-eyebrow">Precio de Salida Recomendado</div>
-                <div class="price-num">
-                    <span class="price-cur">$</span>{{ number_format($sug) }}<span class="price-mxn">MXN</span>
+                <div class="price-figure">
+                    <span class="price-dollar">$</span>
+                    <span class="price-amount">{{ number_format($sug) }}</span>
+                    <span class="price-mxn-tag">MXN</span>
                 </div>
-                <div class="price-sub">
-                    ${{ number_format($valuation->adjusted_price_m2) }}/m² ajustado
-                    &nbsp;·&nbsp; {{ number_format($valuation->effective_m2, 0) }} m² efectivos
+                <div class="price-meta">
+                    <strong>${{ number_format($valuation->adjusted_price_m2) }}/m²</strong> ajustado
+                    &nbsp;·&nbsp; <strong>{{ number_format($valuation->effective_m2, 0) }} m²</strong> efectivos
                     &nbsp;·&nbsp; {{ $colonia }}
                 </div>
             </div>
-            <div class="kpi-row">
-                <div class="kpi">
-                    <span class="kpi-v">${{ number_format($valuation->adjusted_price_m2) }}</span>
-                    <span class="kpi-l">Precio /m²</span>
+            <div class="kpi-grid">
+                <div class="kpi-cell">
+                    <span class="kpi-label">Precio /m² ajustado</span>
+                    <span class="kpi-value">${{ number_format($valuation->adjusted_price_m2) }}</span>
                 </div>
-                <div class="kpi">
-                    <span class="kpi-v">${{ number_format($valuation->base_price_m2) }}</span>
-                    <span class="kpi-l">Base zona</span>
+                <div class="kpi-cell">
+                    <span class="kpi-label">Base zona</span>
+                    <span class="kpi-value">${{ number_format($valuation->base_price_m2) }}</span>
                 </div>
-                <div class="kpi">
-                    <span class="kpi-v {{ $adjTotal >= 0 ? 'kpi-v-pos' : 'kpi-v-neg' }}">{{ ($adjTotal >= 0 ? '+' : '') . $adjTotal }}%</span>
-                    <span class="kpi-l">Ajuste total</span>
+                <div class="kpi-cell">
+                    <span class="kpi-label">Ajuste total</span>
+                    <span class="kpi-value {{ $adjTotal >= 0 ? 'kpi-value-pos' : 'kpi-value-neg' }}">{{ ($adjTotal >= 0 ? '+' : '') . $adjTotal }}%</span>
                 </div>
-                <div class="kpi">
-                    <span class="kpi-v">{{ number_format($valuation->effective_m2, 0) }} m²</span>
-                    <span class="kpi-l">m² efectivos</span>
+                <div class="kpi-cell">
+                    <span class="kpi-label">m² efectivos</span>
+                    <span class="kpi-value">{{ number_format($valuation->effective_m2, 0) }} m²</span>
                 </div>
             </div>
         </div>
@@ -805,69 +1028,69 @@ html, body {
         @if($low && $high)
         <div class="range-section">
             <div class="range-eyebrow">Rango de Valor Estimado</div>
-            <div class="rv">
+            <div class="rv-outer">
                 <div class="rv-track">
-                    {{-- fill between low and high --}}
+                    {{-- Gradient fill between low and high --}}
                     <div class="rv-fill" style="left:{{ $pLow }}%;width:{{ $pHigh - $pLow }}%;"></div>
 
-                    {{-- dot MIN --}}
+                    {{-- Dot: Mínimo --}}
                     <div class="rv-dot" style="left:{{ $pLow }}%;">
-                        <span class="rv-lbl-top">Mínimo</span>
-                        <span class="rv-price-bot">${{ number_format($low) }}</span>
+                        <span class="rv-lbl">Mínimo</span>
+                        <span class="rv-price">${{ number_format($low) }}</span>
                     </div>
 
-                    {{-- dot MEDIO --}}
+                    {{-- Dot: Medio --}}
                     <div class="rv-dot" style="left:{{ $pMid }}%;">
-                        <span class="rv-lbl-top">Medio</span>
-                        <span class="rv-price-bot">${{ number_format($mid) }}</span>
+                        <span class="rv-lbl">Medio</span>
+                        <span class="rv-price">${{ number_format($mid) }}</span>
                     </div>
 
-                    {{-- dot MÁXIMO --}}
+                    {{-- Dot: Máximo --}}
                     <div class="rv-dot" style="left:{{ $pHigh }}%;">
-                        <span class="rv-lbl-top">Máximo</span>
-                        <span class="rv-price-bot">${{ number_format($high) }}</span>
+                        <span class="rv-lbl">Máximo</span>
+                        <span class="rv-price">${{ number_format($high) }}</span>
                     </div>
 
-                    {{-- dot SUGERIDO (accent) --}}
+                    {{-- Dot: Sugerido (accent) --}}
                     <div class="rv-dot rv-dot-accent" style="left:{{ $pSug }}%;">
-                        <span class="rv-lbl-top rv-lbl-top-accent">▲ Sugerido</span>
-                        <span class="rv-price-bot rv-price-bot-accent">${{ number_format($sug) }}</span>
+                        <span class="rv-lbl rv-lbl-accent">▲ Sugerido</span>
+                        <span class="rv-price rv-price-accent">${{ number_format($sug) }}</span>
                     </div>
                 </div>
             </div>
         </div>
         @endif
 
-        {{-- ZONA + CONSIDERACIONES --}}
+        {{-- ZONE SPLIT --}}
         <div class="zone-split">
-            <div class="zone-map-wrap">
+            <div class="zone-map-col">
                 @if($mapUrl)
                     <img src="{{ $mapUrl }}" alt="Zona {{ $colonia }}">
                 @else
                     <div class="zone-placeholder">
-                        <div class="zone-placeholder-dot"></div>
-                        <div class="zone-placeholder-name">{{ $colonia }}</div>
-                        <div class="zone-placeholder-sub">{{ $zone }} · Benito Juárez · CDMX</div>
+                        <div class="zone-ph-pin"></div>
+                        <div class="zone-ph-name">{{ $colonia }}</div>
+                        <div class="zone-ph-sub">{{ $zone }} · Benito Juárez · CDMX</div>
                     </div>
                 @endif
             </div>
-            <div class="zone-notes">
-                <div class="zone-notes-title">A considerar en esta valuación</div>
-                @foreach($considerations as $note)
-                <div class="zone-note">
-                    <div class="zone-note-dot"></div>
-                    <div class="zone-note-txt">{{ $note }}</div>
+            <div class="zone-notes-col">
+                <div class="zone-notes-header">A Considerar</div>
+                @foreach($considerations as $i => $note)
+                <div class="zone-note-item">
+                    <div class="zone-note-num">{{ $i + 1 }}</div>
+                    <div class="zone-note-text">{{ $note }}</div>
                 </div>
                 @endforeach
             </div>
         </div>
 
-    </div>{{-- /body --}}
+    </div>{{-- /p1-body --}}
 
-    <div class="ft">
-        <div class="ft-l">{{ $siteUrl }}</div>
-        <div class="ft-c">Home del Valle · Opinión de Valor</div>
-        <div class="ft-r">{{ $folio }} · Página 1 de 3 · Confidencial</div>
+    <div class="p1-footer">
+        <div class="p1-ft-l">{{ $siteUrl }}</div>
+        <div class="p1-ft-c">Home del Valle · Opinión de Valor</div>
+        <div class="p1-ft-r">{{ $folio }} · Página 1 de 3 · Confidencial</div>
     </div>
 
 </div>{{-- /page-1 --}}
@@ -896,175 +1119,173 @@ html, body {
 
     <div class="p2-body">
 
-        {{-- DOS COLUMNAS --}}
-        <div class="two-col">
-            <div class="col-left">
-                <div class="col-hd">Características del Inmueble</div>
-                <table class="spec-tbl">
-                    <tr><td>Colonia</td><td>{{ $colonia }}</td></tr>
-                    <tr><td>Zona</td><td>{{ $zone }}, Benito Juárez</td></tr>
-                    <tr><td>Tipo</td><td>{{ $typeLabel }}</td></tr>
-                    <tr><td>Antigüedad</td><td>{{ $valuation->input_age_years }} años · {{ $ageLabel }}</td></tr>
-                    <tr><td>Conservación</td><td>{{ $condLabel }}</td></tr>
-                    @if($valuation->input_m2_total)
-                    <tr><td>m² totales</td><td>{{ number_format($valuation->input_m2_total, 1) }} m²</td></tr>
-                    @endif
-                    @if($valuation->input_m2_const)
-                    <tr><td>m² construcción</td><td>{{ number_format($valuation->input_m2_const, 1) }} m²</td></tr>
-                    @endif
-                    <tr><td>Recámaras</td><td>{{ $valuation->input_bedrooms ?? '—' }}</td></tr>
-                    <tr><td>Baños</td><td>{{ $valuation->bathrooms_display }}</td></tr>
-                    <tr><td>Estacionamientos</td><td>{{ $valuation->input_parking ?? 0 }} cajón(es)</td></tr>
-                    @if($valuation->input_floor)
-                    <tr><td>Piso</td><td>Piso {{ $valuation->input_floor }}</td></tr>
-                    @endif
-                    <tr><td>Elevador</td><td>{{ $valuation->input_has_elevator ? 'Sí' : 'No' }}</td></tr>
-                    @php
-                    $amenList = implode(', ', array_filter([
-                        $valuation->input_has_rooftop     ? 'Rooftop'          : null,
-                        $valuation->input_has_balcony      ? 'Balcón'           : null,
-                        $valuation->input_has_service_room ? 'Cuarto servicio'  : null,
-                        $valuation->input_has_storage      ? 'Bodega'           : null,
-                        $valuation->input_has_gym          ? 'Gimnasio'         : null,
-                        $valuation->input_has_pool         ? 'Alberca'          : null,
-                        $valuation->input_has_lobby        ? 'Lobby'            : null,
-                    ]));
-                    $securityList = implode(', ', array_filter([
-                        $valuation->input_has_doorman          ? 'Guardia 24h'      : null,
-                        $valuation->input_has_security_cameras  ? 'Cámaras CCTV'    : null,
-                        $valuation->input_has_intercom          ? 'Intercomunicador' : null,
-                        $valuation->input_has_alarm             ? 'Alarma'           : null,
-                    ]));
-                    @endphp
-                    @if($amenList)
-                    <tr><td>Amenidades</td><td>{{ $amenList }}</td></tr>
-                    @endif
-                    @if($securityList)
-                    <tr><td>Seguridad</td><td>{{ $securityList }}</td></tr>
-                    @endif
-                    @if($valuation->input_has_natural_gas || $valuation->input_has_cistern)
-                    <tr><td>Infraestructura</td><td>{{ implode(', ', array_filter([$valuation->input_has_natural_gas ? 'Gas natural' : null, $valuation->input_has_cistern ? 'Cisterna' : null])) }}</td></tr>
-                    @endif
-                    @if($valuation->input_street_type)
-                    <tr><td>Entorno</td><td>{{ $valuation->street_type_label }}</td></tr>
-                    @endif
-                    @if($valuation->input_views)
-                    <tr><td>Vistas</td><td>{{ $valuation->views_label }}</td></tr>
-                    @endif
-                    @if($valuation->input_legal_status)
-                    <tr><td>Estado legal</td><td>{{ $valuation->legal_status_label }}</td></tr>
-                    @endif
-                    @if($valuation->input_maintenance_fee)
-                    <tr><td>Mantenimiento</td><td>${{ number_format($valuation->input_maintenance_fee) }}/mes</td></tr>
-                    @endif
-                    @if($valuation->input_type === 'apartment')
-                        @if($valuation->input_unit_position)
-                        <tr><td>Posición</td><td>{{ $valuation->input_unit_position === 'exterior' ? 'Exterior' : 'Interior' }}</td></tr>
-                        @endif
-                        @if($valuation->input_orientation)
-                        <tr><td>Orientación</td><td>{{ ucfirst($valuation->input_orientation) }}</td></tr>
-                        @endif
-                        @if($valuation->input_seismic_status && $valuation->input_seismic_status !== 'none')
-                        <tr><td>Historial sísmico</td><td>{{ match($valuation->input_seismic_status) {
-                            'damaged_repaired'   => 'Daño reparado',
-                            'damaged_reinforced' => 'Daño reforzado',
-                            'unknown'            => 'Desconocido',
-                            default              => '—',
-                        } }}</td></tr>
-                        @endif
-                    @endif
-                </table>
-            </div>
+        {{-- CARACTERÍSTICAS DEL INMUEBLE — 4-col data grid --}}
+        <div class="sec-lbl">Características del Inmueble</div>
 
-            <div class="col-right">
-                <div class="col-hd">Resumen de Ajustes</div>
-                <table class="wfc">
-                    <tr class="r-base">
-                        <td>Precio base de zona</td>
-                        <td>${{ number_format($valuation->base_price_m2) }}/m²</td>
-                    </tr>
-                    @foreach($valuation->adjustments as $adj)
-                    @php $v = (float)$adj->adjustment_value; @endphp
-                    <tr>
-                        <td>{{ $adj->factor_label }}</td>
-                        <td class="{{ $v > 0 ? 'pct-pos' : ($v < 0 ? 'pct-neg' : '') }}">{{ $adj->formatted_value }}</td>
-                    </tr>
-                    @endforeach
-                    <tr class="r-total">
-                        <td>Precio ajustado /m²</td>
-                        <td>${{ number_format($valuation->adjusted_price_m2) }}/m²</td>
-                    </tr>
-                </table>
+        @php
+        // Build rows of cells (4 per row) — only non-null values
+        $charCells = [];
+        $charCells[] = ['Colonia', $colonia];
+        $charCells[] = ['Zona', $zone . ', Benito Juárez'];
+        $charCells[] = ['Tipo', $typeLabel];
+        $charCells[] = ['Antigüedad', ($valuation->input_age_years ? $valuation->input_age_years . ' años · ' : '') . $ageLabel];
+        $charCells[] = ['Conservación', $condLabel];
+        if ($valuation->input_m2_total) $charCells[] = ['m² totales', number_format($valuation->input_m2_total, 1) . ' m²'];
+        if ($valuation->input_m2_const) $charCells[] = ['m² construcción', number_format($valuation->input_m2_const, 1) . ' m²'];
+        $charCells[] = ['Recámaras', $valuation->input_bedrooms ?? '—'];
+        $charCells[] = ['Baños', $valuation->bathrooms_display];
+        $charCells[] = ['Estacionamientos', ($valuation->input_parking ?? 0) . ' cajón(es)'];
+        if ($valuation->input_floor) $charCells[] = ['Piso', 'Piso ' . $valuation->input_floor];
+        $charCells[] = ['Elevador', $valuation->input_has_elevator ? 'Sí' : 'No'];
+        if ($valuation->input_type === 'apartment') {
+            if ($valuation->input_unit_position) $charCells[] = ['Posición', $valuation->input_unit_position === 'exterior' ? 'Exterior' : 'Interior'];
+            if ($valuation->input_orientation)  $charCells[] = ['Orientación', ucfirst($valuation->input_orientation)];
+            if ($valuation->input_seismic_status && $valuation->input_seismic_status !== 'none')
+                $charCells[] = ['Historial sísmico', match($valuation->input_seismic_status) {
+                    'damaged_repaired'   => 'Daño reparado',
+                    'damaged_reinforced' => 'Daño reforzado',
+                    'unknown'            => 'Desconocido',
+                    default              => '—',
+                }];
+        }
+        if ($valuation->input_street_type)   $charCells[] = ['Entorno', $valuation->street_type_label];
+        if ($valuation->input_views)         $charCells[] = ['Vistas', $valuation->views_label];
+        if ($valuation->input_legal_status)  $charCells[] = ['Estado legal', $valuation->legal_status_label];
+        if ($valuation->input_maintenance_fee) $charCells[] = ['Mantenimiento', '$' . number_format($valuation->input_maintenance_fee) . '/mes'];
+        // Pad to multiple of 4
+        while (count($charCells) % 4 !== 0) $charCells[] = null;
+        $charRows = array_chunk($charCells, 4);
 
-                @if($sug)
-                <div class="total-box">
-                    <div class="total-box-lbl">Valor total estimado</div>
-                    <div class="total-box-amt">${{ number_format($sug) }}</div>
-                    <div class="total-box-rng">Rango: ${{ number_format($low) }} — ${{ number_format($high) }}</div>
-                </div>
-                @endif
+        // Tags
+        $amenTags = array_filter([
+            $valuation->input_has_rooftop      ? 'Rooftop'         : null,
+            $valuation->input_has_balcony       ? 'Balcón'          : null,
+            $valuation->input_has_service_room  ? 'Cuarto servicio' : null,
+            $valuation->input_has_storage       ? 'Bodega'          : null,
+            $valuation->input_has_gym           ? 'Gimnasio'        : null,
+            $valuation->input_has_pool          ? 'Alberca'         : null,
+            $valuation->input_has_lobby         ? 'Lobby'           : null,
+        ]);
+        $secTags = array_filter([
+            $valuation->input_has_doorman           ? 'Guardia 24h'      : null,
+            $valuation->input_has_security_cameras   ? 'Cámaras CCTV'    : null,
+            $valuation->input_has_intercom           ? 'Intercomunicador' : null,
+            $valuation->input_has_alarm              ? 'Alarma'           : null,
+        ]);
+        $infraTags = array_filter([
+            $valuation->input_has_natural_gas ? 'Gas natural' : null,
+            $valuation->input_has_cistern     ? 'Cisterna'    : null,
+        ]);
+        @endphp
 
-                <div class="valid-note">
-                    <strong>Vigencia:</strong> 90 días — vence {{ $validity }}<br>
-                    No constituye avalúo formal (INDAABIN / SHF / AMPI).
-                </div>
-            </div>
+        <table class="chars-grid">
+            @foreach($charRows as $row)
+            <tr>
+                @foreach($row as $cell)
+                    @if($cell)
+                    <td>
+                        <span class="char-label">{{ $cell[0] }}</span>
+                        <span class="char-value">{{ $cell[1] }}</span>
+                    </td>
+                    @else
+                    <td></td>
+                    @endif
+                @endforeach
+            </tr>
+            @endforeach
+        </table>
+
+        {{-- TAGS ROW --}}
+        @if($amenTags || $secTags || $infraTags)
+        <div class="tags-row">
+            @if($amenTags)
+                <span class="tags-group-lbl">Amenidades:</span>
+                @foreach($amenTags as $tag)
+                    <span class="tag-pill">{{ $tag }}</span>
+                @endforeach
+            @endif
+            @if($secTags)
+                <span class="tags-group-lbl" style="margin-left:6px;">Seguridad:</span>
+                @foreach($secTags as $tag)
+                    <span class="tag-pill">{{ $tag }}</span>
+                @endforeach
+            @endif
+            @if($infraTags)
+                <span class="tags-group-lbl" style="margin-left:6px;">Infraestructura:</span>
+                @foreach($infraTags as $tag)
+                    <span class="tag-pill">{{ $tag }}</span>
+                @endforeach
+            @endif
         </div>
+        @endif
 
         {{-- WATERFALL DETALLADO --}}
         @if($valuation->adjustments->isNotEmpty())
         <div class="sec-lbl">Factores de Ajuste — Metodología Waterfall</div>
+        @php $maxAbs = $valuation->adjustments->max(fn($a) => abs($a->adjustment_value)) ?: 1; @endphp
         <table class="wf">
             <thead>
                 <tr>
-                    <th style="width:33%;">Factor</th>
-                    <th>Impacto</th>
-                    <th style="width:58px;">Ajuste</th>
-                    <th style="width:90px;">Antes</th>
-                    <th style="width:90px;">Después</th>
+                    <th style="width:34%;">Factor</th>
+                    <th style="width:110px;">Impacto visual</th>
+                    <th style="width:60px;">Ajuste</th>
+                    <th style="width:96px;">Antes</th>
+                    <th style="width:96px;">Después</th>
                 </tr>
             </thead>
             <tbody>
+                {{-- Base row --}}
                 <tr class="r-base">
                     <td>
-                        Precio base · {{ $colonia }}
+                        <div class="wf-factor-name">Precio base · {{ $colonia }}</div>
                         @if($valuation->snapshot)
-                        <div class="wf-sub">{{ $valuation->snapshot->age_label }} · Confianza {{ $confidLabel }}</div>
+                        <div class="wf-factor-sub">{{ $valuation->snapshot->age_label ?? '' }} · Confianza {{ $confidLabel }}</div>
                         @endif
                     </td>
-                    <td><div class="wf-bar wf-bar-neu"></div></td>
+                    <td>
+                        <div class="wf-bar-bg">
+                            <div class="wf-bar-inner wf-bar-neu" style="width:100%;"></div>
+                        </div>
+                    </td>
                     <td style="color:#9CA3AF;">—</td>
-                    <td style="color:#9CA3AF;">—</td>
-                    <td>${{ number_format($valuation->base_price_m2) }}/m²</td>
+                    <td class="price-muted">—</td>
+                    <td style="font-weight:700;color:#0C1A2E;">${{ number_format($valuation->base_price_m2) }}/m²</td>
                 </tr>
-                @php $maxAbs = $valuation->adjustments->max(fn($a) => abs($a->adjustment_value)) ?: 1; @endphp
+
+                {{-- Adjustment rows --}}
                 @foreach($valuation->adjustments as $adj)
                 @php
                     $v    = (float)$adj->adjustment_value;
                     $isN  = $adj->is_neutral;
                     $isP  = $adj->is_positive;
-                    $bw   = $isN ? 100 : min(100, round(abs($v) / $maxAbs * 100));
+                    $bw   = $isN ? 100 : max(4, min(100, round(abs($v) / $maxAbs * 100)));
                     $bCls = $isN ? 'wf-bar-neu' : ($isP ? 'wf-bar-pos' : 'wf-bar-neg');
                     $tCls = $isN ? '' : ($isP ? 'pct-pos' : 'pct-neg');
                 @endphp
                 <tr>
                     <td>
-                        {{ $adj->factor_label }}
+                        <div class="wf-factor-name">{{ $adj->factor_label }}</div>
                         @if($adj->explanation)
-                        <div class="wf-sub">{{ $adj->explanation }}</div>
+                        <div class="wf-factor-sub">{{ $adj->explanation }}</div>
                         @endif
                     </td>
-                    <td class="wf-bar-wrap"><div class="wf-bar {{ $bCls }}" style="width:{{ $bw }}%;"></div></td>
+                    <td class="wf-bar-wrap">
+                        <div class="wf-bar-bg">
+                            <div class="wf-bar-inner {{ $bCls }}" style="width:{{ $bw }}%;"></div>
+                        </div>
+                    </td>
                     <td class="{{ $tCls }}">{{ $adj->formatted_value }}</td>
-                    <td style="color:#9CA3AF;font-size:10px;">${{ number_format($adj->price_before) }}/m²</td>
-                    <td>${{ number_format($adj->price_after) }}/m²</td>
+                    <td class="price-muted">${{ number_format($adj->price_before) }}/m²</td>
+                    <td style="font-weight:700;color:#0C1A2E;">${{ number_format($adj->price_after) }}/m²</td>
                 </tr>
                 @endforeach
+
+                {{-- Total row --}}
                 @php $tPct = round((($valuation->adjusted_price_m2 - $valuation->base_price_m2) / $valuation->base_price_m2) * 100, 1); @endphp
                 <tr class="r-total">
-                    <td>Precio ajustado final</td>
+                    <td>Precio ajustado final · {{ $colonia }}</td>
                     <td></td>
-                    <td class="{{ $tPct >= 0 ? 'pct-pos' : 'pct-neg' }}">{{ ($tPct >= 0 ? '+' : '') . $tPct }}%</td>
+                    <td>{{ ($tPct >= 0 ? '+' : '') . $tPct }}%</td>
                     <td></td>
                     <td>${{ number_format($valuation->adjusted_price_m2) }}/m²</td>
                 </tr>
@@ -1074,10 +1295,10 @@ html, body {
 
     </div>{{-- /p2-body --}}
 
-    <div class="ft2">
-        <div class="ft2-top">
-            <div class="ft2-brand">{{ $siteName }} — {{ $siteUrl }}</div>
-            <div class="ft2-page">{{ $folio }} &nbsp;|&nbsp; Página 2 de 3 &nbsp;|&nbsp; Confidencial</div>
+    <div class="dark-footer">
+        <div class="dark-footer-top">
+            <div class="dark-footer-brand">{{ $siteName }} — {{ $siteUrl }}</div>
+            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 2 de 3 &nbsp;|&nbsp; Confidencial</div>
         </div>
     </div>
 
@@ -1109,24 +1330,24 @@ html, body {
 
         @if(!empty($n['market_context']) || !empty($n['recommendation']))
 
-        <div class="sec-lbl">Análisis Profesional de Mercado · IA</div>
+        <div class="sec-lbl">Análisis Profesional de Mercado</div>
 
         @if(!empty($n['market_context']))
         <p class="narr-lead">{{ $n['market_context'] }}</p>
         @endif
 
         @if(!empty($n['property_strengths']) || !empty($n['property_risks']))
-        <div class="str-risk">
+        <div class="str-risk-row">
             @if(!empty($n['property_strengths']))
             <div class="sr-card sr-card-pos">
                 <div class="sr-eyebrow sr-eyebrow-pos">Fortalezas del inmueble</div>
-                <div class="sr-txt">{{ $n['property_strengths'] }}</div>
+                <div class="sr-text">{{ $n['property_strengths'] }}</div>
             </div>
             @endif
             @if(!empty($n['property_risks']))
             <div class="sr-card sr-card-neg">
                 <div class="sr-eyebrow sr-eyebrow-neg">Riesgo principal</div>
-                <div class="sr-txt">{{ $n['property_risks'] }}</div>
+                <div class="sr-text">{{ $n['property_risks'] }}</div>
             </div>
             @endif
         </div>
@@ -1135,15 +1356,15 @@ html, body {
         @if(!empty($n['recommendation']))
         <div class="rec-box">
             <div class="rec-eyebrow">Recomendación Comercial</div>
-            <div class="rec-txt">{{ $n['recommendation'] }}</div>
+            <div class="rec-text">{{ $n['recommendation'] }}</div>
         </div>
         @endif
 
         @if(!empty($n['key_factors']) && is_array($n['key_factors']))
-        <div class="pills-wrap">
-            <div class="pills-lbl">Factores clave identificados</div>
+        <div class="key-factors-wrap">
+            <div class="key-factors-lbl">Factores clave identificados</div>
             @foreach($n['key_factors'] as $f)
-                <span class="pill">{{ $f }}</span>
+                <span class="kf-pill">{{ $f }}</span>
             @endforeach
         </div>
         @endif
@@ -1156,7 +1377,7 @@ html, body {
         <div class="sec-lbl">Recomendación Comercial</div>
         <div class="rec-box">
             <div class="rec-eyebrow">Estrategia de salida al mercado</div>
-            <div class="rec-txt">
+            <div class="rec-text">
                 @switch($valuation->diagnosis)
                 @case('on_market')
                     El inmueble está en línea con el mercado de {{ $colonia }}. El precio de salida de ${{ number_format($sug) }} maximiza el equilibrio entre rapidez de colocación y valor obtenido. Se recomienda iniciar con este precio y evaluar la respuesta del mercado en las primeras tres semanas.
@@ -1205,16 +1426,23 @@ html, body {
             </div>
         </div>
 
+        @if($valuation->input_notes)
+        <div class="notes-box">
+            <div class="notes-lbl">Notas del analista</div>
+            <div class="notes-text">{{ $valuation->input_notes }}</div>
+        </div>
+        @endif
+
     </div>{{-- /p3-body --}}
 
-    <div class="ft2">
-        <div class="ft2-top">
-            <div class="ft2-brand">{{ $siteName }} — {{ $siteUrl }}</div>
-            <div class="ft2-page">{{ $folio }} &nbsp;|&nbsp; Página 3 de 3 &nbsp;|&nbsp; Confidencial</div>
+    <div class="dark-footer">
+        <div class="dark-footer-top">
+            <div class="dark-footer-brand">{{ $siteName }} — {{ $siteUrl }}</div>
+            <div class="dark-footer-page">{{ $folio }} &nbsp;|&nbsp; Página 3 de 3 &nbsp;|&nbsp; Confidencial</div>
         </div>
-        <div class="ft2-legal">
+        <div class="dark-footer-legal">
             Esta Opinión de Valor es elaborada por {{ $siteName }} con base en datos de oferta publicada en portales inmobiliarios y ajustes estadísticos descritos en este documento.
-            <strong style="color:rgba(255,255,255,.4);">No constituye un avalúo formal</strong> con efectos fiscales, notariales o de crédito hipotecario.
+            <strong style="color:rgba(255,255,255,0.38);">No constituye un avalúo formal</strong> con efectos fiscales, notariales o de crédito hipotecario.
             Para dichos efectos se requiere valuador certificado (INDAABIN / SHF / AMPI). El valor de cierre depende de las condiciones de cada negociación.
             &nbsp;·&nbsp; &copy; {{ now()->year }} {{ $siteName }} · Todos los derechos reservados.
         </div>
