@@ -93,7 +93,7 @@
                 <img src="{{ $svStaticUrl }}"
                      alt="Vista de calle — {{ $addrDisplay }}"
                      class="w-full h-full object-cover"
-                     @error="svError = true">
+                     onerror="this.closest('[x-data]').__x.$data.svError = true; this.style.display='none'">
 
                 {{-- Overlay central: botón explorar --}}
                 <div class="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group">
