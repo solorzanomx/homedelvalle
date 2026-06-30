@@ -67,6 +67,7 @@
         .sb-logo a {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: .75rem;
             width: 100%;
         }
