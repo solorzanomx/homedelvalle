@@ -9,18 +9,28 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('rental_processes', function (Blueprint $table) {
-            $table->enum('payment_frequency', ['mensual', 'trimestral', 'semestral', 'anual'])->default('mensual')->after('lease_duration_months');
-            $table->tinyInteger('payment_day')->unsigned()->nullable()->after('payment_frequency')->comment('Día del mes en que se paga (1-28)');
-            $table->enum('annual_increase_type', ['none', 'inpc', 'fixed'])->default('inpc')->after('payment_day');
-            $table->decimal('annual_increase_percentage', 5, 2)->nullable()->after('annual_increase_type');
-            $table->decimal('broker_commission_amount', 12, 2)->nullable()->after('commission_percentage');
+            if (! Schema::hasColumn('rental_processes', 'payment_frequency')) {
+                $table->enum('payment_frequency', ['mensual', 'trimestral', 'semestral', 'anual'])->default('mensual')->after('lease_duration_months');
+            }
+            // payment_day already exists (added in extend_rental_processes_for_post_cierre)
+            if (! Schema::hasColumn('rental_processes', 'annual_increase_type')) {
+                $table->enum('annual_increase_type', ['none', 'inpc', 'fixed'])->default('inpc')->after('payment_day');
+            }
+            if (! Schema::hasColumn('rental_processes', 'annual_increase_percentage')) {
+                $table->decimal('annual_increase_percentage', 5, 2)->nullable()->after('annual_increase_type');
+            }
+            if (! Schema::hasColumn('rental_processes', 'broker_commission_amount')) {
+                $table->decimal('broker_commission_amount', 12, 2)->nullable()->after('commission_percentage');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('rental_processes', function (Blueprint $table) {
-            $table->dropColumn(['payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'broker_commission_amount']);
+            $cols = ['payment_frequency', 'annual_increase_type', 'annual_increase_percentage', 'broker_commission_amount'];
+            $existing = array_filter($cols, fn($c) => Schema::hasColumn('rental_processes', $c));
+            if ($existing) $table->dropColumn(array_values($existing));
         });
     }
 };
