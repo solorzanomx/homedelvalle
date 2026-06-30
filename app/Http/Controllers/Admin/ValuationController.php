@@ -195,6 +195,7 @@ class ValuationController extends Controller
     public function update(Request $request, PropertyValuation $valuation): RedirectResponse
     {
         $data = $request->validate([
+            'property_id'          => 'nullable|exists:properties,id',
             'input_colonia_id'     => 'nullable|exists:market_colonias,id',
             'input_colonia_raw'    => 'nullable|string|max:150',
             'input_address'        => 'nullable|string|max:250',
@@ -262,12 +263,22 @@ class ValuationController extends Controller
         }
 
         $oldPropertyId = $valuation->property_id;
+
+        // Guardar property_id explícitamente (fuera del mass-assignment)
+        $newPropertyId = $request->input('property_id') ?: null;
+        $data['property_id'] = $newPropertyId;
+
         $valuation->update($data);
+
+        // Segunda garantía: forzar guardado directo en DB
+        if ($valuation->property_id !== $newPropertyId) {
+            $valuation->forceFill(['property_id' => $newPropertyId])->save();
+        }
 
         $result = $this->engine->calculate($valuation->fresh());
 
         // Si se vinculó (o cambió) la propiedad, registrar actividad
-        if ($valuation->property_id && $valuation->property_id !== $oldPropertyId) {
+        if ($newPropertyId && $newPropertyId !== $oldPropertyId) {
             $this->recordValuationActivity($valuation->fresh(), 'linked');
         }
 
