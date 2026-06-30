@@ -193,8 +193,8 @@ html, body {
     flex-shrink: 0;
 }
 
-.p1-hd-logo { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
-.p1-hd-logo img { height: 32px; width: auto; display: block; }
+.p1-hd-logo { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; }
+.p1-hd-logo img { height: 32px; width: auto; max-width: 180px; display: block; object-fit: contain; }
 .p1-hd-logo-txt {
     font-size: 15px;
     font-weight: 800;
@@ -641,8 +641,8 @@ html, body {
     border-bottom: 2px solid #1D4ED8;
     flex-shrink: 0;
 }
-.mhd-logo { display: flex; align-items: center; gap: 0; }
-.mhd-logo img { height: 22px; width: auto; display: block; }
+.mhd-logo { display: flex; align-items: center; }
+.mhd-logo img { height: 22px; width: auto; max-width: 140px; display: block; object-fit: contain; }
 .mhd-logo-txt { font-size: 12px; font-weight: 800; color: #0C1A2E; letter-spacing: -0.3px; }
 .mhd-right { text-align: right; }
 .mhd-folio {
