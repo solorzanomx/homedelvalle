@@ -1,4 +1,5 @@
 @php
+    $mapsKey  = config('services.google_maps.key');
     $addrParts = array_filter([
         $property->address ?? null,
         $property->colony  ?? null,
@@ -17,18 +18,31 @@
         ? 'https://www.google.com/maps/search/?api=1&query=' . $addrEncoded
         : null;
 
-    // Embed URLs sin API key — aceptan dirección de texto directamente
-    $streetViewEmbed = $hasLocation
-        ? 'https://maps.google.com/maps?q=' . $addrEncoded . '&layer=c&output=embed'
+    // Street View estático (API funcional, misma que captacion)
+    $svStaticUrl = ($hasLocation && $mapsKey)
+        ? 'https://maps.googleapis.com/maps/api/streetview?' . http_build_query([
+            'size'              => '1200x525',
+            'location'         => $addrStr,
+            'fov'              => '90',
+            'pitch'            => '5',
+            'key'              => $mapsKey,
+            'return_error_code'=> 'true',
+          ])
         : null;
 
+    // Enlace a Street View interactivo en Google Maps
+    $svGoogleLink = $hasLocation
+        ? 'https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' . $addrEncoded
+        : null;
+
+    // Mapa embed — maps.google.com acepta texto sin necesitar coordenadas
     $mapEmbed = $hasLocation
         ? 'https://maps.google.com/maps?q=' . $addrEncoded . '&output=embed&z=16'
         : null;
 @endphp
 
 @if($hasLocation)
-<div class="mt-10" x-data="{ tab: 'street' }" x-intersect.once="$el.classList.add('animate-fade-in-up')">
+<div class="mt-10" x-data="{ tab: 'street', svError: false }" x-intersect.once="$el.classList.add('animate-fade-in-up')">
 
     {{-- Header --}}
     <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -61,29 +75,50 @@
     {{-- Card --}}
     <div class="rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm bg-white">
 
-        {{-- Street View panel (interactive iframe) --}}
+        {{-- ── STREET VIEW (imagen estática + botón explorar) ── --}}
         <div x-show="tab === 'street'"
-             x-transition:enter="transition-opacity duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             style="aspect-ratio:16/7;position:relative;">
-            <iframe
-                src="{{ $streetViewEmbed }}"
-                width="100%" height="100%"
-                style="border:0;display:block;"
-                allowfullscreen
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                title="Vista de calle — {{ $addrDisplay }}">
-            </iframe>
+             x-transition:enter="transition-opacity duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+            {{-- Sin imagery disponible --}}
+            <template x-if="svError">
+                <div class="flex flex-col items-center justify-center gap-3 py-16 bg-gray-50 text-gray-400 text-sm">
+                    <svg class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 3l18 18"/></svg>
+                    Vista de calle no disponible para esta dirección
+                </div>
+            </template>
+
+            @if($svStaticUrl)
+            <div class="relative" x-show="!svError" style="aspect-ratio:16/7;">
+                {{-- Imagen estática con overlay para abrir Street View real --}}
+                <img src="{{ $svStaticUrl }}"
+                     alt="Vista de calle — {{ $addrDisplay }}"
+                     class="w-full h-full object-cover"
+                     @error="svError = true">
+
+                {{-- Overlay central: botón explorar --}}
+                <div class="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/20 transition-colors group">
+                    <a href="{{ $svGoogleLink }}" target="_blank" rel="noopener"
+                       class="flex items-center gap-2 bg-white/95 hover:bg-white text-gray-800 text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 -translate-y-1 group-hover:translate-y-0">
+                        <svg class="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                        Explorar en Google Street View
+                    </a>
+                </div>
+
+                {{-- Badge bottom-left --}}
+                <div class="absolute bottom-3 left-3 bg-black/55 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1.5 pointer-events-none">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    Google Street View
+                </div>
+            </div>
+            @endif
         </div>
 
-        {{-- Map panel (interactive iframe) --}}
+        {{-- ── MAPA interactivo (iframe embed clásico) ── --}}
         <div x-show="tab === 'map'"
-             x-transition:enter="transition-opacity duration-300"
-             x-transition:enter-start="opacity-0"
-             x-transition:enter-end="opacity-100"
-             style="aspect-ratio:16/7;position:relative;">
+             x-transition:enter="transition-opacity duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             style="aspect-ratio:16/7;">
             <iframe
                 src="{{ $mapEmbed }}"
                 width="100%" height="100%"

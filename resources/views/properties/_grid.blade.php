@@ -8,8 +8,9 @@
     @foreach($properties as $property)
     <div class="p-card">
         <a href="{{ route('properties.show', $property) }}" class="p-card-img">
-            @if($property->photo)
-                <img src="{{ asset('storage/' . $property->photo) }}" alt="{{ $property->title }}" loading="lazy">
+            @php $coverUrl = $property->cover_photo_url; @endphp
+            @if($coverUrl)
+                <img src="{{ $coverUrl }}" alt="{{ $property->title }}" loading="lazy">
             @else
                 <div class="p-card-placeholder">&#8962;</div>
             @endif
