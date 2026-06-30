@@ -18,7 +18,7 @@ class VisitResponseNotification extends Notification
 
     public function via($notifiable): array
     {
-        return ['database', 'mail'];
+        return ['mail'];
     }
 
     public function toDatabase($notifiable): array

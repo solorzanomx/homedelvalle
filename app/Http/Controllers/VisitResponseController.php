@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Interaction;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Notifications\VisitResponseNotification;
 
@@ -27,9 +28,24 @@ class VisitResponseController extends Controller
             );
         }
 
-        // Notify the broker who created the interaction
-        if ($interaction->user) {
-            $interaction->user->notify(new VisitResponseNotification($interaction, 'confirmed'));
+        // Notify the broker via custom notifications table + mail
+        if ($interaction->user_id) {
+            $client = $interaction->client;
+            $name   = $client?->name ?? 'El cliente';
+
+            Notification::create([
+                'user_id' => $interaction->user_id,
+                'type'    => 'system',
+                'title'   => 'Visita confirmada',
+                'body'    => "{$name} confirmó su asistencia para hoy a las " . ($interaction->scheduled_at?->format('H:i') ?? '—') . '.',
+                'data'    => ['url' => $client ? route('clients.show', $client) : null, 'interaction_id' => $interaction->id],
+            ]);
+
+            try {
+                $interaction->user->notify(new VisitResponseNotification($interaction, 'confirmed'));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('VisitResponse mail failed: ' . $e->getMessage());
+            }
         }
 
         // Notify the property owner via portal prefs (email only if they opted in)
@@ -67,8 +83,24 @@ class VisitResponseController extends Controller
             'reschedule_message'      => $request->mensaje,
         ]);
 
-        if ($interaction->user) {
-            $interaction->user->notify(new VisitResponseNotification($interaction, 'reschedule'));
+        // Notify the broker via custom notifications table + mail
+        if ($interaction->user_id) {
+            $client = $interaction->client;
+            $name   = $client?->name ?? 'El cliente';
+
+            Notification::create([
+                'user_id' => $interaction->user_id,
+                'type'    => 'system',
+                'title'   => 'Solicitud de reagendamiento',
+                'body'    => "{$name} quiere reagendar su visita. Mensaje: " . ($interaction->reschedule_message ?? ''),
+                'data'    => ['url' => $client ? route('clients.show', $client) : null, 'interaction_id' => $interaction->id],
+            ]);
+
+            try {
+                $interaction->user->notify(new VisitResponseNotification($interaction, 'reschedule'));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::warning('VisitResponse mail failed: ' . $e->getMessage());
+            }
         }
 
         // Notify the property owner if they opted in for rescheduled notifications
