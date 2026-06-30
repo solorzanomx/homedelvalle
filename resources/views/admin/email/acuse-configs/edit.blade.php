@@ -35,7 +35,7 @@
     <div class="form-group full-width">
         <label class="form-label">Asunto del correo</label>
         <input type="text" name="subject" class="form-input" value="{{ old('subject', $config->subject) }}" placeholder="Recibimos tu mensaje · Home del Valle">
-        <div class="form-hint">Usa {{nombre}} para personalizar</div>
+        <div class="form-hint">Usa @{{nombre}} para personalizar</div>
     </div>
     <div class="form-group">
         <label class="form-label">Badge / Etiqueta</label>
@@ -45,12 +45,12 @@
     <div class="form-group">
         <label class="form-label">Título principal</label>
         <input type="text" name="titulo" class="form-input" value="{{ old('titulo', $config->titulo) }}" placeholder="¡Recibimos tu mensaje!">
-        <div class="form-hint">Usa {{nombre}} → ", Juan"</div>
+        <div class="form-hint">Usa @{{nombre}} → ", Juan"</div>
     </div>
     <div class="form-group full-width">
         <label class="form-label">Bajada / Descripción</label>
         <textarea name="bajada" class="form-textarea" rows="3">{{ old('bajada', $config->bajada) }}</textarea>
-        <div class="form-hint">Soporta HTML básico. Usa {{colonia}}, {{tipo_propiedad}}, {{zonas}}, {{mascotas_texto}}</div>
+        <div class="form-hint">Soporta HTML básico. Usa @{{colonia}}, @{{tipo_propiedad}}, @{{zonas}}, @{{mascotas_texto}}</div>
     </div>
     <div class="form-group full-width">
         <label class="form-label">Nota al pie (opcional)</label>
@@ -68,7 +68,7 @@
     <div class="form-group">
         <label class="form-label">Botón primario — Texto</label>
         <input type="text" name="cta1_label" class="form-input" value="{{ old('cta1_label', $config->cta1_label) }}" placeholder="Ver propiedades">
-        <div class="form-hint">Usa {{colonia}} para personalizar</div>
+        <div class="form-hint">Usa @{{colonia}} para personalizar</div>
     </div>
     <div class="form-group">
         <label class="form-label">Botón primario — Destino</label>

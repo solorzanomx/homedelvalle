@@ -21,7 +21,7 @@
 @endif
 
 {{-- ══════════════════════════════════════════════════
-     SECCIÓN 1 — TRANSACCIONALES (V4, hardcoded)
+     SECCIÓN 1 — TRANSACCIONALES (hardcoded, solo lectura)
 ═══════════════════════════════════════════════════ --}}
 <div style="margin-bottom:2rem">
     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
@@ -56,7 +56,59 @@
 </div>
 
 {{-- ══════════════════════════════════════════════════
-     SECCIÓN 2 — CUSTOM (DB-backed)
+     SECCIÓN 2 — ACUSES DE RECIBO (configurables)
+═══════════════════════════════════════════════════ --}}
+<div style="margin-bottom:2rem" x-data="{ open: true }">
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;cursor:pointer" @click="open = !open">
+        <h2 style="font-size:0.9rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted);margin:0">Acuses de Recibo</h2>
+        <span class="badge badge-green">{{ count($acuseTypes) }}</span>
+        <span style="font-size:0.75rem;color:var(--text-muted)">— Configurables por tipo de contacto</span>
+        <span style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;transition:transform .2s" :style="open ? '' : 'transform:rotate(-90deg)'">▼</span>
+    </div>
+
+    <div x-show="open" x-transition>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+            @php
+                $acuseIcons = [
+                    'vendedor'          => '🏠',
+                    'comprador'         => '🔑',
+                    'arrendatario'      => '📋',
+                    'propietario_renta' => '🏗️',
+                    'b2b'               => '💼',
+                    'contacto'          => '💬',
+                ];
+            @endphp
+            @foreach($acuseTypes as $type => $label)
+            @php $isConfigured = $acuseConfigs->has($type); @endphp
+            <div class="card" style="margin:0;display:flex;flex-direction:column;border-left:3px solid {{ $isConfigured ? 'var(--primary)' : 'var(--border)' }}">
+                <div class="card-body" style="flex:1;padding:1rem 1.1rem">
+                    <div style="display:flex;align-items:flex-start;gap:0.7rem">
+                        <span style="font-size:1.35rem;line-height:1;flex-shrink:0;margin-top:1px">{{ $acuseIcons[$type] ?? '✉️' }}</span>
+                        <div style="min-width:0;flex:1">
+                            <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap">
+                                <p style="font-weight:600;font-size:0.88rem;margin:0">{{ $label }}</p>
+                                @if($isConfigured)
+                                <span style="font-size:0.68rem;font-weight:700;background:#ecfdf5;color:#059669;padding:1px 7px;border-radius:999px;letter-spacing:.03em">Configurado</span>
+                                @else
+                                <span style="font-size:0.68rem;font-weight:700;background:#f1f5f9;color:#64748b;padding:1px 7px;border-radius:999px;letter-spacing:.03em">Por defecto</span>
+                                @endif
+                            </div>
+                            <p style="font-size:0.76rem;color:var(--text-muted);margin:0.25rem 0 0;line-height:1.4">Formulario: <code style="font-size:0.72rem">{{ $type }}</code></p>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:0.55rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:0.4rem">
+                    <a href="{{ route('admin.acuse-configs.preview', $type) }}" target="_blank" class="btn btn-outline btn-sm" style="flex:1;text-align:center">Vista previa</a>
+                    <a href="{{ route('admin.acuse-configs.edit', $type) }}" class="btn btn-primary btn-sm" style="flex:1;text-align:center">Editar</a>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+
+{{-- ══════════════════════════════════════════════════
+     SECCIÓN 3 — CUSTOM (DB-backed)
 ═══════════════════════════════════════════════════ --}}
 <div>
     <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">

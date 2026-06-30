@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCustomEmailTemplateRequest;
 use App\Http\Requests\UpdateCustomEmailTemplateRequest;
+use App\Models\AcuseEmailConfig;
 use App\Models\CustomEmailTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -32,13 +33,15 @@ class CustomEmailTemplateController extends Controller
 
         $transactionalTemplates = [
             ['id' => 'lead-interno',  'name' => 'Notificación de Lead',          'description' => 'Email interno al equipo cuando llega un nuevo lead',       'icon' => '📥'],
-            ['id' => 'acuse',         'name' => 'Acuse de Recibido',              'description' => 'Confirmación automática enviada al cliente tras su contacto','icon' => '✅'],
             ['id' => 'cita',          'name' => 'Confirmación de Cita',           'description' => 'Detalles de cita agendada enviados al cliente',              'icon' => '📅'],
             ['id' => 'comprador',     'name' => 'Propiedad Sugerida',             'description' => 'Ficha de propiedad curada enviada al comprador',             'icon' => '🏠'],
             ['id' => 'bienvenida',    'name' => 'Bienvenida Área de Clientes',    'description' => 'Credenciales de acceso al portal del cliente',               'icon' => '👋'],
         ];
 
-        return view('admin.email.custom-templates.index', compact('templates', 'transactionalTemplates'));
+        $acuseTypes   = AcuseEmailConfig::labels();
+        $acuseConfigs = AcuseEmailConfig::whereIn('form_type', array_keys($acuseTypes))->get()->keyBy('form_type');
+
+        return view('admin.email.custom-templates.index', compact('templates', 'transactionalTemplates', 'acuseTypes', 'acuseConfigs'));
     }
 
     public function create()
