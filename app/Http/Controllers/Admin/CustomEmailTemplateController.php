@@ -32,10 +32,13 @@ class CustomEmailTemplateController extends Controller
         $templates = $query->orderBy('created_at', 'desc')->paginate(15);
 
         $transactionalTemplates = [
-            ['id' => 'lead-interno',  'name' => 'Notificación de Lead',          'description' => 'Email interno al equipo cuando llega un nuevo lead',       'icon' => '📥'],
-            ['id' => 'cita',          'name' => 'Confirmación de Cita',           'description' => 'Detalles de cita agendada enviados al cliente',              'icon' => '📅'],
-            ['id' => 'comprador',     'name' => 'Propiedad Sugerida',             'description' => 'Ficha de propiedad curada enviada al comprador',             'icon' => '🏠'],
-            ['id' => 'bienvenida',    'name' => 'Bienvenida Área de Clientes',    'description' => 'Credenciales de acceso al portal del cliente',               'icon' => '👋'],
+            ['id' => 'lead-interno',         'name' => 'Notificación de Lead',          'description' => 'Email interno al equipo cuando llega un nuevo lead',                    'icon' => '📥'],
+            ['id' => 'cita',                 'name' => 'Confirmación de Cita',           'description' => 'Detalles de cita agendada enviados al cliente',                         'icon' => '📅'],
+            ['id' => 'recordatorio-cita',    'name' => 'Recordatorio de Cita',           'description' => 'Se envía automáticamente el día de la visita para que el cliente confirme', 'icon' => '🔔'],
+            ['id' => 'comprador',            'name' => 'Propiedad Sugerida',             'description' => 'Ficha de propiedad curada enviada al comprador',                        'icon' => '🏠'],
+            ['id' => 'bienvenida',           'name' => 'Bienvenida Área de Clientes',    'description' => 'Credenciales de acceso al portal del cliente',                          'icon' => '👋'],
+            ['id' => 'presentation-initial', 'name' => 'Presentación Inicial',           'description' => 'Se envía al propietario junto con el PDF de presentación de HDV',      'icon' => '📄'],
+            ['id' => 'captacion-declined',   'name' => 'Gracias por tu confianza',       'description' => 'Se envía al propietario cuando se declina una captación',               'icon' => '🤝'],
         ];
 
         $acuseTypes   = AcuseEmailConfig::labels();

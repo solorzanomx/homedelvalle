@@ -211,7 +211,7 @@ a{text-decoration:none}
                 <tr>
                     <td valign="top" style="font-size:11.5px;color:#9FB0C6;line-height:1.85;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
                         <span style="font-weight:700;color:#fff;font-size:12px;">+52 55 1345 0978</span><br>
-                        contacto@homedelvalle.mx<br>
+                        <a href="mailto:contacto@homedelvalle.mx" style="color:#7FB0DF;font-weight:700;text-decoration:none;">contacto@homedelvalle.mx</a><br>
                         Heriberto Frías 903-A, Col. del Valle, CDMX
                     </td>
                     <td valign="top" align="right">

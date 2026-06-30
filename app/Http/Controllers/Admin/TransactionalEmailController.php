@@ -23,6 +23,8 @@ class TransactionalEmailController extends Controller
 {
     public function index()
     {
+        return redirect()->route('admin.custom-templates.index');
+
         $v4Templates = [
             [
                 'id' => 'lead-interno',

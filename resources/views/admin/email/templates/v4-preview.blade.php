@@ -4,7 +4,7 @@
 @section('content')
 <div class="page-header">
     <div>
-        <a href="{{ route('admin.transactional-emails.index') }}" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">← Volver</a>
+        <a href="{{ route('admin.custom-templates.index') }}" style="color: #667eea; text-decoration: none; font-size: 0.9rem;">← Volver</a>
         <h2 style="margin-top: 0.5rem;">{{ $templateName }}</h2>
         <p class="text-muted">{{ $description }}</p>
     </div>
