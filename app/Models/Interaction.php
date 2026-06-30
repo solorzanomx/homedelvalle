@@ -11,6 +11,7 @@ class Interaction extends Model
         'scheduled_at', 'completed_at',
         'visit_token', 'confirmed_at', 'reminder_sent_at',
         'reschedule_requested_at', 'reschedule_message', 'send_confirmation_email',
+        'visitor_reaction', 'visitor_comment', 'feedback_submitted_at',
     ];
 
     protected function casts(): array
@@ -22,6 +23,8 @@ class Interaction extends Model
             'reminder_sent_at'         => 'datetime',
             'reschedule_requested_at'  => 'datetime',
             'send_confirmation_email'  => 'boolean',
+            'feedback_submitted_at'    => 'datetime',
+            'visitor_reaction'         => 'string',
         ];
     }
 

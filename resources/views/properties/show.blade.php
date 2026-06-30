@@ -803,6 +803,10 @@
                         <div style="font-size:1.1rem; font-weight:700; color:var(--primary);">{{ $interactions->count() }}</div>
                         <div style="font-size:0.68rem; color:var(--text-muted);">Actividades</div>
                     </div>
+                    <div style="text-align:center; padding:0.5rem; background:var(--bg); border-radius:var(--radius);">
+                        <div style="font-size:1.1rem; font-weight:700; color:#f59e0b;">{{ $interactions->where('type', 'visit')->count() }}</div>
+                        <div style="font-size:0.68rem; color:var(--text-muted);">Visitas</div>
+                    </div>
                 </div>
                 @php
                     $activeDeals = $deals->whereNotIn('stage', ['won', 'lost'])->count();

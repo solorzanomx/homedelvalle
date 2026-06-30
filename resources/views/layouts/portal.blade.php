@@ -578,6 +578,13 @@
 
         {{-- Bottom links --}}
         <div style="padding:.5rem 0;">
+            @if($isVenta)
+            <a href="{{ route('portal.mi-inmueble') }}"
+               class="sb-item {{ request()->routeIs('portal.mi-inmueble') ? 'active' : '' }}">
+                <span>📊</span>
+                Mi Inmueble
+            </a>
+            @endif
             <a href="{{ route('portal.documents.index') }}"
                class="sb-item {{ $onDocs ? 'active' : '' }}">
                 <span>&#128196;</span>

@@ -18,9 +18,33 @@ class VisitResponseController extends Controller
 
         $interaction->update(['confirmed_at' => now()]);
 
-        // Notify the broker (user who created the interaction)
+        // Fire visit_completed scoring for the interested client
+        if ($interaction->client_id) {
+            app(\App\Services\LeadScoringService::class)->processEvent(
+                $interaction->client_id,
+                'visit_completed',
+                ['source' => 'visit_token_confirmed', 'interaction_id' => $interaction->id]
+            );
+        }
+
+        // Notify the broker who created the interaction
         if ($interaction->user) {
             $interaction->user->notify(new VisitResponseNotification($interaction, 'confirmed'));
+        }
+
+        // Notify the property owner via portal prefs (email only if they opted in)
+        if ($interaction->property?->owner?->portalUser) {
+            $ownerUser = $interaction->property->owner->portalUser;
+            $prefs = \App\Models\PortalNotificationPreference::forUser($ownerUser->id);
+            if ($prefs->notify_visit_confirmed) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($ownerUser->email)->send(
+                        new \App\Mail\Portal\VisitConfirmedOwnerMail($interaction)
+                    );
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning('VisitConfirmedOwnerMail failed: ' . $e->getMessage());
+                }
+            }
         }
 
         return view('visit-response.confirmed', compact('interaction'));
@@ -47,6 +71,39 @@ class VisitResponseController extends Controller
             $interaction->user->notify(new VisitResponseNotification($interaction, 'reschedule'));
         }
 
+        // Notify the property owner if they opted in for rescheduled notifications
+        if ($interaction->property?->owner?->portalUser) {
+            $ownerUser = $interaction->property->owner->portalUser;
+            $prefs = \App\Models\PortalNotificationPreference::forUser($ownerUser->id);
+            if ($prefs->notify_visit_rescheduled) {
+                try {
+                    \Illuminate\Support\Facades\Mail::to($ownerUser->email)->send(
+                        new \App\Mail\Portal\VisitRescheduledOwnerMail($interaction)
+                    );
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::warning('VisitRescheduledOwnerMail failed: ' . $e->getMessage());
+                }
+            }
+        }
+
         return view('visit-response.reschedule-sent', compact('interaction'));
+    }
+
+    public function submitFeedback(Request $request, string $token)
+    {
+        $interaction = Interaction::where('visit_token', $token)->firstOrFail();
+
+        $request->validate([
+            'visitor_reaction' => 'required|in:liked,neutral,disliked',
+            'visitor_comment'  => 'nullable|string|max:300',
+        ]);
+
+        $interaction->update([
+            'visitor_reaction'      => $request->visitor_reaction,
+            'visitor_comment'       => $request->visitor_comment,
+            'feedback_submitted_at' => now(),
+        ]);
+
+        return view('visit-response.feedback-sent', compact('interaction'));
     }
 }

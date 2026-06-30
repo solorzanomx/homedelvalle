@@ -65,7 +65,25 @@ class PortalDashboardController extends Controller
 
     public function account()
     {
-        return view('portal.account');
+        $user = Auth::user();
+        $notifPrefs = \App\Models\PortalNotificationPreference::forUser($user->id);
+        return view('portal.account', compact('user', 'notifPrefs'));
+    }
+
+    public function updateNotifications(\Illuminate\Http\Request $request)
+    {
+        $user = Auth::user();
+        \App\Models\PortalNotificationPreference::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'notify_visit_scheduled'  => $request->boolean('notify_visit_scheduled'),
+                'notify_visit_confirmed'  => $request->boolean('notify_visit_confirmed'),
+                'notify_visit_rescheduled'=> $request->boolean('notify_visit_rescheduled'),
+                'notify_process_updates'  => $request->boolean('notify_process_updates'),
+                'summary_frequency'       => $request->input('summary_frequency', 'none'),
+            ]
+        );
+        return back()->with('success', 'Preferencias guardadas.');
     }
 
     public function updatePassword(\Illuminate\Http\Request $request)

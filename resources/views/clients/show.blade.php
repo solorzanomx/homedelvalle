@@ -224,6 +224,35 @@
 
             {{-- Visit-only fields --}}
             <div id="visit-fields" style="display:none;margin-top:12px;padding:14px 16px;background:var(--bg, #F6F8FB);border-radius:10px;border:1px solid var(--border, #E6EAF1);">
+                {{-- Property selector --}}
+                <div style="margin-bottom:10px;">
+                    <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Inmueble a visitar</label>
+                    <select name="property_id" class="form-select" id="visit-property-select" style="width:100%;">
+                        <option value="">— Sin inmueble específico —</option>
+                        @if(isset($ownedProperties) && $ownedProperties->count())
+                        <optgroup label="Propiedades del cliente">
+                            @foreach($ownedProperties as $prop)
+                            <option value="{{ $prop->id }}"
+                                    data-address="{{ $prop->address }}"
+                                    data-colonia="{{ $prop->colony ?? '' }}">
+                                {{ $prop->address }}{{ $prop->colony ? ' — ' . $prop->colony : '' }}
+                            </option>
+                            @endforeach
+                        </optgroup>
+                        @endif
+                        @if(isset($dealProperties) && $dealProperties->count())
+                        <optgroup label="Propiedades de interés">
+                            @foreach($dealProperties as $prop)
+                            <option value="{{ $prop->id }}"
+                                    data-address="{{ $prop->address }}"
+                                    data-colonia="{{ $prop->colony ?? '' }}">
+                                {{ $prop->address }}{{ $prop->colony ? ' — ' . $prop->colony : '' }}
+                            </option>
+                            @endforeach
+                        </optgroup>
+                        @endif
+                    </select>
+                </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
                     <div>
                         <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Fecha de la visita</label>

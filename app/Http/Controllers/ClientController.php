@@ -384,10 +384,26 @@ class ClientController extends Controller
         $interaction = Interaction::create($interactionData);
 
         // Score the interaction
-        $eventMap = ['call' => 'call_completed', 'visit' => 'visit_completed', 'meeting' => 'visit_completed', 'whatsapp' => 'message_sent'];
-        $scoringEvent = $eventMap[$validated['type']] ?? null;
+        if ($validated['type'] === 'visit' && !empty($interactionData['scheduled_at'])) {
+            $scoringEvent = 'visit_scheduled';
+        } else {
+            $eventMap = ['call' => 'call_completed', 'visit' => 'visit_completed', 'meeting' => 'visit_completed', 'whatsapp' => 'message_sent'];
+            $scoringEvent = $eventMap[$validated['type']] ?? null;
+        }
         if ($scoringEvent) {
             app(\App\Services\LeadScoringService::class)->processEvent($client->id, $scoringEvent, ['source' => 'interaction']);
+        }
+
+        // Passive scoring for the property owner when a visit is scheduled
+        if ($interaction->isVisit() && $interaction->property_id) {
+            $property = $interaction->property ?? Property::find($interaction->property_id);
+            if ($property?->owner && $property->owner->id !== $client->id) {
+                app(\App\Services\LeadScoringService::class)->processEvent(
+                    $property->owner->id,
+                    'message_sent',
+                    ['source' => 'property_visit_scheduled', 'property_id' => $interaction->property_id]
+                );
+            }
         }
 
         // Parse @mentions and create notifications

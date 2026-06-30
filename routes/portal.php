@@ -14,6 +14,7 @@ use App\Http\Controllers\Portal\PortalDocumentController;
 use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalCaptacionController;
 use App\Http\Controllers\Portal\PortalValuacionController;
+use App\Http\Controllers\Portal\PortalPropertyController;
 
 // ── Auth (sin middleware guest — se maneja en el controller para evitar loops) ─
 Route::name('portal.')->group(function () {
@@ -61,4 +62,10 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     // Valuación
     Route::get('/valuacion',                 [PortalValuacionController::class, 'show'])->name('valuacion');
     Route::post('/valuacion/confirmar-precio',[PortalValuacionController::class, 'confirmPrice'])->name('valuacion.confirm-price');
+
+    // Mi Inmueble — métricas y actividad de visitas
+    Route::get('/mi-inmueble',               [PortalPropertyController::class, 'show'])->name('mi-inmueble');
+
+    // Preferencias de notificación
+    Route::put('/cuenta/notificaciones',     [PortalDashboardController::class, 'updateNotifications'])->name('notifications.update');
 });
