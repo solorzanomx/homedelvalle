@@ -143,6 +143,12 @@ class VisitResponseController extends Controller
         return view('visit-response.reschedule-sent', compact('interaction'));
     }
 
+    public function showFeedbackForm(string $token)
+    {
+        $interaction = Interaction::with('property')->where('visit_token', $token)->firstOrFail();
+        return view('visit-response.feedback-form', compact('interaction'));
+    }
+
     public function submitFeedback(Request $request, string $token)
     {
         $interaction = Interaction::where('visit_token', $token)->firstOrFail();

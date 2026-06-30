@@ -233,6 +233,27 @@ class ClientController extends Controller
                 }
             }
 
+            // Botones de acción para visitas
+            $actionsHtml = '';
+            if ($interaction->type === 'visit' && $interaction->visit_token) {
+                // Enviar confirmación: visita futura sin confirmar
+                if (!$interaction->confirmed_at && $interaction->scheduled_at?->isFuture()) {
+                    $confirmUrl = route('clients.interaction.send-confirmation', [$client->id, $interaction->id]);
+                    $actionsHtml .= '<form method="POST" action="' . $confirmUrl . '" style="display:inline-block;margin-top:8px;margin-right:6px;">'
+                        . csrf_field()
+                        . '<button type="submit" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">📤 Enviar confirmación</button>'
+                        . '</form>';
+                }
+                // Solicitar feedback: visita pasada sin feedback
+                if (!$interaction->feedback_submitted_at && $interaction->scheduled_at?->isPast()) {
+                    $feedbackUrl = route('clients.interaction.send-feedback', [$client->id, $interaction->id]);
+                    $actionsHtml .= '<form method="POST" action="' . $feedbackUrl . '" style="display:inline-block;margin-top:8px;">'
+                        . csrf_field()
+                        . '<button type="submit" style="background:#f5f3ff;border:1px solid #ddd6fe;color:#7c3aed;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">💬 Solicitar opinión</button>'
+                        . '</form>';
+                }
+            }
+
             $timeline->push([
                 'date'       => $interaction->created_at,
                 'dot'        => $config['dot'],
@@ -240,6 +261,7 @@ class ClientController extends Controller
                 'type_label' => $config['label'],
                 'body'       => $bodyHtml,
                 'meta'       => 'Por ' . e($interaction->user->name ?? ''),
+                'actions'    => $actionsHtml,
             ]);
         }
 
@@ -501,6 +523,77 @@ class ClientController extends Controller
         }
 
         return redirect()->route('clients.show', $client)->with('success', 'Nota agregada.');
+    }
+
+    public function resendConfirmation(Client $client, Interaction $interaction)
+    {
+        if (!$interaction->visit_token || !$client->email || $interaction->confirmed_at) {
+            return back()->with('error', 'No se puede reenviar la confirmación para esta visita.');
+        }
+
+        try {
+            $scheduled = $interaction->scheduled_at;
+            $prop      = $interaction->property;
+            $asesor    = $interaction->user;
+
+            $addressParts = array_filter([
+                $prop?->address ?? '',
+                $prop?->colony  ?? '',
+                $prop?->city    ?? 'CDMX',
+            ]);
+            $mapsUrl = $addressParts
+                ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode(implode(', ', $addressParts))
+                : '';
+
+            \Illuminate\Support\Facades\Mail::to($client->email)->send(
+                new \App\Mail\V4\Mailables\RecordatorioCitaMail(
+                    new \App\Mail\V4\Data\RecordatorioCitaData(
+                        email:        $client->email,
+                        nombre:       $client->name,
+                        dia_semana:   $scheduled?->locale('es')->dayName ?? '',
+                        dia:          (string) ($scheduled?->day ?? ''),
+                        mes:          $scheduled?->locale('es')->monthName ?? '',
+                        anio:         (string) ($scheduled?->year ?? ''),
+                        hora:         $scheduled?->format('g:i A') ?? '',
+                        duracion:     (string) ($interaction->duracion ?? '30'),
+                        direccion:    $prop?->address ?? 'A coordinar',
+                        colonia:      $prop?->colony  ?? '',
+                        asesor:       $asesor?->name  ?? '',
+                        visit_token:  $interaction->visit_token,
+                        maps_url:     $mapsUrl,
+                        asesor_email: $asesor?->email ?? '',
+                        asesor_phone: $asesor?->phone ?? $asesor?->whatsapp ?? '',
+                    )
+                )
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('resendConfirmation failed: ' . $e->getMessage());
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Recordatorio de confirmación enviado a ' . $client->email . '.');
+    }
+
+    public function sendFeedbackRequest(Client $client, Interaction $interaction)
+    {
+        if (!$interaction->visit_token || !$client->email || $interaction->feedback_submitted_at) {
+            return back()->with('error', 'No se puede solicitar feedback para esta visita.');
+        }
+
+        try {
+            $prop      = $interaction->property;
+            $scheduled = $interaction->scheduled_at;
+            $addr      = collect([$prop?->address, $prop?->colony])->filter()->implode(', ');
+
+            \Illuminate\Support\Facades\Mail::to($client->email)->send(
+                new \App\Mail\V4\Mailables\VisitFeedbackRequestMail($interaction, $client, $addr)
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('sendFeedbackRequest failed: ' . $e->getMessage());
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Solicitud de opinión enviada a ' . $client->email . '.');
     }
 
     /**

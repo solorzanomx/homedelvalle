@@ -324,6 +324,7 @@
                     <div class="timeline-content">
                         <div class="timeline-type" style="color: {{ $item['color'] }};">{{ $item['type_label'] }} &middot; {{ $item['date']->diffForHumans() }}</div>
                         <div class="timeline-body">{!! $item['body'] !!}</div>
+                        @if(!empty($item['actions']))<div>{!! $item['actions'] !!}</div>@endif
                         @if(!empty($item['meta']))<div class="timeline-meta">{!! $item['meta'] !!}</div>@endif
                     </div>
                 </div>

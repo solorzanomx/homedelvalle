@@ -77,6 +77,7 @@ use App\Http\Controllers\VisitResponseController;
 Route::get('/visit/{token}/confirm', [VisitResponseController::class, 'confirm'])->name('visit.confirm');
 Route::get('/visit/{token}/reschedule', [VisitResponseController::class, 'reschedule'])->name('visit.reschedule');
 Route::post('/visit/{token}/reschedule', [VisitResponseController::class, 'rescheduleSubmit'])->name('visit.reschedule.submit');
+Route::get('/visit/{token}/feedback-form', [VisitResponseController::class, 'showFeedbackForm'])->name('visit.feedback-form');
 Route::post('/visit/{token}/feedback', [VisitResponseController::class, 'submitFeedback'])->name('visit.feedback');
 
 // Página pública
@@ -201,6 +202,8 @@ Route::middleware('auth')->group(function () {
     Route::post('clients/{client}/email', [ClientEmailController::class, 'send'])->name('clients.email.send');
     Route::get('client-emails/{email}', [ClientEmailController::class, 'show'])->name('clients.email.show');
     Route::post('clients/{client}/interaction', [ClientController::class, 'storeInteraction'])->name('clients.interaction.store');
+    Route::post('clients/{client}/interactions/{interaction}/send-confirmation', [ClientController::class, 'resendConfirmation'])->name('clients.interaction.send-confirmation');
+    Route::post('clients/{client}/interactions/{interaction}/send-feedback', [ClientController::class, 'sendFeedbackRequest'])->name('clients.interaction.send-feedback');
     Route::post('clients/{client}/create-portal', [ClientController::class, 'createPortalAccount'])->name('clients.create-portal');
     Route::patch('clients/{client}/toggle-portal', [ClientController::class, 'togglePortalAccess'])->name('clients.toggle-portal');
     Route::delete('clients/{client}/delete-portal', [ClientController::class, 'deletePortalAccess'])->name('clients.delete-portal');
