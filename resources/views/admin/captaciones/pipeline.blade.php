@@ -5,8 +5,8 @@
 <style>
 /* ===== STATS STRIP ===== */
 .stats-strip {
-    display: flex; gap: 0.65rem; margin-bottom: 1.25rem; overflow-x: auto;
-    padding-bottom: 0.25rem;
+    display: flex; flex-direction: row; flex-wrap: nowrap; gap: 0.65rem;
+    margin-bottom: 1.25rem; overflow-x: auto; padding-bottom: 0.25rem;
 }
 .mini-stat {
     display: flex; align-items: center; gap: 0.5rem;
