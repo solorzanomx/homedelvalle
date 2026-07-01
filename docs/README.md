@@ -2,7 +2,7 @@
 
 > Manuales fuente de verdad de la empresa. Todo lo que se construye en HDV se valida contra estos documentos.
 >
-> **Última actualización del índice:** 2026-04-27.
+> **Última actualización del índice:** 2026-06-30.
 
 ---
 
@@ -89,6 +89,24 @@ Ambas capas son fuente de verdad. La de `.claude/` se actualiza cuando cambia el
 
 **Mantenedor:** Alex (revisado por Ana Laura).
 
+### 7. Flujo de Captación y Mejoras Propuestas
+[`docs/07-FLUJO-CAPTACION-Y-MEJORAS.md`](./07-FLUJO-CAPTACION-Y-MEJORAS.md)
+
+**Cuándo usarlo:** para entender el flujo de Captación (lead → contacto → visita → revisión de documentos/avalúo → exclusiva) tal como funciona hoy en el código, y las mejoras propuestas por etapa orientadas a maximizar la conversión a exclusiva firmada. Incluye priorización en fases (bajo/medio/alto esfuerzo) — ninguna implementada todavía a la fecha de este documento.
+
+**Audiencia:** Alex, Ana Laura, brokers, Claude Code.
+
+**Mantenedor:** Alex.
+
+### 8. Manual del Broker — Proceso de Captación
+[`docs/08-MANUAL-BROKER-CAPTACION.md`](./08-MANUAL-BROKER-CAPTACION.md)
+
+**Cuándo usarlo:** manual operativo para brokers — qué hacer en cada etapa de captación, qué pantalla/botón del CRM usar, guion de la visita (la etapa crítica), manejo de objeciones comunes del propietario, y qué no prometer. Léelo antes de tomar tu primera captación.
+
+**Audiencia:** brokers y agentes de captación de Home del Valle.
+
+**Mantenedor:** Alex.
+
 ---
 
 ## Documentación complementaria existente en el repo
@@ -136,6 +154,8 @@ Antes de leer los manuales nuevos, conviene tener presente lo que ya estaba docu
 | Resolver acceso o privacidad entre cliente A y cliente B en el portal | Portal del Cliente sección 9 | — |
 | Resolver un bug en QR | `QR_IMPLEMENTATION.md` + `CRITICAL_VERSIONS.md` | — |
 | Onboarding de un agente nuevo | Manual de Operaciones (proceso) + Manual de Marca (cómo hablamos) | Proceso de Renta si trabajará rentas |
+| Diseñar o mejorar el flujo de captación (lead → exclusiva) | Flujo de Captación y Mejoras Propuestas | Manual del Broker — Captación |
+| Onboarding de un broker nuevo en captaciones | Manual del Broker — Captación | Flujo de Captación y Mejoras Propuestas |
 | Onboarding de un dev nuevo | Este README + Manual de Implementación + `.claude/SCHEMA_QUICK_REFERENCE.md` | — |
 
 ---
