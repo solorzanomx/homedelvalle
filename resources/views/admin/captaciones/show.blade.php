@@ -120,6 +120,23 @@
 .info-row .lbl { color:var(--text-muted); }
 .info-row .val { font-weight:500; }
 
+/* ===== CHECKLIST (9 etapas del pipeline) ===== */
+.checklist-item { display:flex; align-items:flex-start; gap:.5rem; padding:.3rem 0; font-size:.82rem; }
+.checklist-item label { cursor:pointer; flex:1; line-height:1.4; }
+.checklist-item input[type="checkbox"] { margin-top:3px; cursor:pointer; accent-color:var(--primary); }
+.checklist-item.completed label { text-decoration:line-through; opacity:.5; }
+.checklist-meta { font-size:.65rem; color:var(--text-muted); margin-left:1.25rem; }
+.stage-checklist-group { margin-bottom:1rem; }
+.stage-checklist-header {
+    display:flex; align-items:center; gap:.5rem; padding:.5rem .65rem;
+    background:var(--bg); border-radius:var(--radius); margin-bottom:.35rem;
+}
+.stage-checklist-header .stage-label { font-size:.82rem; font-weight:600; flex:1; display:flex; align-items:center; gap:.35rem; }
+.stage-checklist-header .stage-count { font-size:.7rem; color:var(--text-muted); }
+.stage-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.checklist-item.locked { opacity:.35; pointer-events:none; }
+.checklist-item.past { opacity:.5; }
+
 /* Reject modal */
 #reject-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; }
 #reject-modal.open { display:flex; }
@@ -252,6 +269,11 @@
             <button class="tab-btn active" onclick="switchTab('docs',this)">
                 Documentos <span class="tab-count">{{ $total }}</span>
             </button>
+            @if($captacion->operation)
+            <button class="tab-btn" onclick="switchTab('checklist',this)">
+                &#9776; Checklist
+            </button>
+            @endif
             <button class="tab-btn" onclick="switchTab('timeline',this)">
                 Actividad <span class="tab-count">{{ $interactions->count() }}</span>
             </button>
@@ -416,6 +438,67 @@
             </div>
             @endforeach
         </div>
+
+        {{-- TAB: Checklist — las 9 etapas reales del pipeline (Operation.stage),
+             no solo la actual. Mismo patrón que operations/show.blade.php,
+             adaptado a captación. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md. --}}
+        @if($captacion->operation)
+        <div class="tab-content" id="tab-checklist">
+            @php
+                $operation = $captacion->operation;
+                $stageKeys = \App\Models\Operation::CAPTACION_STAGES;
+                $currentIdx = array_search($operation->stage, $stageKeys);
+                $itemsByStage = $operation->checklistItems->groupBy('stage');
+            @endphp
+
+            @foreach($stageKeys as $stageIdx => $stageKey)
+                @php
+                    $stageLabel = \App\Models\Operation::STAGES[$stageKey] ?? $stageKey;
+                    $stageItems = $itemsByStage->get($stageKey, collect())->sortBy('id');
+                    $stageCompleted = $stageItems->where('is_completed', true)->count();
+                    $stageTotal = $stageItems->count();
+                    $stageColor = \App\Models\Operation::STAGE_COLORS[$stageKey] ?? '#94a3b8';
+                    $isPast = $stageIdx < $currentIdx;
+                    $isCurrent = $stageIdx === $currentIdx;
+                    $isFuture = $stageIdx > $currentIdx;
+                @endphp
+                <div class="stage-checklist-group">
+                    <div class="stage-checklist-header">
+                        <div class="stage-label">
+                            <span class="stage-dot" style="background: {{ $stageColor }};"></span>
+                            {{ $stageLabel }}
+                            @if($isPast) <span style="font-size:0.7rem;color:var(--success);">&#10003;</span> @endif
+                            @if($isCurrent) <span class="badge" style="background:{{ $stageColor }}1a;color:{{ $stageColor }};font-size:.65rem;">Etapa actual</span> @endif
+                        </div>
+                        <span class="stage-count">
+                            @if($stageTotal > 0) {{ $stageCompleted }}/{{ $stageTotal }} @else — @endif
+                        </span>
+                    </div>
+                    @if($stageTotal > 0)
+                    <div style="padding-left:.5rem;">
+                        @foreach($stageItems as $item)
+                        <div class="checklist-item {{ $item->is_completed ? 'completed' : '' }} {{ $isPast ? 'past' : '' }} {{ $isFuture ? 'locked' : '' }}">
+                            @if($isCurrent)
+                                <form method="POST" action="{{ route('operations.checklist.toggle', [$operation->id, $item->id]) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="checkbox" onchange="this.form.submit()" {{ $item->is_completed ? 'checked' : '' }}>
+                                </form>
+                            @else
+                                <input type="checkbox" {{ $item->is_completed || $isPast ? 'checked' : '' }} disabled>
+                            @endif
+                            <label>{{ $item->template->title ?? 'Item' }}</label>
+                        </div>
+                        @if($item->is_completed && $item->completedByUser)
+                        <div class="checklist-meta">{{ $item->completedByUser->name }} &middot; {{ $item->completed_at->format('d/m H:i') }}</div>
+                        @endif
+                        @endforeach
+                    </div>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+        @endif
 
         {{-- TAB: Valor de Mercado (Quick Quote) --}}
         <div class="tab-content" id="tab-quickquote">
@@ -598,41 +681,34 @@
             </div>
         </div>
 
-        {{-- Checklist de la etapa actual en el kanban de pipeline --}}
+        {{-- Progreso resumido — detalle completo de las 9 etapas en la
+             pestaña "Checklist" de la izquierda. --}}
         @if($captacion->operation)
         @php
             $opStage = $captacion->operation->stage;
             $opStageLabel = \App\Models\Operation::STAGES[$opStage] ?? $opStage;
-            $checklistItems = $captacion->operation->checklistItems->where('stage', $opStage)->sortBy('id');
+            $checklistItems = $captacion->operation->checklistItems->where('stage', $opStage);
             $clTotal = $checklistItems->count();
             $clDone  = $checklistItems->where('is_completed', true)->count();
             $clPct   = $clTotal > 0 ? round(($clDone / $clTotal) * 100) : 0;
+            $stageIdx = array_search($opStage, \App\Models\Operation::CAPTACION_STAGES);
+            $totalStages = count(\App\Models\Operation::CAPTACION_STAGES);
         @endphp
         <div class="side-card">
             <div class="side-card-header">
-                <span class="side-card-title">&#9776; Checklist &mdash; {{ $opStageLabel }}</span>
-                <a href="{{ route('admin.captaciones.pipeline') }}" style="font-size:.75rem;color:var(--primary);">Ver pipeline &rarr;</a>
+                <span class="side-card-title">&#9776; Progreso del pipeline</span>
             </div>
             <div class="side-card-body">
+                <div class="info-row"><span class="lbl">Etapa</span><span class="val">{{ $opStageLabel }} ({{ $stageIdx + 1 }}/{{ $totalStages }})</span></div>
                 @if($clTotal > 0)
-                <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem;">{{ $clDone }}/{{ $clTotal }} completado ({{ $clPct }}%)</div>
-                <div style="background:var(--bg);border-radius:6px;height:6px;overflow:hidden;margin-bottom:.75rem;">
+                <div style="font-size:.75rem;color:var(--text-muted);margin:.4rem 0 .25rem;">{{ $clDone }}/{{ $clTotal }} completado en esta etapa</div>
+                <div style="background:var(--bg);border-radius:6px;height:6px;overflow:hidden;">
                     <div style="background:var(--success);height:100%;width:{{ $clPct }}%;"></div>
                 </div>
-                @foreach($checklistItems as $item)
-                <div style="display:flex;align-items:center;gap:.5rem;padding:.3rem 0;font-size:.82rem;">
-                    <form method="POST" action="{{ route('operations.checklist.toggle', [$captacion->operation_id, $item->id]) }}" style="display:contents;">
-                        @csrf
-                        @method('PATCH')
-                        <input type="checkbox" onchange="this.form.submit()" {{ $item->is_completed ? 'checked' : '' }}>
-                    </form>
-                    <span style="{{ $item->is_completed ? 'text-decoration:line-through;color:var(--text-muted);' : '' }}">{{ $item->template->title ?? 'Item' }}</span>
-                    @if($item->template?->is_required)<span style="font-size:.65rem;color:#ef4444;" title="Requerido">*</span>@endif
-                </div>
-                @endforeach
                 @else
-                <p style="font-size:.8rem;color:var(--text-muted);">Sin checklist configurado para esta etapa.</p>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-top:.4rem;">Sin checklist configurado para esta etapa.</p>
                 @endif
+                <p style="font-size:.78rem;color:var(--text-muted);margin-top:.6rem;">Ver detalle de las 9 etapas en la pestaña <strong>Checklist</strong> arriba.</p>
             </div>
         </div>
         @endif

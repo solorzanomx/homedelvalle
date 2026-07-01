@@ -119,7 +119,7 @@ class CaptacionAdminController extends Controller
 
     public function show(Captacion $captacion)
     {
-        $captacion->load(['client', 'documents.uploader', 'valuation', 'signatureRequest', 'operation.checklistItems.template']);
+        $captacion->load(['client', 'documents.uploader', 'valuation', 'signatureRequest', 'operation.checklistItems.template', 'operation.checklistItems.completedByUser']);
 
         $allCategories  = Document::CATEGORIES;
         $requiredCats   = Captacion::REQUIRED_DOCS_ETAPA1;
