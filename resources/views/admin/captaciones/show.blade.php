@@ -140,6 +140,26 @@
 /* Reject modal */
 #reject-modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; }
 #reject-modal.open { display:flex; }
+
+/* ===== Cabina de etapa (cockpit) ===== */
+.cockpit-header {
+    background:var(--bg); border-radius:var(--radius); padding:.75rem .9rem; margin-bottom:.75rem;
+}
+.cockpit-header .cockpit-goal { font-size:.8rem; font-weight:600; margin-bottom:.35rem; }
+.cockpit-header .cockpit-progress-bar { height:6px; background:var(--border); border-radius:99px; overflow:hidden; margin-top:.4rem; }
+.cockpit-header .cockpit-progress-fill { height:100%; border-radius:99px; }
+.cockpit-item {
+    border:1px solid var(--border); border-radius:var(--radius); padding:.85rem 1rem; margin-bottom:.6rem;
+}
+.cockpit-item.done { padding:.5rem .9rem; background:var(--bg); }
+.cockpit-item .cockpit-title { font-size:.85rem; font-weight:600; display:flex; align-items:center; gap:.4rem; }
+.cockpit-item.done .cockpit-title { font-weight:500; }
+.cockpit-item .cockpit-summary { font-size:.75rem; color:var(--text-muted); margin-top:.15rem; margin-left:1.4rem; }
+.cockpit-item .cockpit-body { margin-top:.65rem; }
+.cockpit-item .cockpit-field { margin-bottom:.55rem; }
+.cockpit-item .cockpit-field label { display:block; font-size:.72rem; color:var(--text-muted); margin-bottom:.2rem; }
+.cockpit-item .cockpit-actions { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.6rem; }
+.cockpit-edit-link { font-size:.72rem; color:var(--primary); cursor:pointer; background:none; border:none; padding:0; }
 </style>
 @endsection
 
@@ -447,64 +467,19 @@
             @endforeach
         </div>
 
-        {{-- TAB: Checklist — las 9 etapas reales del pipeline (Operation.stage),
-             no solo la actual. Mismo patrón que operations/show.blade.php,
-             adaptado a captación. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md. --}}
+        {{-- TAB: Checklist — las 6 etapas reales del pipeline (Operation.stage),
+             no solo la actual. Todo el bloque vive dentro de UN componente
+             Livewire (no solo los items de la etapa actual) para que el
+             encabezado de "etapa actual" nunca quede desincronizado del
+             contenido tras un auto-avance — ver docs/07-FLUJO-CAPTACION-Y-
+             MEJORAS.md y memoria de proyecto. --}}
         @if($captacion->operation)
         <div class="tab-content" id="tab-checklist">
-            @php
-                $operation = $captacion->operation;
-                $stageKeys = \App\Models\Operation::CAPTACION_STAGES;
-                $currentIdx = array_search($operation->stage, $stageKeys);
-                $itemsByStage = $operation->checklistItems->groupBy('stage');
-            @endphp
-
-            @foreach($stageKeys as $stageIdx => $stageKey)
-                @php
-                    $stageLabel = \App\Models\Operation::STAGES[$stageKey] ?? $stageKey;
-                    $stageItems = $itemsByStage->get($stageKey, collect())->sortBy('id');
-                    $stageCompleted = $stageItems->where('is_completed', true)->count();
-                    $stageTotal = $stageItems->count();
-                    $stageColor = \App\Models\Operation::STAGE_COLORS[$stageKey] ?? '#94a3b8';
-                    $isPast = $stageIdx < $currentIdx;
-                    $isCurrent = $stageIdx === $currentIdx;
-                    $isFuture = $stageIdx > $currentIdx;
-                @endphp
-                <div class="stage-checklist-group">
-                    <div class="stage-checklist-header">
-                        <div class="stage-label">
-                            <span class="stage-dot" style="background: {{ $stageColor }};"></span>
-                            {{ $stageLabel }}
-                            @if($isPast) <span style="font-size:0.7rem;color:var(--success);">&#10003;</span> @endif
-                            @if($isCurrent) <span class="badge" style="background:{{ $stageColor }}1a;color:{{ $stageColor }};font-size:.65rem;">Etapa actual</span> @endif
-                        </div>
-                        <span class="stage-count">
-                            @if($stageTotal > 0) {{ $stageCompleted }}/{{ $stageTotal }} @else — @endif
-                        </span>
-                    </div>
-                    @if($stageTotal > 0)
-                    <div style="padding-left:.5rem;">
-                        @foreach($stageItems as $item)
-                        <div class="checklist-item {{ $item->is_completed ? 'completed' : '' }} {{ $isPast ? 'past' : '' }} {{ $isFuture ? 'locked' : '' }}">
-                            @if($isCurrent)
-                                <form method="POST" action="{{ route('operations.checklist.toggle', [$operation->id, $item->id]) }}">
-                                    @csrf
-                                    @method('PATCH')
-                                    <input type="checkbox" onchange="this.form.submit()" {{ $item->is_completed ? 'checked' : '' }}>
-                                </form>
-                            @else
-                                <input type="checkbox" {{ $item->is_completed || $isPast ? 'checked' : '' }} disabled>
-                            @endif
-                            <label>{{ $item->template->title ?? 'Item' }}</label>
-                        </div>
-                        @if($item->is_completed && $item->completedByUser)
-                        <div class="checklist-meta">{{ $item->completedByUser->name }} &middot; {{ $item->completed_at->format('d/m H:i') }}</div>
-                        @endif
-                        @endforeach
-                    </div>
-                    @endif
-                </div>
-            @endforeach
+            <livewire:admin.captacion-stage-cockpit
+                :operation="$captacion->operation"
+                :captacion="$captacion"
+                wire:key="cockpit-{{ $captacion->operation->id }}"
+            />
         </div>
         @endif
 

@@ -14,6 +14,7 @@ class Captacion extends Model implements HasMedia
 
     protected $fillable = [
         'client_id', 'property_id', 'operation_id', 'property_address', 'portal_etapa',
+        'motivo', 'urgencia',
         'etapa1_completed_at', 'etapa2_completed_at', 'etapa3_completed_at', 'etapa4_completed_at',
         'etapa3_valuation_id', 'etapa4_signature_id', 'precio_acordado', 'status',
         'intent', 'commission_pct', 'marketing_plan', 'notes_from_call', 'source',
