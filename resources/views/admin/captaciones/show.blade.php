@@ -293,15 +293,20 @@
             </form>
         </div>
 
+        {{-- Proceso de la etapa — siempre visible al entrar, no vive detrás
+             de una pestaña. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md. --}}
+        @if($captacion->operation)
+        <livewire:admin.captacion-stage-cockpit
+            :operation="$captacion->operation"
+            :captacion="$captacion"
+            wire:key="cockpit-{{ $captacion->operation->id }}"
+        />
+        @endif
+
         <div class="tab-bar">
             <button class="tab-btn active" onclick="switchTab('docs',this)">
                 Documentos <span class="tab-count">{{ $total }}</span>
             </button>
-            @if($captacion->operation)
-            <button class="tab-btn" onclick="switchTab('checklist',this)">
-                &#9776; Checklist
-            </button>
-            @endif
             <button class="tab-btn" onclick="switchTab('timeline',this)">
                 Actividad <span class="tab-count">{{ $interactions->count() }}</span>
             </button>
@@ -466,22 +471,6 @@
             </div>
             @endforeach
         </div>
-
-        {{-- TAB: Checklist — las 6 etapas reales del pipeline (Operation.stage),
-             no solo la actual. Todo el bloque vive dentro de UN componente
-             Livewire (no solo los items de la etapa actual) para que el
-             encabezado de "etapa actual" nunca quede desincronizado del
-             contenido tras un auto-avance — ver docs/07-FLUJO-CAPTACION-Y-
-             MEJORAS.md y memoria de proyecto. --}}
-        @if($captacion->operation)
-        <div class="tab-content" id="tab-checklist">
-            <livewire:admin.captacion-stage-cockpit
-                :operation="$captacion->operation"
-                :captacion="$captacion"
-                wire:key="cockpit-{{ $captacion->operation->id }}"
-            />
-        </div>
-        @endif
 
         {{-- TAB: Valor de Mercado (Quick Quote) --}}
         <div class="tab-content" id="tab-quickquote">
@@ -663,38 +652,6 @@
                 <p style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;">Se envía confirmación automática al propietario con link para confirmar/reagendar.</p>
             </div>
         </div>
-
-        {{-- Progreso resumido — detalle completo de las 9 etapas en la
-             pestaña "Checklist" de la izquierda. --}}
-        @if($captacion->operation)
-        @php
-            $opStage = $captacion->operation->stage;
-            $opStageLabel = \App\Models\Operation::STAGES[$opStage] ?? $opStage;
-            $checklistItems = $captacion->operation->checklistItems->where('stage', $opStage);
-            $clTotal = $checklistItems->count();
-            $clDone  = $checklistItems->where('is_completed', true)->count();
-            $clPct   = $clTotal > 0 ? round(($clDone / $clTotal) * 100) : 0;
-            $stageIdx = array_search($opStage, \App\Models\Operation::CAPTACION_STAGES);
-            $totalStages = count(\App\Models\Operation::CAPTACION_STAGES);
-        @endphp
-        <div class="side-card">
-            <div class="side-card-header">
-                <span class="side-card-title">&#9776; Progreso del pipeline</span>
-            </div>
-            <div class="side-card-body">
-                <div class="info-row"><span class="lbl">Etapa</span><span class="val">{{ $opStageLabel }} ({{ $stageIdx + 1 }}/{{ $totalStages }})</span></div>
-                @if($clTotal > 0)
-                <div style="font-size:.75rem;color:var(--text-muted);margin:.4rem 0 .25rem;">{{ $clDone }}/{{ $clTotal }} completado en esta etapa</div>
-                <div style="background:var(--bg);border-radius:6px;height:6px;overflow:hidden;">
-                    <div style="background:var(--success);height:100%;width:{{ $clPct }}%;"></div>
-                </div>
-                @else
-                <p style="font-size:.8rem;color:var(--text-muted);margin-top:.4rem;">Sin checklist configurado para esta etapa.</p>
-                @endif
-                <p style="font-size:.78rem;color:var(--text-muted);margin-top:.6rem;">Ver detalle de las 9 etapas en la pestaña <strong>Checklist</strong> arriba.</p>
-            </div>
-        </div>
-        @endif
 
         {{-- Etapa 2: Valuación --}}
         <div class="side-card">
