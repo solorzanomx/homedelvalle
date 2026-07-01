@@ -154,13 +154,17 @@ class VisitResponseController extends Controller
         $interaction = Interaction::where('visit_token', $token)->firstOrFail();
 
         $request->validate([
-            'visitor_reaction' => 'required|in:liked,neutral,disliked',
-            'visitor_comment'  => 'nullable|string|max:300',
+            'visitor_reaction'  => 'required|in:liked,neutral,disliked',
+            'visitor_comment'   => 'nullable|string|max:300',
+            'price_perception'  => 'nullable|in:fair,negotiable,high',
+            'advisor_rating'    => 'nullable|integer|min:1|max:5',
         ]);
 
         $interaction->update([
             'visitor_reaction'      => $request->visitor_reaction,
             'visitor_comment'       => $request->visitor_comment,
+            'price_perception'      => $request->price_perception,
+            'advisor_rating'        => $request->advisor_rating,
             'feedback_submitted_at' => now(),
         ]);
 

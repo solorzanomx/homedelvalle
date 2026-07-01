@@ -65,6 +65,16 @@ class PortalPropertyController extends Controller
             'total'   => $withFeedback->count(),
         ];
 
+        // Price perception summary (only visits that answered)
+        $withPrice = $visits->whereNotNull('price_perception');
+        $priceTotal = $withPrice->count();
+        $priceSummary = [
+            'fair'       => $withPrice->where('price_perception', 'fair')->count(),
+            'negotiable' => $withPrice->where('price_perception', 'negotiable')->count(),
+            'high'       => $withPrice->where('price_perception', 'high')->count(),
+            'total'      => $priceTotal,
+        ];
+
         // Anonymous comments (no names, just comment + date)
         $comments = $visits->whereNotNull('visitor_comment')
             ->map(fn($v) => [
@@ -77,7 +87,7 @@ class PortalPropertyController extends Controller
         return view('portal.mi-inmueble', compact(
             'client', 'property', 'captacion', 'visits',
             'totalVisits', 'confirmedVisits', 'confirmRate', 'daysOnMarket',
-            'weeklyData', 'reactionSummary', 'comments'
+            'weeklyData', 'reactionSummary', 'priceSummary', 'comments'
         ));
     }
 }

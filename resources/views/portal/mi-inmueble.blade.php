@@ -127,6 +127,29 @@
     border-radius: 4px;
     transition: width .4s ease;
 }
+
+/* ── Price perception ─────────────────────────────────── */
+.price-perception-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .65rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .84rem;
+}
+.price-perception-row:last-child { border-bottom: none; }
+.price-bar-bg {
+    flex: 1;
+    height: 7px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.price-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width .4s ease;
+}
 @endsection
 
 @section('content')
@@ -240,6 +263,54 @@
                 </div>
             </div>
             @endforeach
+        </div>
+        @endif
+    </div>
+</div>
+@endif
+
+{{-- ── Percepción del precio ── --}}
+@if(isset($priceSummary) && $priceSummary['total'] > 0)
+<div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-header">
+        <span style="font-size:.82rem;font-weight:700;">Percepción del precio</span>
+        <span style="font-size:.75rem;color:var(--text-muted);">{{ $priceSummary['total'] }} {{ $priceSummary['total'] === 1 ? 'respuesta' : 'respuestas' }}</span>
+    </div>
+    <div class="card-body">
+        @php
+            $pt = $priceSummary['total'];
+            $fairPct       = $pt > 0 ? round($priceSummary['fair']       / $pt * 100) : 0;
+            $negotiablePct = $pt > 0 ? round($priceSummary['negotiable'] / $pt * 100) : 0;
+            $highPct       = $pt > 0 ? round($priceSummary['high']       / $pt * 100) : 0;
+        @endphp
+        <div class="price-perception-row">
+            <span style="min-width:80px;">✅ Justo</span>
+            <div class="price-bar-bg">
+                <div class="price-bar-fill" style="width:{{ $fairPct }}%;background:#22C55E;"></div>
+            </div>
+            <span style="min-width:36px;text-align:right;font-weight:700;color:#166534;">{{ $fairPct }}%</span>
+        </div>
+        <div class="price-perception-row">
+            <span style="min-width:80px;">💬 Negociable</span>
+            <div class="price-bar-bg">
+                <div class="price-bar-fill" style="width:{{ $negotiablePct }}%;background:#F59E0B;"></div>
+            </div>
+            <span style="min-width:36px;text-align:right;font-weight:700;color:#92400E;">{{ $negotiablePct }}%</span>
+        </div>
+        <div class="price-perception-row">
+            <span style="min-width:80px;">💸 Alto</span>
+            <div class="price-bar-bg">
+                <div class="price-bar-fill" style="width:{{ $highPct }}%;background:#EF4444;"></div>
+            </div>
+            <span style="min-width:36px;text-align:right;font-weight:700;color:#991B1B;">{{ $highPct }}%</span>
+        </div>
+        @if($highPct >= 50)
+        <div style="margin-top:.75rem;padding:.6rem .85rem;background:#FEF2F2;border-radius:8px;font-size:.78rem;color:#991B1B;font-weight:600;">
+            La mayoría de los visitantes percibe el precio como alto. Podrías considerar una revisión con tu asesor.
+        </div>
+        @elseif($fairPct >= 60)
+        <div style="margin-top:.75rem;padding:.6rem .85rem;background:#ECFDF5;border-radius:8px;font-size:.78rem;color:#166534;font-weight:600;">
+            La mayoría de los visitantes considera el precio justo. ¡Buen posicionamiento!
         </div>
         @endif
     </div>

@@ -12,6 +12,7 @@ class Interaction extends Model
         'visit_token', 'confirmed_at', 'reminder_sent_at',
         'reschedule_requested_at', 'reschedule_message', 'send_confirmation_email',
         'visitor_reaction', 'visitor_comment', 'feedback_submitted_at',
+        'price_perception', 'advisor_rating',
     ];
 
     protected function casts(): array
@@ -25,6 +26,8 @@ class Interaction extends Model
             'send_confirmation_email'  => 'boolean',
             'feedback_submitted_at'    => 'datetime',
             'visitor_reaction'         => 'string',
+            'price_perception'         => 'string',
+            'advisor_rating'           => 'integer',
         ];
     }
 

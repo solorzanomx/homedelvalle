@@ -244,13 +244,55 @@ class ClientController extends Controller
                         . '<button type="submit" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">📤 Enviar confirmación</button>'
                         . '</form>';
                 }
-                // Solicitar feedback: visita pasada sin feedback
-                if (!$interaction->feedback_submitted_at && $interaction->scheduled_at?->isPast()) {
-                    $feedbackUrl = route('clients.interaction.send-feedback', [$client->id, $interaction->id]);
-                    $actionsHtml .= '<form method="POST" action="' . $feedbackUrl . '" style="display:inline-block;margin-top:8px;">'
-                        . csrf_field()
-                        . '<button type="submit" style="background:#f5f3ff;border:1px solid #ddd6fe;color:#7c3aed;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">💬 Solicitar opinión</button>'
-                        . '</form>';
+                // Solicitar feedback o mostrar resultado
+                if ($interaction->scheduled_at?->isPast()) {
+                    if ($interaction->feedback_submitted_at) {
+                        // Mostrar resumen del feedback recibido
+                        $reactionEmoji = match($interaction->visitor_reaction) {
+                            'liked'    => '👍',
+                            'neutral'  => '🤔',
+                            'disliked' => '❌',
+                            default    => '💬',
+                        };
+                        $reactionLabel = match($interaction->visitor_reaction) {
+                            'liked'    => 'Le gustó',
+                            'neutral'  => 'Tiene dudas',
+                            'disliked' => 'No cumplió',
+                            default    => 'Opinó',
+                        };
+                        $priceLabel = match($interaction->price_perception) {
+                            'fair'       => '✅ Precio justo',
+                            'negotiable' => '💬 Precio negociable',
+                            'high'       => '💸 Precio alto',
+                            default      => null,
+                        };
+                        $stars = $interaction->advisor_rating
+                            ? str_repeat('★', $interaction->advisor_rating) . str_repeat('☆', 5 - $interaction->advisor_rating)
+                            : null;
+
+                        $actionsHtml .= '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">';
+                        $actionsHtml .= '<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:3px 9px;font-size:.75rem;font-weight:700;">'
+                            . $reactionEmoji . ' ' . e($reactionLabel) . '</span>';
+                        if ($priceLabel) {
+                            $priceColor = $interaction->price_perception === 'fair'
+                                ? 'background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;'
+                                : ($interaction->price_perception === 'high'
+                                    ? 'background:#fef2f2;border:1px solid #fecaca;color:#991b1b;'
+                                    : 'background:#fffbeb;border:1px solid #fde68a;color:#92400e;');
+                            $actionsHtml .= '<span style="' . $priceColor . 'border-radius:6px;padding:3px 9px;font-size:.75rem;font-weight:700;">' . e($priceLabel) . '</span>';
+                        }
+                        if ($stars) {
+                            $actionsHtml .= '<span style="background:#fefce8;border:1px solid #fde68a;color:#92400e;border-radius:6px;padding:3px 9px;font-size:.75rem;font-weight:700;" title="Calificación del asesor">'
+                                . e($stars) . '</span>';
+                        }
+                        $actionsHtml .= '</div>';
+                    } else {
+                        $feedbackUrl = route('clients.interaction.send-feedback', [$client->id, $interaction->id]);
+                        $actionsHtml .= '<form method="POST" action="' . $feedbackUrl . '" style="display:inline-block;margin-top:8px;">'
+                            . csrf_field()
+                            . '<button type="submit" style="background:#f5f3ff;border:1px solid #ddd6fe;color:#7c3aed;border-radius:6px;padding:5px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">💬 Solicitar opinión</button>'
+                            . '</form>';
+                    }
                 }
             }
 
@@ -581,6 +623,7 @@ class ClientController extends Controller
         }
 
         try {
+            $interaction->loadMissing(['property.photos', 'user']);
             $prop      = $interaction->property;
             $scheduled = $interaction->scheduled_at;
             $addr      = collect([$prop?->address, $prop?->colony])->filter()->implode(', ');
