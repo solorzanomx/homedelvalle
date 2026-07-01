@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RentalAval extends Model
 {
+    protected $table = 'rental_avales';
+
     protected $fillable = [
         'rental_process_id',
         'client_id',
