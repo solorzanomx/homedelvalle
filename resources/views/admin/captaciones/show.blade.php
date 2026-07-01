@@ -505,6 +505,30 @@
             </div>
         </div>
 
+        {{-- Presentación — antes solo tenía botón en la columna "contacto" del
+             kanban y desaparecía al avanzar de etapa. Ver docs/07-FLUJO-
+             CAPTACION-Y-MEJORAS.md. --}}
+        <div class="side-card">
+            <div class="side-card-header">
+                <span class="side-card-title">&#128196; Presentación</span>
+            </div>
+            <div class="side-card-body">
+                <a href="{{ route('admin.captaciones.presentation', $captacion) }}" target="_blank" class="btn btn-primary btn-sm" style="width:100%;display:block;text-align:center;margin-bottom:.6rem;">
+                    Ver Presentación
+                </a>
+                <form method="POST" action="{{ route('admin.captaciones.presentation.send.email', $captacion) }}" style="display:flex;gap:.4rem;margin-bottom:.4rem;">
+                    @csrf
+                    <input type="email" name="email" placeholder="correo@ejemplo.com" value="{{ $captacion->client->email ?? '' }}" class="form-control" style="font-size:.8rem;" required>
+                    <button type="submit" class="btn btn-sm btn-outline" style="white-space:nowrap;">Enviar</button>
+                </form>
+                <form method="POST" action="{{ route('admin.captaciones.presentation.send.whatsapp', $captacion) }}" style="display:flex;gap:.4rem;">
+                    @csrf
+                    <input type="text" name="phone" placeholder="55 1234 5678" value="{{ $captacion->client->whatsapp ?? $captacion->client->phone ?? '' }}" class="form-control" style="font-size:.8rem;" required>
+                    <button type="submit" class="btn btn-sm btn-outline" style="white-space:nowrap;">WhatsApp</button>
+                </form>
+            </div>
+        </div>
+
         {{-- Brief pre-visita — llegar preparado sin reconstruir de memoria --}}
         @if($marketSnapshot || $captacion->notes_from_call)
         <div class="side-card">
