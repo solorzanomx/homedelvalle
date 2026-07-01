@@ -98,7 +98,9 @@
 .doc-row {
     display:flex; align-items:center; gap:.65rem; padding:.65rem .85rem;
     border:1px solid var(--border); border-radius:var(--radius); margin-bottom:.4rem; background:var(--card);
+    transition:border-color .15s, background .15s;
 }
+.doc-row.drag-over { border:2px dashed var(--primary); background:rgba(102,126,234,.05); }
 .doc-icon { font-size:1.2rem; flex-shrink:0; }
 .doc-info { flex:1; overflow:hidden; }
 .doc-name { font-size:.82rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -349,7 +351,7 @@
                 $previewUrl = $latest ? asset('storage/' . $latest->file_path) : '';
                 $docTitle = $allCategories[$cat] ?? $cat;
             @endphp
-            <div class="doc-row">
+            <div class="doc-row" ondragover="event.preventDefault(); this.classList.add('drag-over');" ondragleave="this.classList.remove('drag-over');" ondrop="handleDocDrop(event, this)">
                 <span class="doc-icon">
                     @if($status === 'aprobado') &#9989;
                     @elseif($status === 'rechazado') &#10060;
@@ -389,7 +391,7 @@
                         <input type="hidden" name="category" value="{{ $cat }}">
                         <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
                             {{ $latest ? 'Reemplazar' : 'Subir' }}
-                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="this.form.submit()">
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" capture="environment" style="display:none;" onchange="handleDocFileChange(this)">
                         </label>
                     </form>
                     @if($latest)
@@ -432,7 +434,7 @@
                 $previewUrl = $latest ? asset('storage/' . $latest->file_path) : '';
                 $docTitle = $allCategories[$cat] ?? $cat;
             @endphp
-            <div class="doc-row">
+            <div class="doc-row" ondragover="event.preventDefault(); this.classList.add('drag-over');" ondragleave="this.classList.remove('drag-over');" ondrop="handleDocDrop(event, this)">
                 <span class="doc-icon">
                     @if($status === 'aprobado') &#9989;
                     @elseif($status === 'rechazado') &#10060;
@@ -466,7 +468,7 @@
                         <input type="hidden" name="category" value="{{ $cat }}">
                         <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
                             {{ $latest ? 'Reemplazar' : 'Subir' }}
-                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="this.form.submit()">
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" capture="environment" style="display:none;" onchange="handleDocFileChange(this)">
                         </label>
                     </form>
                     @if($latest)
@@ -835,6 +837,23 @@
     </div>
 </div>
 
+{{-- Confirmar antes de subir un documento — mismo patrón visual que
+     #preview-modal. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md. --}}
+<div id="doc-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:10000;align-items:center;justify-content:center;flex-direction:column;">
+    <div style="background:#fff;border-radius:12px;max-width:500px;width:95%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-bottom:1px solid #e5e7eb;">
+            <span style="font-weight:700;font-size:.95rem;">Confirmar documento</span>
+            <button type="button" onclick="cancelDocUpload()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b7280;">&times;</button>
+        </div>
+        <div id="doc-confirm-body" style="flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;background:#f9fafb;padding:1.5rem;gap:.5rem;">
+        </div>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;padding:.85rem 1rem;border-top:1px solid #e5e7eb;">
+            <button type="button" class="btn btn-outline" onclick="cancelDocUpload()">Elegir otra</button>
+            <button type="button" class="btn btn-primary" onclick="confirmDocUpload()">Confirmar y subir</button>
+        </div>
+    </div>
+</div>
+
 {{-- Decline Modal --}}
 <div id="decline-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:12px;max-width:460px;width:90%;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.2);">
@@ -921,6 +940,63 @@ function closePreview() {
 }
 document.getElementById('preview-modal').addEventListener('click', function(e) {
     if (e.target === this) closePreview();
+});
+
+// ── Subida de documentos: preview + drag&drop ──────────────────────────────
+var pendingUploadForm = null;
+
+function handleDocFileChange(input) {
+    if (!input.files || !input.files[0]) return;
+    showDocConfirm(input.form, input.files[0]);
+}
+
+function handleDocDrop(event, rowEl) {
+    event.preventDefault();
+    rowEl.classList.remove('drag-over');
+    var file = event.dataTransfer.files[0];
+    if (!file) return;
+    var input = rowEl.querySelector('input[type="file"]');
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    showDocConfirm(input.form, file);
+}
+
+function showDocConfirm(form, file) {
+    pendingUploadForm = form;
+    var body = document.getElementById('doc-confirm-body');
+
+    if (file.type.startsWith('image/')) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            body.innerHTML = '<img src="' + e.target.result + '" style="max-width:100%;max-height:50vh;object-fit:contain;border-radius:8px;">'
+                + '<span style="font-size:.8rem;color:var(--text-muted);">' + file.name + '</span>';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        body.innerHTML = '<span style="font-size:2.5rem;">&#128196;</span>'
+            + '<span style="font-size:.85rem;font-weight:600;">' + file.name + '</span>'
+            + '<span style="font-size:.75rem;color:var(--text-muted);">No se puede previsualizar este tipo de archivo, pero se subirá tal cual.</span>';
+    }
+
+    document.getElementById('doc-confirm-modal').style.display = 'flex';
+}
+
+function confirmDocUpload() {
+    if (pendingUploadForm) pendingUploadForm.submit();
+}
+
+function cancelDocUpload() {
+    if (pendingUploadForm) {
+        var input = pendingUploadForm.querySelector('input[type="file"]');
+        if (input) input.value = '';
+    }
+    pendingUploadForm = null;
+    document.getElementById('doc-confirm-modal').style.display = 'none';
+    document.getElementById('doc-confirm-body').innerHTML = '';
+}
+document.getElementById('doc-confirm-modal').addEventListener('click', function(e) {
+    if (e.target === this) cancelDocUpload();
 });
 </script>
 @endsection
