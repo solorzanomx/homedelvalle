@@ -236,16 +236,32 @@ class ClientController extends Controller
             // Botones de acción para visitas
             $actionsHtml = '';
             if ($interaction->type === 'visit' && $interaction->visit_token) {
-                // Enviar confirmación: visita futura sin confirmar
-                if (!$interaction->confirmed_at && $interaction->scheduled_at?->isFuture()) {
+
+                // ── Paso 1: Confirmación de asistencia ──────────────────────
+                // Mostrar siempre que no esté confirmada (cita futura o pasada)
+                if (!$interaction->confirmed_at) {
                     $confirmUrl = route('clients.interaction.send-confirmation', [$client->id, $interaction->id]);
-                    $actionsHtml .= '<form method="POST" action="' . $confirmUrl . '" style="display:inline-block;margin-top:8px;margin-right:6px;">'
-                        . csrf_field()
-                        . '<button type="submit" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">📤 Enviar confirmación</button>'
-                        . '</form>';
+                    if ($interaction->reminder_sent_at) {
+                        // Ya se envió: mostrar badge + opción de reenviar
+                        $actionsHtml .= '<span style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 9px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:8px;margin-right:6px;">✉️ Confirmación enviada</span>';
+                        $actionsHtml .= '<form method="POST" action="' . $confirmUrl . '" style="display:inline-block;margin-top:8px;margin-right:6px;">'
+                            . csrf_field()
+                            . '<button type="submit" style="background:#fff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">↩ Reenviar</button>'
+                            . '</form>';
+                    } else {
+                        // Aún no enviada
+                        $actionsHtml .= '<form method="POST" action="' . $confirmUrl . '" style="display:inline-block;margin-top:8px;margin-right:6px;">'
+                            . csrf_field()
+                            . '<button type="submit" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">📤 Enviar confirmación</button>'
+                            . '</form>';
+                    }
+                } else {
+                    // Confirmada: mostrar badge verde
+                    $actionsHtml .= '<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:4px 9px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:8px;margin-right:6px;">✅ Asistencia confirmada</span>';
                 }
-                // Solicitar feedback o mostrar resultado
-                if ($interaction->scheduled_at?->isPast()) {
+
+                // ── Paso 2: Solicitar opinión (solo si ya se envió confirmación y la cita pasó) ──
+                if ($interaction->reminder_sent_at && $interaction->scheduled_at?->isPast()) {
                     if ($interaction->feedback_submitted_at) {
                         // Mostrar resumen del feedback recibido
                         $reactionEmoji = match($interaction->visitor_reaction) {
@@ -569,8 +585,8 @@ class ClientController extends Controller
 
     public function resendConfirmation(Client $client, Interaction $interaction)
     {
-        if (!$interaction->visit_token || !$client->email || $interaction->confirmed_at) {
-            return back()->with('error', 'No se puede reenviar la confirmación para esta visita.');
+        if (!$interaction->visit_token || !$client->email) {
+            return back()->with('error', 'No se puede enviar la confirmación para esta visita.');
         }
 
         try {
@@ -608,6 +624,7 @@ class ClientController extends Controller
                     )
                 )
             );
+            $interaction->update(['reminder_sent_at' => now()]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning('resendConfirmation failed: ' . $e->getMessage());
             return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
