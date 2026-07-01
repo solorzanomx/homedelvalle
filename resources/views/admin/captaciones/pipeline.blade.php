@@ -114,7 +114,7 @@
         <p style="color:var(--text-muted);font-size:.82rem;">Propietarios en proceso de firma de exclusiva</p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;">
-        <a href="{{ route('captaciones.create-from-call') }}" class="btn btn-primary btn-sm">
+        <a href="{{ route('admin.captaciones.create-from-call') }}" class="btn btn-primary btn-sm">
             + Nueva captación
         </a>
     </div>
@@ -248,7 +248,7 @@
                 {{-- Name --}}
                 <div class="kanban-card-name" title="{{ $clientName }}">
                     @if($captacionId)
-                        <a href="{{ route('captaciones.show', $captacionId) }}" style="color:inherit;text-decoration:none;">{{ $clientName }}</a>
+                        <a href="{{ route('admin.captaciones.show', $captacionId) }}" style="color:inherit;text-decoration:none;">{{ $clientName }}</a>
                     @else
                         {{ $clientName }}
                     @endif
@@ -282,29 +282,33 @@
                         @if($phone)
                         <a href="tel:{{ $phone }}" class="btn btn-sm" title="Llamar a {{ $clientName }}">&#128222; Llamar</a>
                         @endif
-                        <a href="{{ route('captaciones.create-from-call') }}{{ $client ? '?client_id='.$client->id : '' }}"
+                        <a href="{{ route('admin.captaciones.create-from-call') }}{{ $client ? '?client_id='.$client->id : '' }}"
                            class="btn btn-sm btn-primary">Crear captación</a>
 
                     @elseif($stageKey === 'contacto')
                         @if($captacionId)
-                        <a href="{{ route('captaciones.presentation', $captacionId) }}" class="btn btn-sm">&#128196; Presentación</a>
+                        <a href="{{ route('admin.captaciones.presentation', $captacionId) }}" class="btn btn-sm">&#128196; Presentación</a>
                         @else
                         <button class="btn btn-sm" disabled title="Requiere captación vinculada">&#128196; Presentación</button>
                         @endif
 
                     @elseif($stageKey === 'visita')
-                        <a href="{{ route('captaciones.show', $captacionId ?? $op->id) }}#agenda" class="btn btn-sm">&#128197; Visita</a>
+                        @if($captacionId)
+                        <a href="{{ route('admin.captaciones.show', $captacionId) }}#agenda" class="btn btn-sm">&#128197; Visita</a>
+                        @else
+                        <a href="{{ route('operations.show', $op->id) }}" class="btn btn-sm">&#128197; Ver</a>
+                        @endif
 
                     @elseif($stageKey === 'avaluo')
                         @if($captacionId)
-                        <a href="{{ route('captaciones.show', $captacionId) }}#valuacion" class="btn btn-sm">&#128202; Valuación</a>
+                        <a href="{{ route('admin.captaciones.show', $captacionId) }}#valuacion" class="btn btn-sm">&#128202; Valuación</a>
                         @else
                         <button class="btn btn-sm" disabled>&#128202; Valuación</button>
                         @endif
 
                     @elseif($stageKey === 'exclusiva')
                         @if($captacionId)
-                        <form method="POST" action="{{ route('captaciones.generar-exclusiva', $captacionId) }}" style="display:inline;">
+                        <form method="POST" action="{{ route('admin.captaciones.generar-exclusiva', $captacionId) }}" style="display:inline;">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-primary">&#9997;&#65039; Exclusiva</button>
                         </form>
@@ -315,13 +319,13 @@
                     @else
                         {{-- Generic: just the "Ver" link as primary action --}}
                         @if($captacionId)
-                        <a href="{{ route('captaciones.show', $captacionId) }}" class="btn btn-sm">Ver detalles</a>
+                        <a href="{{ route('admin.captaciones.show', $captacionId) }}" class="btn btn-sm">Ver detalles</a>
                         @endif
                     @endif
 
                     {{-- Always: small "Ver →" link --}}
                     @if($captacionId)
-                    <a href="{{ route('captaciones.show', $captacionId) }}" class="btn btn-sm" style="margin-left:auto;" title="Ver captación">Ver &#8594;</a>
+                    <a href="{{ route('admin.captaciones.show', $captacionId) }}" class="btn btn-sm" style="margin-left:auto;" title="Ver captación">Ver &#8594;</a>
                     @endif
                 </div>
 
@@ -362,7 +366,7 @@
 </div>
 
 {{-- FAB --}}
-<a href="{{ route('captaciones.create-from-call') }}" class="fab-btn" title="Nueva captación">+</a>
+<a href="{{ route('admin.captaciones.create-from-call') }}" class="fab-btn" title="Nueva captación">+</a>
 
 @endsection
 
