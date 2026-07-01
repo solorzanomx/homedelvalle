@@ -574,8 +574,26 @@ strong { color: #1e293b; }
         </tbody>
       </table>
 
-      {{-- Testimonial --}}
-      @if($isRenta)
+      {{-- Testimonial — real de la tabla testimonials si hay uno aplicable a
+           la zona/tipo de operación; si no, el texto genérico de respaldo
+           (nunca se inventa un dato específico nuevo). Ver docs/07-FLUJO-
+           CAPTACION-Y-MEJORAS.md sección 4. --}}
+      @php
+        $testimonioReal = null;
+        if (!empty($inmuebleColonia)) {
+          $testimonioReal = \App\Models\Testimonial::active()
+            ->where('operation_type', $isRenta ? 'Renta' : 'Venta')
+            ->where('location', 'like', '%' . trim(explode(',', $inmuebleColonia)[0]) . '%')
+            ->inRandomOrder()
+            ->first();
+        }
+      @endphp
+      @if($testimonioReal)
+      <div class="testimonial">
+        <div class="quote">{{ $testimonioReal->content }}</div>
+        <div class="quote-author">— {{ $testimonioReal->name }}{{ $testimonioReal->location ? ', ' . $testimonioReal->location : '' }}</div>
+      </div>
+      @elseif($isRenta)
       <div class="testimonial">
         <div class="quote">HDV nos encontró un inquilino excelente en 18 días. La póliza jurídica nos dio mucha tranquilidad y el proceso fue completamente transparente.</div>
         <div class="quote-author">— Propietaria de departamento, Colonia del Valle (2024)</div>

@@ -146,10 +146,14 @@ class CaptacionAdminController extends Controller
         $etapaLabels = [1 => 'Documentación', 2 => 'Valuación', 3 => 'Precio', 4 => 'Exclusiva'];
         $etapaColors = [1 => '#f59e0b', 2 => '#3b82f6', 3 => '#8b5cf6', 4 => '#10b981'];
 
+        // Brief pre-visita: precio de referencia del Observatorio para la
+        // colonia del inmueble. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
+        $marketSnapshot = app(PresentationGeneratorService::class)->getMarketSnapshot($captacion);
+
         return view('admin.captaciones.show', compact(
             'captacion', 'allCategories', 'requiredCats', 'optionalCats',
             'docsByCategory', 'valuations', 'interactions', 'etapaLabels', 'etapaColors',
-            'clientProperty'
+            'clientProperty', 'marketSnapshot'
         ));
     }
 
@@ -349,6 +353,27 @@ class CaptacionAdminController extends Controller
         return view('admin.captaciones.pipeline', compact(
             'byStage', 'stages', 'stageColors', 'stats', 'users', 'captacionIds', 'currentUser'
         ));
+    }
+
+    /**
+     * Propuesta de Servicios en modo "presentación en vivo" — el mismo HTML
+     * de renderHtml() servido para mostrarse en tablet/laptop frente al
+     * propietario durante la visita, en vez de solo mandar el PDF después.
+     * Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md sección 3.
+     */
+    public function serviciosLive(Captacion $captacion)
+    {
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+        $html = app(ServiciosGeneratorService::class)->renderHtml($captacion);
+
+        // renderHtml() devuelve un documento HTML completo (pensado para PDF),
+        // no un fragmento — se sirve directo, solo se inyecta un botón
+        // flotante "Volver" antes de </body> en vez de envolverlo en otro layout.
+        $backUrl = route('admin.captaciones.show', $captacion);
+        $backButton = '<a href="' . e($backUrl) . '" style="position:fixed;top:16px;left:16px;z-index:9999;background:#1e293b;color:#fff;padding:.5rem 1rem;border-radius:8px;font-family:sans-serif;font-size:13px;text-decoration:none;box-shadow:0 4px 12px rgba(0,0,0,.25);">&larr; Volver a la captación</a>';
+        $html = str_replace('</body>', $backButton . '</body>', $html);
+
+        return response($html);
     }
 
     /** PDF Propuesta de Servicios — ver en el navegador */

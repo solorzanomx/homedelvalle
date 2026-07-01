@@ -112,11 +112,11 @@ lead → contacto → visita → revision_docs → avaluo → exclusiva
 3. ✅ Automatizaciones: notificar al propietario por WhatsApp al entrar a contacto/visita/avaluo/exclusiva (4 `Automation` sembradas); recordatorio diario si la exclusiva lleva >3 días sin firmar (`php artisan captaciones:check-exclusiva-pending`).
 4. ✅ Atajo "Agendar visita" de un clic en la ficha de captación, reusando `Interaction` + `visit_token` (`VisitSchedulingService`).
 
-**Fase 2 — esfuerzo medio (nuevas vistas sobre datos/servicios existentes):**
-5. Brief pre-visita para el broker.
-6. Propuesta de Servicios en modo "presentación en vivo".
-7. Autoagendar visita desde el link de la Presentación.
-8. Testimonios filtrados por zona en la Presentación.
+**Fase 2 — esfuerzo medio (nuevas vistas sobre datos/servicios existentes) — ✅ implementada 2026-07-01:**
+5. ✅ Brief pre-visita para el broker (precio de referencia del Observatorio + notas de la llamada, tarjeta lateral en la ficha de captación).
+6. ✅ Propuesta de Servicios en modo "presentación en vivo" (`/admin/captaciones/{id}/servicios/vivo`) — de paso se agregó la primera entrada de UI para toda la funcionalidad de Propuesta de Servicios, que no tenía ningún botón en ningún lado.
+7. ✅ Autoagendar visita desde el link público de la Presentación, sin ida y vuelta por WhatsApp.
+8. ✅ Testimonio real (tabla `testimonials`, filtrado por zona/tipo de operación) en vez de las 3 frases fijas inventadas que se mostraban antes — con fallback al texto genérico si no hay ninguno real aplicable.
 
 **Fase 3 — mayor esfuerzo:**
 9. Firma de exclusiva in-situ desde tablet/móvil.

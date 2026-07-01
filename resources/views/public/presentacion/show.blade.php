@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Presentación Home del Valle — {{ $captacion->client->name ?? 'Propietario' }}</title>
 <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet">
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Inter',sans-serif; background:#f8fafc; color:#1e293b; -webkit-font-smoothing:antialiased; }
@@ -174,6 +175,32 @@ body { font-family:'Inter',sans-serif; background:#f8fafc; color:#1e293b; -webki
     </div>
 </div>
 @endif
+
+{{-- Agenda tu visita — sin ida y vuelta por WhatsApp --}}
+<div class="actions" x-data="{ sent: {{ session('success') ? 'true' : 'false' }} }">
+    <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:20px;">
+        <h3 style="font-size:15px;font-weight:700;color:#1e1b4b;margin-bottom:6px;">📅 Agenda tu visita</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:14px;line-height:1.5;">Elige fecha y hora — te confirmamos por correo al instante.</p>
+
+        @if(session('success'))
+        <div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:14px;">{{ session('success') }}</div>
+        @endif
+        @if(session('error') || $errors->any())
+        <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:14px;">{{ session('error') ?? $errors->first() }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('presentation.schedule-visit', $send->tracking_token) }}" x-show="!sent">
+            @csrf
+            <div style="display:flex;gap:8px;margin-bottom:10px;">
+                <input type="date" name="scheduled_at_date" required min="{{ now()->addDay()->format('Y-m-d') }}"
+                    style="flex:1;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;">
+                <input type="time" name="scheduled_at_time" value="10:00"
+                    style="width:110px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;">
+            </div>
+            <button type="submit" class="btn-primary">Confirmar visita</button>
+        </form>
+    </div>
+</div>
 
 {{-- Footer --}}
 <div class="footer">

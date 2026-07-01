@@ -146,6 +146,7 @@ Route::get('/presentaciones/{token}',          [\App\Http\Controllers\Presentati
 Route::get('/presentaciones/{token}/descargar',[\App\Http\Controllers\PresentationPublicController::class, 'download'])->name('presentation.download');
 Route::get('/presentaciones/{token}/pdf',      [\App\Http\Controllers\PresentationPublicController::class, 'pdfInline'])->name('presentation.pdf.inline');
 Route::get('/presentaciones/tracking/{token}.gif', [\App\Http\Controllers\PresentationPublicController::class, 'emailTracking'])->name('presentation.email.tracking');
+Route::post('/presentaciones/{token}/agendar-visita', [\App\Http\Controllers\PresentationPublicController::class, 'scheduleVisit'])->middleware('throttle:public-form')->name('presentation.schedule-visit');
 
 // Landing pages (campañas de conversión)
 Route::get('/vende-tu-propiedad', [LandingController::class, 'show'])->name('landing.vende');
@@ -718,6 +719,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/{captacion}/presentacion/enviar-email',[\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendPresentationEmail'])->name('presentation.send.email');
         Route::post('/{captacion}/presentacion/whatsapp',    [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendPresentationWhatsApp'])->name('presentation.send.whatsapp');
         // Propuesta de Servicios
+        Route::get('/{captacion}/servicios/vivo',            [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosLive'])->name('servicios.live');
         Route::get('/{captacion}/servicios/pdf',             [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosPdf'])->name('servicios.pdf');
         Route::post('/{captacion}/servicios/regenerar',      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosRegenerate'])->name('servicios.regenerate');
         Route::get('/{captacion}/servicios/descargar',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosDownload'])->name('servicios.download');

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use App\Models\PresentationSend;
+use App\Models\User;
+use App\Services\VisitSchedulingService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -71,6 +73,43 @@ class PresentationPublicController extends Controller
                 Log::warning('notifyBrokerOfFirstView: WhatsApp failed: ' . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * El propietario agenda su visita directo desde el link público de la
+     * Presentación, sin ida y vuelta por WhatsApp. Reusa VisitSchedulingService
+     * (mismo mecanismo de confirmación/recordatorio ya probado en el admin).
+     * Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md sección 2.
+     */
+    public function scheduleVisit(Request $request, string $token)
+    {
+        $send = PresentationSend::with(['captacion.client', 'captacion.property', 'sentBy'])
+            ->where('tracking_token', $token)
+            ->firstOrFail();
+
+        $validated = $request->validate([
+            'scheduled_at_date' => 'required|date|after:today',
+            'scheduled_at_time' => 'nullable|date_format:H:i',
+        ]);
+
+        $captacion = $send->captacion;
+        $broker    = $send->sentBy ?? User::where('role', '!=', 'client')->orderBy('id')->first();
+
+        if (!$captacion?->client || !$broker) {
+            return back()->with('error', 'No fue posible agendar la visita. Contáctanos directamente.');
+        }
+
+        $scheduledAt = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . ($validated['scheduled_at_time'] ?? '10:00'));
+
+        app(VisitSchedulingService::class)->createVisit(
+            client: $captacion->client,
+            property: $captacion->property,
+            broker: $broker,
+            scheduledAt: $scheduledAt,
+            description: 'Visita agendada por el propietario desde la Presentación.',
+        );
+
+        return back()->with('success', '¡Listo! Te enviamos la confirmación de tu visita por correo.');
     }
 
     /** Descarga el PDF — registra pdf_downloaded_at. */

@@ -505,6 +505,57 @@
             </div>
         </div>
 
+        {{-- Brief pre-visita — llegar preparado sin reconstruir de memoria --}}
+        @if($marketSnapshot || $captacion->notes_from_call)
+        <div class="side-card">
+            <div class="side-card-header">
+                <span class="side-card-title">&#128203; Brief pre-visita</span>
+            </div>
+            <div class="side-card-body">
+                @if($marketSnapshot)
+                <div class="info-row">
+                    <span class="lbl">Precio de referencia</span>
+                    <span class="val" style="font-weight:700;">
+                        ${{ number_format($marketSnapshot->price_m2_low, 0) }}–${{ number_format($marketSnapshot->price_m2_high, 0) }} /m²{{ $marketSnapshot->operation_type === 'rent' ? '/mes' : '' }}
+                    </span>
+                </div>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:.6rem;">Confianza: {{ $marketSnapshot->confidence_label }} · Observatorio HDV</div>
+                @endif
+                @if($captacion->notes_from_call)
+                <div class="info-row" style="flex-direction:column;align-items:flex-start;">
+                    <span class="lbl">Notas de la llamada</span>
+                    <span class="val" style="font-size:.8rem;font-weight:400;white-space:pre-line;">{{ $captacion->notes_from_call }}</span>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        {{-- Propuesta de Servicios — para presentar en vivo durante la visita --}}
+        <div class="side-card">
+            <div class="side-card-header">
+                <span class="side-card-title">&#128188; Propuesta de Servicios</span>
+            </div>
+            <div class="side-card-body">
+                <a href="{{ route('admin.captaciones.servicios.live', $captacion) }}" target="_blank" class="btn btn-primary btn-sm" style="width:100%;display:block;text-align:center;margin-bottom:.4rem;">
+                    Ver en vivo (para mostrar en la visita)
+                </a>
+                <a href="{{ route('admin.captaciones.servicios.pdf', $captacion) }}" target="_blank" class="btn btn-sm btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:.6rem;">
+                    Ver PDF
+                </a>
+                <form method="POST" action="{{ route('admin.captaciones.servicios.send.email', $captacion) }}" style="display:flex;gap:.4rem;margin-bottom:.4rem;">
+                    @csrf
+                    <input type="email" name="email" placeholder="correo@ejemplo.com" value="{{ $captacion->client->email ?? '' }}" class="form-control" style="font-size:.8rem;" required>
+                    <button type="submit" class="btn btn-sm btn-outline" style="white-space:nowrap;">Enviar</button>
+                </form>
+                <form method="POST" action="{{ route('admin.captaciones.servicios.send.whatsapp', $captacion) }}" style="display:flex;gap:.4rem;">
+                    @csrf
+                    <input type="text" name="phone" placeholder="55 1234 5678" value="{{ $captacion->client->whatsapp ?? $captacion->client->phone ?? '' }}" class="form-control" style="font-size:.8rem;" required>
+                    <button type="submit" class="btn btn-sm btn-outline" style="white-space:nowrap;">WhatsApp</button>
+                </form>
+            </div>
+        </div>
+
         {{-- Agendar visita — atajo de un clic, sin ir al perfil del cliente --}}
         <div class="side-card">
             <div class="side-card-header">
