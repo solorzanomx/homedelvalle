@@ -160,6 +160,11 @@
 .cockpit-item .cockpit-field label { display:block; font-size:.72rem; color:var(--text-muted); margin-bottom:.2rem; }
 .cockpit-item .cockpit-actions { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.6rem; }
 .cockpit-edit-link { font-size:.72rem; color:var(--primary); cursor:pointer; background:none; border:none; padding:0; }
+.cockpit-motivation { font-size:.78rem; color:var(--text-muted); font-style:italic; margin-top:.3rem; }
+.cockpit-item .cockpit-description { font-size:.76rem; color:var(--text-muted); margin:.15rem 0 0 1.4rem; line-height:1.4; }
+.split-columns { display:flex; gap:1.25rem; flex-wrap:wrap; margin-top:.5rem; }
+.split-col { flex:1; min-width:240px; }
+.split-col-title { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-muted); margin-bottom:.5rem; }
 </style>
 @endsection
 
@@ -287,6 +292,7 @@
             <form method="POST" action="{{ route('clients.interaction.store', $client->id) }}" class="quick-note-form">
                 @csrf
                 <input type="hidden" name="type" value="note">
+                <input type="hidden" name="property_id" value="{{ $captacion->property_id }}">
                 <textarea name="description" rows="1" placeholder="Nota rapida sobre este proceso..."
                     oninput="this.style.height='';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
                 <button type="submit" class="btn btn-primary btn-sm">Enviar</button>
@@ -557,6 +563,37 @@
                 <div class="info-row"><span class="lbl">Inmueble</span><span class="val" style="font-size:.78rem;">{{ $captacion->property_address }}</span></div>
                 @endif
                 <div class="info-row"><span class="lbl">Inicio</span><span class="val">{{ $captacion->created_at->format('d/m/Y') }}</span></div>
+            </div>
+        </div>
+
+        {{-- Documentos para la firma — para que el propietario los vaya
+             consiguiendo desde antes de llegar a Revisión de Documentos.
+             Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md. --}}
+        @php
+            $pendingDocs = $captacion->getPendingRequiredDocs();
+            $pendingDocLabels = array_map(fn($cat) => \App\Models\Document::CATEGORIES[$cat] ?? $cat, $pendingDocs);
+        @endphp
+        <div class="side-card">
+            <div class="side-card-header">
+                <span class="side-card-title">&#128193; Documentos para la firma</span>
+            </div>
+            <div class="side-card-body">
+                @if(empty($pendingDocLabels))
+                <p style="font-size:.8rem;color:var(--success);font-weight:600;">&#10003; Todo listo para la firma</p>
+                @else
+                <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.5rem;">El propietario los puede ir subiendo desde su Portal desde ahora — no hace falta esperar a Revisión de Documentos.</p>
+                <ul style="font-size:.8rem;margin:0 0 .6rem 1.1rem;padding:0;">
+                    @foreach($pendingDocLabels as $label)
+                    <li>{{ $label }}</li>
+                    @endforeach
+                </ul>
+                @if($waLink)
+                @php
+                    $docsMsg = "Hola {$client->name}, para ir avanzando con tu propiedad necesitamos que nos compartas: " . implode(', ', $pendingDocLabels) . ". Los puedes subir directo desde tu Portal cuando puedas, antes de llegar a la firma de exclusiva.";
+                @endphp
+                <a href="{{ $waLink }}?text={{ urlencode($docsMsg) }}" target="_blank" class="action-btn wa" style="width:100%;">&#128172; Recordar por WhatsApp</a>
+                @endif
+                @endif
             </div>
         </div>
 

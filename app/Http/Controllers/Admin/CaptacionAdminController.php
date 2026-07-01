@@ -136,8 +136,14 @@ class CaptacionAdminController extends Controller
             ->latest()
             ->first();
 
-        // Timeline: interactions del cliente
+        // Timeline: interactions de este proceso (esta propiedad) + las
+        // genéricas sin propiedad asignada — evita mezclar el historial de
+        // otras captaciones/propiedades del mismo cliente. Ver
+        // docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
         $interactions = \App\Models\Interaction::where('client_id', $captacion->client_id)
+            ->where(function ($q) use ($captacion) {
+                $q->whereNull('property_id')->orWhere('property_id', $captacion->property_id);
+            })
             ->with('user')
             ->latest()
             ->take(30)

@@ -35,11 +35,24 @@ class CaptacionStageCockpit extends Component
         'Commercial' => 'Local comercial',
     ];
 
-    // Objetivo de la etapa, tal como está redactado en
-    // docs/08-MANUAL-BROKER-CAPTACION.md — se va llenando etapa por etapa
-    // conforme se diseña su propia cabina.
+    // Objetivo y mensaje motivador de cada etapa, redactados a partir de
+    // docs/08-MANUAL-BROKER-CAPTACION.md.
     public const STAGE_OBJECTIVES = [
         'lead' => 'Contactar al propietario en menos de 1 hora y confirmar que quiere vender/rentar.',
+        'contacto' => 'Enviar la Presentación de Home del Valle y agendar la visita mientras el interés está fresco.',
+        'visita' => 'La etapa más importante de todo el proceso: aquí se decide si firmas la exclusiva o no.',
+        'revision_docs' => 'Reunir los documentos del propietario sin frenar la negociación de precio.',
+        'avaluo' => 'Llegar a un precio de lista acordado con el propietario, respaldado por datos.',
+        'exclusiva' => 'Firmar el contrato de exclusiva y dejar claro qué va a pasar después.',
+    ];
+
+    public const STAGE_MOTIVATION = [
+        'lead' => 'La velocidad de respuesta es tu ventaja #1 — quien llama en la primera hora casi siempre gana la exclusiva.',
+        'contacto' => 'No dejes "te aviso" sin fecha concreta: un lead sin próximo paso definido es un lead que se enfría.',
+        'visita' => 'No hay mejor momento para cerrar que cuando el interés está al máximo. Prepárate en serio.',
+        'revision_docs' => 'Esto puede correr en paralelo mientras cierras el precio — no dejes que se convierta en cuello de botella.',
+        'avaluo' => 'Un precio bien sustentado se defiende solo: usa comparables reales, no opiniones.',
+        'exclusiva' => 'Ya llegaste hasta aquí — no dejes que se enfríe justo en la firma. Da seguimiento activo, no lo dejes "esperando a que firme solo".',
     ];
 
     public function mount(Operation $operation, Captacion $captacion): void
