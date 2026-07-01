@@ -3,10 +3,12 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Captacion;
+use App\Models\Client;
 use App\Models\MarketColonia;
 use App\Services\CaptacionIntakeService;
 use App\Services\QuickQuoteService;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -21,6 +23,14 @@ class CreateCaptacionFromCall extends Component
 
     // ─── Paso actual ─────────────────────────────────────────────────────────
     public int $step = 1;
+
+    // ─── Cliente existente (vía ?client_id= o buscador) ─────────────────────
+    #[Url]
+    public ?int $client_id = null;
+    #[Url]
+    public ?int $form_submission_id = null;
+    public bool $usingExistingClient = false;
+    public string $clientSearch = '';
 
     // ─── Paso 1 — Cliente ────────────────────────────────────────────────────
     public string $name    = '';
@@ -78,6 +88,67 @@ class CreateCaptacionFromCall extends Component
     public function mount(): void
     {
         $this->marketing_plan = self::MARKETING_DEFAULTS['general'];
+
+        if ($this->client_id) {
+            $client = Client::find($this->client_id);
+            if ($client) {
+                $this->loadExistingClient($client);
+            } else {
+                $this->client_id = null;
+            }
+        }
+    }
+
+    /**
+     * Precarga los datos del Paso 1 desde un cliente ya existente (llegó por
+     * ?client_id= desde el kanban / "Convertir a Cliente", o se eligió en el
+     * buscador). Evita re-teclear datos y duplicar clientes.
+     * Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
+     */
+    private function loadExistingClient(Client $client): void
+    {
+        $this->client_id           = $client->id;
+        $this->usingExistingClient = true;
+        $this->name                = $client->name ?? '';
+        $this->phone               = $client->phone ?? '';
+        $this->email               = $client->email ?? '';
+        $this->whatsapp            = $client->whatsapp ?? $client->phone ?? '';
+        $this->rfc                 = $client->rfc ?? '';
+        $this->client_address      = $client->address ?? '';
+        $this->clientSearch        = '';
+    }
+
+    /** El broker eligió un resultado del buscador de clientes. */
+    public function selectExistingClient(int $id): void
+    {
+        $client = Client::find($id);
+        if ($client) {
+            $this->loadExistingClient($client);
+        }
+    }
+
+    /** El broker prefiere capturar los datos manualmente en vez del cliente precargado. */
+    public function useDifferentClient(): void
+    {
+        $this->client_id           = null;
+        $this->usingExistingClient = false;
+        $this->name = $this->phone = $this->email = $this->whatsapp = $this->rfc = $this->client_address = '';
+    }
+
+    /** Resultados del buscador — 5 más relevantes por nombre/teléfono/email. */
+    public function getClientMatchesProperty()
+    {
+        if ($this->usingExistingClient || mb_strlen($this->clientSearch) < 3) {
+            return collect();
+        }
+
+        $term = $this->clientSearch;
+
+        return Client::where('name', 'like', "%{$term}%")
+            ->orWhere('phone', 'like', "%{$term}%")
+            ->orWhere('email', 'like', "%{$term}%")
+            ->limit(5)
+            ->get();
     }
 
     // ─── Navegación entre pasos ───────────────────────────────────────────────
@@ -297,6 +368,8 @@ class CreateCaptacionFromCall extends Component
     private function buildPayload(): array
     {
         return [
+            'client_id'          => $this->client_id,
+            'form_submission_id' => $this->form_submission_id,
             'name'           => $this->name,
             'phone'          => $this->phone,
             'email'          => $this->email          ?: null,

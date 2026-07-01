@@ -41,6 +41,38 @@
         <span style="font-size:.75rem;color:var(--text-muted);">Paso 1 de 3</span>
     </div>
     <div class="card-body">
+
+        @if($usingExistingClient)
+        {{-- Cliente existente precargado — evita re-teclear y duplicar --}}
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+            <div style="display:flex;align-items:center;gap:.6rem;">
+                <x-icon name="users" class="w-4 h-4" style="color:#16a34a;flex-shrink:0;" />
+                <span style="font-size:.85rem;color:#166534;">Cliente existente: <strong>{{ $name }}</strong> — los datos se tomaron de su expediente.</span>
+            </div>
+            <button type="button" wire:click="useDifferentClient" class="btn btn-sm btn-outline" style="white-space:nowrap;">Usar otro cliente</button>
+        </div>
+        @else
+        {{-- Buscador de cliente existente --}}
+        <div class="form-group" style="margin-bottom:1.25rem;position:relative;">
+            <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
+                ¿Ya es cliente? Búscalo antes de capturar datos nuevos
+            </label>
+            <input wire:model.live.debounce.400ms="clientSearch" type="text" placeholder="Nombre, teléfono o correo…"
+                style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
+            @if($this->clientMatches->isNotEmpty())
+            <div style="position:absolute;z-index:20;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.1);margin-top:.25rem;overflow:hidden;">
+                @foreach($this->clientMatches as $match)
+                <button type="button" wire:click="selectExistingClient({{ $match->id }})"
+                    style="display:block;width:100%;text-align:left;padding:.6rem .8rem;border:none;background:none;cursor:pointer;border-bottom:1px solid var(--border);font-size:.83rem;">
+                    <strong>{{ $match->name }}</strong>
+                    <span style="color:var(--text-muted);"> — {{ $match->phone ?? $match->email ?? 'sin contacto' }}</span>
+                </button>
+                @endforeach
+            </div>
+            @endif
+        </div>
+        @endif
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
 
             {{-- Nombre --}}
@@ -48,7 +80,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Nombre completo <span style="color:var(--danger)">*</span>
                 </label>
-                <input wire:model="name" type="text" placeholder="Ej. María García López"
+                <input wire:model="name" type="text" placeholder="Ej. María García López" @if($usingExistingClient) readonly @endif
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;background:var(--card);color:var(--text);"
                     autofocus>
                 @error('name') <span style="font-size:.75rem;color:var(--danger);margin-top:.25rem;display:block;">{{ $message }}</span> @enderror
@@ -59,7 +91,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Teléfono <span style="color:var(--danger)">*</span>
                 </label>
-                <input wire:model="phone" type="tel" placeholder="55 1234 5678"
+                <input wire:model="phone" @if($usingExistingClient) readonly @endif type="tel" placeholder="55 1234 5678"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
                 @error('phone') <span style="font-size:.75rem;color:var(--danger);margin-top:.25rem;display:block;">{{ $message }}</span> @enderror
                 <span style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;display:block;">
@@ -72,7 +104,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     WhatsApp <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model="whatsapp" type="tel" placeholder="55 1234 5678 (si es diferente)"
+                <input wire:model="whatsapp" @if($usingExistingClient) readonly @endif type="tel" placeholder="55 1234 5678 (si es diferente)"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
 
@@ -81,7 +113,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Correo electrónico <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model="email" type="email" placeholder="correo@ejemplo.com"
+                <input wire:model="email" @if($usingExistingClient) readonly @endif type="email" placeholder="correo@ejemplo.com"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
                 @error('email') <span style="font-size:.75rem;color:var(--danger);margin-top:.25rem;display:block;">{{ $message }}</span> @enderror
                 <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:.5rem .75rem;margin-top:.5rem;display:flex;align-items:flex-start;gap:.5rem;">
@@ -97,7 +129,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     RFC <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model="rfc" type="text" placeholder="GALO800101ABC"
+                <input wire:model="rfc" @if($usingExistingClient) readonly @endif type="text" placeholder="GALO800101ABC"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
 
@@ -122,7 +154,7 @@
                 <label style="display:block;font-size:.82rem;font-weight:600;margin-bottom:.4rem;">
                     Dirección actual del propietario <span style="font-size:.72rem;font-weight:400;color:var(--text-muted);">(opcional)</span>
                 </label>
-                <input wire:model="client_address" type="text" placeholder="Calle, número, colonia, ciudad"
+                <input wire:model="client_address" @if($usingExistingClient) readonly @endif type="text" placeholder="Calle, número, colonia, ciudad"
                     style="width:100%;padding:.55rem .8rem;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;font-size:.88rem;">
             </div>
 

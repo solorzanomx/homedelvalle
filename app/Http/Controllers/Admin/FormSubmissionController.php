@@ -74,7 +74,18 @@ class FormSubmissionController extends Controller
 
     public function convertToClient(FormSubmission $formSubmission)
     {
+        // Leads de propietario (quiere vender/rentar su inmueble) van directo
+        // al wizard de captación con el cliente ya cargado — evita re-teclear
+        // y duplicar. Otros tipos (comprador, b2b, contacto) solo se convierten
+        // a Client, sin captación. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
+        $goesToCaptacion = $formSubmission->form_type === 'vendedor';
+
         if ($formSubmission->client_id) {
+            if ($goesToCaptacion) {
+                return redirect()
+                    ->route('admin.captaciones.create-from-call', ['client_id' => $formSubmission->client_id, 'form_submission_id' => $formSubmission->id])
+                    ->with('success', 'Este lead ya tiene un cliente asociado.');
+            }
             return back()->with('success', 'Este lead ya tiene un cliente asociado.');
         }
 
@@ -100,12 +111,23 @@ class FormSubmissionController extends Controller
 
         if ($existing) {
             $formSubmission->update(['client_id' => $existing->id]);
+
+            if ($goesToCaptacion) {
+                return redirect()
+                    ->route('admin.captaciones.create-from-call', ['client_id' => $existing->id, 'form_submission_id' => $formSubmission->id])
+                    ->with('success', "Lead vinculado al cliente existente «{$existing->name}».");
+            }
             return back()->with('success', "Lead vinculado al cliente existente «{$existing->name}».");
         }
 
         $client = Client::create(array_merge($data, ['email' => $formSubmission->email]));
         $formSubmission->update(['client_id' => $client->id]);
 
+        if ($goesToCaptacion) {
+            return redirect()
+                ->route('admin.captaciones.create-from-call', ['client_id' => $client->id, 'form_submission_id' => $formSubmission->id])
+                ->with('success', "Cliente «{$client->name}» creado exitosamente.");
+        }
         return back()->with('success', "Cliente «{$client->name}» creado exitosamente.");
     }
 

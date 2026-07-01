@@ -60,10 +60,16 @@ class CaptacionIntakeService
 
     /**
      * Busca cliente por email (si hay) o por teléfono. Si no existe, lo crea.
-     * El agente queda como usuario asignado.
+     * El agente queda como usuario asignado. Si el payload trae un client_id
+     * explícito (llegó por ?client_id= o el buscador del wizard), se usa
+     * directo — evita ambigüedad y duplicados por matching de texto.
      */
     private function findOrCreateClient(array $data, User $agent): Client
     {
+        if (!empty($data['client_id'])) {
+            return Client::findOrFail($data['client_id']);
+        }
+
         $client = null;
 
         if (!empty($data['email'])) {
@@ -137,6 +143,7 @@ class CaptacionIntakeService
             'status'     => 'active',
             'property_id'=> $property->id,
             'client_id'  => $client->id,
+            'form_submission_id' => $data['form_submission_id'] ?? null,
             'user_id'    => $agent->id,
             'amount'     => $data['price_expected'] ?? null,
             'currency'   => 'MXN',
