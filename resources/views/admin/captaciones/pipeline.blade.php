@@ -2,7 +2,8 @@
 @section('title', 'Pipeline de Captación')
 
 @section('styles')
-<style>
+{{-- @yield('styles') ya está DENTRO del <style> global del layout.
+     NO agregar tags <style> aquí — rompe el CSS parser del browser. --}}
 /* ===== STATS STRIP ===== */
 .stats-strip {
     display: flex; flex-direction: row; flex-wrap: nowrap; gap: 0.65rem;
@@ -103,7 +104,6 @@
     .stats-strip { display: none; }
     .filter-bar .search-input { max-width: 100%; }
 }
-</style>
 @endsection
 
 @section('content')
