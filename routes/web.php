@@ -705,7 +705,6 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
 
     // ===== CAPTACIONES (venta) =====
     Route::prefix('captaciones')->name('captaciones.')->group(function () {
-        Route::get('/',                  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'index'])->name('index');
         // Pipeline de prospección (pre-exclusiva) — Operations type=captacion
         Route::get('/pipeline',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'pipeline'])->name('pipeline');
         // Rutas estáticas ANTES de /{captacion} para evitar conflictos

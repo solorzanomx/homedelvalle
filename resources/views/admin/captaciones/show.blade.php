@@ -145,7 +145,7 @@
     <div></div>
     <div style="display:flex;gap:.5rem;">
         <a href="{{ route('clients.show', $client->id) }}" class="btn btn-outline btn-sm">&#128100; Cliente</a>
-        <a href="{{ route('admin.captaciones.index') }}" class="btn btn-outline btn-sm">&#8592; Pipeline</a>
+        <a href="{{ route('admin.captaciones.pipeline') }}" class="btn btn-outline btn-sm">&#8592; Pipeline</a>
     </div>
 </div>
 
@@ -504,6 +504,45 @@
                 <div class="info-row"><span class="lbl">Inicio</span><span class="val">{{ $captacion->created_at->format('d/m/Y') }}</span></div>
             </div>
         </div>
+
+        {{-- Checklist de la etapa actual en el kanban de pipeline --}}
+        @if($captacion->operation)
+        @php
+            $opStage = $captacion->operation->stage;
+            $opStageLabel = \App\Models\Operation::STAGES[$opStage] ?? $opStage;
+            $checklistItems = $captacion->operation->checklistItems->where('stage', $opStage)->sortBy('id');
+            $clTotal = $checklistItems->count();
+            $clDone  = $checklistItems->where('is_completed', true)->count();
+            $clPct   = $clTotal > 0 ? round(($clDone / $clTotal) * 100) : 0;
+        @endphp
+        <div class="side-card">
+            <div class="side-card-header">
+                <span class="side-card-title">&#9776; Checklist &mdash; {{ $opStageLabel }}</span>
+                <a href="{{ route('admin.captaciones.pipeline') }}" style="font-size:.75rem;color:var(--primary);">Ver pipeline &rarr;</a>
+            </div>
+            <div class="side-card-body">
+                @if($clTotal > 0)
+                <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem;">{{ $clDone }}/{{ $clTotal }} completado ({{ $clPct }}%)</div>
+                <div style="background:var(--bg);border-radius:6px;height:6px;overflow:hidden;margin-bottom:.75rem;">
+                    <div style="background:var(--success);height:100%;width:{{ $clPct }}%;"></div>
+                </div>
+                @foreach($checklistItems as $item)
+                <div style="display:flex;align-items:center;gap:.5rem;padding:.3rem 0;font-size:.82rem;">
+                    <form method="POST" action="{{ route('operations.checklist.toggle', [$captacion->operation_id, $item->id]) }}" style="display:contents;">
+                        @csrf
+                        @method('PATCH')
+                        <input type="checkbox" onchange="this.form.submit()" {{ $item->is_completed ? 'checked' : '' }}>
+                    </form>
+                    <span style="{{ $item->is_completed ? 'text-decoration:line-through;color:var(--text-muted);' : '' }}">{{ $item->template->title ?? 'Item' }}</span>
+                    @if($item->template?->is_required)<span style="font-size:.65rem;color:#ef4444;" title="Requerido">*</span>@endif
+                </div>
+                @endforeach
+                @else
+                <p style="font-size:.8rem;color:var(--text-muted);">Sin checklist configurado para esta etapa.</p>
+                @endif
+            </div>
+        </div>
+        @endif
 
         {{-- Etapa 2: Valuación --}}
         <div class="side-card">

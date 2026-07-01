@@ -141,6 +141,7 @@ class CaptacionIntakeService
             'amount'     => $data['price_expected'] ?? null,
             'currency'   => 'MXN',
             'intent'     => $data['intent'] ?? 'general',
+            'target_type'=> $this->intentToTargetType($data['intent'] ?? 'general'),
             'notes'      => $data['notes_from_call'] ?? null,
         ]);
 
@@ -187,6 +188,18 @@ class CaptacionIntakeService
         return match($intent) {
             'renta_residencial', 'renta_comercial' => 'rental',
             default => 'sale',
+        };
+    }
+
+    /**
+     * Deriva el target_type de la Operation (venta/renta) para el auto-spawn
+     * al completarse el pipeline de captación.
+     */
+    private function intentToTargetType(string $intent): string
+    {
+        return match($intent) {
+            'renta_residencial', 'renta_comercial' => 'renta',
+            default => 'venta',
         };
     }
 }

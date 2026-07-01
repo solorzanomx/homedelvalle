@@ -505,7 +505,7 @@
             <div class="card-body">
                 <div class="section-head" style="margin-bottom:0.75rem;">
                     <h3>Captaciones en Progreso</h3>
-                    <a href="{{ route('admin.captaciones.index') }}">Ver todas &rarr;</a>
+                    <a href="{{ route('admin.captaciones.pipeline') }}">Ver todas &rarr;</a>
                 </div>
 
                 @if($captacionesPipeline->count() > 0)

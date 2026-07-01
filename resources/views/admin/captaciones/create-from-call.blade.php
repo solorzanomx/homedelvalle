@@ -15,7 +15,7 @@
                 Captura los datos en 3 minutos y genera la presentación inicial para el propietario.
             </p>
         </div>
-        <a href="{{ route('admin.captaciones.index') }}" class="btn btn-outline btn-sm">
+        <a href="{{ route('admin.captaciones.pipeline') }}" class="btn btn-outline btn-sm">
             <x-icon name="arrow-left" class="w-4 h-4" />
             Ver todas las captaciones
         </a>

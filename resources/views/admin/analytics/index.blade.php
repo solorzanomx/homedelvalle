@@ -346,7 +346,7 @@
 <div class="card" style="margin-top:1.5rem;">
     <div class="card-header">
         <h3>Captación + Presentaciones — últimos 30 días</h3>
-        <a href="{{ route('admin.captaciones.index') }}" style="font-size:.78rem;color:var(--primary);">Ver todas →</a>
+        <a href="{{ route('admin.captaciones.pipeline') }}" style="font-size:.78rem;color:var(--primary);">Ver todas →</a>
     </div>
     <div class="card-body">
         <div class="task-grid">

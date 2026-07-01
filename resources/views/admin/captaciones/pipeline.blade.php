@@ -238,8 +238,7 @@
                     ? collect(explode(' ', $assignedUser->name))->map(fn($w) => mb_strtoupper(mb_substr($w,0,1)))->take(2)->join('')
                     : '?';
 
-                $captacionId  = $op->captacion_id ?? null;
-                $captacion    = $captacionId ? ($op->captacion ?? null) : null;
+                $captacionId  = $captacionIds[$op->id] ?? null;
 
                 $phone = $client->phone ?? $client->whatsapp ?? null;
             @endphp

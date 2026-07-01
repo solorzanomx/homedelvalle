@@ -376,8 +376,8 @@
                 <div class="nav-section" data-section="procesos">
                     <span class="nav-label" onclick="toggleSection(this)">Ventas <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
                     <div class="nav-items">
-                        @if(Route::has('admin.captaciones.index'))
-                        <a href="{{ route('admin.captaciones.index') }}" class="nav-item {{ request()->routeIs('admin.captaciones.*') ? 'active' : '' }}">
+                        @if(Route::has('admin.captaciones.pipeline'))
+                        <a href="{{ route('admin.captaciones.pipeline') }}" class="nav-item {{ request()->routeIs('admin.captaciones.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Captaciones
                         </a>
                         @endif
