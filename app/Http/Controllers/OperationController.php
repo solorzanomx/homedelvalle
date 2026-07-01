@@ -258,6 +258,14 @@ class OperationController extends Controller
 
         $this->checklistService->changeStage($operation, $validated['stage'], Auth::user(), $validated['notes'] ?? null);
 
+        // Si la etapa a la que se movió manualmente ya tiene su checklist
+        // completo desde antes (ej. la operación ya había pasado por ahí y
+        // se regresó), sigue avanzando sola en vez de quedarse esperando que
+        // alguien vuelva a tocar un checkbox que ya estaba marcado. El
+        // auto-avance normal solo se dispara al completar un ítem — un
+        // movimiento manual de etapa no pasaba por esa revisión.
+        $this->checklistService->checkAndAutoAdvance($operation->fresh(), Auth::user());
+
         return back()->with('success', 'Etapa actualizada a: ' . (Operation::STAGES[$validated['stage']] ?? $validated['stage']));
     }
 
