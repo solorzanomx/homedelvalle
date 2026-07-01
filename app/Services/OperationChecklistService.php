@@ -108,7 +108,7 @@ class OperationChecklistService
             'notes' => 'Captacion completada. Generando operacion de ' . $captacion->target_type . '.',
         ]);
 
-        $startStage = 'publicacion';
+        $startStage = 'mejoras';
         $startPhase = Operation::PHASE_MAP[$startStage];
 
         $newOperation = Operation::create([

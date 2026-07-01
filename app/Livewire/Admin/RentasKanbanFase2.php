@@ -35,6 +35,9 @@ class RentasKanbanFase2 extends Component
         'contacto'      => 3,
         'visita'        => 5,
         'exclusiva'     => 10,
+        'mejoras'       => 14,
+        'fotos_video'   => 5,
+        'carpeta_lista' => 3,
         'publicacion'   => 14,
         'busqueda'      => 14,
         'investigacion' => 7,
@@ -165,8 +168,12 @@ class RentasKanbanFase2 extends Component
 
         $operations = $query->get();
 
-        // Solo mostrar stages relevantes a colocación (excluir post-cierre)
-        $activeStages = ['lead','contacto','visita','exclusiva','publicacion','busqueda','investigacion','contrato','entrega','cierre'];
+        // Solo mostrar stages relevantes a colocación (excluir post-cierre).
+        // Incluye mejoras/fotos_video/carpeta_lista: son las etapas donde
+        // arranca ahora la Operation spawneada desde captación (antes
+        // arrancaba directo en 'publicacion') — sin esto, esas operaciones
+        // quedarían invisibles hasta llegar a publicacion.
+        $activeStages = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre'];
 
         $byStage = [];
         foreach ($activeStages as $stage) {

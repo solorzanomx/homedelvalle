@@ -152,10 +152,18 @@
     $initials  = collect(explode(' ', $client->name ?? '?'))->map(fn($w) => mb_strtoupper(mb_substr($w,0,1)))->take(2)->join('');
     $etapa     = $captacion->portal_etapa;
     $etapaColor = $etapaColors[$etapa] ?? '#94a3b8';
-    $etapaList = [1,2,3,4];
     $approved  = $captacion->documents->where('captacion_status','aprobado')->count();
     $total     = $captacion->documents->count();
     $pct       = $total > 0 ? round($approved / $total * 100) : 0;
+
+    // Stepper unificado: refleja Operation.stage (lo que gobierna el kanban),
+    // no portal_etapa — antes mostraban dos progresos distintos sin relación
+    // visible entre sí. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
+    $opStages      = \App\Models\Operation::CAPTACION_STAGES;
+    $opStage       = $captacion->operation?->stage;
+    $opCurrentIdx  = $opStage ? array_search($opStage, $opStages) : false;
+    $opColor       = $opStage ? (\App\Models\Operation::STAGE_COLORS[$opStage] ?? '#94a3b8') : $etapaColor;
+    $opStageLabel  = $opStage ? (\App\Models\Operation::STAGES[$opStage] ?? $opStage) : $etapaLabels[$etapa];
 @endphp
 
 <div class="page-header">
@@ -176,8 +184,8 @@
 {{-- ===== HERO CARD ===== --}}
 <div class="hero-card">
     <div class="hero-top">
-        <div class="hero-top-bar" style="background:{{ $etapaColor }};"></div>
-        <div class="hero-avatar" style="background:{{ $etapaColor }};">{{ $initials }}</div>
+        <div class="hero-top-bar" style="background:{{ $opColor }};"></div>
+        <div class="hero-avatar" style="background:{{ $opColor }};">{{ $initials }}</div>
         <div class="hero-info">
             <div class="hero-name">{{ $client->name ?? 'Cliente' }}</div>
             <div class="hero-sub">
@@ -190,7 +198,7 @@
             </div>
         </div>
         <div class="hero-badges">
-            <span class="badge" style="background:{{ $etapaColor }}1a;color:{{ $etapaColor }};">{{ $etapaLabels[$etapa] }}</span>
+            <span class="badge" style="background:{{ $opColor }}1a;color:{{ $opColor }};">{{ $opStageLabel }}</span>
             @if($captacion->precio_acordado)
             <span class="badge badge-green" style="font-weight:700;">${{ number_format($captacion->precio_acordado,0) }}</span>
             @endif
@@ -220,21 +228,23 @@
         @endif
     </div>
 
-    {{-- Stage Stepper --}}
+    {{-- Stage Stepper — las 6 etapas reales de Operation.stage --}}
+    @if($opCurrentIdx !== false)
     <div class="stepper">
-        @foreach($etapaList as $n)
-        @if($n > 1)
+        @foreach($opStages as $idx => $stageKey)
+        @if($idx > 0)
         <span class="step-arrow">&#9656;</span>
         @endif
-        <div class="step {{ $n < $etapa ? 'completed' : ($n === $etapa ? 'current' : 'future') }}">
+        <div class="step {{ $idx < $opCurrentIdx ? 'completed' : ($idx === $opCurrentIdx ? 'current' : 'future') }}">
             <span class="step-dot"></span>
-            {{ $etapaLabels[$n] }}
-            @if($n < $etapa)
+            {{ \App\Models\Operation::STAGES[$stageKey] ?? $stageKey }}
+            @if($idx < $opCurrentIdx)
             &#10003;
             @endif
         </div>
         @endforeach
     </div>
+    @endif
 
     {{-- Docs progress --}}
     <div class="advance-bar">
@@ -242,9 +252,7 @@
         <div class="progress-fill">
             <div class="progress-fill-inner" style="width:{{ $pct }}%;background:{{ $etapaColor }};"></div>
         </div>
-        @if($etapa < 4)
-        <span style="font-size:.75rem;color:{{ $etapaColor }};font-weight:600;">Etapa {{ $etapa }}: {{ $etapaLabels[$etapa] }}</span>
-        @else
+        @if($etapa >= 4)
         <span style="font-size:.75rem;color:var(--success);font-weight:600;">&#10003; Proceso completado</span>
         @endif
     </div>

@@ -61,9 +61,10 @@ class CaptacionService
      */
     private const ETAPA_TO_STAGE = [
         1 => 'avaluo',       // documentos aprobados -> listo para avaluar
-        2 => 'mejoras',      // valuación vinculada -> a la espera de mejoras/negociación
+        2 => 'exclusiva',    // valuación vinculada -> listo para negociar/firmar exclusiva
         3 => 'exclusiva',    // precio acordado -> listo para firmar exclusiva
-        4 => 'fotos_video',  // exclusiva firmada -> a producir fotos/video
+        // etapa 4 (exclusiva firmada) no empuja a un stage — dispara el
+        // auto-spawn, ver advanceLinkedOperation().
     ];
 
     /**
@@ -115,7 +116,25 @@ class CaptacionService
             return;
         }
 
-        $targetStage = self::ETAPA_TO_STAGE[max($completedEtapas)] ?? null;
+        $user = Auth::user() ?? $operation->user;
+        if (!$user) {
+            return; // sin usuario resoluble (ej. contexto sin sesión) — no forzamos el avance
+        }
+
+        $maxEtapa = max($completedEtapas);
+
+        // Etapa 4 (exclusiva firmada) = fin del pipeline de captación —
+        // dispara el mismo auto-spawn que ya dispara el checklist del kanban
+        // al completarse la última etapa, en vez de empujar a un stage que
+        // ya no existe dentro de CAPTACION_STAGES.
+        if ($maxEtapa === 4) {
+            if ($operation->stage === 'exclusiva' && $operation->status === 'active' && $operation->target_type) {
+                $this->checklistService->completeCaptacionAndSpawn($operation, $user);
+            }
+            return;
+        }
+
+        $targetStage = self::ETAPA_TO_STAGE[$maxEtapa] ?? null;
         if (!$targetStage) {
             return;
         }
@@ -126,11 +145,6 @@ class CaptacionService
 
         if ($currentIdx === false || $targetIdx === false || $targetIdx <= $currentIdx) {
             return; // no retroceder ni tocar si ya está igual o más adelante
-        }
-
-        $user = Auth::user() ?? $operation->user;
-        if (!$user) {
-            return; // sin usuario resoluble (ej. contexto sin sesión) — no forzamos el avance
         }
 
         $this->checklistService->changeStage(

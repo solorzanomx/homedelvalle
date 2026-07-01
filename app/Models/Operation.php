@@ -30,9 +30,9 @@ class Operation extends Model
         'renovacion' => 'Renovacion',
     ];
 
-    const VENTA_STAGES = ['lead','contacto','visita','exclusiva','publicacion','busqueda','investigacion','contrato','entrega','cierre'];
-    const RENTA_STAGES = ['lead','contacto','visita','exclusiva','publicacion','busqueda','investigacion','contrato','entrega','cierre','activo','renovacion'];
-    const CAPTACION_STAGES = ['lead','contacto','visita','revision_docs','avaluo','mejoras','exclusiva','fotos_video','carpeta_lista'];
+    const VENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre'];
+    const RENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre','activo','renovacion'];
+    const CAPTACION_STAGES = ['lead','contacto','visita','revision_docs','avaluo','exclusiva'];
 
     const PHASE_MAP = [
         'lead' => 'captacion', 'contacto' => 'captacion', 'visita' => 'captacion', 'exclusiva' => 'captacion',
