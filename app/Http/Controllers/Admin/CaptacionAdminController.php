@@ -345,10 +345,11 @@ class CaptacionAdminController extends Controller
             'declined_this_month' => Captacion::where('status', 'declinado')->whereMonth('updated_at', now()->month)->whereYear('updated_at', now()->year)->count(),
         ];
 
-        $users = User::orderBy('name')->get();
+        $users       = User::orderBy('name')->get();
+        $currentUser = $request->input('user_id');
 
         return view('admin.captaciones.pipeline', compact(
-            'byStage', 'stages', 'stageColors', 'stats', 'users', 'captacionIds'
+            'byStage', 'stages', 'stageColors', 'stats', 'users', 'captacionIds', 'currentUser'
         ));
     }
 
