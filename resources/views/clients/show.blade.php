@@ -623,6 +623,82 @@
             </div>
         </div>
 
+        {{-- Ficha Legal --}}
+        <div class="side-card">
+            <div class="side-card-header" style="display:flex;align-items:center;justify-content:space-between;">
+                <span>Datos Legales</span>
+                @php $lc = $client->legal_completeness; @endphp
+                <span style="font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:12px;
+                    background:{{ $lc >= 80 ? '#dcfce7' : ($lc >= 40 ? '#fef9c3' : '#fee2e2') }};
+                    color:{{ $lc >= 80 ? '#166534' : ($lc >= 40 ? '#92400e' : '#991b1b') }};">
+                    {{ $lc }}%
+                </span>
+            </div>
+            <div class="side-card-body" style="padding:.5rem 1rem;">
+                @if($client->first_name || $client->last_name_paterno)
+                <div class="side-card-row">
+                    <span class="label">Nombre legal</span>
+                    <span class="value" style="font-size:.77rem;">{{ $client->full_name_legal }}</span>
+                </div>
+                @endif
+                @if($client->curp)
+                <div class="side-card-row">
+                    <span class="label">CURP</span>
+                    <span class="value" style="font-size:.75rem;font-family:monospace;letter-spacing:.5px;">
+                        {{ $client->curp }}
+                        @if($client->curp_verified_at)<span style="color:#166534;font-size:.65rem;"> ✓</span>@endif
+                    </span>
+                </div>
+                @endif
+                @if($client->rfc)
+                <div class="side-card-row">
+                    <span class="label">RFC</span>
+                    <span class="value" style="font-size:.75rem;font-family:monospace;letter-spacing:.5px;">
+                        {{ $client->rfc }}
+                        @if($client->rfc_verified_at)<span style="color:#166534;font-size:.65rem;"> ✓</span>@endif
+                    </span>
+                </div>
+                @endif
+                @if($client->birth_date)
+                <div class="side-card-row">
+                    <span class="label">Nacimiento</span>
+                    <span class="value">{{ $client->birth_date->format('d/m/Y') }}</span>
+                </div>
+                @endif
+                @if($client->marital_status)
+                <div class="side-card-row">
+                    <span class="label">Estado civil</span>
+                    <span class="value">{{ Str::title(str_replace('_',' ',$client->marital_status)) }}</span>
+                </div>
+                @endif
+                @if($client->id_type && $client->id_number)
+                <div class="side-card-row">
+                    <span class="label">{{ $client->id_type }}</span>
+                    <span class="value" style="font-size:.77rem;">{{ $client->id_number }}
+                        @if($client->id_expiry && $client->id_expiry->isPast())
+                        <span style="color:var(--danger);font-size:.65rem;"> ⚠ Vencida</span>
+                        @endif
+                    </span>
+                </div>
+                @endif
+                @if($client->legal_address)
+                <div class="side-card-row" style="flex-direction:column;align-items:flex-start;gap:.2rem;">
+                    <span class="label">Domicilio legal</span>
+                    <span style="font-size:.77rem;color:var(--text);line-height:1.4;">{{ $client->legal_address }}</span>
+                </div>
+                @endif
+                @if(!$client->first_name && !$client->curp && !$client->rfc)
+                <div style="text-align:center;padding:.5rem 0;font-size:.78rem;color:var(--text-muted);">
+                    Sin datos legales. <a href="{{ route('clients.edit', $client) }}" style="color:var(--primary);">Completar →</a>
+                </div>
+                @else
+                <div style="margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border);">
+                    <a href="{{ route('clients.edit', $client) }}" style="font-size:.78rem;color:var(--primary);">Editar datos legales →</a>
+                </div>
+                @endif
+            </div>
+        </div>
+
         {{-- Portal Access (admin) --}}
         @if(auth()->user() && auth()->user()->role === 'admin')
         <div class="side-card">
