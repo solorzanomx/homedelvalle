@@ -106,11 +106,11 @@ lead → contacto → visita → revision_docs → avaluo → exclusiva
 
 ## 5. Priorización en fases
 
-**Fase 1 — bajo esfuerzo, alto impacto (reusa infraestructura existente):**
-1. Notificación al broker cuando se abre la Presentación.
-2. Escalar el SLA de contacto de lead + notificación al broker.
-3. Reglas de automatización: notificar al propietario en cada cambio de etapa + recordatorio si no firma exclusiva en X días.
-4. Reusar `Interaction` + `visit_token` para la visita de captación.
+**Fase 1 — bajo esfuerzo, alto impacto (reusa infraestructura existente) — ✅ implementada 2026-07-01:**
+1. ✅ Notificación al broker cuando se abre la Presentación (`PresentationPublicController::show()`).
+2. ✅ SLA de contacto de lead a 60 min + notificación al broker (`php artisan leads:check-uncontacted`, cada 15 min).
+3. ✅ Automatizaciones: notificar al propietario por WhatsApp al entrar a contacto/visita/avaluo/exclusiva (4 `Automation` sembradas); recordatorio diario si la exclusiva lleva >3 días sin firmar (`php artisan captaciones:check-exclusiva-pending`).
+4. ✅ Atajo "Agendar visita" de un clic en la ficha de captación, reusando `Interaction` + `visit_token` (`VisitSchedulingService`).
 
 **Fase 2 — esfuerzo medio (nuevas vistas sobre datos/servicios existentes):**
 5. Brief pre-visita para el broker.
@@ -123,7 +123,7 @@ lead → contacto → visita → revision_docs → avaluo → exclusiva
 10. Mini-roadmap visual post-firma.
 11. KPI "días a exclusiva" + plantillas WhatsApp por etapa.
 
-Ninguna fase está autorizada a la fecha de este documento — ver estado real en la memoria de proyecto (`project_homedelvalle_flujo_captacion`) antes de asumir que algo ya se implementó.
+Fase 1 implementada y verificada localmente (commit ver historial de `docs/`), pendiente de desplegar y de correr en producción. Fases 2 y 3 no autorizadas todavía — ver estado real en la memoria de proyecto (`project_homedelvalle_flujo_captacion`) antes de asumir que algo ya se implementó.
 
 ---
 

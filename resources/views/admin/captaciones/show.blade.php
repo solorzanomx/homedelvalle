@@ -505,6 +505,24 @@
             </div>
         </div>
 
+        {{-- Agendar visita — atajo de un clic, sin ir al perfil del cliente --}}
+        <div class="side-card">
+            <div class="side-card-header">
+                <span class="side-card-title">&#128197; Agendar visita</span>
+            </div>
+            <div class="side-card-body">
+                <form method="POST" action="{{ route('admin.captaciones.schedule-visit', $captacion) }}">
+                    @csrf
+                    <div style="display:flex;gap:.4rem;margin-bottom:.5rem;">
+                        <input type="date" name="scheduled_at_date" class="form-control" style="font-size:.82rem;" required>
+                        <input type="time" name="scheduled_at_time" class="form-control" style="font-size:.82rem;max-width:110px;" value="10:00">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Confirmar visita</button>
+                </form>
+                <p style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;">Se envía confirmación automática al propietario con link para confirmar/reagendar.</p>
+            </div>
+        </div>
+
         {{-- Checklist de la etapa actual en el kanban de pipeline --}}
         @if($captacion->operation)
         @php

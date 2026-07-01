@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
 use App\Models\PresentationSend;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
 
 class PresentationPublicController extends Controller
@@ -15,8 +18,10 @@ class PresentationPublicController extends Controller
             ->where('tracking_token', $token)
             ->firstOrFail();
 
+        $isFirstView = is_null($send->pdf_viewed_at);
+
         // Registrar primera vista
-        if (is_null($send->pdf_viewed_at)) {
+        if ($isFirstView) {
             $send->pdf_viewed_at = now();
         }
         $send->pdf_view_count++;
@@ -24,9 +29,48 @@ class PresentationPublicController extends Controller
         $send->last_view_user_agent = substr($request->userAgent() ?? '', 0, 255);
         $send->save();
 
+        if ($isFirstView) {
+            $this->notifyBrokerOfFirstView($send);
+        }
+
         $captacion = $send->captacion;
 
         return view('public.presentacion.show', compact('send', 'captacion'));
+    }
+
+    /**
+     * El propietario acaba de ver su presentación por primera vez — es el
+     * momento perfecto para que el broker haga follow-up. Ver docs/07-FLUJO-
+     * CAPTACION-Y-MEJORAS.md sección 2.
+     */
+    private function notifyBrokerOfFirstView(PresentationSend $send): void
+    {
+        $broker = $send->sentBy;
+        if (!$broker) {
+            return;
+        }
+
+        $captacion  = $send->captacion;
+        $clientName = $captacion?->client?->name ?? 'El propietario';
+
+        Notification::create([
+            'user_id' => $broker->id,
+            'type'    => 'system',
+            'title'   => 'Presentación vista',
+            'body'    => "{$clientName} acaba de ver tu presentación. Es un buen momento para dar seguimiento.",
+            'data'    => ['url' => $captacion ? route('admin.captaciones.show', $captacion) : null],
+        ]);
+
+        if ($broker->whatsapp || $broker->phone) {
+            try {
+                app(WhatsAppService::class)->send(
+                    $broker->whatsapp ?? $broker->phone,
+                    "{$clientName} acaba de ver la presentación que le enviaste. Buen momento para darle seguimiento."
+                );
+            } catch (\Throwable $e) {
+                Log::warning('notifyBrokerOfFirstView: WhatsApp failed: ' . $e->getMessage());
+            }
+        }
     }
 
     /** Descarga el PDF — registra pdf_downloaded_at. */

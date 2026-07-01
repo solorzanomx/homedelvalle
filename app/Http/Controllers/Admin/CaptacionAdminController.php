@@ -12,6 +12,7 @@ use App\Services\CaptacionDeclineService;
 use App\Services\CaptacionService;
 use App\Services\PresentationGeneratorService;
 use App\Services\ServiciosGeneratorService;
+use App\Services\VisitSchedulingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -150,6 +151,32 @@ class CaptacionAdminController extends Controller
             'docsByCategory', 'valuations', 'interactions', 'etapaLabels', 'etapaColors',
             'clientProperty'
         ));
+    }
+
+    /**
+     * Atajo de un clic para agendar la visita de captación desde la ficha,
+     * sin ir al perfil del cliente. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md
+     * sección 2.3 — reusa VisitSchedulingService (mismo mecanismo de
+     * confirmación/recordatorio/reagendado ya probado en producción).
+     */
+    public function scheduleVisit(Request $request, Captacion $captacion)
+    {
+        $validated = $request->validate([
+            'scheduled_at_date' => 'required|date',
+            'scheduled_at_time' => 'nullable|date_format:H:i',
+        ]);
+
+        $scheduledAt = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . ($validated['scheduled_at_time'] ?? '10:00'));
+
+        app(VisitSchedulingService::class)->createVisit(
+            client: $captacion->client,
+            property: $captacion->property,
+            broker: Auth::user(),
+            scheduledAt: $scheduledAt,
+            description: 'Visita de captación agendada desde el pipeline.',
+        );
+
+        return back()->with('success', 'Visita agendada. Se envió la confirmación al propietario.');
     }
 
     public function updateDocStatus(Request $request, Captacion $captacion, Document $document)

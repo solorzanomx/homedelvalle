@@ -728,6 +728,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/{captacion}/link-valuation',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'linkValuation'])->name('link-valuation');
         Route::post('/{captacion}/unlink-valuation',                      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'unlinkValuation'])->name('unlink-valuation');
         Route::post('/{captacion}/set-price',                             [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'setPrice'])->name('set-price');
+        Route::post('/{captacion}/agendar-visita',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'scheduleVisit'])->name('schedule-visit');
         Route::post('/{captacion}/generar-exclusiva',                     [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'generarExclusiva'])->name('generar-exclusiva');
         Route::post('/{captacion}/confirmar-exclusiva',                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'markExclusivaSigned'])->name('confirmar-exclusiva');
         Route::post('/{captacion}/upload',                                [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'uploadDocument'])->name('upload');

@@ -537,94 +537,45 @@ class ClientController extends Controller
         $asesorEmail  = $asesorUser?->email ?? '';
         $asesorPhone  = $asesorUser?->phone ?? '';
 
-        $interactionData = [
-            'client_id'    => $client->id,
-            'user_id'      => Auth::id(),
-            'type'         => $validated['type'],
-            'description'  => $validated['description'],
-            'completed_at' => $validated['type'] !== 'visit' ? now() : null,
-        ];
-
         if ($validated['type'] === 'visit' && !empty($validated['scheduled_at_date'])) {
             $time = $validated['scheduled_at_time'] ?? '10:00';
-            $interactionData['scheduled_at'] = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $time);
-            $interactionData['visit_token'] = \Illuminate\Support\Str::uuid()->toString();
-            $interactionData['send_confirmation_email'] = $request->boolean('send_confirmation_email', true);
-        }
+            $scheduledAt = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $time);
+            $property = !empty($validated['property_id']) ? Property::find($validated['property_id']) : null;
 
-        if (!empty($validated['property_id'])) {
-            $interactionData['property_id'] = $validated['property_id'];
-        }
-
-        $interaction = Interaction::create($interactionData);
-
-        // Score the interaction
-        if ($validated['type'] === 'visit' && !empty($interactionData['scheduled_at'])) {
-            $scoringEvent = 'visit_scheduled';
+            $interaction = app(\App\Services\VisitSchedulingService::class)->createVisit(
+                client: $client,
+                property: $property,
+                broker: Auth::user(),
+                scheduledAt: $scheduledAt,
+                sendConfirmationEmail: $request->boolean('send_confirmation_email', true),
+                description: $validated['description'],
+                asesorForEmail: $asesorUser,
+                duracionMinutos: (string) ($validated['duracion'] ?? '30'),
+            );
         } else {
+            $interactionData = [
+                'client_id'    => $client->id,
+                'user_id'      => Auth::id(),
+                'type'         => $validated['type'],
+                'description'  => $validated['description'],
+                'completed_at' => now(),
+            ];
+
+            if (!empty($validated['property_id'])) {
+                $interactionData['property_id'] = $validated['property_id'];
+            }
+
+            $interaction = Interaction::create($interactionData);
+
             $eventMap = ['call' => 'call_completed', 'visit' => 'visit_completed', 'meeting' => 'visit_completed', 'whatsapp' => 'message_sent'];
             $scoringEvent = $eventMap[$validated['type']] ?? null;
-        }
-        if ($scoringEvent) {
-            app(\App\Services\LeadScoringService::class)->processEvent($client->id, $scoringEvent, ['source' => 'interaction']);
-        }
-
-        // Passive scoring for the property owner when a visit is scheduled
-        if ($interaction->isVisit() && $interaction->property_id) {
-            $property = $interaction->property ?? Property::find($interaction->property_id);
-            if ($property?->owner && $property->owner->id !== $client->id) {
-                app(\App\Services\LeadScoringService::class)->processEvent(
-                    $property->owner->id,
-                    'message_sent',
-                    ['source' => 'property_visit_scheduled', 'property_id' => $interaction->property_id]
-                );
+            if ($scoringEvent) {
+                app(\App\Services\LeadScoringService::class)->processEvent($client->id, $scoringEvent, ['source' => 'interaction']);
             }
         }
 
         // Parse @mentions and create notifications
         $this->processMentions($validated['description'], $interaction, $client);
-
-        // Send confirmation email for visits
-        if ($interaction->isVisit() && $interaction->scheduled_at && $interaction->send_confirmation_email && $client->email) {
-            try {
-                $scheduled = $interaction->scheduled_at;
-                $duracion = (string) ($validated['duracion'] ?? '30');
-                $prop = $interaction->property;
-
-                // Build Google Maps URL with full address
-                $addressParts = array_filter([
-                    $prop?->address ?? '',
-                    $prop?->colony ?? '',
-                    $prop?->city ?? 'CDMX',
-                ]);
-                $address = urlencode(implode(', ', $addressParts));
-                $mapsUrl = $address ? "https://www.google.com/maps/search/?api=1&query={$address}" : '';
-
-                \Illuminate\Support\Facades\Mail::to($client->email)->send(
-                    new \App\Mail\V4\Mailables\CitaMail(
-                        new \App\Mail\V4\Data\CitaData(
-                            email: $client->email,
-                            nombre: $client->name,
-                            dia_semana: $scheduled->locale('es')->dayName,
-                            dia: (string) $scheduled->day,
-                            mes: $scheduled->locale('es')->monthName,
-                            anio: (string) $scheduled->year,
-                            hora: $scheduled->format('g:i A'),
-                            duracion: $duracion,
-                            direccion: $prop?->address ?? 'A coordinar',
-                            colonia: $prop?->colony ?? '',
-                            asesor: $asesorNombre,
-                            visit_token: $interaction->visit_token,
-                            maps_url: $mapsUrl,
-                            asesor_email: $asesorEmail,
-                            asesor_phone: $asesorPhone,
-                        )
-                    )
-                );
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::warning('Visit confirmation email failed: ' . $e->getMessage());
-            }
-        }
 
         return redirect()->route('clients.show', $client)->with('success', 'Nota agregada.');
     }
