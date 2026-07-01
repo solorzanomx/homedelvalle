@@ -35,6 +35,18 @@ class CaptacionStageCockpit extends Component
         'Commercial' => 'Local comercial',
     ];
 
+    // Qué acción de contacto (llamar/whatsapp) recomienda primero el manual
+    // del broker en cada etapa — usado para ordenar los botones del hero
+    // card, no para cambiarles el estilo (ya son consistentes entre sí).
+    public const STAGE_PRIMARY_ACTION = [
+        'lead' => 'llamar',
+        'contacto' => 'whatsapp',
+        'visita' => 'llamar',
+        'revision_docs' => 'whatsapp',
+        'avaluo' => 'llamar',
+        'exclusiva' => 'whatsapp',
+    ];
+
     // Objetivo y mensaje motivador de cada etapa, redactados a partir de
     // docs/08-MANUAL-BROKER-CAPTACION.md.
     public const STAGE_OBJECTIVES = [

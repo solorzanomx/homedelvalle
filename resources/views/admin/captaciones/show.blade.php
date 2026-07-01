@@ -25,6 +25,7 @@
 .action-btn.wa:hover { background:#25d366; color:#fff; }
 .action-btn.phone { color:#3b82f6; border-color:#3b82f6; background:rgba(59,130,246,.04); }
 .action-btn.phone:hover { background:#3b82f6; color:#fff; }
+.action-btn.suggested { border-width:2px; }
 
 /* ===== STEPPER ===== */
 .stepper { display:flex; align-items:center; padding:0 1.25rem 1rem; overflow-x:auto; gap:0; }
@@ -34,12 +35,14 @@
 }
 .step.completed { color:var(--success); }
 .step.current   { background:var(--primary); color:#fff; padding:.3rem .75rem; box-shadow:0 2px 8px rgba(102,126,234,.3); }
-.step.future    { opacity:.4; }
+.step.future    { opacity:.65; }
 .step-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
 .step.completed .step-dot { background:var(--success); }
 .step.current   .step-dot { background:#fff; }
 .step.future    .step-dot { background:var(--border); }
 .step-arrow { color:var(--border); font-size:.65rem; margin:0 .1rem; flex-shrink:0; }
+.stepper-progress { height:4px; background:var(--border); border-radius:99px; margin:-.4rem 1.25rem .9rem; overflow:hidden; }
+.stepper-progress-fill { height:100%; background:var(--primary); border-radius:99px; transition:width .2s; }
 
 /* ===== DOCS PROGRESS BAR ===== */
 .advance-bar {
@@ -240,12 +243,20 @@
         </div>
     </div>
 
+    @php
+        // Orden de los botones de contacto según lo que el manual del broker
+        // recomienda hacer primero en la etapa actual (no cambia el estilo,
+        // ya consistente entre los 4 — solo el orden y un acento sutil).
+        $primaryAction = \App\Livewire\Admin\CaptacionStageCockpit::STAGE_PRIMARY_ACTION[$opStage] ?? 'llamar';
+    @endphp
     <div class="hero-actions">
-        @if($waLink)
-        <a href="{{ $waLink }}" target="_blank" class="action-btn wa">&#128172; WhatsApp</a>
-        @endif
-        @if($telLink)
-        <a href="{{ $telLink }}" class="action-btn phone">&#128222; Llamar</a>
+        @php $waHtml = 'wa' . ($primaryAction === 'whatsapp' ? ' suggested' : ''); $phoneHtml = 'phone' . ($primaryAction === 'llamar' ? ' suggested' : ''); @endphp
+        @if($primaryAction === 'whatsapp')
+            @if($waLink)<a href="{{ $waLink }}" target="_blank" class="action-btn {{ $waHtml }}">&#128172; WhatsApp</a>@endif
+            @if($telLink)<a href="{{ $telLink }}" class="action-btn {{ $phoneHtml }}">&#128222; Llamar</a>@endif
+        @else
+            @if($telLink)<a href="{{ $telLink }}" class="action-btn {{ $phoneHtml }}">&#128222; Llamar</a>@endif
+            @if($waLink)<a href="{{ $waLink }}" target="_blank" class="action-btn {{ $waHtml }}">&#128172; WhatsApp</a>@endif
         @endif
         <a href="{{ route('clients.show', $client->id) }}" class="action-btn">&#128100; Perfil</a>
         @if($captacion->status !== 'declinado' && $captacion->status !== 'completado')
@@ -268,6 +279,9 @@
             @endif
         </div>
         @endforeach
+    </div>
+    <div class="stepper-progress">
+        <div class="stepper-progress-fill" style="width:{{ round(($opCurrentIdx / max(count($opStages) - 1, 1)) * 100) }}%;"></div>
     </div>
     @endif
 
