@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Captacion;
 use App\Models\Document;
+use App\Models\Operation;
 use App\Models\PropertyValuation;
+use App\Models\User;
 use App\Services\CaptacionDeclineService;
 use App\Services\CaptacionService;
 use App\Services\PresentationGeneratorService;
+use App\Services\ServiciosGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
@@ -309,5 +312,127 @@ class CaptacionAdminController extends Controller
         app(CaptacionDeclineService::class)->decline($captacion, $request->reason, Auth::user());
 
         return back()->with('success', 'Caso declinado. ' . ($captacion->client?->email ? 'Se envió un email amistoso al propietario.' : 'No se envió email (propietario sin email registrado).'));
+    }
+
+    /** Pipeline de prospección: Operations type=captacion por etapa */
+    public function pipeline(Request $request)
+    {
+        $query = Operation::with(['client', 'property', 'user'])
+            ->where('type', 'captacion')
+            ->where('status', 'active');
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+        if ($request->filled('q')) {
+            $q = $request->q;
+            $query->whereHas('client', fn($cq) => $cq->where('name', 'like', "%{$q}%"));
+        }
+
+        $operations = $query->latest()->get();
+
+        $stages      = array_combine(Operation::CAPTACION_STAGES, array_map(fn($s) => Operation::STAGES[$s] ?? $s, Operation::CAPTACION_STAGES));
+        $stageColors = array_intersect_key(Operation::STAGE_COLORS, $stages);
+        $byStage     = $operations->groupBy('stage');
+
+        // Captaciones activas para cruzar con operations (mostrar si ya tienen captacion_id)
+        $captacionIds = Captacion::whereIn('operation_id', $operations->pluck('id'))
+            ->pluck('id', 'operation_id');
+
+        $stats = [
+            'total'               => $operations->count(),
+            'converted_this_month'=> Captacion::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'declined_this_month' => Captacion::where('status', 'declinado')->whereMonth('updated_at', now()->month)->whereYear('updated_at', now()->year)->count(),
+        ];
+
+        $users = User::orderBy('name')->get();
+
+        return view('admin.captaciones.pipeline', compact(
+            'byStage', 'stages', 'stageColors', 'stats', 'users', 'captacionIds'
+        ));
+    }
+
+    /** PDF Propuesta de Servicios — ver en el navegador */
+    public function serviciosPdf(Captacion $captacion)
+    {
+        set_time_limit(120);
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        if (empty($captacion->last_servicios_pdf_path) || !file_exists($captacion->last_servicios_pdf_path)) {
+            app(ServiciosGeneratorService::class)->generatePdf($captacion);
+        }
+
+        $path = $captacion->last_servicios_pdf_path;
+
+        return Response::make(file_get_contents($path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="hdv-servicios.pdf"',
+        ]);
+    }
+
+    /** PDF Propuesta de Servicios — forzar regeneración */
+    public function serviciosRegenerate(Captacion $captacion)
+    {
+        try {
+            app(ServiciosGeneratorService::class)->generatePdf($captacion);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error al regenerar: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Propuesta de servicios regenerada.');
+    }
+
+    /** Descargar PDF de Servicios */
+    public function serviciosDownload(Captacion $captacion)
+    {
+        $captacion->loadMissing(['client']);
+
+        if (empty($captacion->last_servicios_pdf_path) || !file_exists($captacion->last_servicios_pdf_path)) {
+            app(ServiciosGeneratorService::class)->generatePdf($captacion);
+        }
+
+        $filename = 'HDV-Servicios-' . str_replace(' ', '-', $captacion->client->name ?? 'propietario') . '.pdf';
+
+        return Response::download($captacion->last_servicios_pdf_path, $filename, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    /** Enviar Propuesta de Servicios por email */
+    public function sendServiciosEmail(Request $request, Captacion $captacion)
+    {
+        $request->validate(['email' => 'required|email']);
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        try {
+            app(ServiciosGeneratorService::class)->sendByEmail(
+                captacion: $captacion,
+                email:     $request->input('email'),
+                agent:     Auth::user(),
+            );
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error al enviar email: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Propuesta de servicios enviada a ' . $request->input('email'));
+    }
+
+    /** Enviar Propuesta de Servicios por WhatsApp */
+    public function sendServiciosWhatsApp(Request $request, Captacion $captacion)
+    {
+        $request->validate(['phone' => 'required|string|max:30']);
+        $captacion->loadMissing(['client', 'property', 'createdBy']);
+
+        try {
+            $result = app(ServiciosGeneratorService::class)->sendByWhatsApp(
+                captacion: $captacion,
+                phone:     $request->input('phone'),
+                agent:     Auth::user(),
+            );
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+
+        return redirect($result['wa_me_url']);
     }
 }

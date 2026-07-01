@@ -19,6 +19,7 @@ class Captacion extends Model implements HasMedia
         'intent', 'commission_pct', 'marketing_plan', 'notes_from_call', 'source',
         'created_by_user_id', 'declined_at', 'declined_reason',
         'last_presentation_pdf_path',
+        'last_servicios_pdf_path',
     ];
 
     protected function casts(): array

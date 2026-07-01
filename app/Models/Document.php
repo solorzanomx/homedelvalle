@@ -26,8 +26,9 @@ class Document extends Model
         'rental_contract' => 'Contrato de Arrendamiento',
         'poliza_contract' => 'Poliza Juridica',
         'other' => 'Otro',
-        'presentation_pdf' => 'Presentación Inicial PDF',
-        'opinion_valor'    => 'Opinión de Valor PDF',
+        'presentation_pdf'    => 'Presentación Inicial PDF',
+        'opinion_valor'       => 'Opinión de Valor PDF',
+        'propuesta_servicios' => 'Propuesta de Servicios PDF',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',
         'ine_reverso'           => 'INE — Reverso',

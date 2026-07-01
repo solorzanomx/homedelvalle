@@ -706,6 +706,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     // ===== CAPTACIONES (venta) =====
     Route::prefix('captaciones')->name('captaciones.')->group(function () {
         Route::get('/',                  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'index'])->name('index');
+        // Pipeline de prospección (pre-exclusiva) — Operations type=captacion
+        Route::get('/pipeline',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'pipeline'])->name('pipeline');
         // Rutas estáticas ANTES de /{captacion} para evitar conflictos
         Route::get('/create-from-call',  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'createFromCall'])->name('create-from-call');
         Route::get('/{captacion}',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
@@ -716,6 +718,13 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/{captacion}/presentacion/descargar',    [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentationDownload'])->name('presentation.admin.download');
         Route::post('/{captacion}/presentacion/enviar-email',[\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendPresentationEmail'])->name('presentation.send.email');
         Route::post('/{captacion}/presentacion/whatsapp',    [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendPresentationWhatsApp'])->name('presentation.send.whatsapp');
+        // Propuesta de Servicios
+        Route::get('/{captacion}/servicios/pdf',             [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosPdf'])->name('servicios.pdf');
+        Route::post('/{captacion}/servicios/regenerar',      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosRegenerate'])->name('servicios.regenerate');
+        Route::get('/{captacion}/servicios/descargar',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'serviciosDownload'])->name('servicios.download');
+        Route::post('/{captacion}/servicios/enviar-email',   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendServiciosEmail'])->name('servicios.send.email');
+        Route::post('/{captacion}/servicios/whatsapp',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'sendServiciosWhatsApp'])->name('servicios.send.whatsapp');
+        // Documentos, valuación, precio, exclusiva
         Route::post('/{captacion}/documentos/{document}/status',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'updateDocStatus'])->name('doc-status');
         Route::post('/{captacion}/link-valuation',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'linkValuation'])->name('link-valuation');
         Route::post('/{captacion}/unlink-valuation',                      [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'unlinkValuation'])->name('unlink-valuation');
