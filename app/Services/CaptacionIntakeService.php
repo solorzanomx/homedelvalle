@@ -162,6 +162,12 @@ class CaptacionIntakeService
             'notes'        => 'Captación creada desde llamada · fuente: ' . ($data['source'] ?? 'phone_call'),
         ]);
 
+        // Sin esto, la tarjeta de Checklist en la ficha de captación aparece
+        // vacía desde el día 1 — changeStage() es lo único que normalmente
+        // siembra los items, pero la Operation nace directo en 'lead', nunca
+        // pasa por changeStage(). Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
+        app(OperationChecklistService::class)->initializeChecklistForStage($operation, 'lead');
+
         return $operation;
     }
 

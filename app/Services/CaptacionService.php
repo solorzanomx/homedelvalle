@@ -36,6 +36,7 @@ class CaptacionService
                 'user_id'    => $client->assigned_user_id ?? $this->fallbackAgentId(),
             ]);
             $captacion->update(['operation_id' => $operation->id]);
+            $this->checklistService->initializeChecklistForStage($operation, 'lead');
         }
 
         return $captacion;

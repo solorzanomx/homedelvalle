@@ -281,8 +281,12 @@
                         @if($phone)
                         <a href="tel:{{ $phone }}" class="btn btn-sm" title="Llamar a {{ $clientName }}">&#128222; Llamar</a>
                         @endif
+                        @if($captacionId)
+                        <a href="{{ route('admin.captaciones.show', $captacionId) }}" class="btn btn-sm btn-primary">Ver captación</a>
+                        @else
                         <a href="{{ route('admin.captaciones.create-from-call') }}{{ $client ? '?client_id='.$client->id : '' }}"
                            class="btn btn-sm btn-primary">Crear captación</a>
+                        @endif
 
                     @elseif($stageKey === 'contacto')
                         @if($captacionId)
