@@ -423,8 +423,10 @@
     $onDocs       = request()->routeIs('portal.documents.*');
     $onAccount    = request()->routeIs('portal.account');
     $onDashboard  = request()->routeIs('portal.dashboard');
-    $onRental     = request()->routeIs('portal.rentals.*');
-    $onMiInmueble = request()->routeIs('portal.mi-inmueble');
+    $onRental      = request()->routeIs('portal.rentals.*');
+    $onMiInmueble  = request()->routeIs('portal.mi-inmueble');
+    $onExpediente  = request()->routeIs('portal.expediente*');
+    $expedienteCompleteness = $portalClient ? $portalClient->legal_completeness : 0;
 
     // Stage status helper
     // 0=locked, 1=done, 2=active
@@ -651,6 +653,21 @@
                 Mi Inmueble
             </a>
             @endif
+            <a href="{{ route('portal.expediente') }}"
+               class="sb-item {{ $onExpediente ? 'active' : '' }}"
+               style="position:relative;">
+                <span>📋</span>
+                Mi Expediente
+                @if($expedienteCompleteness < 100)
+                <span style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);font-size:.65rem;font-weight:700;padding:1px 6px;border-radius:10px;
+                    background:{{ $expedienteCompleteness >= 60 ? '#dcfce7' : '#fef9c3' }};
+                    color:{{ $expedienteCompleteness >= 60 ? '#166534' : '#92400e' }};">
+                    {{ $expedienteCompleteness }}%
+                </span>
+                @else
+                <span style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);font-size:.75rem;">✅</span>
+                @endif
+            </a>
             <a href="{{ route('portal.documents.index') }}"
                class="sb-item {{ $onDocs ? 'active' : '' }}">
                 <span>&#128196;</span>

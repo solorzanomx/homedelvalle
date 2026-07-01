@@ -28,6 +28,10 @@ class Client extends Model
         'address_street', 'address_colony', 'address_municipality', 'address_state', 'address_zip',
         // Datos para contratos de renta
         'marital_regime', 'spouse_name', 'spouse_curp', 'bank_clabe', 'bank_name',
+        // Ingresos (arrendatario/comprador)
+        'income_type', 'income_amount',
+        // Financiamiento (comprador)
+        'financing_type', 'financing_preauth_amount', 'nss', 'infonavit_balance',
     ];
 
     protected $casts = [
@@ -38,8 +42,11 @@ class Client extends Model
         'client_type'  => 'string',
         'birth_date'   => 'date',
         'id_expiry'    => 'date',
-        'curp_verified_at' => 'datetime',
-        'rfc_verified_at'  => 'datetime',
+        'curp_verified_at'        => 'datetime',
+        'rfc_verified_at'         => 'datetime',
+        'income_amount'           => 'decimal:2',
+        'financing_preauth_amount'=> 'decimal:2',
+        'infonavit_balance'       => 'decimal:2',
     ];
 
     public function broker(): BelongsTo
@@ -90,6 +97,11 @@ class Client extends Model
     public function ownedProperties(): HasMany
     {
         return $this->hasMany(Property::class, 'client_id');
+    }
+
+    public function avales(): HasMany
+    {
+        return $this->hasMany(\App\Models\RentalAval::class);
     }
 
     // ── Marketing Automation ──────────────────────────

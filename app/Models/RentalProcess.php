@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RentalProcess extends Model
 {
-    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at'];
+    protected $fillable = ['property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at', 'poliza_aseguradora', 'poliza_number', 'poliza_expiry'];
 
     const PAYMENT_FREQUENCIES = [
         'mensual'     => 'Mensual',
@@ -47,9 +47,12 @@ class RentalProcess extends Model
     ];
 
     const GUARANTEE_TYPES = [
-        'deposito' => 'Deposito',
-        'poliza_juridica' => 'Poliza Juridica',
-        'fianza' => 'Fianza',
+        'deposito'       => 'Depósito',
+        'aval'           => 'Aval',
+        'pagares'        => 'Pagarés',
+        'aval_pagares'   => 'Aval + Pagarés',
+        'poliza_juridica'=> 'Póliza Jurídica',
+        'fianza'         => 'Fianza',
     ];
 
     protected function casts(): array
@@ -68,6 +71,7 @@ class RentalProcess extends Model
             'cancelled_at'       => 'datetime',
             'proposed_tenant_at' => 'datetime',
             'tenant_approved_at' => 'datetime',
+            'poliza_expiry'      => 'date',
         ];
     }
 
@@ -82,6 +86,8 @@ class RentalProcess extends Model
     public function tasks() { return $this->hasMany(Task::class); }
     public function poliza() { return $this->hasOne(PolizaJuridica::class); }
     public function investigation() { return $this->hasOne(TenantInvestigation::class); }
+    public function avales() { return $this->hasMany(\App\Models\RentalAval::class); }
+    public function pagares() { return $this->hasMany(\App\Models\RentalPagare::class); }
     public function contracts() { return $this->hasMany(Contract::class); }
     public function payments()  { return $this->hasMany(RentalPayment::class)->orderBy('period'); }
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalCaptacionController;
 use App\Http\Controllers\Portal\PortalValuacionController;
 use App\Http\Controllers\Portal\PortalPropertyController;
+use App\Http\Controllers\Portal\PortalExpedienteController;
 
 // ── Auth (sin middleware guest — se maneja en el controller para evitar loops) ─
 Route::name('portal.')->group(function () {
@@ -67,6 +68,14 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
 
     // Mi Inmueble — métricas y actividad de visitas
     Route::get('/mi-inmueble',               [PortalPropertyController::class, 'show'])->name('mi-inmueble');
+
+    // Mi Expediente — datos legales del cliente
+    Route::get('/mi-expediente',                      [PortalExpedienteController::class, 'show'])->name('expediente');
+    Route::post('/mi-expediente/datos',               [PortalExpedienteController::class, 'saveDatos'])->name('expediente.datos');
+    Route::post('/mi-expediente/ingresos',            [PortalExpedienteController::class, 'saveIngresos'])->name('expediente.ingresos');
+    Route::post('/mi-expediente/financiamiento',      [PortalExpedienteController::class, 'saveFinanciamiento'])->name('expediente.financiamiento');
+    Route::post('/mi-expediente/aval',                [PortalExpedienteController::class, 'saveAval'])->name('expediente.aval');
+    Route::post('/mi-expediente/documentos',          [PortalExpedienteController::class, 'uploadDocument'])->name('expediente.upload');
 
     // Preferencias de notificación
     Route::put('/cuenta/notificaciones',     [PortalDashboardController::class, 'updateNotifications'])->name('notifications.update');

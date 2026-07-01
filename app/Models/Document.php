@@ -28,6 +28,25 @@ class Document extends Model
         'other' => 'Otro',
         'presentation_pdf' => 'Presentación Inicial PDF',
         'opinion_valor'    => 'Opinión de Valor PDF',
+        // Expediente del cliente
+        'ine_frente'            => 'INE — Frente',
+        'ine_reverso'           => 'INE — Reverso',
+        'pasaporte'             => 'Pasaporte',
+        'libertad_gravamen'     => 'Certificado de Libertad de Gravamen',
+        'agua'                  => 'Boleta de Agua',
+        'acta_nacimiento'       => 'Acta de Nacimiento',
+        'estado_cuenta'         => 'Estado de Cuenta Bancario',
+        'carta_preautorizacion' => 'Carta de Preautorización (Crédito)',
+        'cfdi_honorarios'       => 'CFDI de Honorarios',
+        'nomina'                => 'Recibo de Nómina',
+        // Aval
+        'aval_ine_frente'       => 'INE Aval — Frente',
+        'aval_ine_reverso'      => 'INE Aval — Reverso',
+        'aval_escritura'        => 'Escritura del Inmueble (Aval)',
+        'aval_predial'          => 'Predial del Inmueble (Aval)',
+        'aval_libertad_gravamen'=> 'Libertad de Gravamen (Aval)',
+        // Pagarés
+        'pagare'                => 'Pagaré',
     ];
 
     const STATUSES = [
