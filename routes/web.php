@@ -300,6 +300,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::get('/documentos/preview/opinion-valor', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewOpinionValor'])->name('documentos.preview.opinion-valor');
     Route::get('/documentos/preview/oferta-compra', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewOfertaCompra'])->name('documentos.preview.oferta-compra');
     Route::get('/documentos/oferta-compra/imprimible', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'ofertaCompraImprimible'])->name('documentos.oferta-compra.imprimible');
+    Route::get('/documentos/oferta-compra/flash', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'flashForm'])->name('documentos.oferta-compra.flash');
+    Route::post('/documentos/oferta-compra/flash', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'flashStore'])->name('documentos.oferta-compra.flash.store');
     Route::get('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editOfertaCompra'])->name('documentos.oferta-compra.clausulas');
     Route::post('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateOfertaCompra'])->name('documentos.oferta-compra.clausulas.update');
 

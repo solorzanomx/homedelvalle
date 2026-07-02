@@ -115,6 +115,7 @@ strong { color: #0f172a; }
       @if($buyerId)<div class="row"><span class="lbl">Identificación</span><span class="val">{{ $buyerId }}</span></div>@endif
       @if($buyerCurpRfc)<div class="row"><span class="lbl">CURP / RFC</span><span class="val">{{ $buyerCurpRfc }}</span></div>@endif
       @if($buyerAddress)<div class="row"><span class="lbl">Domicilio</span><span class="val">{{ $buyerAddress }}</span></div>@endif
+      @if($propertyAddress)<div class="row"><span class="lbl">Inmueble</span><span class="val">{{ $propertyAddress }}</span></div>@endif
     </div>
 
     <table class="offer-table">

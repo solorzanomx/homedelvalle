@@ -39,6 +39,9 @@
             @if(!empty($doc['imprimible_route']) && Route::has($doc['imprimible_route']))
             <a href="{{ route($doc['imprimible_route']) }}" target="_blank" class="btn btn-sm btn-outline">Versión imprimible</a>
             @endif
+            @if(!empty($doc['flash_route']) && Route::has($doc['flash_route']))
+            <a href="{{ route($doc['flash_route']) }}" class="btn btn-sm" style="background:#f59e0b;color:#fff;">&#9889; Flash</a>
+            @endif
             @if($doc['preview_route'] && Route::has($doc['preview_route']))
             <a href="{{ route($doc['preview_route']) }}" target="_blank" class="btn btn-sm btn-primary">Ver PDF</a>
             @endif

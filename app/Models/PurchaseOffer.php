@@ -27,6 +27,7 @@ class PurchaseOffer extends Model
             'monto_apartado'       => 'decimal:2',
             'pago_firma_contrato'  => 'decimal:2',
             'pago_firma_escritura' => 'decimal:2',
+            'vigencia_dias'        => 'integer',
             'offered_at'           => 'datetime',
         ];
     }
