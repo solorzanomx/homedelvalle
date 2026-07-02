@@ -84,8 +84,6 @@ strong { color: #0f172a; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 8px; color: var(--hdv-navy); font-weight: 800; font-size: 11px; }
 .clause strong { color: #0f172a; }
 
-.legal-note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 12px; margin-top: 4px; font-size: 9px; color: #78350f; line-height: 1.55; }
-
 .sign-row { display: flex; gap: 40px; margin-top: 28px; }
 .sign-col { flex: 1; text-align: center; }
 .sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 40px; font-size: 9.5px; color: #475569; }
@@ -169,10 +167,6 @@ strong { color: #0f172a; }
     @if($offer->comentarios)
     <p><strong>Comentarios adicionales:</strong> {{ $offer->comentarios }}</p>
     @endif
-
-    <div class="legal-note">
-      Este documento fue generado a partir de una plantilla estándar y no sustituye la asesoría de un abogado. Se recomienda la revisión de un profesional del derecho antes de su uso definitivo, particularmente en lo relativo a la cláusula de apartado y sus condiciones de devolución.
-    </div>
 
     <div class="sign-row">
       <div class="sign-col">
