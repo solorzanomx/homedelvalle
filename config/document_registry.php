@@ -71,6 +71,7 @@ return [
         'imprimible_route' => 'admin.documentos.oferta-compra.imprimible',
         'flash_route' => 'admin.documentos.oferta-compra.flash',
         'changelog' => [
+            ['fecha' => '2026-07-02', 'resumen' => 'Versión imprimible: ahora se puede elegir un Cliente y un Inmueble del CRM para prellenar su identificación (precio/pagos/fecha siguen en blanco). Cláusula de vigencia fija a 10 días. Quitada la caja de "Comentarios adicionales". Línea de firma acortada.'],
             ['fecha' => '2026-07-02', 'resumen' => 'Firma subida (menos espacio en blanco tras las cláusulas) y línea de firma acortada — antes ocupaba todo el ancho de la hoja.'],
             ['fecha' => '2026-07-02', 'resumen' => 'Quitados los m² del inmueble. Nombre del oferente y datos del inmueble en formato título (mayúscula inicial). La fila "Inmueble" ahora incluye la colonia. Consolidado de 2 páginas a 1 sola (real e imprimible).'],
             ['fecha' => '2026-07-02', 'resumen' => 'Nuevo modo "Oferta Flash": genera la carta sin necesidad de captación/pipeline previo, solo eligiendo un Cliente y una Property ya existentes. Nueva fila "Inmueble" (dirección) en el recuadro del oferente. Bug corregido: vigencia_dias no tenía cast a integer, fallaba al generarse desde un formulario HTML real (afectaba también al flujo normal).'],
