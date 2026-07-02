@@ -349,7 +349,7 @@
             <div style="padding:.85rem 1rem;">
                 <p style="font-size:.82rem;font-weight:600;color:#0f172a;">{{ $rental->property->address }}</p>
                 @if($rental->property->colony)<p style="font-size:.72rem;color:#64748b;margin-top:.15rem;">{{ $rental->property->colony }}</p>@endif
-                <a href="{{ route('admin.properties.show', $rental->property_id) }}" style="display:inline-block;margin-top:.5rem;font-size:.72rem;color:#1D4ED8;font-weight:600;text-decoration:none;">Ver ficha →</a>
+                <a href="{{ route('properties.show', $rental->property_id) }}" style="display:inline-block;margin-top:.5rem;font-size:.72rem;color:#1D4ED8;font-weight:600;text-decoration:none;">Ver ficha →</a>
             </div>
         </div>
         @endif
