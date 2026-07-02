@@ -1,9 +1,18 @@
+@php include(resource_path('views/pdf/_brand_data.php')); @endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <style>
-@import url('https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap');
+@if($brandFontB64)
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('data:font/woff2;base64,{{ $brandFontB64 }}') format('woff2');
+}
+@endif
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 @page { size: 215.9mm 279.4mm; margin: 0; }
@@ -30,6 +39,13 @@ body {
     page-break-after: always;
 }
 .page:last-child { break-after: auto; page-break-after: auto; }
+.page-header-inner {
+    flex-shrink: 0; background: #1e1b4b; border-bottom: 4px solid #10b981;
+    padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
+}
+.page-header-inner img { height: 18px; max-width: 140px; object-fit: contain; display: block; }
+.page-header-inner span.phi-text { font-size: 12px; font-weight: 700; color: #fff; }
+.page-header-inner .phi-tag { font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: rgba(199,210,254,.7); }
 .page-body  { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
 .inner      { flex: 1; padding: 40px 52px 16px; display: flex; flex-direction: column; overflow: hidden; }
 .page-foot  {
@@ -273,6 +289,16 @@ strong { color: #1e293b; }
      Datos reales de Benito Juárez / Del Valle
 ════════════════════════════════════════════════ --}}
 <div class="page">
+  <div class="page-header-inner">
+    @if(!empty($brandLogoSrcLight))
+      <img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
+    @elseif(!empty($brandLogoSrc))
+      <img src="{{ $brandLogoSrc }}" alt="Home del Valle">
+    @else
+      <span class="phi-text">Home del Valle</span>
+    @endif
+    <span class="phi-tag">Presentación · Uso Confidencial</span>
+  </div>
   <div class="page-body">
     <div class="inner">
       <div class="section-tag">Contexto de mercado</div>
@@ -516,6 +542,16 @@ strong { color: #1e293b; }
      PÁGINA 3 — ¿POR QUÉ HOME DEL VALLE?
 ════════════════════════════════════════════════ --}}
 <div class="page">
+  <div class="page-header-inner">
+    @if(!empty($brandLogoSrcLight))
+      <img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
+    @elseif(!empty($brandLogoSrc))
+      <img src="{{ $brandLogoSrc }}" alt="Home del Valle">
+    @else
+      <span class="phi-text">Home del Valle</span>
+    @endif
+    <span class="phi-tag">Presentación · Uso Confidencial</span>
+  </div>
   <div class="page-body">
     <div class="inner">
       <div class="section-tag">Sobre nosotros</div>
@@ -623,6 +659,16 @@ strong { color: #1e293b; }
      PÁGINA 4 — LO QUE PROPONEMOS (intent-específico)
 ════════════════════════════════════════════════ --}}
 <div class="page">
+  <div class="page-header-inner">
+    @if(!empty($brandLogoSrcLight))
+      <img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
+    @elseif(!empty($brandLogoSrc))
+      <img src="{{ $brandLogoSrc }}" alt="Home del Valle">
+    @else
+      <span class="phi-text">Home del Valle</span>
+    @endif
+    <span class="phi-tag">Presentación · Uso Confidencial</span>
+  </div>
   <div class="page-body">
     <div class="inner">
       <div class="section-tag">Nuestra propuesta</div>
@@ -654,6 +700,16 @@ strong { color: #1e293b; }
      Timeline visual + plan de marketing
 ════════════════════════════════════════════════ --}}
 <div class="page">
+  <div class="page-header-inner">
+    @if(!empty($brandLogoSrcLight))
+      <img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
+    @elseif(!empty($brandLogoSrc))
+      <img src="{{ $brandLogoSrc }}" alt="Home del Valle">
+    @else
+      <span class="phi-text">Home del Valle</span>
+    @endif
+    <span class="phi-tag">Presentación · Uso Confidencial</span>
+  </div>
   <div class="page-body">
     <div class="inner">
       <div class="section-tag">De la llamada al cierre</div>
@@ -735,6 +791,16 @@ strong { color: #1e293b; }
      PÁGINA 6 — SERVICIOS INCLUIDOS
 ════════════════════════════════════════════════ --}}
 <div class="page">
+  <div class="page-header-inner">
+    @if(!empty($brandLogoSrcLight))
+      <img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
+    @elseif(!empty($brandLogoSrc))
+      <img src="{{ $brandLogoSrc }}" alt="Home del Valle">
+    @else
+      <span class="phi-text">Home del Valle</span>
+    @endif
+    <span class="phi-tag">Presentación · Uso Confidencial</span>
+  </div>
   <div class="page-body">
     <div class="inner">
       <div class="section-tag">Sin costo adicional</div>
@@ -828,6 +894,16 @@ strong { color: #1e293b; }
      PÁGINA 7 — COMISIÓN Y CIERRE
 ════════════════════════════════════════════════ --}}
 <div class="page">
+  <div class="page-header-inner">
+    @if(!empty($brandLogoSrcLight))
+      <img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
+    @elseif(!empty($brandLogoSrc))
+      <img src="{{ $brandLogoSrc }}" alt="Home del Valle">
+    @else
+      <span class="phi-text">Home del Valle</span>
+    @endif
+    <span class="phi-tag">Presentación · Uso Confidencial</span>
+  </div>
   <div class="page-body">
     <div class="inner">
       <div class="section-tag">Propuesta económica</div>

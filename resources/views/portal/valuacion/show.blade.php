@@ -3,8 +3,8 @@
 
 @section('styles')
 :root {
-    --hdv-navy: #0C1A2E;
-    --hdv-blue: #1D4ED8;
+    --hdv-navy: #1e1b4b;
+    --hdv-blue: #10b981;
     --hdv-blue50: #EFF6FF;
 }
 

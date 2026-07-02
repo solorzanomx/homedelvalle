@@ -1,10 +1,19 @@
+@php include(resource_path('views/pdf/_brand_data.php')); @endphp
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-@import url('https://fonts.bunny.net/css?family=inter:300,400,500,600,700,800&display=swap');
+@if($brandFontB64)
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('data:font/woff2;base64,{{ $brandFontB64 }}') format('woff2');
+}
+@endif
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 @page { size: 215.9mm 279.4mm; margin: 0; }
@@ -35,7 +44,7 @@ body {
 
 /* ── Header nav ─────────────────────────────────────────────────────── */
 .header {
-    background: #0f172a;
+    background: #1e1b4b;
     padding: 20px 48px;
     display: flex;
     align-items: center;
@@ -81,7 +90,7 @@ body {
 /* ── Accent stripe ──────────────────────────────────────────────────── */
 .accent-stripe {
     height: 4px;
-    background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 50%, #0f172a 100%);
+    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #1e1b4b 100%);
     flex-shrink: 0;
 }
 
@@ -159,7 +168,7 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: #0f172a;
+    background: #1e1b4b;
     color: #fff;
     display: flex;
     align-items: center;
@@ -178,7 +187,7 @@ body {
 .address-text-value {
     font-size: 16px;
     font-weight: 700;
-    color: #0f172a;
+    color: #1e1b4b;
     line-height: 1.2;
 }
 .address-text-sub {
@@ -197,7 +206,7 @@ body {
 .intro-box {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
-    border-left: 4px solid #2563eb;
+    border-left: 4px solid #10b981;
     border-radius: 0 10px 10px 0;
     padding: 16px 20px;
     margin-bottom: 24px;
@@ -224,7 +233,7 @@ body {
 .section-title {
     font-size: 20px;
     font-weight: 800;
-    color: #0f172a;
+    color: #1e1b4b;
     line-height: 1.2;
     letter-spacing: -0.3px;
     margin-bottom: 6px;
@@ -232,7 +241,7 @@ body {
 .accent-bar {
     width: 28px;
     height: 3px;
-    background: #2563eb;
+    background: #10b981;
     border-radius: 2px;
     margin-bottom: 18px;
 }
@@ -245,7 +254,7 @@ body {
 }
 .diff-card {
     flex: 1;
-    background: #0f172a;
+    background: #1e1b4b;
     border-radius: 10px;
     padding: 16px 14px;
     text-align: center;
@@ -302,7 +311,7 @@ body {
 .svc-text h4 {
     font-size: 11.5px;
     font-weight: 700;
-    color: #0f172a;
+    color: #1e1b4b;
     margin-bottom: 3px;
     line-height: 1.3;
 }
@@ -336,7 +345,7 @@ body {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #0f172a;
+    background: #1e1b4b;
     color: #fff;
     font-size: 11px;
     font-weight: 800;
@@ -347,12 +356,12 @@ body {
     margin-top: 1px;
 }
 .proceso-num.blue {
-    background: #2563eb;
+    background: #10b981;
 }
 .proceso-body h4 {
     font-size: 12px;
     font-weight: 700;
-    color: #0f172a;
+    color: #1e1b4b;
     margin-bottom: 2px;
     line-height: 1.3;
 }
@@ -399,7 +408,7 @@ body {
     letter-spacing: -1px;
 }
 .cond-value.dark {
-    color: #0f172a;
+    color: #1e1b4b;
     font-size: 20px;
 }
 .cond-sub {
@@ -444,7 +453,7 @@ body {
 
 /* ── Agent card ─────────────────────────────────────────────────────── */
 .agent-card {
-    background: #0f172a;
+    background: #1e1b4b;
     border-radius: 12px;
     padding: 18px 22px;
     display: flex;
@@ -494,7 +503,7 @@ body {
     margin-bottom: 5px;
 }
 .agent-cta-action {
-    background: #2563eb;
+    background: #10b981;
     color: #fff;
     font-size: 10.5px;
     font-weight: 700;
@@ -506,7 +515,7 @@ body {
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 .page-footer {
-    background: #0f172a;
+    background: #1e1b4b;
     padding: 10px 48px;
     display: flex;
     align-items: center;
@@ -539,7 +548,7 @@ body {
 
 /* ── Page 2 specifics ───────────────────────────────────────────────── */
 .page2-header {
-    background: #0f172a;
+    background: #1e1b4b;
     padding: 14px 48px;
     display: flex;
     align-items: center;
@@ -577,7 +586,7 @@ body {
 
 /* ── Closing CTA ────────────────────────────────────────────────────── */
 .closing-cta {
-    background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+    background: linear-gradient(135deg, #10b981, #1e1b4b);
     border-radius: 12px;
     padding: 18px 20px;
     text-align: center;
@@ -613,7 +622,7 @@ body {
 }
 .next-step-pill.highlight {
     background: #fff;
-    color: #1e3a8a;
+    color: #1e1b4b;
     border-color: #fff;
 }
 </style>
