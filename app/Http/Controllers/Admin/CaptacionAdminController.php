@@ -10,6 +10,7 @@ use App\Models\PropertyValuation;
 use App\Models\User;
 use App\Services\CaptacionDeclineService;
 use App\Services\CaptacionService;
+use App\Services\ManualBrokerGeneratorService;
 use App\Services\PresentationGeneratorService;
 use App\Services\ServiciosGeneratorService;
 use App\Services\VisitSchedulingService;
@@ -24,6 +25,28 @@ class CaptacionAdminController extends Controller
     public function createFromCall()
     {
         return view('admin.captaciones.create-from-call');
+    }
+
+    /** Manual del Broker — documento estático, mismo contenido para todos. */
+    public function manualBroker(ManualBrokerGeneratorService $generator)
+    {
+        set_time_limit(120);
+        $path = $generator->generatePdf();
+
+        return Response::make(file_get_contents($path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="manual-broker-hdv.pdf"',
+        ]);
+    }
+
+    public function manualBrokerDownload(ManualBrokerGeneratorService $generator)
+    {
+        set_time_limit(120);
+        $path = $generator->generatePdf();
+
+        return Response::download($path, 'HDV-Manual-del-Broker.pdf', [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 
     public function presentation(Captacion $captacion)

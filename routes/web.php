@@ -713,6 +713,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/pipeline',          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'pipeline'])->name('pipeline');
         // Rutas estáticas ANTES de /{captacion} para evitar conflictos
         Route::get('/create-from-call',  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'createFromCall'])->name('create-from-call');
+        Route::get('/manual-broker',            [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'manualBroker'])->name('manual-broker');
+        Route::get('/manual-broker/descargar',  [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'manualBrokerDownload'])->name('manual-broker.download');
         Route::get('/{captacion}',       [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'show'])->name('show');
         // Presentación
         Route::get('/{captacion}/presentacion',              [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'presentation'])->name('presentation');

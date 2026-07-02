@@ -114,6 +114,9 @@
         <p style="color:var(--text-muted);font-size:.82rem;">Propietarios en proceso de firma de exclusiva</p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;">
+        <a href="{{ route('admin.captaciones.manual-broker') }}" target="_blank" class="btn btn-outline btn-sm">
+            &#128214; Manual del Broker
+        </a>
         <a href="{{ route('admin.captaciones.create-from-call') }}" class="btn btn-primary btn-sm">
             + Nueva captación
         </a>
