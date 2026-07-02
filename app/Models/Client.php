@@ -12,7 +12,7 @@ class Client extends Model
         'name', 'email', 'phone', 'whatsapp',
         'address', 'city', 'curp', 'rfc',
         'interest_types', 'lead_temperature', 'priority', 'initial_notes',
-        'budget_min', 'budget_max', 'property_type',
+        'budget_min', 'budget_max', 'property_type', 'search_urgency',
         'broker_id', 'assigned_user_id',
         'photo', 'user_id',
         'marketing_channel_id', 'marketing_campaign_id',

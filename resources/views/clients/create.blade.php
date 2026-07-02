@@ -14,6 +14,18 @@
 }
 .photo-upload:hover { border-color: var(--primary); }
 .photo-upload img { max-height: 100px; border-radius: 50%; margin-bottom: 0.5rem; }
+.collapsible-section {
+    margin-top: 1.5rem; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.collapsible-section summary {
+    padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;
+    background: var(--bg); list-style: none; display: flex; align-items: center; justify-content: space-between;
+}
+.collapsible-section summary::-webkit-details-marker { display: none; }
+.collapsible-section summary::after { content: '▾'; color: var(--text-muted); font-size: 0.8rem; }
+.collapsible-section[open] summary::after { content: '▴'; }
+.collapsible-section summary .hint { font-weight: 400; font-size: 0.78rem; color: var(--text-muted); }
+.collapsible-section .collapsible-body { padding: 0 1rem 1rem; }
 </style>
 @endsection
 
@@ -43,7 +55,8 @@
             <input type="hidden" name="initial_notes" value="Convertido desde lead entrante (formulario de contacto). {{ request('utm_source') ? 'Fuente: '.request('utm_source').'.' : '' }} {{ request('utm_medium') ? 'Medio: '.request('utm_medium').'.' : '' }} {{ request('utm_campaign') ? 'Campana: '.request('utm_campaign').'.' : '' }}">
             @endif
 
-            <div class="section-title">Informacion Personal</div>
+            {{-- ══ 1. LO ESENCIAL ══ --}}
+            <div class="section-title">Lo esencial</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Nombre <span class="required">*</span></label>
@@ -67,15 +80,10 @@
                     <label class="form-label">Ciudad</label>
                     <input type="text" name="city" class="form-input" value="{{ old('city') }}">
                 </div>
-                <div class="form-group full-width">
-                    <label class="form-label">Direccion</label>
-                    <textarea name="address" class="form-textarea" rows="2">{{ old('address') }}</textarea>
-                </div>
             </div>
 
-            @include('clients._legal_fields', ['client' => null])
-
-            <div class="section-title">Clasificacion del Lead</div>
+            {{-- ══ 2. QUÉ ESTÁ BUSCANDO ══ --}}
+            <div class="section-title">Qué está buscando</div>
             <div class="form-group">
                 <label class="form-label">Tipo de Interes</label>
                 <div style="display:flex; gap:1rem; flex-wrap:wrap;">
@@ -87,6 +95,46 @@
                     @endforeach
                 </div>
             </div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.88rem; cursor:pointer;">
+                    <input type="checkbox" name="is_investor" value="1" {{ old('is_investor') ? 'checked' : '' }}>
+                    Es inversionista (prevalece sobre lo anterior para clasificarlo)
+                </label>
+            </div>
+
+            {{-- ══ 3. PREFERENCIAS DE BÚSQUEDA ══ --}}
+            <div class="section-title">Preferencias de Busqueda</div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Tipo de Propiedad</label>
+                    <select name="property_type" class="form-select">
+                        <option value="">Sin preferencia</option>
+                        @foreach(['house'=>'Casa','apartment'=>'Departamento','condo'=>'Condominio','land'=>'Terreno'] as $val => $label)
+                            <option value="{{ $val }}" {{ old('property_type') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Urgencia de Busqueda</label>
+                    <select name="search_urgency" class="form-select">
+                        <option value="">Sin definir</option>
+                        @foreach(['inmediata'=>'Inmediata', '1_3_meses'=>'1-3 meses', '3_6_meses'=>'3-6 meses', 'sin_prisa'=>'Sin prisa'] as $val => $label)
+                            <option value="{{ $val }}" {{ old('search_urgency') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Presupuesto Minimo</label>
+                    <input type="number" name="budget_min" class="form-input" value="{{ old('budget_min') }}" min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Presupuesto Maximo</label>
+                    <input type="number" name="budget_max" class="form-input" value="{{ old('budget_max') }}" min="0" step="0.01">
+                </div>
+            </div>
+
+            {{-- ══ 4. CLASIFICACIÓN Y ASIGNACIÓN ══ --}}
+            <div class="section-title">Clasificacion y Asignacion</div>
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Temperatura del Lead</label>
@@ -110,10 +158,6 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
-
-            <div class="section-title">Asignacion</div>
-            <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Asignado a</label>
                     <div style="padding:0.55rem 0.8rem; background:var(--bg); border-radius:var(--radius); font-size:0.88rem; color:var(--text);">
@@ -132,32 +176,63 @@
                 </div>
             </div>
 
-            <div class="section-title">Preferencias de Busqueda</div>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label class="form-label">Tipo de Propiedad</label>
-                    <select name="property_type" class="form-select">
-                        <option value="">Sin preferencia</option>
-                        @foreach(['house'=>'Casa','apartment'=>'Departamento','condo'=>'Condominio','land'=>'Terreno'] as $val => $label)
-                            <option value="{{ $val }}" {{ old('property_type') === $val ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group" style="display:none;"></div>
-                <div class="form-group">
-                    <label class="form-label">Presupuesto Minimo</label>
-                    <input type="number" name="budget_min" class="form-input" value="{{ old('budget_min') }}" min="0" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Presupuesto Maximo</label>
-                    <input type="number" name="budget_max" class="form-input" value="{{ old('budget_max') }}" min="0" step="0.01">
-                </div>
-            </div>
-
             <div class="section-title">Notas Iniciales</div>
             <div class="form-group">
                 <textarea name="initial_notes" class="form-textarea" rows="3" placeholder="Contexto, necesidades especificas, observaciones...">{{ old('initial_notes') }}</textarea>
             </div>
+
+            {{-- ══ 5. DATOS LEGALES — colapsado, se llena cuando el trato avanza ══ --}}
+            <details class="collapsible-section">
+                <summary>Datos Legales <span class="hint">(para generar contratos — opcional por ahora)</span></summary>
+                <div class="collapsible-body">
+                    @include('clients._legal_fields', ['client' => null])
+                </div>
+            </details>
+
+            {{-- ══ 6. CALIFICACIÓN FINANCIERA — colapsado ══ --}}
+            <details class="collapsible-section">
+                <summary>Calificacion Financiera <span class="hint">(comprador/arrendatario — opcional por ahora)</span></summary>
+                <div class="collapsible-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Ingreso</label>
+                            <select name="income_type" class="form-select">
+                                <option value="">Sin definir</option>
+                                @foreach(['nomina'=>'Nomina', 'independiente'=>'Independiente', 'negocio_propio'=>'Negocio propio', 'pension'=>'Pension', 'otro'=>'Otro'] as $val => $label)
+                                    <option value="{{ $val }}" {{ old('income_type') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Monto de Ingreso Mensual</label>
+                            <input type="number" name="income_amount" class="form-input" value="{{ old('income_amount') }}" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Financiamiento</label>
+                            <select name="financing_type" class="form-select" id="financingTypeSelect" onchange="toggleFinancingFields(this.value)">
+                                <option value="">Sin definir</option>
+                                @foreach(['contado'=>'Contado', 'credito_bancario'=>'Credito bancario', 'infonavit'=>'Infonavit', 'fovissste'=>'Fovissste', 'mixto'=>'Mixto'] as $val => $label)
+                                    <option value="{{ $val }}" {{ old('financing_type') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div id="financingFieldsSection" class="form-grid" style="display:{{ in_array(old('financing_type'), ['credito_bancario','infonavit','fovissste','mixto']) ? 'grid' : 'none' }};">
+                        <div class="form-group">
+                            <label class="form-label">Monto Preautorizado</label>
+                            <input type="number" name="financing_preauth_amount" class="form-input" value="{{ old('financing_preauth_amount') }}" min="0" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">NSS</label>
+                            <input type="text" name="nss" class="form-input" value="{{ old('nss') }}" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Saldo Infonavit</label>
+                            <input type="number" name="infonavit_balance" class="form-input" value="{{ old('infonavit_balance') }}" min="0" step="0.01">
+                        </div>
+                    </div>
+                </div>
+            </details>
 
             <div class="section-title">Origen del Lead</div>
             <div class="form-grid">
@@ -233,6 +308,10 @@ function updateTempRadios() {
             lbl.style.background = ''; lbl.style.color = ''; lbl.style.borderColor = '';
         }
     });
+}
+function toggleFinancingFields(val) {
+    var show = ['credito_bancario', 'infonavit', 'fovissste', 'mixto'].includes(val);
+    document.getElementById('financingFieldsSection').style.display = show ? 'grid' : 'none';
 }
 document.addEventListener('DOMContentLoaded', function() {
     var ch = document.getElementById('channelSelect');

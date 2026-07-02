@@ -82,7 +82,6 @@ class ClientController extends Controller
             'email' => 'required|email|unique:clients',
             'phone' => 'nullable|string|max:20',
             'whatsapp' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
             'city'   => 'nullable|string',
             'curp'   => 'nullable|string|max:18',
             'rfc'    => 'nullable|string|max:13',
@@ -94,11 +93,19 @@ class ClientController extends Controller
             'budget_min'       => 'nullable|numeric',
             'budget_max'       => 'nullable|numeric',
             'property_type'    => 'nullable|string',
+            'search_urgency'   => 'nullable|in:inmediata,1_3_meses,3_6_meses,sin_prisa',
             'broker_id'        => 'nullable|exists:brokers,id',
             'photo'            => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'marketing_channel_id'  => 'nullable|exists:marketing_channels,id',
             'marketing_campaign_id' => 'nullable|exists:marketing_campaigns,id',
             'acquisition_cost' => 'nullable|numeric|min:0',
+            // Ingresos y financiamiento
+            'income_type'       => 'nullable|in:nomina,independiente,negocio_propio,pension,otro',
+            'income_amount'     => 'nullable|numeric|min:0',
+            'financing_type'    => 'nullable|in:contado,credito_bancario,infonavit,fovissste,mixto',
+            'financing_preauth_amount' => 'nullable|numeric|min:0',
+            'nss'               => 'nullable|string|max:20',
+            'infonavit_balance' => 'nullable|numeric|min:0',
             // Datos legales
             'first_name'        => 'nullable|string|max:100',
             'last_name_paterno' => 'nullable|string|max:100',
@@ -125,6 +132,22 @@ class ClientController extends Controller
         ]);
 
         $validated['assigned_user_id'] = Auth::id();
+        $validated['lead_source'] = 'manual';
+
+        // client_type se deriva de interest_types (mismo mapeo que ya usa
+        // CreateOperationFromLead para clientes creados desde formularios
+        // web) para que quede consistente sin importar por dónde se creó
+        // el cliente. "Es inversionista" pisa el mapeo automático.
+        $interestTypes = $validated['interest_types'] ?? [];
+        if ($request->boolean('is_investor')) {
+            $validated['client_type'] = 'investor';
+        } elseif (in_array('venta', $interestTypes) || in_array('renta_propietario', $interestTypes)) {
+            $validated['client_type'] = 'owner';
+        } elseif (in_array('compra', $interestTypes)) {
+            $validated['client_type'] = 'buyer';
+        } elseif (in_array('renta_inquilino', $interestTypes)) {
+            $validated['client_type'] = 'renter';
+        }
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('clients', 'public');
