@@ -48,6 +48,11 @@ class Property extends Model
         return $this->hasMany(Interaction::class);
     }
 
+    public function views(): HasMany
+    {
+        return $this->hasMany(PropertyView::class);
+    }
+
     public function qrCode(): HasOne
     {
         return $this->hasOne(PropertyQrCode::class);

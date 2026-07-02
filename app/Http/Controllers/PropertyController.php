@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\ClientEmail;
 use App\Models\MarketColonia;
 use App\Models\Property;
+use App\Models\PropertyView;
 use App\Services\EasyBrokerService;
 use Illuminate\Http\Request;
 
@@ -107,9 +108,90 @@ class PropertyController extends Controller
         $clients = Client::orderBy('name')->select('id', 'name', 'email')->get();
         $users = \App\Models\User::where('is_active', true)->orderBy('name')->select('id', 'name', 'email', 'phone')->get();
 
+        // Analítica de vistas del sitio público — ver App\Models\PropertyView::record()
+        $viewsTotal  = $property->views()->count();
+        $viewsUnique = $property->views()->distinct('visitor_key')->count('visitor_key');
+        $views7d     = $property->views()->where('viewed_at', '>=', now()->subDays(7))->count();
+        $views30d    = $property->views()->where('viewed_at', '>=', now()->subDays(30))->count();
+
+        $viewsByDay = $property->views()
+            ->where('viewed_at', '>=', now()->subDays(29)->startOfDay())
+            ->get(['viewed_at'])
+            ->groupBy(fn ($v) => $v->viewed_at->format('Y-m-d'))
+            ->map->count();
+
+        $viewsChartData = collect(range(29, 0))->map(fn ($daysAgo) => [
+            'date'  => now()->subDays($daysAgo)->format('Y-m-d'),
+            'count' => $viewsByDay->get(now()->subDays($daysAgo)->format('Y-m-d'), 0),
+        ])->values();
+
         return view('properties.show', compact(
-            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients', 'users'
+            'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients', 'users',
+            'viewsTotal', 'viewsUnique', 'views7d', 'views30d', 'viewsChartData'
         ));
+    }
+
+    /** Dashboard de reporte de analítica de vistas (ranking general, o drill-down de una propiedad vía ?property=). */
+    public function analytics(Request $request)
+    {
+        $rangeDays = in_array((int) $request->input('range', 30), [7, 30, 90]) ? (int) $request->input('range', 30) : 30;
+        $since = now()->subDays($rangeDays)->startOfDay();
+
+        // Drill-down: analítica enfocada en una sola propiedad
+        if ($request->filled('property')) {
+            $property = Property::findOrFail($request->input('property'));
+
+            $propertyViewsTotal  = $property->views()->where('viewed_at', '>=', $since)->count();
+            $propertyViewsUnique = $property->views()->where('viewed_at', '>=', $since)->distinct('visitor_key')->count('visitor_key');
+            $recentViews = $property->views()->where('viewed_at', '>=', $since)->latest('viewed_at')->limit(100)->get();
+            $trendData = $this->dailyViewSeries($property->views(), $since, $rangeDays);
+
+            return view('properties.analytics', compact(
+                'property', 'rangeDays', 'propertyViewsTotal', 'propertyViewsUnique', 'recentViews', 'trendData'
+            ));
+        }
+
+        // Ranking general: propiedades con más vistas en el rango
+        $ranking = Property::query()
+            ->select('properties.id', 'properties.title', 'properties.colony', 'properties.city', 'properties.operation_type', 'properties.property_type')
+            ->selectSub(fn ($q) => $q->from('property_views')
+                ->selectRaw('count(*)')
+                ->whereColumn('property_views.property_id', 'properties.id')
+                ->where('viewed_at', '>=', $since), 'views_count')
+            ->selectSub(fn ($q) => $q->from('property_views')
+                ->selectRaw('count(distinct visitor_key)')
+                ->whereColumn('property_views.property_id', 'properties.id')
+                ->where('viewed_at', '>=', $since), 'unique_count')
+            ->whereExists(fn ($q) => $q->from('property_views')
+                ->whereColumn('property_views.property_id', 'properties.id')
+                ->where('viewed_at', '>=', $since))
+            ->orderByDesc('views_count')
+            ->limit(50)
+            ->get();
+
+        $viewsTotal  = PropertyView::where('viewed_at', '>=', $since)->count();
+        $viewsUnique = PropertyView::where('viewed_at', '>=', $since)->distinct('visitor_key')->count('visitor_key');
+        $topProperty = $ranking->first();
+        $avgPerProperty = $ranking->count() > 0 ? round($viewsTotal / $ranking->count(), 1) : 0;
+        $trendData = $this->dailyViewSeries(PropertyView::query(), $since, $rangeDays);
+
+        return view('properties.analytics', compact(
+            'rangeDays', 'ranking', 'viewsTotal', 'viewsUnique', 'topProperty', 'avgPerProperty', 'trendData'
+        ));
+    }
+
+    /** Serie diaria de vistas (fecha => conteo) para los últimos $days días, incluyendo días en cero. */
+    private function dailyViewSeries($query, \Illuminate\Support\Carbon $since, int $days)
+    {
+        $byDay = $query->where('viewed_at', '>=', $since)
+            ->get(['viewed_at'])
+            ->groupBy(fn ($v) => $v->viewed_at->format('Y-m-d'))
+            ->map->count();
+
+        return collect(range($days - 1, 0))->map(fn ($daysAgo) => [
+            'date'  => now()->subDays($daysAgo)->format('Y-m-d'),
+            'count' => $byDay->get(now()->subDays($daysAgo)->format('Y-m-d'), 0),
+        ])->values();
     }
 
     public function store(Request $request)

@@ -683,6 +683,41 @@
 
     {{-- RIGHT: Sidebar --}}
     <div>
+        {{-- Analítica de Vistas (sitio público) --}}
+        <div class="side-card">
+            <div class="side-card-header">
+                <span>&#128200; Analítica de Vistas</span>
+                <a href="{{ route('properties.analytics', ['property' => $property->id]) }}" style="font-size:.72rem;font-weight:500;">Ver reporte completo →</a>
+            </div>
+            <div class="side-card-body">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem;">
+                    <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                        <div style="font-size:1.3rem;font-weight:700;color:var(--text);">{{ number_format($viewsTotal) }}</div>
+                        <div style="font-size:.7rem;color:var(--text-muted);">Vistas totales</div>
+                    </div>
+                    <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                        <div style="font-size:1.3rem;font-weight:700;color:var(--text);">{{ number_format($viewsUnique) }}</div>
+                        <div style="font-size:.7rem;color:var(--text-muted);">Visitantes únicos</div>
+                    </div>
+                    <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--text);">{{ number_format($views7d) }}</div>
+                        <div style="font-size:.7rem;color:var(--text-muted);">Últimos 7 días</div>
+                    </div>
+                    <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                        <div style="font-size:1.1rem;font-weight:700;color:var(--text);">{{ number_format($views30d) }}</div>
+                        <div style="font-size:.7rem;color:var(--text-muted);">Últimos 30 días</div>
+                    </div>
+                </div>
+                @if($viewsTotal > 0)
+                <div style="position:relative;width:100%;height:90px;">
+                    <canvas id="propertyViewsChart"></canvas>
+                </div>
+                @else
+                <div style="font-size:.78rem;color:var(--text-muted);text-align:center;padding:.5rem 0;">Aún sin vistas registradas.</div>
+                @endif
+            </div>
+        </div>
+
         {{-- Owner (Propietario) --}}
         <div class="side-card">
             <div class="side-card-header">Propietario</div>
@@ -1172,4 +1207,47 @@ document.getElementById('visitModal').addEventListener('click', function(e) {
     if (e.target === this) this.style.display = 'none';
 });
 </script>
+
+@if($viewsTotal > 0)
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    const el = document.getElementById('propertyViewsChart');
+    if (!el) return;
+    const data = @json($viewsChartData);
+    const ctx = el.getContext('2d');
+    const color = '#2563eb';
+    const gradient = ctx.createLinearGradient(0, 0, 0, 90);
+    gradient.addColorStop(0, color + '30');
+    gradient.addColorStop(1, color + '00');
+
+    Chart.defaults.font.size = 10;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(d => d.date.slice(5)),
+            datasets: [{
+                data: data.map(d => d.count),
+                borderColor: color,
+                backgroundColor: gradient,
+                fill: true,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: .35,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: { display: false, beginAtZero: true },
+            },
+        },
+    });
+})();
+</script>
+@endif
 @endsection

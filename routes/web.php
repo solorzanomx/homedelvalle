@@ -181,6 +181,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // CRUD protegido por autenticación
+    // Antes del resource() para que "analytics" no choque con el wildcard {property}.
+    Route::get('properties/analytics', [PropertyController::class, 'analytics'])->name('properties.analytics');
     Route::resource('properties', PropertyController::class);
     Route::post('properties/{property}/schedule-visit', [PropertyController::class, 'scheduleVisit'])->name('properties.schedule-visit');
     Route::post('properties/{property}/fetch-street-view', [PropertyController::class, 'fetchStreetView'])->name('properties.fetch-street-view');

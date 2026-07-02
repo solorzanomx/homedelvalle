@@ -7,6 +7,7 @@ use App\Models\Broker;
 use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscriber;
 use App\Models\Property;
+use App\Models\PropertyView;
 use App\Models\Testimonial;
 use App\Models\User;
 use App\Services\AutomationEngine;
@@ -53,9 +54,11 @@ class PublicController extends Controller
         return view('public.propiedades', compact('properties', 'totalCount', 'totalAvailable', 'nextUpdateDate'));
     }
 
-    public function propiedadShow(int $id, string $slug = null)
+    public function propiedadShow(Request $request, int $id, string $slug = null)
     {
         $property = Property::with('photos')->findOrFail($id);
+
+        PropertyView::record($property, $request);
 
         $similar = Property::with('photos')->available()
             ->where('id', '!=', $property->id)

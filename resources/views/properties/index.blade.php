@@ -212,6 +212,7 @@
     <button type="button" class="p-filters-toggle {{ request()->hasAny(['property_type','operation_type','broker_id','price_min','price_max']) ? 'active' : '' }}" onclick="toggleFilters()">
         &#9776; Filtros
     </button>
+    <a href="{{ route('properties.analytics') }}" class="btn btn-outline" style="white-space:nowrap; padding:0.5rem 1rem;">&#128200; Ver analítica</a>
     <a href="{{ route('properties.create') }}" class="btn btn-primary" style="white-space:nowrap; padding:0.5rem 1rem;">+ Nueva</a>
 </div>
 
