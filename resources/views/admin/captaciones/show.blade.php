@@ -664,6 +664,10 @@
         @endif
 
         {{-- Propuesta de Servicios — para presentar en vivo durante la visita --}}
+        @php
+            $serviciosPdfExists = !empty($captacion->last_servicios_pdf_path) && file_exists($captacion->last_servicios_pdf_path);
+            $serviciosGeneratedAt = $serviciosPdfExists ? \Carbon\Carbon::createFromTimestamp(filemtime($captacion->last_servicios_pdf_path)) : null;
+        @endphp
         <div class="side-card">
             <div class="side-card-header">
                 <span class="side-card-title">&#128188; Propuesta de Servicios</span>
@@ -672,9 +676,20 @@
                 <a href="{{ route('admin.captaciones.servicios.live', $captacion) }}" target="_blank" class="btn btn-primary btn-sm" style="width:100%;display:block;text-align:center;margin-bottom:.4rem;">
                     Ver en vivo (para mostrar en la visita)
                 </a>
-                <a href="{{ route('admin.captaciones.servicios.pdf', $captacion) }}" target="_blank" class="btn btn-sm btn-outline" style="width:100%;display:block;text-align:center;margin-bottom:.6rem;">
-                    Ver PDF
-                </a>
+                <div style="display:flex;gap:.4rem;margin-bottom:.3rem;">
+                    <a href="{{ route('admin.captaciones.servicios.pdf', $captacion) }}" target="_blank" class="btn btn-sm btn-outline" style="flex:1;text-align:center;">
+                        Ver PDF
+                    </a>
+                    <form method="POST" action="{{ route('admin.captaciones.servicios.regenerate', $captacion) }}" style="flex:1;">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline" style="width:100%;">Regenerar</button>
+                    </form>
+                </div>
+                @if($serviciosGeneratedAt)
+                <p style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem;">Generado el {{ $serviciosGeneratedAt->format('d/m/Y H:i') }} — si cambiaste el precio o los datos del inmueble, regenera antes de enviarla.</p>
+                @else
+                <p style="font-size:.7rem;color:var(--text-muted);margin-bottom:.5rem;">Aún no se ha generado el PDF — se crea automáticamente la primera vez que la veas o envíes.</p>
+                @endif
                 <form method="POST" action="{{ route('admin.captaciones.servicios.send.email', $captacion) }}" style="display:flex;gap:.4rem;margin-bottom:.4rem;">
                     @csrf
                     <input type="email" name="email" placeholder="correo@ejemplo.com" value="{{ $captacion->client->email ?? '' }}" class="form-control" style="font-size:.8rem;" required>
