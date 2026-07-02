@@ -27,7 +27,7 @@ class BlogController extends Controller
     public function show(string $slug)
     {
         $post = Post::published()->where('slug', $slug)->with(['author', 'category', 'tags'])->firstOrFail();
-        $post->increment('views_count');
+        $post->recordView(request());
 
         $related = Post::published()
             ->where('id', '!=', $post->id)

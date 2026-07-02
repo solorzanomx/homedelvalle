@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\BotDetector;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
@@ -24,6 +27,33 @@ class Post extends Model
             'reading_time'       => 'integer',
             'ai_generated'       => 'boolean',
         ];
+    }
+
+    // Ventana de de-dup: recargas del mismo visitante al mismo post dentro de
+    // este rango no suman a views_count — antes cada GET sumaba +1 sin filtro.
+    private const VIEW_DEDUP_HOURS = 24;
+
+    /**
+     * Incrementa views_count solo si el visitante no parece un bot y no ha
+     * visto este post en las últimas VIEW_DEDUP_HOURS horas (por sesión).
+     */
+    public function recordView(Request $request): void
+    {
+        $userAgent = (string) $request->userAgent();
+
+        if (BotDetector::looksLikeBot($userAgent)) {
+            return;
+        }
+
+        $visitorKey = hash('sha256', $request->session()->getId());
+        $cacheKey = "post_view:{$this->id}:{$visitorKey}";
+
+        if (Cache::has($cacheKey)) {
+            return;
+        }
+
+        Cache::put($cacheKey, true, now()->addHours(self::VIEW_DEDUP_HOURS));
+        $this->increment('views_count');
     }
 
     public function getFeaturedImageUrlAttribute(): ?string

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\BotDetector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
@@ -21,12 +22,6 @@ class PropertyView extends Model
 
     public function property(): BelongsTo { return $this->belongsTo(Property::class); }
 
-    // Substrings de bots/crawlers conocidos — comparación case-insensitive contra el User-Agent.
-    private const BOT_SIGNATURES = [
-        'bot', 'spider', 'crawl', 'slurp', 'facebookexternalhit',
-        'ahrefsbot', 'semrushbot', 'mj12bot', 'pingdom', 'uptimerobot', 'headlesschrome',
-    ];
-
     // Ventana de de-dup: recargas del mismo visitante a la misma propiedad dentro de
     // este rango no generan una fila nueva, para no inflar "vistas totales".
     private const DEDUP_MINUTES = 30;
@@ -39,7 +34,7 @@ class PropertyView extends Model
     {
         $userAgent = (string) $request->userAgent();
 
-        if ($userAgent === '' || self::looksLikeBot($userAgent)) {
+        if ($userAgent === '' || BotDetector::looksLikeBot($userAgent)) {
             return null;
         }
 
@@ -62,18 +57,5 @@ class PropertyView extends Model
             'referrer'    => $request->headers->get('referer') ? substr($request->headers->get('referer'), 0, 255) : null,
             'viewed_at'   => now(),
         ]);
-    }
-
-    private static function looksLikeBot(string $userAgent): bool
-    {
-        $userAgent = strtolower($userAgent);
-
-        foreach (self::BOT_SIGNATURES as $signature) {
-            if (str_contains($userAgent, $signature)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
