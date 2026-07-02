@@ -746,7 +746,7 @@ body {
 
     {{-- Footer page 1 --}}
     <div class="page-footer">
-        <div class="footer-brand"><strong>Home del Valle</strong> · Bienes Raíces</div>
+        <div class="footer-brand"><strong>Home del Valle</strong> · Pocos inmuebles. Más control. Mejores resultados.</div>
         <div class="footer-disclaimer">Documento confidencial · Uso exclusivo del destinatario</div>
         <div class="footer-page">1 / 2</div>
     </div>
@@ -869,7 +869,7 @@ body {
 
     {{-- Footer page 2 --}}
     <div class="page-footer" style="margin-top:auto;">
-        <div class="footer-brand"><strong>Home del Valle</strong> · Bienes Raíces</div>
+        <div class="footer-brand"><strong>Home del Valle</strong> · Pocos inmuebles. Más control. Mejores resultados.</div>
         <div class="footer-disclaimer">Propuesta válida por 30 días · {{ $fechaDocumento }}</div>
         <div class="footer-page">2 / 2</div>
     </div>

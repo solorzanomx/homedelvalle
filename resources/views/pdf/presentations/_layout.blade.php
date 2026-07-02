@@ -558,7 +558,7 @@ strong { color: #1e293b; }
       <h2 class="section-h2">¿Por qué Home del Valle?</h2>
       <div class="accent-bar"></div>
 
-      <p>Llevamos <strong>más de 30 años</strong> trabajando en Benito Juárez. No somos una agencia de volumen: seleccionamos cada caso para trabajarlo con el nivel de atención que merece.</p>
+      <p>Estimado/a <strong>{{ $nombrePropietario }}</strong>, gracias por considerar a Home del Valle para su propiedad. Llevamos <strong>más de 30 años</strong> trabajando en Benito Juárez. No somos una agencia de volumen: seleccionamos cada caso para trabajarlo con el nivel de atención que merece.</p>
 
       <div class="stats-row">
         <div class="stat-box">

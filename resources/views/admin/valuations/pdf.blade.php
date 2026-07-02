@@ -40,6 +40,11 @@ $addressDisplay = ucfirst($address ?? ($typeLabel . ' en ' . $colonia . ', ' . $
 // Subtítulo solo cuando hay dirección real (para no duplicar info)
 $addressSubline = $address ? ($typeLabel . '  ·  ' . $colonia . '  ·  ' . $zone . ', Benito Juárez, CDMX') : null;
 
+// Nombre del propietario, si la valuación ya está ligada a un cliente —
+// misma frase ("Preparada para...") que ya usa Presentación, para que el
+// tono sea el mismo entre los 2 documentos que llegan al propietario.
+$propietarioNombre = $valuation->property?->owner?->name ?? null;
+
 $diagLabel = $valuation->diagnosis_label;
 [$diagBg, $diagColor, $diagBorder] = match($valuation->diagnosis) {
     'on_market'    => ['#DBEAFE', '#1E3A8A', '#93C5FD'],
@@ -984,6 +989,9 @@ html, body {
                 <div class="prop-address-sub">{{ $addressSubline }}</div>
                 @endif
                 <div class="prop-chips" style="{{ $addressSubline ? 'margin-top:5px;' : '' }}">
+                    @if($propietarioNombre)
+                    <span class="prop-chip">Preparada para {{ $propietarioNombre }}</span>
+                    @endif
                     <span class="prop-chip">{{ $typeLabel }}</span>
                     <span class="prop-chip">{{ $colonia }} · {{ $zone }}</span>
                     <span class="prop-chip">{{ $ageLabel }}</span>
