@@ -450,6 +450,11 @@
                             <span class="nav-icon"><x-icon name="bar-chart-3" class="w-4 h-4" /></span> Analytics
                         </a>
                         @endif
+                        @if(Route::has('admin.attribution'))
+                        <a href="{{ route('admin.attribution') }}" class="nav-item {{ request()->routeIs('admin.attribution') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="target" class="w-4 h-4" /></span> Atribución de Origen
+                        </a>
+                        @endif
                         @if(Route::has('admin.marketing.campaigns'))
                         <a href="{{ route('admin.marketing.campaigns') }}" class="nav-item {{ request()->routeIs('admin.marketing.campaigns*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="target" class="w-4 h-4" /></span> Campañas

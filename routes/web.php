@@ -291,6 +291,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+    Route::get('/atribucion', [\App\Http\Controllers\Admin\AttributionController::class, 'index'])->name('attribution');
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');

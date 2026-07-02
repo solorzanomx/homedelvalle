@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Events\FormSubmitted;
+use App\Models\Concerns\HasAttribution;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class FormSubmission extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, HasAttribution;
 
     protected $fillable = [
         'form_type',
@@ -32,6 +33,8 @@ class FormSubmission extends Model implements HasMedia
         'utm_medium',
         'utm_campaign',
         'referrer',
+        'landing_post_id',
+        'landing_label',
         'ip',
         'user_agent',
         'contacted_at',
@@ -105,6 +108,11 @@ class FormSubmission extends Model implements HasMedia
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    public function landingPost(): BelongsTo
+    {
+        return $this->belongsTo(Post::class, 'landing_post_id');
     }
 
     /**

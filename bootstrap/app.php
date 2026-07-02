@@ -23,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SubdomainRedirect::class);
         // Redirige homedelvalle.mx/portal/* → miportal.homedelvalle.mx/*
         $middleware->append(\App\Http\Middleware\PortalRedirectLegacy::class);
+        // Captura la página de entrada de la sesión (para atribución de
+        // leads) — necesita sesión ya iniciada, por eso va en el grupo
+        // 'web' y no en el stack global (que corre antes de StartSession).
+        $middleware->web(append: [\App\Http\Middleware\CaptureLandingAttribution::class]);
 
         $middleware->alias([
             'admin'        => \App\Http\Middleware\CheckAdminRole::class,

@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasAttribution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class NewsletterSubscriber extends Model
 {
-    protected $fillable = ['email', 'source', 'ip_address', 'unsubscribe_token', 'client_id', 'subscribed_at', 'unsubscribed_at'];
+    use HasAttribution;
+
+    protected $fillable = ['email', 'source', 'ip_address', 'unsubscribe_token', 'client_id', 'subscribed_at', 'unsubscribed_at', 'landing_post_id', 'landing_label', 'utm_source', 'utm_medium', 'utm_campaign', 'referrer'];
 
     protected function casts(): array
     {
@@ -37,6 +40,11 @@ class NewsletterSubscriber extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(Client::class);
+    }
+
+    public function landingPost(): BelongsTo
+    {
+        return $this->belongsTo(Post::class, 'landing_post_id');
     }
 
     // Scopes
