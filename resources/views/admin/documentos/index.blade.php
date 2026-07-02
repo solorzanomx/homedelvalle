@@ -36,6 +36,9 @@
             @if(!empty($doc['editar_route']) && Route::has($doc['editar_route']))
             <a href="{{ route($doc['editar_route']) }}" class="btn btn-sm btn-outline">Editar cláusulas</a>
             @endif
+            @if(!empty($doc['imprimible_route']) && Route::has($doc['imprimible_route']))
+            <a href="{{ route($doc['imprimible_route']) }}" target="_blank" class="btn btn-sm btn-outline">Versión imprimible</a>
+            @endif
             @if($doc['preview_route'] && Route::has($doc['preview_route']))
             <a href="{{ route($doc['preview_route']) }}" target="_blank" class="btn btn-sm btn-primary">Ver PDF</a>
             @endif

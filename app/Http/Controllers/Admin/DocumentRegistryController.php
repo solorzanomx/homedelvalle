@@ -89,6 +89,16 @@ class DocumentRegistryController extends Controller
         ]);
     }
 
+    public function ofertaCompraImprimible(PurchaseOfferGeneratorService $generator)
+    {
+        $path = $generator->generatePrintablePdf();
+
+        return Response::make(file_get_contents($path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="oferta-compra-imprimible.pdf"',
+        ]);
+    }
+
     private function demoClient(): Client
     {
         $client = Client::where('email', SeedDemoDocuments::DEMO_EMAIL)->first();

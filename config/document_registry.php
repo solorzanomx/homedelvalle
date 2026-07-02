@@ -68,6 +68,7 @@ return [
         'donde_generarlo' => 'Ficha de la Operation (comprador) → pestaña Docs → Generar oferta',
         'preview_route' => 'admin.documentos.preview.oferta-compra',
         'editar_route' => 'admin.documentos.oferta-compra.clausulas',
+        'imprimible_route' => 'admin.documentos.oferta-compra.imprimible',
         'changelog' => [
             ['fecha' => '2026-07-02', 'resumen' => 'Creado — a partir de la plantilla de referencia del usuario, con identidad de marca, vigencia de la oferta, condición suspensiva, identificación completa del oferente y monto en letra. Pendiente de revisión por un abogado antes de uso definitivo.'],
         ],

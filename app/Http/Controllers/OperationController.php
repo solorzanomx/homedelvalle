@@ -369,8 +369,7 @@ class OperationController extends Controller
             'pago_firma_contrato'  => 'nullable|numeric|min:0',
             'pago_firma_escritura' => 'nullable|numeric|min:0',
             'forma_pago'           => 'nullable|string|max:255',
-            'vigencia_dias'        => 'required|integer|min:1|max:90',
-            'folio_real'           => 'nullable|string|max:100',
+            'vigencia_dias'        => 'required|integer|min:8|max:90',
             'comentarios'          => 'nullable|string|max:2000',
         ]);
 

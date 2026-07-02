@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Carta Oferta de Compraventa — {{ $folio }}</title>
+<title>Carta Oferta de Compraventa — Versión imprimible</title>
 <style>
 {!! $brandCssVars ?? '' !!}
 @if($brandFontB64)
@@ -65,18 +65,20 @@ body {
 p { color: #334155; font-size: 11.5px; line-height: 1.7; margin-bottom: 10px; text-align: justify; }
 strong { color: #0f172a; }
 
+.fill { display: inline-block; border-bottom: 1px solid #94a3b8; min-width: 60px; }
+.fill.lg { min-width: 220px; }
+.fill.md { min-width: 140px; }
+
 .buyer-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin: 12px 0 16px; }
-.buyer-box .row { display: flex; gap: 6px; font-size: 10.5px; margin-bottom: 3px; }
+.buyer-box .row { display: flex; gap: 6px; font-size: 10.5px; margin-bottom: 10px; align-items: flex-end; }
 .buyer-box .row:last-child { margin-bottom: 0; }
-.buyer-box .lbl { color: #94a3b8; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-top: 1px; }
-.buyer-box .val { color: #0f172a; font-weight: 600; }
+.buyer-box .lbl { color: #94a3b8; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-bottom: 2px; }
 
 .offer-table { width: 100%; border-collapse: collapse; margin: 4px 0 16px; font-size: 11px; }
-.offer-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; }
-.offer-table td:first-child { color: #64748b; width: 42%; }
+.offer-table td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; }
+.offer-table td:first-child { color: #64748b; width: 48%; }
 .offer-table td:last-child { color: var(--hdv-navy); font-weight: 700; text-align: right; }
 .offer-table tr:last-child td { border-bottom: none; }
-.offer-table .letras { font-size: 8.5px; color: #94a3b8; font-weight: 400; text-align: right; text-transform: uppercase; }
 
 .clauses { counter-reset: clause; margin: 6px 0 14px; }
 .clause { counter-increment: clause; padding: 8px 0 8px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 11px; line-height: 1.65; color: #334155; text-align: justify; }
@@ -89,7 +91,6 @@ strong { color: #0f172a; }
 .sign-row { display: flex; gap: 40px; margin-top: 28px; }
 .sign-col { flex: 1; text-align: center; }
 .sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 40px; font-size: 9.5px; color: #475569; }
-.sign-name { font-size: 11px; font-weight: 700; color: #0f172a; }
 
 .privacy-note { font-size: 8.5px; color: #94a3b8; line-height: 1.6; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 10px; }
 </style>
@@ -106,43 +107,29 @@ strong { color: #0f172a; }
   <div class="page-body"><div class="inner">
 
     <div class="doc-title">Carta Oferta de Compraventa</div>
-    <div class="doc-folio">Folio {{ $folio }} · Ciudad de México, a {{ $fecha }}</div>
+    <div class="doc-folio">Versión imprimible · Ciudad de México, a <span class="fill md"></span> de <span class="fill md"></span> de {{ now()->format('Y') }}</div>
 
     <p class="meta-line"><strong>HOME DEL VALLE BIENES RAÍCES</strong><br>P R E S E N T E. —</p>
 
-    <p>Por medio de la presente, el/la suscrito(a) manifiesta su interés en adquirir el inmueble ubicado en <strong>{{ $propertyAddress }}</strong>{{ $propertyExtra ? ', ' . $propertyExtra : '' }}, por lo que formula la siguiente oferta formal de compraventa, sujeta a los términos y condiciones establecidos en este documento:</p>
+    <p>Por medio de la presente, el/la suscrito(a) manifiesta su interés en adquirir el inmueble ubicado en <span class="fill lg">&nbsp;</span>, por lo que formula la siguiente oferta formal de compraventa, sujeta a los términos y condiciones establecidos en este documento:</p>
 
     <div class="buyer-box">
-      <div class="row"><span class="lbl">Oferente</span><span class="val">{{ $buyerName }}</span></div>
-      @if($buyerId)<div class="row"><span class="lbl">Identificación</span><span class="val">{{ $buyerId }}</span></div>@endif
-      @if($buyerCurpRfc)<div class="row"><span class="lbl">CURP / RFC</span><span class="val">{{ $buyerCurpRfc }}</span></div>@endif
-      @if($buyerAddress)<div class="row"><span class="lbl">Domicilio</span><span class="val">{{ $buyerAddress }}</span></div>@endif
+      <div class="row"><span class="lbl">Oferente</span><span class="fill lg">&nbsp;</span></div>
+      <div class="row"><span class="lbl">Identificación</span><span class="fill md">&nbsp;</span></div>
+      <div class="row"><span class="lbl">CURP / RFC</span><span class="fill md">&nbsp;</span></div>
+      <div class="row"><span class="lbl">Domicilio</span><span class="fill lg">&nbsp;</span></div>
     </div>
 
     <table class="offer-table">
-      <tr>
-        <td>Precio ofertado</td>
-        <td>
-          ${{ number_format($offer->precio_ofertado, 2) }} MXN
-          <div class="letras">({{ $precioLetras }})</div>
-        </td>
-      </tr>
-      @if($offer->monto_apartado)
-      <tr><td>Apartado, previa revisión de documentos</td><td>${{ number_format($offer->monto_apartado, 2) }} MXN</td></tr>
-      @endif
-      @if($offer->pago_firma_contrato)
-      <tr><td>Pago a la firma del contrato de compraventa</td><td>${{ number_format($offer->pago_firma_contrato, 2) }} MXN</td></tr>
-      @endif
-      @if($offer->pago_firma_escritura)
-      <tr><td>Pago a la firma de la escritura</td><td>${{ number_format($offer->pago_firma_escritura, 2) }} MXN</td></tr>
-      @endif
-      @if($offer->forma_pago)
-      <tr><td>Forma de pago</td><td>{{ $offer->forma_pago }}</td></tr>
-      @endif
+      <tr><td>Precio ofertado</td><td>$<span class="fill md">&nbsp;</span> MXN</td></tr>
+      <tr><td>Apartado, previa revisión de documentos</td><td>$<span class="fill md">&nbsp;</span> MXN</td></tr>
+      <tr><td>Pago a la firma del contrato de compraventa</td><td>$<span class="fill md">&nbsp;</span> MXN</td></tr>
+      <tr><td>Pago a la firma de la escritura</td><td>$<span class="fill md">&nbsp;</span> MXN</td></tr>
+      <tr><td>Forma de pago</td><td><span class="fill lg">&nbsp;</span></td></tr>
     </table>
 
     <div class="clauses">
-      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('vigencia', ['vigencia_dias' => $offer->vigencia_dias, 'vigencia_hasta' => $vigenciaHasta]) !!}</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('vigencia', ['vigencia_dias' => '<span class="fill" style="min-width:30px;">&nbsp;</span>', 'vigencia_hasta' => '<span class="fill md">&nbsp;</span>']) !!}</div>
 
       <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('condicion_suspensiva') !!}</div>
 
@@ -154,7 +141,7 @@ strong { color: #0f172a; }
     </div>
 
   </div></div>
-  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Carta Oferta · {{ $folio }}</span></div>
+  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Carta Oferta · Versión imprimible</span></div>
 </div>
 
 <div class="page">
@@ -166,9 +153,8 @@ strong { color: #0f172a; }
   </div>
   <div class="page-body"><div class="inner">
 
-    @if($offer->comentarios)
-    <p><strong>Comentarios adicionales:</strong> {{ $offer->comentarios }}</p>
-    @endif
+    <p><strong>Comentarios adicionales:</strong></p>
+    <div style="border:1px solid #e2e8f0;border-radius:8px;height:90px;margin-bottom:16px;"></div>
 
     <div class="legal-note">
       Este documento fue generado a partir de una plantilla estándar y no sustituye la asesoría de un abogado. Se recomienda la revisión de un profesional del derecho antes de su uso definitivo, particularmente en lo relativo a la cláusula de apartado y sus condiciones de devolución.
@@ -176,17 +162,14 @@ strong { color: #0f172a; }
 
     <div class="sign-row">
       <div class="sign-col">
-        <div class="sign-line">
-          <div class="sign-name">{{ $buyerName }}</div>
-          Nombre y firma del oferente
-        </div>
+        <div class="sign-line">Nombre y firma del oferente</div>
       </div>
     </div>
 
-    <div class="privacy-note">Documento confidencial. Generado por el sistema de Home del Valle el {{ $fecha }}. Folio {{ $folio }}.</div>
+    <div class="privacy-note">Documento confidencial. Generado por el sistema de Home del Valle — versión imprimible para llenar a mano.</div>
 
   </div></div>
-  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Carta Oferta · {{ $folio }}</span></div>
+  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Carta Oferta · Versión imprimible</span></div>
 </div>
 
 </body>

@@ -18,7 +18,7 @@ class PurchaseOfferGeneratorService
      */
     const DEFAULT_CLAUSES = [
         'vigencia' => '<strong>Vigencia de la oferta.</strong> Esta oferta tiene una vigencia de {{vigencia_dias}} días naturales contados a partir de la fecha de este documento, es decir, hasta el {{vigencia_hasta}}. Transcurrido este plazo sin respuesta, la oferta se tendrá por no presentada, sin necesidad de aviso adicional.',
-        'condicion_suspensiva' => '<strong>Condición suspensiva.</strong> La presente oferta queda sujeta a la revisión y aprobación por parte del oferente de la documentación del inmueble, incluyendo — de manera enunciativa mas no limitativa — certificado de libertad de gravamen, boleta predial al corriente de pago y demás documentos que acrediten la propiedad y situación legal del inmueble.',
+        'condicion_suspensiva' => '<strong>Condición suspensiva.</strong> La presente oferta queda sujeta a la revisión y aprobación por parte del oferente de la documentación del inmueble, incluyendo — de manera enunciativa mas no limitativa — certificado de libertad de gravamen, boleta predial y demás documentos que acrediten la propiedad y situación legal del inmueble.',
         'apartado' => '<strong>Naturaleza del apartado.</strong> El monto señalado como apartado, en caso de existir, se entregará a cuenta del precio ofertado una vez aceptada la oferta. Las condiciones de devolución o retención del apartado en caso de que cualquiera de las partes decida no continuar con la operación se establecerán en el contrato de promesa de compraventa o compraventa correspondiente, y deberán ser validadas por el asesor legal de cada parte antes de la firma.',
         'naturaleza_juridica' => '<strong>Naturaleza jurídica de este documento.</strong> La presente carta constituye una manifestación de intención de compra y no representa, por sí misma, un contrato de compraventa ni obligación de transmisión de dominio. La formalización de la operación quedará sujeta a la firma del contrato de compraventa (o promesa de compraventa) correspondiente y, en su caso, a la escrituración ante notario público.',
         'privacidad' => '<strong>Aviso de Privacidad.</strong> Los datos personales proporcionados en este documento serán tratados por Home del Valle Bienes Raíces conforme a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, únicamente para los fines relacionados con la presente oferta. El Aviso de Privacidad completo está disponible en el sitio web de Home del Valle.',
@@ -48,11 +48,16 @@ class PurchaseOfferGeneratorService
         $fecha = $offer->offered_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
         $vigenciaHasta = $offer->vigente_hasta->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 
-        $buyerName = trim(implode(' ', array_filter([
-            $client?->first_name ?: $client?->name,
+        // Client.name se captura siempre desde el primer contacto (nombre completo);
+        // los campos divididos (first_name/last_name_*) se llenan después, si acaso,
+        // durante la verificación legal — por eso Client.name es la fuente principal
+        // aquí, no al revés, para no truncar el nombre a solo "Juan" cuando falten
+        // los apellidos divididos pero name ya tenga el nombre completo.
+        $buyerName = $client?->name ?: trim(implode(' ', array_filter([
+            $client?->first_name,
             $client?->last_name_paterno,
             $client?->last_name_materno,
-        ]))) ?: ($client?->name ?? '—');
+        ]))) ?: '—';
 
         $buyerId = $client?->id_type && $client?->id_number
             ? "{$client->id_type} {$client->id_number}"
@@ -85,6 +90,39 @@ class PurchaseOfferGeneratorService
             'buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress',
             'propertyAddress', 'propertyExtra', 'precioLetras'
         ))->render();
+    }
+
+    /** Versión imprimible en blanco — sin datos de ningún cliente/operación, para llenar a mano. */
+    public function renderPrintableHtml(): string
+    {
+        return view('pdf.oferta-compra-imprimible')->render();
+    }
+
+    public function generatePrintablePdf(): string
+    {
+        set_time_limit(120);
+
+        $html = $this->renderPrintableHtml();
+
+        $dir  = storage_path('app/purchase-offers-imprimible');
+        File::ensureDirectoryExists($dir);
+        $path = $dir . '/oferta-imprimible-' . time() . '.pdf';
+
+        Browsershot::html($html)
+            ->setNodeBinary(config('browsershot.node_path', '/usr/bin/node'))
+            ->setChromePath(config('browsershot.chrome_path', '/usr/bin/google-chrome'))
+            ->noSandbox()
+            ->addChromiumArguments(['--disable-gpu', '--disable-dev-shm-usage', '--disable-extensions'])
+            ->windowSize(816, 1056)
+            ->paperSize(215.9, 279.4)
+            ->landscape(false)
+            ->margins(0, 0, 0, 0)
+            ->showBackground()
+            ->emulateMedia('screen')
+            ->timeout(90)
+            ->savePdf($path);
+
+        return $path;
     }
 
     public function generatePdf(PurchaseOffer $offer): string

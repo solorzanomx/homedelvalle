@@ -513,11 +513,7 @@
                             </div>
                             <div class="form-group" style="margin:0;">
                                 <label class="form-label" style="font-size:0.72rem;">Vigencia de la oferta (días)</label>
-                                <input type="number" name="vigencia_dias" class="form-input" value="5" required min="1" max="90">
-                            </div>
-                            <div class="form-group" style="margin:0;">
-                                <label class="form-label" style="font-size:0.72rem;">Folio Real (opcional)</label>
-                                <input type="text" name="folio_real" class="form-input">
+                                <input type="number" name="vigencia_dias" class="form-input" value="8" required min="8" max="90">
                             </div>
                         </div>
                         <div class="form-group" style="margin-bottom:.6rem;">
