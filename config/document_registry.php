@@ -70,6 +70,7 @@ return [
         'editar_route' => 'admin.documentos.oferta-compra.clausulas',
         'imprimible_route' => 'admin.documentos.oferta-compra.imprimible',
         'changelog' => [
+            ['fecha' => '2026-07-02', 'resumen' => 'Quitada la leyenda de "no sustituye asesoría de un abogado" de las 2 versiones (real e imprimible), a petición del usuario.'],
             ['fecha' => '2026-07-02', 'resumen' => 'Vigencia mínima subida a 8 días (antes 5). Cláusula de condición suspensiva ya no dice "al corriente de pago" junto a boleta predial. Campo Folio Real eliminado (la dirección ya es suficiente). Bug corregido: el nombre del oferente podía salir truncado a solo el primer nombre — ahora prioriza Client.name. Nueva versión imprimible en blanco para llenar a mano.'],
             ['fecha' => '2026-07-02', 'resumen' => 'Creado — a partir de la plantilla de referencia del usuario, con identidad de marca, vigencia de la oferta, condición suspensiva, identificación completa del oferente y monto en letra. Pendiente de revisión por un abogado antes de uso definitivo.'],
         ],
