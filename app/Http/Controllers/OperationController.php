@@ -15,9 +15,12 @@ use App\Models\Notification;
 use App\Services\OperationChecklistService;
 use App\Helpers\MentionHelper;
 use App\Models\LeadEvent;
+use App\Models\PurchaseOffer;
 use App\Services\LeadScoringService;
+use App\Services\PurchaseOfferGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
 
 class OperationController extends Controller
 {
@@ -355,5 +358,57 @@ class OperationController extends Controller
                 $notified[] = $user->id;
             }
         }
+    }
+
+    /** Genera una Carta Oferta de Compra y la adjunta como Document a la Operation. */
+    public function storePurchaseOffer(Request $request, Operation $operation, PurchaseOfferGeneratorService $generator)
+    {
+        $validated = $request->validate([
+            'precio_ofertado'      => 'required|numeric|min:0',
+            'monto_apartado'       => 'nullable|numeric|min:0',
+            'pago_firma_contrato'  => 'nullable|numeric|min:0',
+            'pago_firma_escritura' => 'nullable|numeric|min:0',
+            'forma_pago'           => 'nullable|string|max:255',
+            'vigencia_dias'        => 'required|integer|min:1|max:90',
+            'folio_real'           => 'nullable|string|max:100',
+            'comentarios'          => 'nullable|string|max:2000',
+        ]);
+
+        $offer = PurchaseOffer::create($validated + [
+            'operation_id' => $operation->id,
+            'offered_at'   => now(),
+        ]);
+
+        $path = $generator->generatePdf($offer);
+
+        Document::create([
+            'operation_id' => $operation->id,
+            'client_id'    => $operation->client_id,
+            'uploaded_by'  => Auth::id(),
+            'category'     => 'oferta_compra',
+            'label'        => 'Carta Oferta de Compra — ' . now()->format('d/m/Y'),
+            'file_path'    => $path,
+            'file_name'    => 'CO-' . str_pad((string) $offer->id, 5, '0', STR_PAD_LEFT) . '.pdf',
+            'mime_type'    => 'application/pdf',
+            'file_size'    => file_exists($path) ? filesize($path) : null,
+            'status'       => 'verified',
+        ]);
+
+        return redirect()->route('operations.show', $operation)->with('success', 'Carta Oferta de Compra generada correctamente.');
+    }
+
+    /** Ver/descargar el PDF de una oferta específica ya generada. */
+    public function showPurchaseOffer(Operation $operation, PurchaseOffer $purchaseOffer)
+    {
+        abort_unless($purchaseOffer->operation_id === $operation->id, 404);
+
+        if (empty($purchaseOffer->last_pdf_path) || !file_exists($purchaseOffer->last_pdf_path)) {
+            abort(404, 'PDF no encontrado.');
+        }
+
+        return Response::make(file_get_contents($purchaseOffer->last_pdf_path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="oferta-compra.pdf"',
+        ]);
     }
 }

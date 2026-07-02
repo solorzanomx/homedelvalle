@@ -92,6 +92,7 @@ class Operation extends Model
     public function checklistItems() { return $this->hasMany(OperationChecklistItem::class); }
     public function tasks() { return $this->hasMany(Task::class); }
     public function documents() { return $this->hasMany(Document::class); }
+    public function purchaseOffers() { return $this->hasMany(PurchaseOffer::class); }
     public function contracts() { return $this->hasMany(Contract::class); }
     public function poliza() { return $this->hasOne(PolizaJuridica::class); }
     public function commissions() { return $this->hasMany(Commission::class); }

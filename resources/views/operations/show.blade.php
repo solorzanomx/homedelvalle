@@ -460,6 +460,76 @@
 
         {{-- TAB: Documents --}}
         <div class="tab-content" id="tab-documents">
+
+            @if($operation->type === 'venta')
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-body" style="padding:0.85rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;{{ $operation->purchaseOffers->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
+                        <span style="font-size:0.82rem;font-weight:600;">&#128220; Carta Oferta de Compra</span>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('offer-form').style.display = document.getElementById('offer-form').style.display === 'none' ? 'block' : 'none';">
+                            + Generar oferta
+                        </button>
+                    </div>
+
+                    @if($operation->purchaseOffers->isNotEmpty())
+                    <div style="display:flex;flex-direction:column;gap:.4rem;">
+                        @foreach($operation->purchaseOffers->sortByDesc('offered_at') as $offer)
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div>
+                                <strong>${{ number_format($offer->precio_ofertado) }}</strong>
+                                <span style="color:var(--text-muted);"> &middot; {{ $offer->offered_at->format('d/m/Y') }} &middot; vigente hasta {{ $offer->vigente_hasta->format('d/m/Y') }}</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:.5rem;">
+                                <span class="badge badge-{{ match($offer->status) { 'accepted' => 'green', 'rejected' => 'red', 'expired' => 'yellow', default => 'blue' } }}">{{ $offer->status_label }}</span>
+                                <a href="{{ route('operations.purchase-offer.show', [$operation->id, $offer->id]) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    <form id="offer-form" method="POST" action="{{ route('operations.purchase-offer.store', $operation->id) }}" style="display:none;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border);">
+                        @csrf
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Precio ofertado *</label>
+                                <input type="number" step="0.01" name="precio_ofertado" class="form-input" required value="{{ old('precio_ofertado', $operation->amount) }}">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Apartado</label>
+                                <input type="number" step="0.01" name="monto_apartado" class="form-input" value="{{ old('monto_apartado', $operation->deposit_amount) }}">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Pago a firma de contrato</label>
+                                <input type="number" step="0.01" name="pago_firma_contrato" class="form-input">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Pago a firma de escritura</label>
+                                <input type="number" step="0.01" name="pago_firma_escritura" class="form-input">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Forma de pago</label>
+                                <input type="text" name="forma_pago" class="form-input" placeholder="Transferencia, crédito hipotecario...">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Vigencia de la oferta (días)</label>
+                                <input type="number" name="vigencia_dias" class="form-input" value="5" required min="1" max="90">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Folio Real (opcional)</label>
+                                <input type="text" name="folio_real" class="form-input">
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom:.6rem;">
+                            <label class="form-label" style="font-size:0.72rem;">Comentarios adicionales</label>
+                            <textarea name="comentarios" class="form-input" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
+                    </form>
+                </div>
+            </div>
+            @endif
+
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:0.85rem;">
                     <form method="POST" action="{{ route('operations.documents.store', $operation->id) }}" enctype="multipart/form-data">

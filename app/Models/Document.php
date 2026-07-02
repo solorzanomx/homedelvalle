@@ -29,6 +29,7 @@ class Document extends Model
         'presentation_pdf'    => 'Presentación Inicial PDF',
         'opinion_valor'       => 'Opinión de Valor PDF',
         'propuesta_servicios' => 'Propuesta de Servicios PDF',
+        'oferta_compra'       => 'Carta Oferta de Compra',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',
         'ine_reverso'           => 'INE — Reverso',
