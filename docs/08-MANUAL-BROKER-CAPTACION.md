@@ -36,6 +36,8 @@ Este manual te dice **qué hacer, en qué momento y con qué herramienta del sis
 
 **Acción:** Agenda la visita ahí mismo, mientras tienes el interés fresco. No dejes "te aviso" sin fecha concreta.
 
+**Portal del Cliente:** invita al propietario a su Portal junto con la Presentación, en esta misma etapa — no esperes a la exclusiva firmada. Ver que ya existe un espacio propio con su proceso reduce su duda más común ("¿esto va en serio?") antes de la visita, que es la ventana de mayor ansiedad de todo el proceso.
+
 **Qué NO hacer:** no mandes la presentación sin haber hablado primero por teléfono — pierde el toque personal y baja la tasa de respuesta.
 
 ### Etapa: VISITA — la más importante de todo el proceso
@@ -46,6 +48,7 @@ Esta es la etapa que decide si firmas la exclusiva o no. Prepárate en serio.
 - Revisa el precio de referencia de la colonia en el Observatorio (`/mercado`).
 - Revisa el historial de interacciones del cliente (llamadas, notas previas).
 - Confirma la cita el día anterior.
+- Lleva el checklist de documentos requeridos impreso — deja algo tangible en la mesa, evita el "se me olvidó qué pedían" en la siguiente llamada, y refuerza que hay un proceso claro.
 
 **Qué llevar:** laptop o tablet con acceso al CRM, cámara para fotos preliminares, tu criterio para dar una primera impresión de precio.
 
