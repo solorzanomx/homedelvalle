@@ -73,6 +73,7 @@ strong { color: #0f172a; }
 .buyer-box .row { display: flex; gap: 6px; font-size: 10.5px; margin-bottom: 7px; align-items: flex-end; }
 .buyer-box .row:last-child { margin-bottom: 0; }
 .buyer-box .lbl { color: #94a3b8; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-bottom: 2px; }
+.buyer-box .val { color: #0f172a; font-weight: 600; }
 
 .offer-table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 11px; }
 .offer-table td { padding: 6px 12px; border-bottom: 1px solid #f1f5f9; }
@@ -86,9 +87,9 @@ strong { color: #0f172a; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
-.sign-row { display: flex; gap: 40px; margin-top: 14px; }
-.sign-col { flex: 1; text-align: center; }
-.sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 24px; font-size: 9.5px; color: #475569; }
+.sign-row { display: flex; justify-content: center; margin-top: 8px; }
+.sign-col { width: 260px; text-align: center; }
+.sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 18px; font-size: 9.5px; color: #475569; }
 
 .privacy-note { font-size: 8.5px; color: #94a3b8; line-height: 1.6; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px; }
 </style>
@@ -109,13 +110,16 @@ strong { color: #0f172a; }
 
     <p class="meta-line"><strong>HOME DEL VALLE BIENES RAÍCES</strong><br>P R E S E N T E. —</p>
 
-    <p>Por medio de la presente, el/la suscrito(a) manifiesta su interés en adquirir el inmueble ubicado en <span class="fill lg">&nbsp;</span>, por lo que formula la siguiente oferta formal de compraventa, sujeta a los términos y condiciones establecidos en este documento:</p>
+    <p>Por medio de la presente, el/la suscrito(a) manifiesta su interés en adquirir el inmueble ubicado en
+      @if($propertyFull)<strong>{{ $propertyFull }}</strong>@else<span class="fill lg">&nbsp;</span>@endif
+      , por lo que formula la siguiente oferta formal de compraventa, sujeta a los términos y condiciones establecidos en este documento:</p>
 
     <div class="buyer-box">
-      <div class="row"><span class="lbl">Oferente</span><span class="fill lg">&nbsp;</span></div>
-      <div class="row"><span class="lbl">Identificación</span><span class="fill md">&nbsp;</span></div>
-      <div class="row"><span class="lbl">CURP / RFC</span><span class="fill md">&nbsp;</span></div>
-      <div class="row"><span class="lbl">Domicilio</span><span class="fill lg">&nbsp;</span></div>
+      <div class="row"><span class="lbl">Oferente</span>@if($buyerName)<span class="val">{{ $buyerName }}</span>@else<span class="fill lg">&nbsp;</span>@endif</div>
+      <div class="row"><span class="lbl">Identificación</span>@if($buyerId)<span class="val">{{ $buyerId }}</span>@else<span class="fill md">&nbsp;</span>@endif</div>
+      <div class="row"><span class="lbl">CURP / RFC</span>@if($buyerCurpRfc)<span class="val">{{ $buyerCurpRfc }}</span>@else<span class="fill md">&nbsp;</span>@endif</div>
+      <div class="row"><span class="lbl">Domicilio</span>@if($buyerAddress)<span class="val">{{ $buyerAddress }}</span>@else<span class="fill lg">&nbsp;</span>@endif</div>
+      <div class="row"><span class="lbl">Inmueble</span>@if($propertyFull)<span class="val">{{ $propertyFull }}</span>@else<span class="fill lg">&nbsp;</span>@endif</div>
     </div>
 
     <table class="offer-table">
@@ -127,7 +131,7 @@ strong { color: #0f172a; }
     </table>
 
     <div class="clauses">
-      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('vigencia', ['vigencia_dias' => '<span class="fill" style="min-width:30px;">&nbsp;</span>', 'vigencia_hasta' => '<span class="fill md">&nbsp;</span>']) !!}</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('vigencia', ['vigencia_dias' => '10', 'vigencia_hasta' => '<span class="fill md">&nbsp;</span>']) !!}</div>
 
       <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('condicion_suspensiva') !!}</div>
 
@@ -139,7 +143,6 @@ strong { color: #0f172a; }
     </div>
 
     <p><strong>Comentarios adicionales:</strong></p>
-    <div style="border:1px solid #e2e8f0;border-radius:8px;height:44px;margin-bottom:8px;"></div>
 
     <div class="sign-row">
       <div class="sign-col">

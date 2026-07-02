@@ -92,9 +92,31 @@ class DocumentRegistryController extends Controller
         ]);
     }
 
-    public function ofertaCompraImprimible(PurchaseOfferGeneratorService $generator)
+    /**
+     * Versión imprimible en blanco — el broker puede opcionalmente elegir un
+     * Cliente y/o Property del CRM para prellenar la identificación del
+     * oferente y el inmueble; precio/apartado/pagos/fecha siempre quedan en
+     * blanco, se llenan a mano en el momento.
+     */
+    public function ofertaCompraImprimibleForm()
     {
-        $path = $generator->generatePrintablePdf();
+        $clients = Client::orderBy('name')->get(['id', 'name', 'email']);
+        $properties = Property::orderBy('address')->get(['id', 'address', 'colony', 'city']);
+
+        return view('admin.documentos.oferta-compra-imprimible-form', compact('clients', 'properties'));
+    }
+
+    public function ofertaCompraImprimibleGenerate(Request $request, PurchaseOfferGeneratorService $generator)
+    {
+        $validated = $request->validate([
+            'client_id'   => 'nullable|exists:clients,id',
+            'property_id' => 'nullable|exists:properties,id',
+        ]);
+
+        $client = !empty($validated['client_id']) ? Client::find($validated['client_id']) : null;
+        $property = !empty($validated['property_id']) ? Property::find($validated['property_id']) : null;
+
+        $path = $generator->generatePrintablePdf($client, $property);
 
         return Response::make(file_get_contents($path), 200, [
             'Content-Type'        => 'application/pdf',

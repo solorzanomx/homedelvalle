@@ -43,17 +43,13 @@ class PurchaseOfferGeneratorService
         return $s ? mb_convert_case(mb_strtolower($s, 'UTF-8'), MB_CASE_TITLE, 'UTF-8') : $s;
     }
 
-    public function renderHtml(PurchaseOffer $offer): string
+    /**
+     * Datos del oferente (nombre, identificación, CURP/RFC, domicilio),
+     * en formato título — reutilizado por el documento real y la versión
+     * imprimible (cuando se elige un cliente del CRM para prellenar).
+     */
+    private static function buyerInfo(?\App\Models\Client $client): array
     {
-        $offer->loadMissing('operation.client', 'operation.property');
-        $operation = $offer->operation;
-        $client    = $operation->client;
-        $property  = $operation->property;
-
-        $folio = 'CO-' . str_pad((string) $offer->id, 5, '0', STR_PAD_LEFT);
-        $fecha = $offer->offered_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
-        $vigenciaHasta = $offer->vigente_hasta->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
-
         // Client.name se captura siempre desde el primer contacto (nombre completo);
         // los campos divididos (first_name/last_name_*) se llenan después, si acaso,
         // durante la verificación legal — por eso Client.name es la fuente principal
@@ -63,7 +59,7 @@ class PurchaseOfferGeneratorService
             $client?->first_name,
             $client?->last_name_paterno,
             $client?->last_name_materno,
-        ])))) ?: '—';
+        ])))) ?: null;
 
         $buyerId = $client?->id_type && $client?->id_number
             ? "{$client->id_type} {$client->id_number}"
@@ -82,7 +78,13 @@ class PurchaseOfferGeneratorService
             $client?->address_zip,
         ])->filter()->implode(', ') ?: null;
 
-        $propertyAddress = self::tituloCase($property?->address ?: ($property?->colony . ', ' . $property?->city));
+        return compact('buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress');
+    }
+
+    /** Dirección + colonia del inmueble, en formato título. */
+    private static function propertyInfo(?\App\Models\Property $property): array
+    {
+        $propertyAddress = self::tituloCase($property?->address ?: ($property ? ($property->colony . ', ' . $property->city) : null));
         $propertyColony  = self::tituloCase($property?->colony);
         $propertyCity    = self::tituloCase($property?->city);
 
@@ -97,6 +99,25 @@ class PurchaseOfferGeneratorService
             $propertyColony ? "Colonia {$propertyColony}" : null,
         ])->filter()->implode(', ') ?: null;
 
+        return compact('propertyAddress', 'propertyExtra', 'propertyFull');
+    }
+
+    public function renderHtml(PurchaseOffer $offer): string
+    {
+        $offer->loadMissing('operation.client', 'operation.property');
+        $operation = $offer->operation;
+        $client    = $operation->client;
+        $property  = $operation->property;
+
+        $folio = 'CO-' . str_pad((string) $offer->id, 5, '0', STR_PAD_LEFT);
+        $fecha = $offer->offered_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+        $vigenciaHasta = $offer->vigente_hasta->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+
+        ['buyerName' => $buyerName, 'buyerId' => $buyerId, 'buyerCurpRfc' => $buyerCurpRfc, 'buyerAddress' => $buyerAddress] = self::buyerInfo($client);
+        $buyerName = $buyerName ?: '—';
+
+        ['propertyAddress' => $propertyAddress, 'propertyExtra' => $propertyExtra, 'propertyFull' => $propertyFull] = self::propertyInfo($property);
+
         $precioLetras = NumeroALetras::pesos((float) $offer->precio_ofertado);
 
         return view('pdf.oferta-compra', compact(
@@ -106,17 +127,25 @@ class PurchaseOfferGeneratorService
         ))->render();
     }
 
-    /** Versión imprimible en blanco — sin datos de ningún cliente/operación, para llenar a mano. */
-    public function renderPrintableHtml(): string
+    /**
+     * Versión imprimible para llenar a mano — el precio, apartado, pagos y
+     * fecha siempre quedan en blanco (se negocian/firman en el momento).
+     * Si se elige un Cliente y/o Property del CRM, sus datos de
+     * identificación se prellenan; si no, también quedan en blanco.
+     */
+    public function renderPrintableHtml(?\App\Models\Client $client = null, ?\App\Models\Property $property = null): string
     {
-        return view('pdf.oferta-compra-imprimible')->render();
+        $buyer = self::buyerInfo($client);
+        $prop  = self::propertyInfo($property);
+
+        return view('pdf.oferta-compra-imprimible', array_merge($buyer, $prop))->render();
     }
 
-    public function generatePrintablePdf(): string
+    public function generatePrintablePdf(?\App\Models\Client $client = null, ?\App\Models\Property $property = null): string
     {
         set_time_limit(120);
 
-        $html = $this->renderPrintableHtml();
+        $html = $this->renderPrintableHtml($client, $property);
 
         $dir  = storage_path('app/purchase-offers-imprimible');
         File::ensureDirectoryExists($dir);
