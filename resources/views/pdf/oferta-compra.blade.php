@@ -143,15 +143,15 @@ strong { color: #0f172a; }
     </table>
 
     <div class="clauses">
-      <div class="clause"><strong>Vigencia de la oferta.</strong> Esta oferta tiene una vigencia de {{ $offer->vigencia_dias }} días naturales contados a partir de la fecha de este documento, es decir, hasta el {{ $vigenciaHasta }}. Transcurrido este plazo sin respuesta, la oferta se tendrá por no presentada, sin necesidad de aviso adicional.</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('vigencia', ['vigencia_dias' => $offer->vigencia_dias, 'vigencia_hasta' => $vigenciaHasta]) !!}</div>
 
-      <div class="clause"><strong>Condición suspensiva.</strong> La presente oferta queda sujeta a la revisión y aprobación por parte del oferente de la documentación del inmueble, incluyendo — de manera enunciativa mas no limitativa — certificado de libertad de gravamen, boleta predial al corriente de pago y demás documentos que acrediten la propiedad y situación legal del inmueble.</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('condicion_suspensiva') !!}</div>
 
-      <div class="clause"><strong>Naturaleza del apartado.</strong> El monto señalado como apartado, en caso de existir, se entregará a cuenta del precio ofertado una vez aceptada la oferta. Las condiciones de devolución o retención del apartado en caso de que cualquiera de las partes decida no continuar con la operación se establecerán en el contrato de promesa de compraventa o compraventa correspondiente, y deberán ser validadas por el asesor legal de cada parte antes de la firma.</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('apartado') !!}</div>
 
-      <div class="clause"><strong>Naturaleza jurídica de este documento.</strong> La presente carta constituye una manifestación de intención de compra y no representa, por sí misma, un contrato de compraventa ni obligación de transmisión de dominio. La formalización de la operación quedará sujeta a la firma del contrato de compraventa (o promesa de compraventa) correspondiente y, en su caso, a la escrituración ante notario público.</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('naturaleza_juridica') !!}</div>
 
-      <div class="clause"><strong>Aviso de Privacidad.</strong> Los datos personales proporcionados en este documento serán tratados por Home del Valle Bienes Raíces conforme a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, únicamente para los fines relacionados con la presente oferta. El Aviso de Privacidad completo está disponible en el sitio web de Home del Valle.</div>
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('privacidad') !!}</div>
     </div>
 
   </div></div>

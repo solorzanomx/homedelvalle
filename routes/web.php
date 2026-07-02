@@ -295,6 +295,12 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
     Route::get('/atribucion', [\App\Http\Controllers\Admin\AttributionController::class, 'index'])->name('attribution');
     Route::get('/documentos', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'index'])->name('documentos.index');
+    Route::get('/documentos/preview/presentacion', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewPresentacion'])->name('documentos.preview.presentacion');
+    Route::get('/documentos/preview/servicios', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewServicios'])->name('documentos.preview.servicios');
+    Route::get('/documentos/preview/opinion-valor', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewOpinionValor'])->name('documentos.preview.opinion-valor');
+    Route::get('/documentos/preview/oferta-compra', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewOfertaCompra'])->name('documentos.preview.oferta-compra');
+    Route::get('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editOfertaCompra'])->name('documentos.oferta-compra.clausulas');
+    Route::post('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateOfertaCompra'])->name('documentos.oferta-compra.clausulas.update');
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');

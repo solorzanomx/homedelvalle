@@ -33,6 +33,9 @@
             <p class="desc">{{ $doc['descripcion'] }}</p>
         </div>
         <div style="display:flex;align-items:center;gap:.6rem;flex-shrink:0;">
+            @if(!empty($doc['editar_route']) && Route::has($doc['editar_route']))
+            <a href="{{ route($doc['editar_route']) }}" class="btn btn-sm btn-outline">Editar cláusulas</a>
+            @endif
             @if($doc['preview_route'] && Route::has($doc['preview_route']))
             <a href="{{ route($doc['preview_route']) }}" target="_blank" class="btn btn-sm btn-primary">Ver PDF</a>
             @endif
