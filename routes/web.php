@@ -294,6 +294,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
     Route::get('/atribucion', [\App\Http\Controllers\Admin\AttributionController::class, 'index'])->name('attribution');
+    Route::get('/documentos', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'index'])->name('documentos.index');
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');

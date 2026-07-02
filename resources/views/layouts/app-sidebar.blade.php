@@ -667,6 +667,18 @@
                 </div>
                 @endpermission
 
+                {{-- ===== 9.5: DOCUMENTOS DE MARCA ===== --}}
+                @if(Route::has('admin.documentos.index'))
+                <div class="nav-section" data-section="documentos-marca">
+                    <span class="nav-label" onclick="toggleSection(this)">Documentos de Marca <span class="nav-chevron"><x-icon name="chevron-down" class="w-3 h-3" /></span></span>
+                    <div class="nav-items">
+                        <a href="{{ route('admin.documentos.index') }}" class="nav-item {{ request()->routeIs('admin.documentos.index') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="file-text" class="w-4 h-4" /></span> Presentación, Ofertas y más
+                        </a>
+                    </div>
+                </div>
+                @endif
+
                 {{-- ===== 10: CONFIGURACIÓN ===== --}}
                 @permission('system.config')
                 <div class="nav-section" data-section="config">
