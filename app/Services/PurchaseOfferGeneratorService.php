@@ -37,6 +37,12 @@ class PurchaseOfferGeneratorService
         return DocumentClause::text('oferta_compra', $clauseKey, self::DEFAULT_CLAUSES[$clauseKey], $tokens);
     }
 
+    /** Primera letra de cada palabra en mayúscula (los datos suelen venir en minúsculas del formulario de captación). */
+    private static function tituloCase(?string $s): ?string
+    {
+        return $s ? mb_convert_case(mb_strtolower($s, 'UTF-8'), MB_CASE_TITLE, 'UTF-8') : $s;
+    }
+
     public function renderHtml(PurchaseOffer $offer): string
     {
         $offer->loadMissing('operation.client', 'operation.property');
@@ -53,11 +59,11 @@ class PurchaseOfferGeneratorService
         // durante la verificación legal — por eso Client.name es la fuente principal
         // aquí, no al revés, para no truncar el nombre a solo "Juan" cuando falten
         // los apellidos divididos pero name ya tenga el nombre completo.
-        $buyerName = $client?->name ?: trim(implode(' ', array_filter([
+        $buyerName = self::tituloCase($client?->name) ?: self::tituloCase(trim(implode(' ', array_filter([
             $client?->first_name,
             $client?->last_name_paterno,
             $client?->last_name_materno,
-        ]))) ?: '—';
+        ])))) ?: '—';
 
         $buyerId = $client?->id_type && $client?->id_number
             ? "{$client->id_type} {$client->id_number}"
@@ -76,11 +82,19 @@ class PurchaseOfferGeneratorService
             $client?->address_zip,
         ])->filter()->implode(', ') ?: null;
 
-        $propertyAddress = $property?->address ?: ($property?->colony . ', ' . $property?->city);
+        $propertyAddress = self::tituloCase($property?->address ?: ($property?->colony . ', ' . $property?->city));
+        $propertyColony  = self::tituloCase($property?->colony);
+        $propertyCity    = self::tituloCase($property?->city);
+
         $propertyExtra = collect([
-            $property?->colony ? "Colonia {$property->colony}" : null,
-            $property?->city,
-            $property?->area ? "{$property->area} m²" : null,
+            $propertyColony ? "Colonia {$propertyColony}" : null,
+            $propertyCity,
+        ])->filter()->implode(', ') ?: null;
+
+        // Dirección + colonia juntas, para la fila "Inmueble" del recuadro del oferente.
+        $propertyFull = collect([
+            $propertyAddress,
+            $propertyColony ? "Colonia {$propertyColony}" : null,
         ])->filter()->implode(', ') ?: null;
 
         $precioLetras = NumeroALetras::pesos((float) $offer->precio_ofertado);
@@ -88,7 +102,7 @@ class PurchaseOfferGeneratorService
         return view('pdf.oferta-compra', compact(
             'offer', 'operation', 'client', 'property', 'folio', 'fecha', 'vigenciaHasta',
             'buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress',
-            'propertyAddress', 'propertyExtra', 'precioLetras'
+            'propertyAddress', 'propertyExtra', 'propertyFull', 'precioLetras'
         ))->render();
     }
 

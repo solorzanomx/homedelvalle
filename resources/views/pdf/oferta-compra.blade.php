@@ -115,7 +115,7 @@ strong { color: #0f172a; }
       @if($buyerId)<div class="row"><span class="lbl">Identificación</span><span class="val">{{ $buyerId }}</span></div>@endif
       @if($buyerCurpRfc)<div class="row"><span class="lbl">CURP / RFC</span><span class="val">{{ $buyerCurpRfc }}</span></div>@endif
       @if($buyerAddress)<div class="row"><span class="lbl">Domicilio</span><span class="val">{{ $buyerAddress }}</span></div>@endif
-      @if($propertyAddress)<div class="row"><span class="lbl">Inmueble</span><span class="val">{{ $propertyAddress }}</span></div>@endif
+      @if($propertyFull)<div class="row"><span class="lbl">Inmueble</span><span class="val">{{ $propertyFull }}</span></div>@endif
     </div>
 
     <table class="offer-table">
@@ -151,19 +151,6 @@ strong { color: #0f172a; }
 
       <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('privacidad') !!}</div>
     </div>
-
-  </div></div>
-  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Carta Oferta · {{ $folio }}</span></div>
-</div>
-
-<div class="page">
-  <div class="page-header-inner">
-    @if(!empty($brandLogoSrcLight))<img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
-    @elseif(!empty($brandLogoSrc))<img src="{{ $brandLogoSrc }}" alt="Home del Valle">
-    @else<span class="phi-text">Home del Valle</span>@endif
-    <span class="phi-tag">Documento Legal · Confidencial</span>
-  </div>
-  <div class="page-body"><div class="inner">
 
     @if($offer->comentarios)
     <p><strong>Comentarios adicionales:</strong> {{ $offer->comentarios }}</p>

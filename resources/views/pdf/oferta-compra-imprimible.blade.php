@@ -57,40 +57,40 @@ body {
 .page-foot strong { color: var(--hdv-navy); font-weight: 600; }
 
 .doc-title { font-size: 18px; font-weight: 800; color: var(--hdv-navy); text-align: center; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-.doc-folio { font-size: 9px; color: #94a3b8; text-align: center; margin-bottom: 22px; letter-spacing: .5px; }
+.doc-folio { font-size: 9px; color: #94a3b8; text-align: center; margin-bottom: 14px; letter-spacing: .5px; }
 
-.meta-line { font-size: 11.5px; color: #334155; margin-bottom: 4px; }
+.meta-line { font-size: 11.5px; color: #334155; margin-bottom: 3px; }
 .meta-line strong { color: #0f172a; }
 
-p { color: #334155; font-size: 11.5px; line-height: 1.7; margin-bottom: 10px; text-align: justify; }
+p { color: #334155; font-size: 11px; line-height: 1.55; margin-bottom: 7px; text-align: justify; }
 strong { color: #0f172a; }
 
 .fill { display: inline-block; border-bottom: 1px solid #94a3b8; min-width: 60px; }
 .fill.lg { min-width: 220px; }
 .fill.md { min-width: 140px; }
 
-.buyer-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin: 12px 0 16px; }
-.buyer-box .row { display: flex; gap: 6px; font-size: 10.5px; margin-bottom: 10px; align-items: flex-end; }
+.buyer-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 16px; margin: 8px 0 12px; }
+.buyer-box .row { display: flex; gap: 6px; font-size: 10.5px; margin-bottom: 7px; align-items: flex-end; }
 .buyer-box .row:last-child { margin-bottom: 0; }
 .buyer-box .lbl { color: #94a3b8; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-bottom: 2px; }
 
-.offer-table { width: 100%; border-collapse: collapse; margin: 4px 0 16px; font-size: 11px; }
-.offer-table td { padding: 9px 12px; border-bottom: 1px solid #f1f5f9; }
+.offer-table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 11px; }
+.offer-table td { padding: 6px 12px; border-bottom: 1px solid #f1f5f9; }
 .offer-table td:first-child { color: #64748b; width: 48%; }
 .offer-table td:last-child { color: var(--hdv-navy); font-weight: 700; text-align: right; }
 .offer-table tr:last-child td { border-bottom: none; }
 
-.clauses { counter-reset: clause; margin: 6px 0 14px; }
-.clause { counter-increment: clause; padding: 8px 0 8px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 11px; line-height: 1.65; color: #334155; text-align: justify; }
+.clauses { counter-reset: clause; margin: 4px 0 8px; }
+.clause { counter-increment: clause; padding: 5px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; }
 .clause:last-child { border-bottom: none; }
-.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 8px; color: var(--hdv-navy); font-weight: 800; font-size: 11px; }
+.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
-.sign-row { display: flex; gap: 40px; margin-top: 28px; }
+.sign-row { display: flex; gap: 40px; margin-top: 14px; }
 .sign-col { flex: 1; text-align: center; }
-.sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 40px; font-size: 9.5px; color: #475569; }
+.sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 24px; font-size: 9.5px; color: #475569; }
 
-.privacy-note { font-size: 8.5px; color: #94a3b8; line-height: 1.6; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+.privacy-note { font-size: 8.5px; color: #94a3b8; line-height: 1.6; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px; }
 </style>
 </head>
 <body>
@@ -138,21 +138,8 @@ strong { color: #0f172a; }
       <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('privacidad') !!}</div>
     </div>
 
-  </div></div>
-  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Carta Oferta · Versión imprimible</span></div>
-</div>
-
-<div class="page">
-  <div class="page-header-inner">
-    @if(!empty($brandLogoSrcLight))<img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
-    @elseif(!empty($brandLogoSrc))<img src="{{ $brandLogoSrc }}" alt="Home del Valle">
-    @else<span class="phi-text">Home del Valle</span>@endif
-    <span class="phi-tag">Documento Legal · Confidencial</span>
-  </div>
-  <div class="page-body"><div class="inner">
-
     <p><strong>Comentarios adicionales:</strong></p>
-    <div style="border:1px solid #e2e8f0;border-radius:8px;height:90px;margin-bottom:16px;"></div>
+    <div style="border:1px solid #e2e8f0;border-radius:8px;height:44px;margin-bottom:8px;"></div>
 
     <div class="sign-row">
       <div class="sign-col">
