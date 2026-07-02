@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+{!! $brandCssVars ?? '' !!}
 @if($brandFontB64)
 @font-face {
     font-family: 'Inter';
@@ -44,7 +45,7 @@ body {
 
 /* ── Header nav ─────────────────────────────────────────────────────── */
 .header {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     padding: 20px 48px;
     display: flex;
     align-items: center;
@@ -90,7 +91,7 @@ body {
 /* ── Accent stripe ──────────────────────────────────────────────────── */
 .accent-stripe {
     height: 4px;
-    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #1e1b4b 100%);
+    background: linear-gradient(90deg, var(--hdv-accent) 0%, var(--hdv-navy) 100%);
     flex-shrink: 0;
 }
 
@@ -168,7 +169,7 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     color: #fff;
     display: flex;
     align-items: center;
@@ -187,7 +188,7 @@ body {
 .address-text-value {
     font-size: 16px;
     font-weight: 700;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     line-height: 1.2;
 }
 .address-text-sub {
@@ -206,7 +207,7 @@ body {
 .intro-box {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
-    border-left: 4px solid #10b981;
+    border-left: 4px solid var(--hdv-accent);
     border-radius: 0 10px 10px 0;
     padding: 16px 20px;
     margin-bottom: 24px;
@@ -233,7 +234,7 @@ body {
 .section-title {
     font-size: 20px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     line-height: 1.2;
     letter-spacing: -0.3px;
     margin-bottom: 6px;
@@ -241,7 +242,7 @@ body {
 .accent-bar {
     width: 28px;
     height: 3px;
-    background: #10b981;
+    background: var(--hdv-accent);
     border-radius: 2px;
     margin-bottom: 18px;
 }
@@ -254,7 +255,7 @@ body {
 }
 .diff-card {
     flex: 1;
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     border-radius: 10px;
     padding: 16px 14px;
     text-align: center;
@@ -311,7 +312,7 @@ body {
 .svc-text h4 {
     font-size: 11.5px;
     font-weight: 700;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     margin-bottom: 3px;
     line-height: 1.3;
 }
@@ -345,7 +346,7 @@ body {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     color: #fff;
     font-size: 11px;
     font-weight: 800;
@@ -356,12 +357,12 @@ body {
     margin-top: 1px;
 }
 .proceso-num.blue {
-    background: #10b981;
+    background: var(--hdv-accent);
 }
 .proceso-body h4 {
     font-size: 12px;
     font-weight: 700;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     margin-bottom: 2px;
     line-height: 1.3;
 }
@@ -408,7 +409,7 @@ body {
     letter-spacing: -1px;
 }
 .cond-value.dark {
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     font-size: 20px;
 }
 .cond-sub {
@@ -453,7 +454,7 @@ body {
 
 /* ── Agent card ─────────────────────────────────────────────────────── */
 .agent-card {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     border-radius: 12px;
     padding: 18px 22px;
     display: flex;
@@ -503,7 +504,7 @@ body {
     margin-bottom: 5px;
 }
 .agent-cta-action {
-    background: #10b981;
+    background: var(--hdv-accent);
     color: #fff;
     font-size: 10.5px;
     font-weight: 700;
@@ -515,7 +516,7 @@ body {
 
 /* ── Footer ─────────────────────────────────────────────────────────── */
 .page-footer {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     padding: 10px 48px;
     display: flex;
     align-items: center;
@@ -548,7 +549,7 @@ body {
 
 /* ── Page 2 specifics ───────────────────────────────────────────────── */
 .page2-header {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     padding: 14px 48px;
     display: flex;
     align-items: center;
@@ -586,7 +587,7 @@ body {
 
 /* ── Closing CTA ────────────────────────────────────────────────────── */
 .closing-cta {
-    background: linear-gradient(135deg, #10b981, #1e1b4b);
+    background: linear-gradient(135deg, var(--hdv-accent), var(--hdv-navy));
     border-radius: 12px;
     padding: 18px 20px;
     text-align: center;
@@ -622,7 +623,7 @@ body {
 }
 .next-step-pill.highlight {
     background: #fff;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     border-color: #fff;
 }
 </style>

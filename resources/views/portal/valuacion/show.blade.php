@@ -3,8 +3,12 @@
 
 @section('styles')
 :root {
+    /* Mismos valores que resources/views/pdf/_brand_data.php ($brandNavy/
+       $brandAccent) — si se cambia el color de marca, actualizar en los
+       dos lugares (esta vista del Portal no puede hacer el include() de
+       ese archivo PHP, vive en un layout distinto). */
     --hdv-navy: #1e1b4b;
-    --hdv-blue: #10b981;
+    --hdv-blue: #2563eb;
     --hdv-blue50: #EFF6FF;
 }
 

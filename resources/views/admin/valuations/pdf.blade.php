@@ -116,6 +116,7 @@ $considerations[] = 'Vigencia 90 días — vence el ' . $validity . '. No sustit
 <meta charset="UTF-8">
 <title>{{ $folio }} — Opinión de Valor — {{ $colonia }}</title>
 <style>
+{!! $brandCssVars ?? '' !!}
 /* ── FONT ─────────────────────────────────────────────────────────────────── */
 @if($b64Inter)
 @font-face {
@@ -144,8 +145,8 @@ html, body {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PALETTE
-   #1e1b4b  navy       — header/footer bg, primary titles
-   #10b981  green      — accents, CTAs, highlights (marca compartida)
+   var(--hdv-navy)    navy  — header/footer bg, primary titles (definido en pdf/_brand_data.php)
+   var(--hdv-accent)  azul  — accents, CTAs, highlights (marca compartida, definido en pdf/_brand_data.php)
    #EFF6FF  blue-50    — hero section bg
    #DBEAFE  blue-100   — hero section bg gradient
    #BFDBFE  blue-200   — borders, fills
@@ -176,7 +177,7 @@ html, body {
 
 /* ── P1 DARK HEADER BAND ──────────────────────────────────────────────────── */
 .p1-header {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     padding: 0 48px;
     height: 82px;
     display: flex;
@@ -184,7 +185,7 @@ html, body {
     justify-content: space-between;
     gap: 24px;
     flex-shrink: 0;
-    border-bottom: 4px solid #10b981;
+    border-bottom: 4px solid var(--hdv-accent);
 }
 
 .p1-hd-logo { flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; align-items: flex-start; }
@@ -269,7 +270,7 @@ html, body {
 .prop-address {
     font-size: 17px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     letter-spacing: -0.4px;
     margin-bottom: 4px;
     line-height: 1.2;
@@ -335,7 +336,7 @@ html, body {
     font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 4px;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 700;
     margin-bottom: 8px;
 }
@@ -357,7 +358,7 @@ html, body {
 .price-amount {
     font-size: 52px;
     font-weight: 900;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     letter-spacing: -3px;
     font-feature-settings: "tnum";
     line-height: 1;
@@ -378,7 +379,7 @@ html, body {
     color: #6B7280;
     line-height: 1.5;
 }
-.price-meta strong { color: #1e1b4b; font-weight: 700; }
+.price-meta strong { color: var(--hdv-navy); font-weight: 700; }
 
 /* ── KPI 2×2 GRID ─────────────────────────────────────────────────────────── */
 .kpi-grid {
@@ -403,7 +404,7 @@ html, body {
 .kpi-cell:nth-child(2n) { border-right: none; }
 .kpi-cell:nth-child(3),
 .kpi-cell:nth-child(4) { border-bottom: none; }
-.kpi-cell:first-child { border-left: 3px solid #10b981; }
+.kpi-cell:first-child { border-left: 3px solid var(--hdv-accent); }
 .kpi-label {
     font-size: 7px;
     text-transform: uppercase;
@@ -415,7 +416,7 @@ html, body {
 .kpi-value {
     font-size: 15px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     letter-spacing: -0.5px;
     font-feature-settings: "tnum";
     line-height: 1.1;
@@ -434,7 +435,7 @@ html, body {
     font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 4px;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 700;
     margin-bottom: 18px;
 }
@@ -453,7 +454,7 @@ html, body {
     position: absolute;
     top: 0;
     height: 8px;
-    background: linear-gradient(90deg, #BFDBFE 0%, #10b981 100%);
+    background: linear-gradient(90deg, #BFDBFE 0%, var(--hdv-accent) 100%);
     border-radius: 4px;
     opacity: 0.45;
 }
@@ -471,9 +472,9 @@ html, body {
 .rv-dot-accent {
     width: 17px;
     height: 17px;
-    background: #10b981;
+    background: var(--hdv-accent);
     border: 3px solid #fff;
-    box-shadow: 0 0 0 2px #10b981;
+    box-shadow: 0 0 0 2px var(--hdv-accent);
     z-index: 3;
 }
 .rv-lbl {
@@ -488,7 +489,7 @@ html, body {
     white-space: nowrap;
 }
 .rv-lbl-accent {
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 800;
     font-size: 8px;
     letter-spacing: 1.5px;
@@ -506,7 +507,7 @@ html, body {
 .rv-price-accent {
     font-size: 12.5px;
     font-weight: 800;
-    color: #10b981;
+    color: var(--hdv-accent);
 }
 
 /* ── ZONE SPLIT ───────────────────────────────────────────────────────────── */
@@ -549,14 +550,14 @@ html, body {
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #10b981;
+    background: var(--hdv-accent);
     margin: 0 auto 12px;
     box-shadow: 0 0 0 6px rgba(29,78,216,0.1), 0 0 0 12px rgba(29,78,216,0.05);
 }
 .zone-ph-name {
     font-size: 16px;
     font-weight: 800;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     margin-bottom: 5px;
     letter-spacing: -0.3px;
 }
@@ -580,7 +581,7 @@ html, body {
     font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 3px;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 700;
     padding-bottom: 10px;
     border-bottom: 1px solid #E5E7EB;
@@ -600,7 +601,7 @@ html, body {
     border-radius: 50%;
     background: #EFF6FF;
     border: 1px solid #BFDBFE;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-size: 8.5px;
     font-weight: 800;
     display: flex;
@@ -617,7 +618,7 @@ html, body {
 
 /* ── PAGE 1 FOOTER ────────────────────────────────────────────────────────── */
 .p1-footer {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     height: 32px;
     padding: 0 48px;
     display: flex;
@@ -640,12 +641,12 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 4px solid #10b981;
+    border-bottom: 4px solid var(--hdv-accent);
     flex-shrink: 0;
 }
 .mhd-logo { display: flex; align-items: center; }
 .mhd-logo img { height: 22px; width: auto; max-width: 140px; display: block; object-fit: contain; }
-.mhd-logo-txt { font-size: 12px; font-weight: 800; color: #1e1b4b; letter-spacing: -0.3px; }
+.mhd-logo-txt { font-size: 12px; font-weight: 800; color: var(--hdv-navy); letter-spacing: -0.3px; }
 .mhd-right { text-align: right; }
 .mhd-folio {
     font-size: 8px;
@@ -657,7 +658,7 @@ html, body {
 .mhd-section {
     font-size: 10px;
     font-weight: 700;
-    color: #10b981;
+    color: var(--hdv-accent);
     text-transform: uppercase;
     letter-spacing: 1.5px;
 }
@@ -667,16 +668,16 @@ html, body {
     font-size: 8px;
     text-transform: uppercase;
     letter-spacing: 3.5px;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 700;
     margin-bottom: 10px;
 }
 
 /* ── DARK FOOTER (pages 2 & 3) ───────────────────────────────────────────── */
 .dark-footer {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     padding: 7px 48px;
-    border-top: 2px solid #10b981;
+    border-top: 2px solid var(--hdv-accent);
     flex-shrink: 0;
 }
 .dark-footer-top {
@@ -738,7 +739,7 @@ html, body {
     display: block;
     font-size: 12.5px;
     font-weight: 700;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     line-height: 1.3;
 }
 
@@ -764,7 +765,7 @@ html, body {
     border: 1px solid #BFDBFE;
     padding: 2px 9px;
     font-size: 9.5px;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 600;
     border-radius: 20px;
 }
@@ -776,7 +777,7 @@ html, body {
     font-size: 11px;
 }
 .wf thead th {
-    background: #1e1b4b;
+    background: var(--hdv-navy);
     color: rgba(255,255,255,0.55);
     padding: 7px 10px;
     font-size: 7.5px;
@@ -795,7 +796,7 @@ html, body {
 .wf .r-base td { background: #F9FAFB; }
 .wf .r-base td:first-child { font-weight: 700; color: #374151; }
 .wf .r-total td {
-    background: #10b981;
+    background: var(--hdv-accent);
     color: #fff;
     font-weight: 800;
     border-top: none;
@@ -844,7 +845,7 @@ html, body {
     border-top: 3px solid;
     border-radius: 0 0 3px 3px;
 }
-.sr-card-pos { border-top-color: #10b981; }
+.sr-card-pos { border-top-color: var(--hdv-accent); }
 .sr-card-neg { border-top-color: #9CA3AF; }
 .sr-eyebrow {
     font-size: 8px;
@@ -853,7 +854,7 @@ html, body {
     letter-spacing: 2px;
     margin-bottom: 7px;
 }
-.sr-eyebrow-pos { color: #10b981; }
+.sr-eyebrow-pos { color: var(--hdv-accent); }
 .sr-eyebrow-neg { color: #6B7280; }
 .sr-text { font-size: 12px; color: #374151; line-height: 1.75; }
 
@@ -861,7 +862,7 @@ html, body {
     padding: 16px 20px;
     background: #EFF6FF;
     border: 1px solid #BFDBFE;
-    border-left: 4px solid #10b981;
+    border-left: 4px solid var(--hdv-accent);
     margin-bottom: 16px;
     border-radius: 0 3px 3px 0;
 }
@@ -870,7 +871,7 @@ html, body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
-    color: #10b981;
+    color: var(--hdv-accent);
     margin-bottom: 7px;
 }
 .rec-text {
@@ -895,7 +896,7 @@ html, body {
     border: 1px solid #BFDBFE;
     padding: 3px 12px;
     font-size: 10px;
-    color: #10b981;
+    color: var(--hdv-accent);
     font-weight: 600;
     margin: 0 4px 4px 0;
     border-radius: 20px;
@@ -917,7 +918,7 @@ html, body {
     border-right: 1px solid #E5E7EB;
 }
 .contact-item:last-child { border-right: none; }
-.contact-item:first-child { border-left: 3px solid #10b981; }
+.contact-item:first-child { border-left: 3px solid var(--hdv-accent); }
 .contact-lbl {
     font-size: 7px;
     text-transform: uppercase;
@@ -929,7 +930,7 @@ html, body {
 .contact-val {
     font-size: 11.5px;
     font-weight: 700;
-    color: #1e1b4b;
+    color: var(--hdv-navy);
     line-height: 1.35;
 }
 
@@ -1265,7 +1266,7 @@ html, body {
                     </td>
                     <td style="color:#9CA3AF;">—</td>
                     <td class="price-muted">—</td>
-                    <td style="font-weight:700;color:#1e1b4b;">${{ number_format($valuation->base_price_m2) }}/m²</td>
+                    <td style="font-weight:700;color:var(--hdv-navy);">${{ number_format($valuation->base_price_m2) }}/m²</td>
                 </tr>
 
                 {{-- Adjustment rows --}}
@@ -1292,7 +1293,7 @@ html, body {
                     </td>
                     <td class="{{ $tCls }}">{{ $adj->formatted_value }}</td>
                     <td class="price-muted">${{ number_format($adj->price_before) }}/m²</td>
-                    <td style="font-weight:700;color:#1e1b4b;">${{ number_format($adj->price_after) }}/m²</td>
+                    <td style="font-weight:700;color:var(--hdv-navy);">${{ number_format($adj->price_after) }}/m²</td>
                 </tr>
                 @endforeach
 

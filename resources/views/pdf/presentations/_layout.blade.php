@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <style>
+{!! $brandCssVars ?? '' !!}
 @if($brandFontB64)
 @font-face {
     font-family: 'Inter';
@@ -40,7 +41,7 @@ body {
 }
 .page:last-child { break-after: auto; page-break-after: auto; }
 .page-header-inner {
-    flex-shrink: 0; background: #1e1b4b; border-bottom: 4px solid #10b981;
+    flex-shrink: 0; background: var(--hdv-navy); border-bottom: 4px solid var(--hdv-accent);
     padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
 }
 .page-header-inner img { height: 18px; max-width: 140px; object-fit: contain; display: block; }
@@ -58,10 +59,10 @@ body {
     font-size: 9.5px;
     color: #94a3b8;
 }
-.page-foot strong { color: #1e1b4b; font-weight: 600; }
+.page-foot strong { color: var(--hdv-navy); font-weight: 600; }
 
 /* ── Portada ─────────────────────────────────────────────────────────────── */
-.cover-body { flex: 1; background: #1e1b4b; padding: 36px 52px 24px; display: flex; flex-direction: column; }
+.cover-body { flex: 1; background: var(--hdv-navy); padding: 36px 52px 24px; display: flex; flex-direction: column; }
 .cover-foot { flex-shrink: 0; background: #17154a; padding: 12px 52px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: rgba(199,210,254,.55); border-top: 1px solid rgba(255,255,255,.08); }
 .cover-foot strong { color: rgba(199,210,254,.85); }
 .cover-logo { height: 44px; max-width: 200px; object-fit: contain; object-position: left; margin-bottom: 24px; }
@@ -85,68 +86,68 @@ body {
 
 /* ── Tipografía general ──────────────────────────────────────────────────── */
 .section-tag { font-size: 8.5px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #94a3b8; margin-bottom: 5px; }
-.section-h2  { font-size: 22px; font-weight: 800; color: #1e1b4b; line-height: 1.2; letter-spacing: -.3px; margin-bottom: 7px; }
-.accent-bar  { width: 28px; height: 3px; background: #10b981; border-radius: 2px; margin-bottom: 20px; }
+.section-h2  { font-size: 22px; font-weight: 800; color: var(--hdv-navy); line-height: 1.2; letter-spacing: -.3px; margin-bottom: 7px; }
+.accent-bar  { width: 28px; height: 3px; background: var(--hdv-accent); border-radius: 2px; margin-bottom: 20px; }
 p { color: #475569; font-size: 12.5px; line-height: 1.75; margin-bottom: 11px; }
 strong { color: #1e293b; }
 
 /* ── Stats boxes ─────────────────────────────────────────────────────────── */
 .stats-row { display: flex; gap: 8px; margin: 16px 0; }
 .stat-box { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 10px; text-align: center; }
-.stat-num  { font-size: 24px; font-weight: 800; color: #1e1b4b; line-height: 1; }
-.stat-num .accent { color: #10b981; }
+.stat-num  { font-size: 24px; font-weight: 800; color: var(--hdv-navy); line-height: 1; }
+.stat-num .accent { color: var(--hdv-accent); }
 .stat-lbl  { font-size: 9.5px; color: #64748b; margin-top: 3px; line-height: 1.3; }
 
 /* ── Tabla comparativa ───────────────────────────────────────────────────── */
 .cmp-table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 0; }
 .cmp-table th { padding: 7px 12px; text-align: left; font-size: 8.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
 .cmp-table th:first-child { color: #94a3b8; background: #f8fafc; border-radius: 6px 0 0 0; }
-.cmp-table th:last-child  { color: #fff; background: #1e1b4b; border-radius: 0 6px 0 0; }
+.cmp-table th:last-child  { color: #fff; background: var(--hdv-navy); border-radius: 0 6px 0 0; }
 .cmp-table td { padding: 7px 12px; border-bottom: 1px solid #f1f5f9; color: #475569; }
-.cmp-table td:last-child  { color: #1e1b4b; font-weight: 600; }
+.cmp-table td:last-child  { color: var(--hdv-navy); font-weight: 600; }
 .cmp-table tr:last-child td { border-bottom: none; }
 
 /* ── Gráfica de barras (mercado) ─────────────────────────────────────────── */
-.chart-title { font-size: 10px; font-weight: 700; color: #1e1b4b; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px; }
+.chart-title { font-size: 10px; font-weight: 700; color: var(--hdv-navy); letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px; }
 .bar-chart   { margin: 0; }
 .bar-row     { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
 .bar-lbl     { width: 100px; font-size: 11px; color: #64748b; text-align: right; flex-shrink: 0; }
-.bar-lbl.hl  { color: #1e1b4b; font-weight: 700; }
+.bar-lbl.hl  { color: var(--hdv-navy); font-weight: 700; }
 .bar-track   { flex: 1; height: 22px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
 .bar-fill    { height: 100%; display: flex; align-items: center; padding: 0 8px; font-size: 10px; font-weight: 600; white-space: nowrap; border-radius: 4px; }
-.bar-fill.hdv { background: #1e1b4b; color: #fff; }
+.bar-fill.hdv { background: var(--hdv-navy); color: #fff; }
 .bar-fill.avg { background: #94a3b8; color: #fff; }
-.bar-fill.hi  { background: #10b981; color: #fff; }
+.bar-fill.hi  { background: var(--hdv-accent); color: #fff; }
 .chart-note   { font-size: 9.5px; color: #94a3b8; margin-top: 6px; font-style: italic; }
 
 /* ── Bullet list ─────────────────────────────────────────────────────────── */
 .blist, .bullet-list { list-style: none; margin: 10px 0 16px; }
 .blist li, .bullet-list li { padding: 8px 0 8px 22px; position: relative; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 12.5px; line-height: 1.5; }
 .blist li:last-child, .bullet-list li:last-child { border-bottom: none; }
-.blist li::before, .bullet-list li::before { content: ''; position: absolute; left: 0; top: 15px; width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+.blist li::before, .bullet-list li::before { content: ''; position: absolute; left: 0; top: 15px; width: 6px; height: 6px; border-radius: 50%; background: var(--hdv-accent); }
 
 /* ── Proceso timeline ────────────────────────────────────────────────────── */
 .tl { display: flex; align-items: flex-start; margin: 20px 0 16px; position: relative; }
 .tl::before { content: ''; position: absolute; top: 20px; left: 20px; right: 20px; height: 2px; background: #e2e8f0; z-index: 0; }
 .tl-step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
-.tl-circle { width: 40px; height: 40px; border-radius: 50%; background: #1e1b4b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; margin-bottom: 8px; box-shadow: 0 0 0 4px #fff; }
-.tl-circle.active { background: #10b981; }
-.tl-name  { font-size: 10.5px; font-weight: 700; color: #1e1b4b; text-align: center; line-height: 1.3; }
+.tl-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--hdv-navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; margin-bottom: 8px; box-shadow: 0 0 0 4px #fff; }
+.tl-circle.active { background: var(--hdv-accent); }
+.tl-name  { font-size: 10.5px; font-weight: 700; color: var(--hdv-navy); text-align: center; line-height: 1.3; }
 .tl-days  { font-size: 9.5px; color: #94a3b8; text-align: center; margin-top: 2px; }
 
 /* ── Marketing box ───────────────────────────────────────────────────────── */
 .mkt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
 .mkt-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; }
-.mkt-item h4 { font-size: 11.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 3px; }
+.mkt-item h4 { font-size: 11.5px; font-weight: 700; color: var(--hdv-navy); margin-bottom: 3px; }
 .mkt-item p  { font-size: 11px; color: #64748b; margin: 0; line-height: 1.5; }
-.mkt-box { background: #f8fafc; border-left: 3px solid #10b981; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 12px 0; }
+.mkt-box { background: #f8fafc; border-left: 3px solid var(--hdv-accent); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 12px 0; }
 .mkt-box p { white-space: pre-line; font-size: 12px; color: #334155; line-height: 1.8; margin: 0; }
 
 /* ── Servicios ───────────────────────────────────────────────────────────── */
 .svc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-top: 14px; }
 .svc-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 13px 14px; }
 .svc-icon { font-size: 18px; margin-bottom: 6px; display: block; }
-.svc-card h4 { font-size: 11.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 4px; }
+.svc-card h4 { font-size: 11.5px; font-weight: 700; color: var(--hdv-navy); margin-bottom: 4px; }
 .svc-card p  { font-size: 10.5px; color: #64748b; margin: 0; line-height: 1.5; }
 .svc-note    { font-size: 10.5px; color: #64748b; text-align: center; margin-top: 14px; padding: 10px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0; }
 
@@ -159,19 +160,19 @@ strong { color: #1e293b; }
 .steps { list-style: none; margin: 12px 0; }
 .steps li { padding: 9px 0 9px 38px; position: relative; border-bottom: 1px solid #f1f5f9; color: #475569; font-size: 12.5px; }
 .steps li:last-child { border-bottom: none; }
-.step-n { position: absolute; left: 0; top: 7px; width: 24px; height: 24px; border-radius: 50%; background: #1e1b4b; color: #fff; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.step-n { position: absolute; left: 0; top: 7px; width: 24px; height: 24px; border-radius: 50%; background: var(--hdv-navy); color: #fff; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
 /* ── Agente card ─────────────────────────────────────────────────────────── */
-.agent-card { background: #1e1b4b; border-radius: 10px; padding: 16px 20px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
+.agent-card { background: var(--hdv-navy); border-radius: 10px; padding: 16px 20px; margin-top: 16px; display: flex; align-items: center; gap: 16px; }
 .agent-av { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.2); color: #fff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 .agent-info h3 { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 3px; }
 .agent-info p  { font-size: 11px; color: rgba(199,210,254,.75); margin: 1px 0; line-height: 1.4; }
 
 /* ── CTA ─────────────────────────────────────────────────────────────────── */
-.cta-box { background: #1e1b4b; border-radius: 10px; padding: 14px 20px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
+.cta-box { background: var(--hdv-navy); border-radius: 10px; padding: 14px 20px; margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
 .cta-text h4 { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
 .cta-text p  { font-size: 11px; color: rgba(199,210,254,.7); margin: 0; }
-.cta-badge   { background: #10b981; color: #fff; font-size: 10px; font-weight: 700; padding: 6px 14px; border-radius: 20px; white-space: nowrap; letter-spacing: .5px; }
+.cta-badge   { background: var(--hdv-accent); color: #fff; font-size: 10px; font-weight: 700; padding: 6px 14px; border-radius: 20px; white-space: nowrap; letter-spacing: .5px; }
 
 /* ── Precio ──────────────────────────────────────────────────────────────── */
 .price-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px 18px; margin: 14px 0; display: flex; align-items: center; gap: 12px; }
@@ -186,7 +187,7 @@ strong { color: #1e293b; }
 .insight-box p { font-size: 11.5px; color: #78350f; margin: 0; line-height: 1.5; }
 .insight-box strong { color: #92400e; }
 
-.testimonial { background: #f8fafc; border-left: 3px solid #1e1b4b; border-radius: 0 8px 8px 0; padding: 14px 18px; margin-top: 14px; }
+.testimonial { background: #f8fafc; border-left: 3px solid var(--hdv-navy); border-radius: 0 8px 8px 0; padding: 14px 18px; margin-top: 14px; }
 .quote       { font-size: 12.5px; color: #334155; line-height: 1.7; font-style: italic; margin-bottom: 8px; }
 .quote-author  { font-size: 10.5px; color: #64748b; font-weight: 600; }
 
@@ -200,22 +201,22 @@ strong { color: #1e293b; }
 
 /* ── KPI dark row ────────────────────────────────────────────────────────── */
 .dark-kpi-row { display: flex; gap: 8px; margin: 12px 0; }
-.dark-kpi     { flex: 1; background: #1e1b4b; border-radius: 10px; padding: 12px 8px; text-align: center; }
+.dark-kpi     { flex: 1; background: var(--hdv-navy); border-radius: 10px; padding: 12px 8px; text-align: center; }
 .dark-kpi-num { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
-.dark-kpi-num .green { color: #10b981; }
+.dark-kpi-num .green { color: var(--hdv-accent); }
 .dark-kpi-lbl { font-size: 8.5px; color: rgba(199,210,254,.55); margin-top: 3px; line-height: 1.3; text-transform: uppercase; letter-spacing: .5px; }
 
 /* ── Mini cards (3 col) ──────────────────────────────────────────────────── */
 .mini-grid-3  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 0; }
 .mini-card    { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; }
 .mini-card-icon { font-size: 17px; margin-bottom: 4px; display: block; }
-.mini-card h4 { font-size: 10.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 3px; }
+.mini-card h4 { font-size: 10.5px; font-weight: 700; color: var(--hdv-navy); margin-bottom: 3px; }
 .mini-card p  { font-size: 9.5px; color: #64748b; margin: 0; line-height: 1.5; }
 
 /* ── Profile chips (buyer/tenant types) ─────────────────────────────────── */
 .profile-row  { display: flex; gap: 6px; margin: 12px 0; }
 .profile-chip { flex: 1; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 11px; }
-.profile-chip h4 { font-size: 10.5px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
+.profile-chip h4 { font-size: 10.5px; font-weight: 700; color: var(--hdv-navy); margin-bottom: 2px; }
 .profile-chip p  { font-size: 9.5px; color: #64748b; margin: 0; line-height: 1.45; }
 
 /* ── Income simulator table ──────────────────────────────────────────────── */
@@ -748,7 +749,7 @@ strong { color: #1e293b; }
       </div>
 
       <p style="font-size:11px;color:#64748b;text-align:center;margin-bottom:16px;">
-        Tiempo total estimado: <strong style="color:#1e1b4b;">{{ $isRentaP ? '30–45 días' : '60–90 días' }}</strong> de la firma de exclusiva al cierre.
+        Tiempo total estimado: <strong style="color:var(--hdv-navy);">{{ $isRentaP ? '30–45 días' : '60–90 días' }}</strong> de la firma de exclusiva al cierre.
       </p>
 
       {{-- Plan de marketing visual --}}

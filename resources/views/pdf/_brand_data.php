@@ -12,13 +12,19 @@
  * variables definidas hacia afuera.
  *
  * Define: $brandLogoSrc, $brandLogoSrcLight, $brandLogoFallback,
- *         $brandFontB64, $brandNavy, $brandAccent
+ *         $brandFontB64, $brandNavy, $brandAccent, $brandCssVars
+ *
+ * $brandNavy/$brandAccent son la ÚNICA fuente de verdad del color de
+ * marca — para cambiarlo, se edita SOLO aquí. Los 3 documentos usan
+ * var(--hdv-navy)/var(--hdv-accent) en su CSS en vez de hex hardcodeado,
+ * imprimiendo {!! $brandCssVars !!} una vez dentro de su <style>.
  */
 
 $siteSetting = \App\Models\SiteSetting::first();
 
 $brandNavy   = '#1e1b4b';
-$brandAccent = '#10b981';
+$brandAccent = '#2563eb';
+$brandCssVars = ":root { --hdv-navy: {$brandNavy}; --hdv-accent: {$brandAccent}; }";
 $brandLogoFallback = 'Home del Valle · Bienes Raíces';
 
 $brandLogoSrc = null;
