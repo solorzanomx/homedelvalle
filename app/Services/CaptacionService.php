@@ -20,9 +20,14 @@ class CaptacionService
      */
     public function getOrCreateForClient(Client $client): Captacion
     {
+        // Búsqueda solo por client_id (sin filtrar por status): una captación
+        // ya completada o cancelada sigue siendo "la captación del cliente" —
+        // filtrar por status='activo' aquí hacía que reenviar la Presentación
+        // después de firmar la exclusiva creara una segunda captación vacía
+        // desde cero (bug real detectado en producción, captación duplicada).
         $captacion = Captacion::firstOrCreate(
-            ['client_id' => $client->id, 'status' => 'activo'],
-            ['portal_etapa' => 1]
+            ['client_id' => $client->id],
+            ['status' => 'activo', 'portal_etapa' => 1]
         );
 
         if (!$captacion->operation_id) {
