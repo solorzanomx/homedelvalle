@@ -22,10 +22,13 @@ class EnsurePortalLegalAcceptance
         $portalClient = Client::where('user_id', $user->id)->first();
         View::share('portalClient', $portalClient);
 
-        // Share active captacion for sidebar stage indicators
+        // Share captacion for sidebar stage indicators — sin filtrar por
+        // status: una vez completada (exclusiva firmada) sigue siendo la
+        // fuente de $portalVentaOperation (progreso "En el mercado"), filtrar
+        // por 'activo' aquí hacía que esa sección entera desapareciera del
+        // sidebar justo al terminar el proceso de captación.
         $portalCaptacion = $portalClient
             ? Captacion::where('client_id', $portalClient->id)
-                ->where('status', 'activo')
                 ->with('signatureRequest')
                 ->latest()
                 ->first()

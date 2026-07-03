@@ -19,7 +19,7 @@ class PortalLegalController extends Controller
         $portalClient = Client::where('user_id', Auth::id())->first();
         View::share('portalClient', $portalClient);
         $portalCaptacion = $portalClient
-            ? Captacion::where('client_id', $portalClient->id)->where('status', 'activo')
+            ? Captacion::where('client_id', $portalClient->id)
                 ->with('signatureRequest')
                 ->latest()->first()
             : null;
