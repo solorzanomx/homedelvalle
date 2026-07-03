@@ -1,5 +1,5 @@
 @extends('layouts.app-sidebar')
-@section('title', 'Editar cláusulas — Carta Oferta de Compra')
+@section('title', 'Editar cláusulas — ' . $documentTitle)
 
 @section('styles')
 <style>
@@ -12,9 +12,9 @@
 
 @section('content')
 <div style="margin-bottom:1.25rem;">
-    <h2 style="margin:0;font-size:1.3rem;">&#9998; Editar cláusulas — Carta Oferta de Compra</h2>
+    <h2 style="margin:0;font-size:1.3rem;">&#9998; Editar cláusulas — {{ $documentTitle }}</h2>
     <p style="margin:0.2rem 0 0;color:var(--text-muted);font-size:0.85rem;">
-        Estas 5 cláusulas se usan en toda oferta que se genere de aquí en adelante — no afecta a ofertas ya generadas.
+        Estas {{ count($clauses) }} cláusulas se usan en todo documento que se genere de aquí en adelante — no afecta a documentos ya generados.
         @if($lastUpdated)
             Última edición: {{ $lastUpdated->updated_at->format('d/m/Y H:i') }}{{ $lastUpdated->updatedBy ? ' por ' . $lastUpdated->updatedBy->name : '' }}.
         @endif
@@ -26,11 +26,12 @@
 @endif
 
 <div class="alert" style="background:#fffbeb;border:1px solid #fde68a;color:#78350f;padding:.75rem 1rem;border-radius:8px;margin-bottom:1.25rem;font-size:.82rem;">
-    &#9888;&#65039; Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas con compradores reales — especialmente la de apartado.
-    Puedes usar <code>&lt;strong&gt;texto&lt;/strong&gt;</code> para negritas. La cláusula de Vigencia acepta <code>@{{vigencia_dias}}</code> y <code>@{{vigencia_hasta}}</code>, que se rellenan automáticamente con los datos de cada oferta.
+    &#9888;&#65039; {{ $legalHint ?? 'Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas con clientes reales.' }}
+    Puedes usar <code>&lt;strong&gt;texto&lt;/strong&gt;</code> para negritas.
+    @if($tokenHint ?? null) {{ $tokenHint }} @endif
 </div>
 
-<form method="POST" action="{{ route('admin.documentos.oferta-compra.clausulas.update') }}">
+<form method="POST" action="{{ $updateRoute }}">
     @csrf
     @foreach($clauses as $clause)
     <div class="clause-card">
@@ -38,6 +39,9 @@
         <textarea id="clause-{{ $clause['key'] }}" name="{{ $clause['key'] }}">{{ old($clause['key'], $clause['value']) }}</textarea>
         @if($clause['key'] === 'vigencia')
         <p class="clause-hint">Tokens disponibles: <code>@{{vigencia_dias}}</code>, <code>@{{vigencia_hasta}}</code></p>
+        @endif
+        @if($clause['key'] === 'comision')
+        <p class="clause-hint">Token disponible: <code>@{{comision_pct}}</code></p>
         @endif
     </div>
     @endforeach

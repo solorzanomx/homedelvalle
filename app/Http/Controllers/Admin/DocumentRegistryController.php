@@ -92,6 +92,20 @@ class DocumentRegistryController extends Controller
         ]);
     }
 
+    public function previewContratoExclusiva(\App\Services\ContratoExclusivaGeneratorService $generator)
+    {
+        $captacion = \App\Models\Captacion::where('client_id', $this->demoClient()->id)->first();
+
+        abort_unless($captacion, 404, 'Corre "php artisan documentos:seed-demo" primero.');
+
+        $path = $generator->generatePdf($captacion);
+
+        return Response::make(file_get_contents($path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="contrato-exclusiva-muestra.pdf"',
+        ]);
+    }
+
     /**
      * Versión imprimible en blanco — el broker puede opcionalmente elegir un
      * Cliente y/o Property del CRM para prellenar la identificación del

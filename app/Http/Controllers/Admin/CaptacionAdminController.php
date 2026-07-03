@@ -293,21 +293,24 @@ class CaptacionAdminController extends Controller
         return back()->with('success', 'Precio establecido. El cliente podrá confirmarlo en su portal.');
     }
 
-    public function generarExclusiva(Captacion $captacion)
+    public function generarExclusiva(Request $request, Captacion $captacion)
     {
         if (!$captacion->precio_acordado) {
             return back()->with('error', 'Establece el precio antes de generar el contrato de exclusiva.');
         }
 
+        $validated = $request->validate(['vigencia_dias' => 'nullable|integer|min:90|max:365']);
+        $vigenciaDias = $validated['vigencia_dias'] ?? 180;
+
         try {
             $action = app(\App\Actions\Contracts\GenerarContratoExclusivaAction::class);
-            $signatureRequest = $action->execute($captacion->client, $captacion);
+            $signatureRequest = $action->execute($captacion->client, $captacion, $vigenciaDias);
             $this->service->linkExclusiva($captacion, $signatureRequest->id);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return back()->with('error', 'Error al generar contrato: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Contrato de exclusiva generado en Drive.');
+        return back()->with('success', 'Contrato de exclusiva generado correctamente.');
     }
 
     public function markExclusivaSigned(Captacion $captacion)
@@ -320,6 +323,21 @@ class CaptacionAdminController extends Controller
         $this->service->recalculateStage($captacion);
 
         return back()->with('success', 'Contrato marcado como firmado. Proceso completado.');
+    }
+
+    /** Ver/descargar el PDF del contrato de exclusiva ya generado. */
+    public function exclusivaPdf(Captacion $captacion)
+    {
+        $path = $captacion->signatureRequest?->local_pdf_path;
+
+        if (empty($path) || !file_exists($path)) {
+            abort(404, 'PDF no encontrado.');
+        }
+
+        return \Illuminate\Support\Facades\Response::make(file_get_contents($path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="contrato-exclusiva.pdf"',
+        ]);
     }
 
     public function uploadDocument(Request $request, Captacion $captacion)

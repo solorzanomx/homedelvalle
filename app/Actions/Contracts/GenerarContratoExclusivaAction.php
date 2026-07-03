@@ -4,62 +4,45 @@ namespace App\Actions\Contracts;
 
 use App\Models\Captacion;
 use App\Models\Client;
+use App\Models\Document;
 use App\Models\GoogleSignatureRequest;
-use App\Models\LegalDocument;
-use App\Services\GoogleDriveService;
+use App\Services\ContratoExclusivaGeneratorService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
-use RuntimeException;
 
 class GenerarContratoExclusivaAction
 {
     public function __construct(
-        private GoogleDriveService $drive,
+        private ContratoExclusivaGeneratorService $generator,
     ) {}
 
-    public function execute(Client $client, Captacion $captacion): GoogleSignatureRequest
+    public function execute(Client $client, Captacion $captacion, int $vigenciaDias = 180): GoogleSignatureRequest
     {
-        $parentFolder = config('services.google_drive.folder_id');
         $documentName = 'Contrato de Exclusiva — ' . $client->name;
 
-        // 1. Obtener template desde Legal > Documentos
-        $template = LegalDocument::where('slug', 'contrato-exclusiva')
-            ->with('currentVersion')
-            ->first();
+        $path = $this->generator->generatePdf($captacion, $vigenciaDias);
 
-        if (!$template || !$template->currentVersion) {
-            throw new RuntimeException(
-                'No se encontró el template del contrato de exclusiva. ' .
-                'Créalo en Legal > Documentos con el slug "contrato-exclusiva".'
-            );
-        }
-
-        // 2. Reemplazar variables en el contenido HTML
-        $blank = '_______________';
-        $html  = strtr($template->currentVersion->content, [
-            '{{fecha}}'              => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
-            '{{nombre}}'             => $client->name,
-            '{{curp}}'               => $client->curp    ?? $blank,
-            '{{rfc}}'                => $client->rfc     ?? $blank,
-            '{{domicilio}}'          => $client->address ?? $blank,
-            '{{telefono}}'           => $client->phone   ?? $blank,
-            '{{correo}}'             => $client->email   ?? $blank,
-            '{{direccion_inmueble}}' => $captacion->property_address ?? $blank,
-            '{{precio}}'             => $captacion->precio_acordado
-                                        ? '$' . number_format($captacion->precio_acordado, 0) . ' MXN'
-                                        : $blank,
-            '{{vigencia}}'           => '180 días',
+        Document::create([
+            'captacion_id' => $captacion->id,
+            'client_id'    => $client->id,
+            'uploaded_by'  => Auth::id(),
+            'category'     => 'contrato_exclusiva',
+            'label'        => $documentName,
+            'file_path'    => $path,
+            'file_name'    => 'CE-' . str_pad((string) $captacion->id, 5, '0', STR_PAD_LEFT) . '.pdf',
+            'mime_type'    => 'application/pdf',
+            'file_size'    => file_exists($path) ? filesize($path) : null,
+            'status'       => 'verified',
         ]);
 
-        // 3. Crear carpeta del cliente en Drive (reutiliza si ya existe)
-        $folderId = $this->drive->createFolder('docs-' . $client->name, $parentFolder);
-
-        // 4. Crear Google Doc desde el HTML
-        $fileId = $this->drive->createDocFromHtml($documentName, $html, $folderId);
-
-        // 5. Guardar como borrador para revisión del admin
+        // Guarda como borrador para revisión del admin — el estado
+        // draft/completed y la confirmación manual de firma no cambian,
+        // solo el documento detrás dejó de ser un Google Doc. file_id es
+        // NOT NULL + único en el esquema (antes siempre era el ID real de
+        // Drive) — se rellena con un identificador local, ya no hay Drive.
         return GoogleSignatureRequest::create([
-            'file_id'         => $fileId,
-            'drive_folder_id' => $folderId,
+            'file_id'         => 'local-' . Str::uuid()->toString(),
+            'local_pdf_path'  => $path,
             'token'           => Str::uuid()->toString(),
             'tipo'            => 'exclusiva',
             'contacto_id'     => $client->id,

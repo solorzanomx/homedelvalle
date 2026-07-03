@@ -81,4 +81,16 @@ return [
         ],
     ],
 
+    'contrato_exclusiva' => [
+        'nombre' => 'Contrato de Exclusiva',
+        'descripcion' => 'Contrato de exclusiva de comercialización que firma el propietario en la Etapa 4 de captación.',
+        'archivo_fuente' => 'resources/views/pdf/contrato-exclusiva.blade.php',
+        'donde_generarlo' => 'Ficha de captación → Etapa 4 — Exclusiva → Generar Contrato',
+        'preview_route' => 'admin.documentos.preview.contrato-exclusiva',
+        'editar_route' => 'admin.documentos.contrato-exclusiva.clausulas',
+        'changelog' => [
+            ['fecha' => '2026-07-03', 'resumen' => 'Creado — reemplaza la integración con Google Drive (Google Doc + template en Legal > Documentos) por un PDF con identidad de marca, mismo patrón que Carta Oferta de Compra. La confirmación de firma sigue siendo manual (sin firma electrónica real), sin cambios ahí. Pendiente de revisión por un abogado antes de uso definitivo — el contenido es una redacción estándar, no viene de un contrato de referencia previo.'],
+        ],
+    ],
+
 ];

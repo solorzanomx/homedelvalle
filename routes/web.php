@@ -301,12 +301,15 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::get('/documentos/preview/servicios', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewServicios'])->name('documentos.preview.servicios');
     Route::get('/documentos/preview/opinion-valor', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewOpinionValor'])->name('documentos.preview.opinion-valor');
     Route::get('/documentos/preview/oferta-compra', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewOfertaCompra'])->name('documentos.preview.oferta-compra');
+    Route::get('/documentos/preview/contrato-exclusiva', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'previewContratoExclusiva'])->name('documentos.preview.contrato-exclusiva');
     Route::get('/documentos/oferta-compra/imprimible', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'ofertaCompraImprimibleForm'])->name('documentos.oferta-compra.imprimible');
     Route::post('/documentos/oferta-compra/imprimible', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'ofertaCompraImprimibleGenerate'])->name('documentos.oferta-compra.imprimible.generate');
     Route::get('/documentos/oferta-compra/flash', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'flashForm'])->name('documentos.oferta-compra.flash');
     Route::post('/documentos/oferta-compra/flash', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'flashStore'])->name('documentos.oferta-compra.flash.store');
     Route::get('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editOfertaCompra'])->name('documentos.oferta-compra.clausulas');
     Route::post('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateOfertaCompra'])->name('documentos.oferta-compra.clausulas.update');
+    Route::get('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas');
+    Route::post('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas.update');
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');
@@ -753,6 +756,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/{captacion}/agendar-visita',                        [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'scheduleVisit'])->name('schedule-visit');
         Route::post('/{captacion}/generar-exclusiva',                     [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'generarExclusiva'])->name('generar-exclusiva');
         Route::post('/{captacion}/confirmar-exclusiva',                   [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'markExclusivaSigned'])->name('confirmar-exclusiva');
+        Route::get('/{captacion}/exclusiva-pdf',                          [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'exclusivaPdf'])->name('exclusiva-pdf');
         Route::post('/{captacion}/upload',                                [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'uploadDocument'])->name('upload');
         Route::delete('/{captacion}/documentos/{document}',              [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'deleteDocument'])->name('document.delete');
         Route::post('/{captacion}/declinar',                             [\App\Http\Controllers\Admin\CaptacionAdminController::class, 'declineCaptacion'])->name('declinar');

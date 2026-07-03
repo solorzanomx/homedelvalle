@@ -804,10 +804,10 @@
                 <p style="font-size:.8rem;color:var(--text-muted);">Disponible cuando el cliente confirme el precio.</p>
                 @elseif($captacion->signatureRequest)
                 <div class="info-row"><span class="lbl">Estado</span><span class="val">{{ ucfirst($captacion->signatureRequest->status) }}</span></div>
-                @if($captacion->signatureRequest->file_id)
-                <a href="https://docs.google.com/document/d/{{ $captacion->signatureRequest->file_id }}" target="_blank"
+                @if($captacion->signatureRequest->local_pdf_path)
+                <a href="{{ route('admin.captaciones.exclusiva-pdf', $captacion) }}" target="_blank"
                    class="btn btn-sm btn-outline" style="width:100%;text-align:center;display:block;margin-top:.5rem;">
-                    &#128196; Ver en Drive
+                    &#128196; Ver PDF
                 </a>
                 @endif
                 @if($captacion->signatureRequest->status !== 'completed')
@@ -822,6 +822,10 @@
                 <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Genera el contrato de exclusiva para el cliente.</p>
                 <form method="POST" action="{{ route('admin.captaciones.generar-exclusiva', $captacion) }}">
                     @csrf
+                    <div class="form-group" style="margin-bottom:.5rem;">
+                        <label class="form-label" style="font-size:.72rem;">Vigencia (días)</label>
+                        <input type="number" name="vigencia_dias" class="form-input" value="180" min="90" max="365" style="font-size:.82rem;">
+                    </div>
                     <button type="submit" class="btn btn-primary btn-sm" style="width:100%;"
                         {{ !$captacion->etapa3_completed_at ? 'disabled' : '' }}>
                         Generar Contrato

@@ -4,18 +4,24 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DocumentClause;
+use App\Services\ContratoExclusivaGeneratorService;
 use App\Services\PurchaseOfferGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Edición de las cláusulas legales editables de un documento de marca.
- * Hoy solo Carta Oferta de Compra — ver PurchaseOfferGeneratorService::DEFAULT_CLAUSES.
+ * Edición de las cláusulas legales editables de los documentos de marca:
+ * Carta Oferta de Compra (PurchaseOfferGeneratorService::DEFAULT_CLAUSES) y
+ * Contrato de Exclusiva (ContratoExclusivaGeneratorService::DEFAULT_CLAUSES).
  */
 class DocumentClauseController extends Controller
 {
     public function editOfertaCompra()
     {
+        $documentTitle = 'Carta Oferta de Compra';
+        $updateRoute   = route('admin.documentos.oferta-compra.clausulas.update');
+        $tokenHint     = null;
+
         $clauses = collect(PurchaseOfferGeneratorService::DEFAULT_CLAUSES)->map(function ($default, $key) {
             return [
                 'key'     => $key,
@@ -30,7 +36,7 @@ class DocumentClauseController extends Controller
             ->latest('updated_at')
             ->first();
 
-        return view('admin.documentos.clausulas', compact('clauses', 'lastUpdated'));
+        return view('admin.documentos.clausulas', compact('clauses', 'lastUpdated', 'documentTitle', 'updateRoute', 'tokenHint'));
     }
 
     public function updateOfertaCompra(Request $request)
@@ -49,5 +55,47 @@ class DocumentClauseController extends Controller
         }
 
         return redirect()->route('admin.documentos.oferta-compra.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
+    }
+
+    public function editContratoExclusiva()
+    {
+        $documentTitle = 'Contrato de Exclusiva';
+        $updateRoute   = route('admin.documentos.contrato-exclusiva.clausulas.update');
+        $legalHint     = 'Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas con propietarios reales — especialmente la de comisión.';
+        $tokenHint     = null;
+
+        $clauses = collect(ContratoExclusivaGeneratorService::DEFAULT_CLAUSES)->map(function ($default, $key) {
+            return [
+                'key'     => $key,
+                'label'   => ContratoExclusivaGeneratorService::CLAUSE_LABELS[$key],
+                'default' => $default,
+                'value'   => DocumentClause::where('document_key', 'contrato_exclusiva')->where('clause_key', $key)->value('value') ?? $default,
+            ];
+        });
+
+        $lastUpdated = DocumentClause::where('document_key', 'contrato_exclusiva')
+            ->with('updatedBy')
+            ->latest('updated_at')
+            ->first();
+
+        return view('admin.documentos.clausulas', compact('clauses', 'lastUpdated', 'documentTitle', 'updateRoute', 'legalHint', 'tokenHint'));
+    }
+
+    public function updateContratoExclusiva(Request $request)
+    {
+        $keys = array_keys(ContratoExclusivaGeneratorService::DEFAULT_CLAUSES);
+
+        $validated = $request->validate(
+            collect($keys)->mapWithKeys(fn ($key) => [$key => 'required|string|max:5000'])->all()
+        );
+
+        foreach ($validated as $clauseKey => $value) {
+            DocumentClause::updateOrCreate(
+                ['document_key' => 'contrato_exclusiva', 'clause_key' => $clauseKey],
+                ['value' => $value, 'updated_by' => Auth::id()]
+            );
+        }
+
+        return redirect()->route('admin.documentos.contrato-exclusiva.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
     }
 }
