@@ -270,8 +270,8 @@
     </div>
     <div style="display:flex; gap:0.5rem; align-items:center;">
         <div class="view-toggle">
-            <button type="button" class="btn btn-sm" id="btnKanban" onclick="setView('kanban')" title="Kanban">&#9638;</button>
-            <button type="button" class="btn btn-sm" id="btnTable" onclick="setView('table')" title="Lista">&#9776;</button>
+            <button type="button" class="btn btn-sm" id="btnKanban" onclick="setView('kanban')" title="Kanban"><x-icon name="columns-3" class="w-4 h-4" /></button>
+            <button type="button" class="btn btn-sm" id="btnTable" onclick="setView('table')" title="Lista"><x-icon name="list" class="w-4 h-4" /></button>
         </div>
     </div>
 </div>
@@ -295,7 +295,7 @@
 {{-- Stats Strip --}}
 <div class="stats-strip">
     <div class="mini-stat">
-        <div class="mini-stat-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;">&#9830;</div>
+        <div class="mini-stat-icon" style="background:rgba(59,130,246,0.1); color:#3b82f6;"><x-icon name="zap" class="w-4 h-4" /></div>
         <div>
             <div class="mini-stat-val">{{ $stats['total'] }}</div>
             <div class="mini-stat-label">Activas</div>
@@ -350,8 +350,8 @@
 </form>
 
 <div style="margin-bottom:0.75rem;">
-    <button type="button" class="btn btn-sm btn-outline" onclick="toggleFilters()" id="filterToggle" style="font-size:0.78rem;">
-        &#128269; Filtros @if(request()->hasAny(['stage','search','user_id'])) <span style="color:var(--primary);">(activos)</span> @endif
+    <button type="button" class="btn btn-sm btn-outline" onclick="toggleFilters()" id="filterToggle" style="font-size:0.78rem; display:inline-flex; align-items:center; gap:0.35rem;">
+        <x-icon name="search" class="w-3.5 h-3.5" /> Filtros @if(request()->hasAny(['stage','search','user_id'])) <span style="color:var(--primary);">(activos)</span> @endif
     </button>
 </div>
 
@@ -433,23 +433,23 @@
                     <div class="k-card-actions">
                         @if($waLink)
                         <a href="{{ $waLink }}" target="_blank" class="k-action wa" title="WhatsApp" onclick="event.stopPropagation()">
-                            <span class="k-action-icon">&#128172;</span>
+                            <span class="k-action-icon"><x-icon name="message-circle" class="w-3.5 h-3.5" /></span>
                         </a>
                         @endif
                         @if($telLink)
                         <a href="{{ $telLink }}" class="k-action phone" title="Llamar" onclick="event.stopPropagation()">
-                            <span class="k-action-icon">&#128222;</span>
+                            <span class="k-action-icon"><x-icon name="phone" class="w-3.5 h-3.5" /></span>
                         </a>
                         @endif
                         <a href="{{ route('operations.show', $op) }}" class="k-action" title="Ver detalle" onclick="event.stopPropagation()">
-                            <span class="k-action-icon">&#128065;</span>
+                            <span class="k-action-icon"><x-icon name="eye" class="w-3.5 h-3.5" /></span>
                         </a>
                         @if($nextStage)
                         <form method="POST" action="{{ route('operations.update-stage', $op) }}" style="flex:1; display:flex;" onclick="event.stopPropagation()">
                             @csrf @method('PATCH')
                             <input type="hidden" name="stage" value="{{ $nextStage }}">
-                            <button type="submit" class="k-advance" title="Avanzar a {{ $stageLabels[$nextStage] ?? '' }}">
-                                {{ Str::limit($stageLabels[$nextStage] ?? '', 8) }} &#8594;
+                            <button type="submit" class="k-advance" title="Avanzar a {{ $stageLabels[$nextStage] ?? '' }}" style="display:inline-flex; align-items:center; gap:0.3rem;">
+                                {{ Str::limit($stageLabels[$nextStage] ?? '', 8) }} <x-icon name="arrow-right" class="w-3.5 h-3.5" />
                             </button>
                         </form>
                         @endif
@@ -526,10 +526,10 @@
                         <td>
                             <div class="table-actions-inline" style="justify-content:flex-end;">
                                 @if($waLink)
-                                <a href="{{ $waLink }}" target="_blank" class="t-action wa" title="WhatsApp">&#128172;</a>
+                                <a href="{{ $waLink }}" target="_blank" class="t-action wa" title="WhatsApp"><x-icon name="message-circle" class="w-3.5 h-3.5" /></a>
                                 @endif
-                                <a href="{{ route('operations.show', $op) }}" class="t-action" title="Ver">&#128065;</a>
-                                <a href="{{ route('operations.edit', $op) }}" class="t-action" title="Editar">&#9998;</a>
+                                <a href="{{ route('operations.show', $op) }}" class="t-action" title="Ver"><x-icon name="eye" class="w-3.5 h-3.5" /></a>
+                                <a href="{{ route('operations.edit', $op) }}" class="t-action" title="Editar"><x-icon name="pencil" class="w-3.5 h-3.5" /></a>
                             </div>
                         </td>
                     </tr>
