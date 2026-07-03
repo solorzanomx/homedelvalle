@@ -14,7 +14,7 @@ class Captacion extends Model implements HasMedia
 
     protected $fillable = [
         'client_id', 'property_id', 'operation_id', 'property_address', 'portal_etapa',
-        'motivo', 'urgencia',
+        'motivo', 'urgencia', 'situacion_herencia',
         'etapa1_completed_at', 'etapa2_completed_at', 'etapa3_completed_at', 'etapa4_completed_at',
         'etapa3_valuation_id', 'etapa4_signature_id', 'precio_acordado', 'status',
         'intent', 'commission_pct', 'marketing_plan', 'notes_from_call', 'source',
@@ -56,8 +56,16 @@ class Captacion extends Model implements HasMedia
     // Documentos requeridos para avanzar de etapa 1 (categorías)
     const REQUIRED_DOCS_ETAPA1 = ['identificacion', 'curp', 'comprobante_domicilio'];
 
-    // Documentos opcionales que se muestran pero no bloquean
-    const OPTIONAL_DOCS_ETAPA1 = ['acta_matrimonio', 'testamento'];
+    // Universo completo de documentos opcionales posibles (no todos aplican a
+    // toda captación — ver getApplicableOptionalDocs() para cuáles aplican a
+    // una captación específica según estado civil/situación de herencia).
+    const OPTIONAL_DOCS_ETAPA1 = ['acta_matrimonio', 'testamento', 'declaratoria_herederos'];
+
+    const SITUACION_HERENCIA_LABELS = [
+        'no_aplica'       => 'No aplica',
+        'con_testamento'  => 'Con testamento',
+        'intestado'       => 'Intestado (Declaratoria de Herederos)',
+    ];
 
     // ─── Relationships ────────────────────────────────────────────────────────
 
@@ -119,6 +127,26 @@ class Captacion extends Model implements HasMedia
             }
         }
         return true;
+    }
+
+    /**
+     * Documentos opcionales que aplican REALMENTE a esta captación — no todo
+     * el universo de OPTIONAL_DOCS_ETAPA1 aplica siempre (acta de matrimonio
+     * solo si el propietario está casado, testamento/declaratoria solo si el
+     * inmueble se adquirió por herencia).
+     */
+    public function getApplicableOptionalDocs(): array
+    {
+        $docs = [];
+        if ($this->client?->marital_status === 'casado') {
+            $docs[] = 'acta_matrimonio';
+        }
+        if ($this->situacion_herencia === 'con_testamento') {
+            $docs[] = 'testamento';
+        } elseif ($this->situacion_herencia === 'intestado') {
+            $docs[] = 'declaratoria_herederos';
+        }
+        return $docs;
     }
 
     /**

@@ -179,7 +179,7 @@ class CaptacionAdminController extends Controller
 
         $allCategories  = Document::CATEGORIES;
         $requiredCats   = Captacion::REQUIRED_DOCS_ETAPA1;
-        $optionalCats   = Captacion::OPTIONAL_DOCS_ETAPA1;
+        $optionalCats   = $captacion->getApplicableOptionalDocs();
         $docsByCategory = $captacion->documents->groupBy('category');
 
         // Valuaciones vinculadas a propiedades del cliente
@@ -291,6 +291,15 @@ class CaptacionAdminController extends Controller
         $this->service->confirmPrice($captacion, $request->input('precio'));
 
         return back()->with('success', 'Precio establecido. El cliente podrá confirmarlo en su portal.');
+    }
+
+    public function updateHerenciaSituacion(Request $request, Captacion $captacion)
+    {
+        $validated = $request->validate(['situacion_herencia' => 'required|in:no_aplica,con_testamento,intestado']);
+
+        $captacion->update($validated);
+
+        return back()->with('success', 'Situación de herencia actualizada.');
     }
 
     public function generarExclusiva(Request $request, Captacion $captacion)

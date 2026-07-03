@@ -29,7 +29,7 @@ class PortalCaptacionController extends Controller
 
         $allCategories = \App\Models\Document::CATEGORIES;
         $requiredCats  = \App\Models\Captacion::REQUIRED_DOCS_ETAPA1;
-        $optionalCats  = \App\Models\Captacion::OPTIONAL_DOCS_ETAPA1;
+        $optionalCats  = $captacion->getApplicableOptionalDocs();
         $showCats      = array_merge($requiredCats, $optionalCats);
 
         // Map category → uploaded documents for this captacion

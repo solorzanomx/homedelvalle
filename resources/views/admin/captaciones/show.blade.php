@@ -182,8 +182,13 @@
     $initials  = collect(explode(' ', $client->name ?? '?'))->map(fn($w) => mb_strtoupper(mb_substr($w,0,1)))->take(2)->join('');
     $etapa     = $captacion->portal_etapa;
     $etapaColor = $etapaColors[$etapa] ?? '#94a3b8';
-    $approved  = $captacion->documents->where('captacion_status','aprobado')->count();
-    $total     = $captacion->documents->count();
+    // Solo cuenta categorías realmente aplicables a esta captación (requeridas
+    // + opcionales que sí aplican) — antes contaba TODOS los documentos
+    // subidos, incluidos acta_matrimonio/testamento cuando ni siquiera
+    // aplicaban, mostrando un "3/5" confuso en captaciones ya completadas.
+    $applicableCats = array_merge(\App\Models\Captacion::REQUIRED_DOCS_ETAPA1, $captacion->getApplicableOptionalDocs());
+    $approved  = $captacion->documents->whereIn('category', $applicableCats)->where('captacion_status','aprobado')->count();
+    $total     = count($applicableCats);
     $pct       = $total > 0 ? round($approved / $total * 100) : 0;
 
     // Stepper unificado: refleja Operation.stage (lo que gobierna el kanban),
@@ -422,7 +427,21 @@
             </div>
             @endforeach
 
-            <div class="doc-section-label" style="margin-top:1.5rem;">Documentos Opcionales</div>
+            <div class="doc-section-label" style="margin-top:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                <span>Documentos Opcionales</span>
+                <form method="POST" action="{{ route('admin.captaciones.herencia-situacion', $captacion) }}" style="display:flex; align-items:center; gap:0.4rem; text-transform:none; font-weight:400;">
+                    @csrf
+                    <span style="font-size:0.72rem; color:var(--text-muted);">¿Situación de herencia?</span>
+                    <select name="situacion_herencia" class="form-select" style="font-size:0.78rem;" onchange="this.form.submit()">
+                        @foreach(\App\Models\Captacion::SITUACION_HERENCIA_LABELS as $key => $label)
+                        <option value="{{ $key }}" {{ $captacion->situacion_herencia === $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-bottom:0.5rem;">
+                Acta de Matrimonio {{ $captacion->client->marital_status === 'casado' ? 'aplica (estado civil: casado)' : 'no aplica (estado civil: ' . ($captacion->client->marital_status ?? 'no especificado') . ')' }}
+            </div>
             @foreach($optionalCats as $cat)
             @php
                 $docs = $docsByCategory[$cat] ?? collect();

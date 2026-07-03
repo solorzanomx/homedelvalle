@@ -18,6 +18,7 @@ class Document extends Model
         'comprobante_domicilio' => 'Comprobante de Domicilio',
         'acta_matrimonio' => 'Acta de Matrimonio',
         'testamento' => 'Testamento',
+        'declaratoria_herederos' => 'Declaratoria de Herederos',
         'planos' => 'Planos del Inmueble',
         'reglamento_condominio' => 'Reglamento de Condominio',
         'proof_of_income' => 'Comprobante de Ingresos',
