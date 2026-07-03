@@ -835,8 +835,26 @@
 
     {{-- ===== RIGHT: Info Panel ===== --}}
     <div class="info-panel">
-        {{-- Current Stage Checklist --}}
-        @if($clTotal > 0)
+        {{-- Proceso completado: reemplaza el checklist activo — completar la
+             captación vía "Confirmar firma manual" (u otro cierre automático)
+             no marca uno por uno los checkboxes restantes, y mostrarlos
+             congelados a medio llenar hacía parecer que el proceso seguía
+             atorado en vez de terminado. --}}
+        @if($operation->status === 'completed')
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div style="font-size:0.85rem; font-weight:700; color:var(--success); margin-bottom:0.3rem;">✓ Proceso completado</div>
+                @if($operation->spawnedOperations->isNotEmpty())
+                    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.5rem;">Se generó automáticamente el siguiente paso:</div>
+                    @foreach($operation->spawnedOperations as $sp)
+                    <a href="{{ route('operations.show', $sp->id) }}" class="btn btn-sm btn-primary" style="display:inline-block; margin-bottom:0.3rem;">Ver {{ ucfirst($sp->type) }} #{{ $sp->id }} →</a>
+                    @endforeach
+                @else
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Este proceso ya terminó.</div>
+                @endif
+            </div>
+        </div>
+        @elseif($clTotal > 0)
         <div class="card" style="margin-bottom:0.75rem;">
             <div class="card-body" style="padding:0.85rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
