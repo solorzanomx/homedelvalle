@@ -239,6 +239,8 @@ Route::middleware('auth')->group(function () {
     Route::get('operations/{operation}/oferta-compra/{purchaseOffer}', [OperationController::class, 'showPurchaseOffer'])->name('operations.purchase-offer.show');
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/accept', [OperationController::class, 'acceptPurchaseOffer'])->name('operations.purchase-offer.accept');
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/reject', [OperationController::class, 'rejectPurchaseOffer'])->name('operations.purchase-offer.reject');
+    Route::post('operations/{operation}/expenses', [\App\Http\Controllers\OperationExpenseController::class, 'store'])->name('operations.expenses.store');
+    Route::delete('operations/{operation}/expenses/{expense}', [\App\Http\Controllers\OperationExpenseController::class, 'destroy'])->name('operations.expenses.destroy');
     Route::post('operations/{operation}/marketing-strategy/generate', [MarketingStrategyController::class, 'generate'])->name('operations.marketing-strategy.generate');
     Route::patch('operations/{operation}/marketing-strategy/{marketingStrategy}', [MarketingStrategyController::class, 'update'])->name('operations.marketing-strategy.update');
     Route::post('operations/{operation}/marketing-strategy/{marketingStrategy}/approve', [MarketingStrategyController::class, 'approve'])->name('operations.marketing-strategy.approve');

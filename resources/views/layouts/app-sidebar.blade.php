@@ -382,8 +382,11 @@
                         </a>
                         @endif
                         @if(Route::has('operations.index'))
-                        <a href="{{ route('operations.index') }}" class="nav-item {{ request()->routeIs('operations.*') ? 'active' : '' }}">
+                        <a href="{{ route('operations.index') }}" class="nav-item {{ request()->routeIs('operations.*') && request('type') !== 'venta' ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="circle-play" class="w-4 h-4" /></span> Pipeline
+                        </a>
+                        <a href="{{ route('operations.index', ['type' => 'venta']) }}" class="nav-item {{ request()->routeIs('operations.*') && request('type') === 'venta' ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="megaphone" class="w-4 h-4" /></span> Preparación y Promoción
                         </a>
                         @endif
                         @if(Route::has('deals.index'))

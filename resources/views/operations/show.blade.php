@@ -876,6 +876,44 @@
         </div>
         @endif
 
+        {{-- Gastos de promocion --}}
+        @if(in_array($operation->type, ['venta','renta']))
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <span class="info-label" style="margin:0;">Gastos de Promoción</span>
+                    <span style="font-size:0.9rem; font-weight:700; color:var(--text);">${{ number_format($operation->expenses->sum('amount'), 0) }}</span>
+                </div>
+                @foreach($operation->expenses->sortByDesc('created_at') as $expense)
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.3rem 0; border-bottom:1px solid var(--border); font-size:0.8rem;">
+                    <div>
+                        <div style="font-weight:600;">{{ $expense->category_label }}</div>
+                        @if($expense->description)<div style="color:var(--text-muted); font-size:0.72rem;">{{ $expense->description }}</div>@endif
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                        <span>${{ number_format($expense->amount, 0) }}</span>
+                        <form method="POST" action="{{ route('operations.expenses.destroy', [$operation->id, $expense->id]) }}" onsubmit="return confirm('¿Eliminar este gasto?');">
+                            @csrf @method('DELETE')
+                            <button type="submit" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:0.9rem;">&times;</button>
+                        </form>
+                    </div>
+                </div>
+                @endforeach
+                <form method="POST" action="{{ route('operations.expenses.store', $operation->id) }}" style="display:flex; gap:0.4rem; margin-top:0.6rem; flex-wrap:wrap;">
+                    @csrf
+                    <select name="category" class="form-select" style="font-size:0.78rem; flex:1; min-width:110px;">
+                        @foreach(\App\Models\OperationExpense::CATEGORIES as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="description" class="form-input" placeholder="Descripción (opcional)" style="font-size:0.78rem; flex:1; min-width:100px;">
+                    <input type="number" name="amount" class="form-input" placeholder="Monto" step="0.01" min="0" required style="font-size:0.78rem; width:90px;">
+                    <button type="submit" class="btn btn-sm btn-outline">Agregar</button>
+                </form>
+            </div>
+        </div>
+        @endif
+
         {{-- Fotos y video del inmueble --}}
         @if(in_array($operation->type, ['venta','renta']) && in_array($operation->stage, ['fotos_video','carpeta_lista']) && $operation->property)
         <div class="card" style="margin-bottom:0.75rem;">

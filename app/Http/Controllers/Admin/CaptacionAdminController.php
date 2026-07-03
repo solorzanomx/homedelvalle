@@ -423,15 +423,35 @@ class CaptacionAdminController extends Controller
 
         $stats = [
             'total'               => $operations->count(),
-            'converted_this_month'=> Captacion::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            // Exclusivas realmente firmadas este mes (status=completado, fecha
+            // de conversión real) — antes contaba captaciones creadas este mes,
+            // sin importar si llegaron a firmarse (bug encontrado 2026-07-03).
+            'converted_this_month'=> Captacion::where('status', 'completado')
+                ->whereMonth('etapa4_completed_at', now()->month)
+                ->whereYear('etapa4_completed_at', now()->year)
+                ->count(),
             'declined_this_month' => Captacion::where('status', 'declinado')->whereMonth('updated_at', now()->month)->whereYear('updated_at', now()->year)->count(),
         ];
+
+        // Exclusivas firmadas por mes, últimos 6 meses — registro histórico
+        // pedido por el usuario ("cuántas exclusivas firmamos con el tiempo").
+        $exclusivasTrend = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $exclusivasTrend[] = [
+                'label' => $month->translatedFormat('M Y'),
+                'count' => Captacion::where('status', 'completado')
+                    ->whereMonth('etapa4_completed_at', $month->month)
+                    ->whereYear('etapa4_completed_at', $month->year)
+                    ->count(),
+            ];
+        }
 
         $users       = User::orderBy('name')->get();
         $currentUser = $request->input('user_id');
 
         return view('admin.captaciones.pipeline', compact(
-            'byStage', 'stages', 'stageColors', 'stats', 'users', 'captacionIds', 'currentUser'
+            'byStage', 'stages', 'stageColors', 'stats', 'users', 'captacionIds', 'currentUser', 'exclusivasTrend'
         ));
     }
 

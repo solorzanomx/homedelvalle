@@ -76,6 +76,12 @@ class OperationController extends Controller
             'pipeline_value' => Operation::active()->sum('amount') + Operation::active()->sum('monthly_rent'),
         ];
 
+        if ($typeFilter === 'venta') {
+            $ventaOpIds = Operation::active()->byType('venta')->pluck('id');
+            $stats['interesados_pendientes'] = \App\Models\PurchaseOffer::whereIn('operation_id', $ventaOpIds)->where('status', 'pending')->count();
+            $stats['costo_invertido'] = \App\Models\OperationExpense::whereIn('operation_id', $ventaOpIds)->sum('amount');
+        }
+
         $operations = $query->latest()->paginate(20);
         $users = \App\Models\User::whereIn('role', ['admin', 'broker', 'user'])->orderBy('name')->get();
 
@@ -149,7 +155,7 @@ class OperationController extends Controller
             'contracts.template', 'contracts.signer',
             'poliza.events.user', 'commissions',
             'sourceOperation', 'spawnedOperations',
-            'comments.user', 'marketingStrategy',
+            'comments.user', 'marketingStrategy', 'expenses.createdBy',
         ])->findOrFail($id);
 
         // Build timeline

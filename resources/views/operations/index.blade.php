@@ -308,6 +308,22 @@
             <div class="mini-stat-label">Pipeline</div>
         </div>
     </div>
+    @if($typeFilter === 'venta')
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(251,191,36,0.15); color:#d97706;"><x-icon name="users" class="w-4 h-4" /></div>
+        <div>
+            <div class="mini-stat-val">{{ $stats['interesados_pendientes'] ?? 0 }}</div>
+            <div class="mini-stat-label">Interesados</div>
+        </div>
+    </div>
+    <div class="mini-stat">
+        <div class="mini-stat-icon" style="background:rgba(236,72,153,0.15); color:#ec4899;">$</div>
+        <div>
+            <div class="mini-stat-val">${{ number_format($stats['costo_invertido'] ?? 0, 0) }}</div>
+            <div class="mini-stat-label">Costo invertido</div>
+        </div>
+    </div>
+    @endif
     @php
         $staleCount = 0;
         foreach ($operationsByStage as $ops) {

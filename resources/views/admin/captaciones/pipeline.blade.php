@@ -167,6 +167,14 @@
     @endforeach
 </div>
 
+{{-- ===== Registro histórico: exclusivas firmadas ===== --}}
+<div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-body" style="padding:1rem 1.25rem;">
+        <div style="font-size:.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.6rem;">Exclusivas firmadas — últimos 6 meses</div>
+        <div style="height:140px;"><canvas id="exclusivasChart"></canvas></div>
+    </div>
+</div>
+
 {{-- ===== FILTER BAR ===== --}}
 <form method="GET" action="{{ request()->url() }}" class="filter-bar" id="filterForm">
     <input
@@ -377,6 +385,35 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function() {
+    const el = document.getElementById('exclusivasChart');
+    if (!el) return;
+    const trend = @json($exclusivasTrend);
+    new Chart(el.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: trend.map(d => d.label),
+            datasets: [{
+                label: 'Exclusivas firmadas',
+                data: trend.map(d => d.count),
+                backgroundColor: '#8b5cf6',
+                borderRadius: 4,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, ticks: { precision: 0 } },
+            },
+        },
+    });
+})();
+</script>
 <script>
 // ── Filter debounce ──────────────────────────────────────────────────────────
 let _filterTimer;
