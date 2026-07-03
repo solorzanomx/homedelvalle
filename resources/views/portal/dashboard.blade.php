@@ -278,6 +278,29 @@
 
     // ── Activity log ──────────────────────────────────────────────
     $activities = [];
+
+    // Logros post-exclusiva (venta) — más recientes primero, van arriba de todo.
+    if (isset($ventaOperation) && $ventaOperation) {
+        $stageActivityMeta = [
+            'mejoras'         => ['icon' => '🔧', 'bg' => '#FFF7ED', 'text' => 'Estamos preparando tu inmueble para publicarse.'],
+            'fotos_video'     => ['icon' => '📸', 'bg' => '#FDF2F8', 'text' => 'Sesión de fotos y video realizada.'],
+            'carpeta_lista'   => ['icon' => '📁', 'bg' => '#F0FDF4', 'text' => 'Toda tu documentación está lista.'],
+            'publicacion'     => ['icon' => '🚀', 'bg' => '#ECFDF5', 'text' => '¡Tu propiedad ya está publicada!'],
+            'candidatos'      => ['icon' => '👀', 'bg' => '#FEFCE8', 'text' => 'Ya tenemos compradores interesados en tu propiedad.'],
+            'oferta_aceptada' => ['icon' => '🎉', 'bg' => '#ECFDF5', 'text' => '¡Recibiste y aceptaste una oferta!'],
+            'investigacion'   => ['icon' => '🔍', 'bg' => '#FFF7ED', 'text' => 'Verificando la documentación del comprador.'],
+            'contrato'        => ['icon' => '📝', 'bg' => '#EFF6FF', 'text' => 'Firmando el contrato de compraventa.'],
+            'entrega'         => ['icon' => '🔑', 'bg' => '#EFF6FF', 'text' => 'Preparando la entrega del inmueble.'],
+            'cierre'          => ['icon' => '✅', 'bg' => '#ECFDF5', 'text' => '¡Venta cerrada con éxito!'],
+        ];
+
+        foreach ($ventaOperation->stageLogs->sortByDesc('created_at') as $log) {
+            $meta = $stageActivityMeta[$log->to_stage] ?? null;
+            if (!$meta) continue;
+            $activities[] = ['icon' => $meta['icon'], 'bg' => $meta['bg'], 'text' => $meta['text'], 'time' => $log->created_at->diffForHumans()];
+        }
+    }
+
     if ($captacion) {
         if ($captacion->etapa4_completed_at)
             $activities[] = ['icon' => '🤝', 'bg' => '#ECFDF5', 'text' => 'Contrato de exclusiva firmado — tu inmueble ya está en el mercado.', 'time' => $captacion->etapa4_completed_at->diffForHumans()];

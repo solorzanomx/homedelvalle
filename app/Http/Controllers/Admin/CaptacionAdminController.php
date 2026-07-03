@@ -10,6 +10,7 @@ use App\Models\PropertyValuation;
 use App\Models\User;
 use App\Services\CaptacionDeclineService;
 use App\Services\CaptacionService;
+use App\Services\ClientPortalService;
 use App\Services\ManualBrokerGeneratorService;
 use App\Services\PresentationGeneratorService;
 use App\Services\ServiciosGeneratorService;
@@ -117,6 +118,8 @@ class CaptacionAdminController extends Controller
             return back()->with('error', 'Error al enviar email: ' . $e->getMessage());
         }
 
+        $this->maybeCreatePortalAccount($captacion);
+
         return back()->with('success', 'Presentación enviada por email a ' . $request->input('email'));
     }
 
@@ -136,8 +139,38 @@ class CaptacionAdminController extends Controller
             return back()->with('error', 'Error: ' . $e->getMessage());
         }
 
+        $this->maybeCreatePortalAccount($captacion);
+
         // Redirigir al wa.me — el agente envía desde su WhatsApp Desktop
         return redirect($result['wa_me_url']);
+    }
+
+    /**
+     * Al enviar la Presentación es el momento en que el propietario entra en
+     * contacto real por primera vez — la cuenta del portal nace aquí, no
+     * hasta firmar la exclusiva, para que pueda seguir todo el proceso desde
+     * el día 1. Idempotente (ClientPortalService::createPortalAccount ya
+     * revisa si el cliente ya tiene cuenta).
+     */
+    private function maybeCreatePortalAccount(Captacion $captacion): void
+    {
+        if (! config('portal.auto_create_accounts', false)) {
+            return;
+        }
+
+        try {
+            $portal = app(ClientPortalService::class);
+            $result = $portal->createPortalAccount($captacion->client);
+
+            if ($result['password']) {
+                $portal->sendWelcomeInvitation($result['user']);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('maybeCreatePortalAccount: falló', [
+                'captacion_id' => $captacion->id,
+                'error'        => $e->getMessage(),
+            ]);
+        }
     }
 
     public function show(Captacion $captacion)

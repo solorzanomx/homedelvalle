@@ -435,6 +435,30 @@
         if ($etapa === $stageEtapa) return 2;  // active
         return 0;                              // locked
     };
+
+    // "En el mercado" — 5 buckets visuales sobre las 10 etapas reales de
+    // Operation::VENTA_STAGES (mejoras..cierre), agrupadas para el sidebar.
+    $mktBuckets = [
+        'Preparación'     => ['mejoras', 'fotos_video', 'carpeta_lista'],
+        'Publicación'     => ['publicacion'],
+        'Candidatos'      => ['candidatos'],
+        'Oferta Aceptada' => ['oferta_aceptada'],
+        'Cierre'          => ['investigacion', 'contrato', 'entrega', 'cierre'],
+    ];
+    $ventaStageOrder = array_flip(\App\Models\Operation::VENTA_STAGES);
+    $currentStageIdx = ($portalVentaOperation && isset($ventaStageOrder[$portalVentaOperation->stage]))
+        ? $ventaStageOrder[$portalVentaOperation->stage]
+        : null;
+    // 0=locked, 1=done, 2=active
+    $mktSt = function(array $bucketStages) use ($ventaStageOrder, $currentStageIdx) {
+        if ($currentStageIdx === null) return 0;
+        $bucketIdxs = array_map(fn($s) => $ventaStageOrder[$s] ?? null, $bucketStages);
+        $minIdx = min($bucketIdxs);
+        $maxIdx = max($bucketIdxs);
+        if ($currentStageIdx > $maxIdx) return 1;   // done
+        if ($currentStageIdx >= $minIdx) return 2;  // active (dentro del bucket)
+        return 0;                                   // locked
+    };
 @endphp
 
     {{-- ── Mobile top bar ── --}}
@@ -556,30 +580,22 @@
             </a>
         </div>
 
-        {{-- Post-exclusiva stages — locked until etapa4 is done --}}
+        {{-- Post-exclusiva stages — progreso real desde $portalVentaOperation->stage --}}
         <div class="sb-section">
             <div class="sb-section-label">En el mercado</div>
 
-            <span class="sb-item locked">
-                <span class="sb-stage-num">5</span>
-                Preparación
-            </span>
-            <span class="sb-item locked">
-                <span class="sb-stage-num">6</span>
-                Promoción
-            </span>
-            <span class="sb-item locked">
-                <span class="sb-stage-num">7</span>
-                Visitas
-            </span>
-            <span class="sb-item locked">
-                <span class="sb-stage-num">8</span>
-                Negociación
-            </span>
-            <span class="sb-item locked">
-                <span class="sb-stage-num">9</span>
-                Cierre
-            </span>
+            @foreach(array_keys($mktBuckets) as $i => $bucketName)
+                @php $bStatus = $mktSt($mktBuckets[$bucketName]); @endphp
+                <a href="{{ $bStatus > 0 ? route('portal.dashboard') : '#' }}"
+                   class="sb-item {{ $bStatus === 2 ? 'active' : ($bStatus === 1 ? 'done' : 'locked') }}">
+                    <span class="sb-stage-num">
+                        @if($bStatus === 1) <span class="sb-stage-check">&#10003;</span>
+                        @else {{ 5 + $i }}
+                        @endif
+                    </span>
+                    {{ $bucketName }}
+                </a>
+            @endforeach
         </div>
 
         @elseif($isVenta && !$portalCaptacion)

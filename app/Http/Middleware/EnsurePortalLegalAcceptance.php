@@ -32,6 +32,12 @@ class EnsurePortalLegalAcceptance
             : null;
         View::share('portalCaptacion', $portalCaptacion);
 
+        // Operation de venta nacida al firmar exclusiva (source_operation_id) —
+        // fuente real de progreso "En el mercado" (mejoras→...→cierre).
+        $portalVentaOperation = $portalCaptacion?->operation
+            ?->spawnedOperations()->where('type', 'venta')->latest()->first();
+        View::share('portalVentaOperation', $portalVentaOperation);
+
         // Find published aviso de privacidad
         $aviso = LegalDocument::where('type', 'aviso_privacidad')
             ->where('status', 'published')

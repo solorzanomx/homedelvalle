@@ -57,9 +57,15 @@ class PortalDashboardController extends Controller
         $docsPending  = $captacion?->documents->where('captacion_status', 'pendiente')->count() ?? 0;
         $docsTotal    = $captacion?->documents->count() ?? 0;
 
+        // Operation de venta (post-exclusiva) con su historial de etapas, para
+        // la línea de tiempo "qué hemos logrado" del dashboard.
+        $ventaOperation = $captacion?->operation
+            ?->spawnedOperations()->where('type', 'venta')->with('stageLogs')->latest()->first();
+
         return view('portal.dashboard', compact(
             'client', 'rentals', 'documents', 'contracts', 'properties',
-            'isRental', 'isVenta', 'captacion', 'docsApproved', 'docsPending', 'docsTotal'
+            'isRental', 'isVenta', 'captacion', 'docsApproved', 'docsPending', 'docsTotal',
+            'ventaOperation'
         ));
     }
 
