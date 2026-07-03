@@ -12,10 +12,17 @@
 
 @section('content')
 @php
+    // Solo los documentos que el propietario sube (identificación, CURP, etc.)
+    // pasan por una revisión real del broker — los que el broker genera y
+    // entrega (Presentación, Propuesta de Servicios, Opinión de Valor) no
+    // tienen ningún flujo de aprobación, así que no deben mostrar ese estado.
+    $reviewableCategories = array_merge(\App\Models\Captacion::REQUIRED_DOCS_ETAPA1, \App\Models\Captacion::OPTIONAL_DOCS_ETAPA1);
+    $captacionReviewDocs  = $captacionDocuments->whereIn('category', $reviewableCategories);
+
     $totalDocs = $documents->count() + $captacionDocuments->count();
-    $approved  = $documents->where('status','verified')->count() + $captacionDocuments->where('captacion_status','aprobado')->count();
-    $inReview  = $documents->whereIn('status',['pending','received'])->count() + $captacionDocuments->where('captacion_status','pendiente')->count();
-    $rejected  = $documents->where('status','rejected')->count() + $captacionDocuments->where('captacion_status','rechazado')->count();
+    $approved  = $documents->where('status','verified')->count() + $captacionReviewDocs->where('captacion_status','aprobado')->count();
+    $inReview  = $documents->whereIn('status',['pending','received'])->count() + $captacionReviewDocs->where('captacion_status','pendiente')->count();
+    $rejected  = $documents->where('status','rejected')->count() + $captacionReviewDocs->where('captacion_status','rechazado')->count();
 @endphp
 
 <div class="page-header">
@@ -63,15 +70,16 @@
     <div style="padding:1rem 1.25rem;display:flex;flex-direction:column;gap:.5rem;">
         @foreach($captacionDocuments as $doc)
         @php
-            $sc = match($doc->captacion_status) { 'aprobado' => '#10b981', 'rechazado' => '#ef4444', default => '#f59e0b' };
-            $sl = match($doc->captacion_status) { 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', default => 'En revisión' };
+            $isReviewable = in_array($doc->category, $reviewableCategories);
+            $sc = $isReviewable ? match($doc->captacion_status) { 'aprobado' => '#10b981', 'rechazado' => '#ef4444', default => '#f59e0b' } : '#1D4ED8';
+            $sl = $isReviewable ? match($doc->captacion_status) { 'aprobado' => 'Aprobado', 'rechazado' => 'Rechazado', default => 'En revisión' } : 'Disponible';
         @endphp
         <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;background:#f8fafc;border:1px solid var(--border);border-radius:9px;">
             <span>📄</span>
             <div style="flex:1;min-width:0;">
                 <p style="font-weight:600;font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $doc->label ?? $doc->file_name }}</p>
                 <p style="font-size:.68rem;color:var(--text-muted);">{{ ($allCategories ?? [])[$doc->category] ?? $doc->category }} &middot; {{ $doc->created_at->format('d/m/Y') }}</p>
-                @if($doc->captacion_status === 'rechazado' && $doc->rejection_reason)
+                @if($isReviewable && $doc->captacion_status === 'rechazado' && $doc->rejection_reason)
                 <p style="font-size:.68rem;color:#ef4444;margin-top:.1rem;">⚠ {{ $doc->rejection_reason }}</p>
                 @endif
             </div>
