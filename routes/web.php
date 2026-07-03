@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\HelpCenterController;
 use App\Http\Controllers\Admin\ContractTemplateController;
 use App\Http\Controllers\Admin\ChecklistTemplateController;
 use App\Http\Controllers\OperationController;
+use App\Http\Controllers\MarketingStrategyController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\RentalProcessController;
 use App\Http\Controllers\RentalDocumentController;
@@ -238,6 +239,9 @@ Route::middleware('auth')->group(function () {
     Route::get('operations/{operation}/oferta-compra/{purchaseOffer}', [OperationController::class, 'showPurchaseOffer'])->name('operations.purchase-offer.show');
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/accept', [OperationController::class, 'acceptPurchaseOffer'])->name('operations.purchase-offer.accept');
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/reject', [OperationController::class, 'rejectPurchaseOffer'])->name('operations.purchase-offer.reject');
+    Route::post('operations/{operation}/marketing-strategy/generate', [MarketingStrategyController::class, 'generate'])->name('operations.marketing-strategy.generate');
+    Route::patch('operations/{operation}/marketing-strategy/{marketingStrategy}', [MarketingStrategyController::class, 'update'])->name('operations.marketing-strategy.update');
+    Route::post('operations/{operation}/marketing-strategy/{marketingStrategy}/approve', [MarketingStrategyController::class, 'approve'])->name('operations.marketing-strategy.approve');
 
     // Rentas
     Route::resource('rentals', RentalProcessController::class);

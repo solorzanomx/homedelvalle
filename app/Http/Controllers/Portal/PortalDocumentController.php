@@ -29,9 +29,9 @@ class PortalDocumentController extends Controller
             ]);
         }
 
-        // Captacion activa y sus documentos
+        // Captacion del cliente y sus documentos — sin filtrar status (mismo
+        // bug ya corregido en EnsurePortalLegalAcceptance/PortalDashboardController).
         $captacion = Captacion::where('client_id', $client->id)
-            ->where('status', 'activo')
             ->with('documents')
             ->latest()
             ->first();

@@ -44,10 +44,12 @@ class PortalDashboardController extends Controller
             ? Property::where('client_id', $client->id)->latest()->get()
             : collect();
 
-        // Captacion activa + stats de documentos
+        // Captacion del cliente (sin filtrar status: una vez completada sigue
+        // siendo la fuente de $ventaOperation — mismo bug ya corregido en
+        // EnsurePortalLegalAcceptance/PortalLegalController, ver memoria del
+        // proyecto).
         $captacion = $isVenta
             ? \App\Models\Captacion::where('client_id', $client->id)
-                ->where('status', 'activo')
                 ->with(['valuation', 'signatureRequest', 'documents'])
                 ->latest()
                 ->first()

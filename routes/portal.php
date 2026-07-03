@@ -69,6 +69,9 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     // Mi Inmueble — métricas y actividad de visitas
     Route::get('/mi-inmueble',               [PortalPropertyController::class, 'show'])->name('mi-inmueble');
 
+    // En el mercado — progreso post-exclusiva (preparación, publicación, candidatos)
+    Route::get('/mi-proceso-de-venta/en-el-mercado', [\App\Http\Controllers\Portal\PortalMercadoController::class, 'show'])->name('mercado');
+
     // Mi Expediente — datos legales del cliente
     Route::get('/mi-expediente',                      [PortalExpedienteController::class, 'show'])->name('expediente');
     Route::post('/mi-expediente/datos',               [PortalExpedienteController::class, 'saveDatos'])->name('expediente.datos');

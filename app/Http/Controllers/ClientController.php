@@ -413,8 +413,10 @@ class ClientController extends Controller
             ->pluck('id');
 
         try {
+            // Sin filtrar status: una captación completada sigue mostrando sus
+            // documentos aquí (mismo bug ya corregido en el Portal — ver
+            // memoria del proyecto).
             $captacion = \App\Models\Captacion::where('client_id', $client->id)
-                ->where('status', 'activo')
                 ->with('documents.uploader')
                 ->latest()
                 ->first();

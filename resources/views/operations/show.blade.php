@@ -858,6 +858,94 @@
         </div>
         @endif
 
+        {{-- Fotos y video del inmueble --}}
+        @if(in_array($operation->type, ['venta','renta']) && in_array($operation->stage, ['fotos_video','carpeta_lista']) && $operation->property)
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div class="info-label" style="margin-bottom:0.5rem;">Fotos y Video</div>
+                <div class="info-row"><span class="lbl">Fotos subidas</span><span class="val">{{ $operation->property->photos->count() }}</span></div>
+                <div class="info-row"><span class="lbl">Recorrido en video</span><span class="val">{{ $operation->property->youtube_url ? '✓ Listo' : 'Pendiente' }}</span></div>
+                <a href="{{ route('properties.edit', $operation->property_id) }}" class="btn btn-sm btn-outline" style="margin-top:0.5rem; display:inline-block;">Gestionar fotos/video →</a>
+            </div>
+        </div>
+        @endif
+
+        {{-- Estrategia de Promocion --}}
+        @if(in_array($operation->type, ['venta','renta']) && in_array($operation->stage, ['fotos_video','carpeta_lista']))
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                    <span class="info-label" style="margin:0;">Estrategia de Promoción</span>
+                    @if($operation->marketingStrategy?->isApproved())
+                        <span class="badge badge-green" style="font-size:0.68rem;">Aprobada</span>
+                    @elseif($operation->marketingStrategy)
+                        <span class="badge" style="font-size:0.68rem; background:#fef3c7; color:#b45309;">Sin aprobar</span>
+                    @endif
+                </div>
+
+                @if(!$operation->marketingStrategy)
+                    <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.6rem;">Define el público objetivo y los canales recomendados para promover este inmueble.</p>
+                    <form method="POST" action="{{ route('operations.marketing-strategy.generate', $operation->id) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-primary">Generar con IA</button>
+                    </form>
+                @else
+                    @php $ms = $operation->marketingStrategy; @endphp
+                    <form method="POST" action="{{ route('operations.marketing-strategy.update', [$operation->id, $ms->id]) }}" style="display:flex; flex-direction:column; gap:0.5rem;">
+                        @csrf @method('PATCH')
+                        <div>
+                            <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Perfil del comprador/inquilino</label>
+                            <textarea name="perfil" class="form-input" rows="2" style="font-size:0.8rem;">{{ $ms->target_audience['perfil'] ?? '' }}</textarea>
+                        </div>
+                        <div style="display:flex; gap:0.5rem;">
+                            <div style="flex:1;">
+                                <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Rango de edad</label>
+                                <input type="text" name="edad_rango" class="form-input" style="font-size:0.8rem;" value="{{ $ms->target_audience['edad_rango'] ?? '' }}">
+                            </div>
+                            <div style="flex:1;">
+                                <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Ingresos estimados</label>
+                                <input type="text" name="ingresos_estimado" class="form-input" style="font-size:0.8rem;" value="{{ $ms->target_audience['ingresos_estimado'] ?? '' }}">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Intereses (uno por línea)</label>
+                            <textarea name="intereses" class="form-input" rows="3" style="font-size:0.8rem;">{{ implode("\n", $ms->target_audience['intereses'] ?? []) }}</textarea>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Posicionamiento</label>
+                            <textarea name="positioning_summary" class="form-input" rows="3" style="font-size:0.8rem;">{{ $ms->positioning_summary }}</textarea>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Canales recomendados (uno por línea)</label>
+                            <textarea name="recommended_channels" class="form-input" rows="3" style="font-size:0.8rem;">{{ implode("\n", $ms->recommended_channels ?? []) }}</textarea>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.7rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; margin-bottom:0.2rem;">Puntos fuertes (uno por línea)</label>
+                            <textarea name="key_selling_points" class="form-input" rows="3" style="font-size:0.8rem;">{{ implode("\n", $ms->key_selling_points ?? []) }}</textarea>
+                        </div>
+                        <div style="margin-top:0.25rem;">
+                            <button type="submit" class="btn btn-sm btn-outline">Guardar cambios</button>
+                        </div>
+                    </form>
+                    <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.5rem;">
+                        <form method="POST" action="{{ route('operations.marketing-strategy.generate', $operation->id) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-outline">Regenerar con IA</button>
+                        </form>
+                        @unless($ms->isApproved())
+                        <form method="POST" action="{{ route('operations.marketing-strategy.approve', [$operation->id, $ms->id]) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-primary">Aprobar</button>
+                        </form>
+                        @else
+                        <span style="font-size:0.7rem; color:var(--text-muted);">Aprobada {{ $ms->approved_at->format('d/m/Y') }} por {{ $ms->approver->name ?? '—' }}</span>
+                        @endunless
+                    </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Stage Change --}}
         <div class="card" style="margin-bottom:0.75rem;">
             <div class="card-body" style="padding:0.85rem;">

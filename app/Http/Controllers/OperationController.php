@@ -142,14 +142,14 @@ class OperationController extends Controller
     public function show(string $id)
     {
         $operation = Operation::with([
-            'property', 'client', 'secondaryClient', 'broker', 'user',
+            'property.photos', 'client', 'secondaryClient', 'broker', 'user',
             'stageLogs.user',
             'checklistItems.template', 'checklistItems.completedByUser',
             'documents.uploader', 'tasks.user',
             'contracts.template', 'contracts.signer',
             'poliza.events.user', 'commissions',
             'sourceOperation', 'spawnedOperations',
-            'comments.user',
+            'comments.user', 'marketingStrategy',
         ])->findOrFail($id);
 
         // Build timeline

@@ -41,8 +41,11 @@ class Operation extends Model
 
     const PHASE_MAP = [
         'lead' => 'captacion', 'contacto' => 'captacion', 'visita' => 'captacion', 'exclusiva' => 'captacion',
-        'revision_docs' => 'captacion', 'avaluo' => 'captacion', 'mejoras' => 'captacion',
-        'fotos_video' => 'captacion', 'carpeta_lista' => 'captacion',
+        'revision_docs' => 'captacion', 'avaluo' => 'captacion',
+        // mejoras/fotos_video/carpeta_lista viven en VENTA_STAGES/RENTA_STAGES desde el
+        // reordenamiento del 2026-07-01 (ver project_homedelvalle_flujo_captacion.md) —
+        // 'captacion' aquí era un residuo de antes de ese cambio.
+        'mejoras' => 'operacion', 'fotos_video' => 'operacion', 'carpeta_lista' => 'operacion',
         'publicacion' => 'operacion', 'busqueda' => 'operacion', 'candidatos' => 'operacion', 'oferta_aceptada' => 'operacion',
         'investigacion' => 'operacion',
         'contrato' => 'operacion', 'entrega' => 'operacion', 'cierre' => 'operacion',
@@ -107,6 +110,7 @@ class Operation extends Model
     public function comments() { return $this->hasMany(OperationComment::class)->orderByDesc('created_at'); }
     public function sourceOperation() { return $this->belongsTo(Operation::class, 'source_operation_id'); }
     public function spawnedOperations() { return $this->hasMany(Operation::class, 'source_operation_id'); }
+    public function marketingStrategy() { return $this->hasOne(PropertyMarketingStrategy::class); }
 
     public function currentStageChecklistItems()
     {

@@ -425,6 +425,7 @@
     $onDashboard  = request()->routeIs('portal.dashboard');
     $onRental      = request()->routeIs('portal.rentals.*');
     $onMiInmueble  = request()->routeIs('portal.mi-inmueble');
+    $onMercado     = request()->routeIs('portal.mercado');
     $onExpediente  = request()->routeIs('portal.expediente*');
     $expedienteCompleteness = $portalClient ? $portalClient->legal_completeness : 0;
 
@@ -586,8 +587,8 @@
 
             @foreach(array_keys($mktBuckets) as $i => $bucketName)
                 @php $bStatus = $mktSt($mktBuckets[$bucketName]); @endphp
-                <a href="{{ $bStatus > 0 ? route('portal.dashboard') : '#' }}"
-                   class="sb-item {{ $bStatus === 2 ? 'active' : ($bStatus === 1 ? 'done' : 'locked') }}">
+                <a href="{{ $bStatus > 0 ? route('portal.mercado') : '#' }}"
+                   class="sb-item {{ $onMercado || $bStatus === 2 ? 'active' : ($bStatus === 1 ? 'done' : 'locked') }}">
                     <span class="sb-stage-num">
                         @if($bStatus === 1) <span class="sb-stage-check">&#10003;</span>
                         @else {{ 5 + $i }}

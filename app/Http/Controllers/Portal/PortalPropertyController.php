@@ -19,9 +19,10 @@ class PortalPropertyController extends Controller
             abort(404);
         }
 
-        // Get the primary property (from captación or owned properties)
+        // Get the primary property (from captación or owned properties) —
+        // sin filtrar status (mismo bug ya corregido en otros controllers del
+        // portal — ver memoria del proyecto).
         $captacion = \App\Models\Captacion::where('client_id', $client->id)
-            ->where('status', 'activo')
             ->with('property')
             ->latest()->first();
 

@@ -22,8 +22,9 @@ class PortalValuacionController extends Controller
             return redirect()->route('portal.dashboard');
         }
 
+        // Sin filtrar status (mismo bug ya corregido en otros controllers del
+        // portal — ver memoria del proyecto).
         $captacion = Captacion::where('client_id', $client->id)
-            ->where('status', 'activo')
             ->with(['valuation.adjustments', 'valuation.colonia', 'valuation.snapshot'])
             ->latest()
             ->first();
@@ -43,7 +44,6 @@ class PortalValuacionController extends Controller
         if (!$client) abort(403);
 
         $captacion = Captacion::where('client_id', $client->id)
-            ->where('status', 'activo')
             ->latest()
             ->firstOrFail();
 
