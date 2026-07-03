@@ -32,7 +32,10 @@ class Operation extends Model
         'renovacion' => 'Renovacion',
     ];
 
-    const VENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','candidatos','oferta_aceptada','investigacion','contrato','entrega','cierre'];
+    // Sin lead/contacto/visita/exclusiva: toda venta nace de una captacion que ya
+    // recorrio esas etapas por su cuenta (CAPTACION_STAGES) — no existe (ni se
+    // permite crear manualmente) una venta "comprador directo" sin captacion previa.
+    const VENTA_STAGES = ['mejoras','fotos_video','carpeta_lista','publicacion','candidatos','oferta_aceptada','investigacion','contrato','entrega','cierre'];
     const RENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre','activo','renovacion'];
     const CAPTACION_STAGES = ['lead','contacto','visita','revision_docs','avaluo','exclusiva'];
 

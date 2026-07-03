@@ -93,8 +93,10 @@ class OperationController extends Controller
 
     public function store(Request $request)
     {
+        // 'venta' no es un tipo creable manualmente aqui — toda venta nace de una
+        // captacion (auto-spawn al firmar exclusiva, ver OperationChecklistService).
         $validated = $request->validate([
-            'type' => 'required|in:venta,renta,captacion',
+            'type' => 'required|in:renta,captacion',
             'target_type' => 'nullable|required_if:type,captacion|in:venta,renta',
             'property_id' => 'nullable|exists:properties,id',
             'client_id' => 'required|exists:clients,id',

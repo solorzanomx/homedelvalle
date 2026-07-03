@@ -46,13 +46,8 @@
 
             {{-- Tipo de Operacion --}}
             <div class="section-title" style="margin-top:0;">Tipo de Operacion</div>
+            <p class="form-hint" style="margin-top:-0.25rem;margin-bottom:0.75rem;">¿Vas a vender un inmueble? Empieza con <a href="{{ route('admin.captaciones.create-from-call') }}">Nueva captación</a> — toda venta pasa primero por ahí.</p>
             <div class="type-cards">
-                <label class="type-card {{ old('type') === 'venta' ? 'selected' : '' }}" id="cardVenta">
-                    <input type="radio" name="type" value="venta" {{ old('type') === 'venta' ? 'checked' : '' }} required onchange="onTypeChange(this.value)">
-                    <div class="type-icon">&#9830;</div>
-                    <div class="type-label">Venta</div>
-                    <div class="type-desc">Compraventa de propiedad</div>
-                </label>
                 <label class="type-card {{ old('type') === 'renta' ? 'selected' : '' }}" id="cardRenta">
                     <input type="radio" name="type" value="renta" {{ old('type') === 'renta' ? 'checked' : '' }} required onchange="onTypeChange(this.value)">
                     <div class="type-icon">&#127968;</div>
@@ -205,28 +200,24 @@
 <script>
 function onTypeChange(type) {
     // Update card selection
-    document.getElementById('cardVenta').classList.toggle('selected', type === 'venta');
     document.getElementById('cardRenta').classList.toggle('selected', type === 'renta');
     document.getElementById('cardCaptacion').classList.toggle('selected', type === 'captacion');
 
     // Secondary client label
     var label = document.getElementById('secondaryClientLabel');
-    label.textContent = type === 'renta' ? 'Inquilino' : (type === 'captacion' ? 'Copropietario' : 'Comprador');
+    label.textContent = type === 'renta' ? 'Inquilino' : 'Copropietario';
 
     // Target type (captacion only)
     var fieldTarget = document.getElementById('fieldTargetType');
     if (fieldTarget) fieldTarget.classList.toggle('visible', type === 'captacion');
 
-    // Venta-only fields
-    var ventaFields = ['fieldAmount'];
-    ventaFields.forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) el.classList.toggle('visible', type === 'venta' || type === 'captacion');
-    });
+    // Amount field (captacion only — venta ya no se crea manualmente aqui)
+    var fieldAmount = document.getElementById('fieldAmount');
+    if (fieldAmount) fieldAmount.classList.toggle('visible', type === 'captacion');
 
     // Amount label
     var labelAmount = document.getElementById('labelAmount');
-    if (labelAmount) labelAmount.textContent = type === 'captacion' ? 'Valor Estimado' : 'Monto de Venta';
+    if (labelAmount) labelAmount.textContent = 'Valor Estimado';
 
     // Renta-only fields
     var rentaFields = ['fieldMonthlyRent', 'fieldDeposit', 'fieldGuarantee'];
