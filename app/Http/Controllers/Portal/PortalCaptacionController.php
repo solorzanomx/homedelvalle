@@ -45,9 +45,23 @@ class PortalCaptacionController extends Controller
             return redirect()->route('portal.dashboard');
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'category' => 'required|string',
             'file'     => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            // Datos que ya trae el documento — se guardan directo en el
+            // expediente del cliente para no volver a pedirlos ahí, mismas
+            // reglas que PortalExpedienteController::saveDatos().
+            'first_name'        => 'nullable|string|max:100',
+            'last_name_paterno' => 'nullable|string|max:100',
+            'last_name_materno' => 'nullable|string|max:100',
+            'curp'              => 'nullable|string|max:18',
+            'id_type'           => 'nullable|in:INE,pasaporte,cedula_profesional,otro',
+            'id_number'         => 'nullable|string|max:60',
+            'address_street'       => 'nullable|string|max:200',
+            'address_colony'       => 'nullable|string|max:100',
+            'address_municipality' => 'nullable|string|max:100',
+            'address_state'        => 'nullable|string|max:60',
+            'address_zip'          => 'nullable|string|max:5',
         ]);
 
         $captacion = $this->captacionService->getOrCreateForClient($client);
@@ -69,6 +83,21 @@ class PortalCaptacionController extends Controller
             'is_captacion_required'=> in_array($request->input('category'), \App\Models\Captacion::REQUIRED_DOCS_ETAPA1),
             'captacion_status'     => 'pendiente',
         ]);
+
+        $clientFields = array_filter(
+            \Illuminate\Support\Arr::except($validated, ['category', 'file']),
+            fn ($value) => $value !== null && $value !== ''
+        );
+        if (!empty($clientFields)) {
+            if (!empty($clientFields['first_name']) && !empty($clientFields['last_name_paterno'])) {
+                $clientFields['name'] = trim(
+                    ($clientFields['first_name'] ?? '') . ' ' .
+                    ($clientFields['last_name_paterno'] ?? '') . ' ' .
+                    ($clientFields['last_name_materno'] ?? '')
+                );
+            }
+            $client->update($clientFields);
+        }
 
         return back()->with('success', 'Documento subido. Tu asesor lo revisará pronto.');
     }

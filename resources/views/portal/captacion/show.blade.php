@@ -496,6 +496,45 @@
                 <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin-bottom:.4rem;">Archivo (PDF, JPG o PNG — máx. 10 MB)</label>
                 <input type="file" name="file" id="upload-file" class="form-input" accept=".pdf,.jpg,.jpeg,.png" required>
             </div>
+
+            {{-- Datos que ya trae el documento — se guardan en tu expediente para no volver a pedirlos --}}
+            <div class="upload-extra-fields" data-cat="identificacion" style="display:none; margin-bottom:1.25rem; padding-top:.25rem; border-top:1px dashed var(--border);">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Tipo de identificación</label>
+                <select name="id_type" class="form-input">
+                    <option value="">Selecciona...</option>
+                    <option value="INE">INE</option>
+                    <option value="pasaporte">Pasaporte</option>
+                    <option value="cedula_profesional">Cédula profesional</option>
+                    <option value="otro">Otro</option>
+                </select>
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Número de identificación</label>
+                <input type="text" name="id_number" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Nombre(s)</label>
+                <input type="text" name="first_name" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Apellido paterno</label>
+                <input type="text" name="last_name_paterno" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Apellido materno</label>
+                <input type="text" name="last_name_materno" class="form-input">
+            </div>
+
+            <div class="upload-extra-fields" data-cat="curp" style="display:none; margin-bottom:1.25rem; padding-top:.25rem; border-top:1px dashed var(--border);">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">CURP</label>
+                <input type="text" name="curp" class="form-input" maxlength="18" style="text-transform:uppercase;">
+            </div>
+
+            <div class="upload-extra-fields" data-cat="comprobante_domicilio" style="display:none; margin-bottom:1.25rem; padding-top:.25rem; border-top:1px dashed var(--border);">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Calle y número</label>
+                <input type="text" name="address_street" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Colonia</label>
+                <input type="text" name="address_colony" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Municipio / Alcaldía</label>
+                <input type="text" name="address_municipality" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Estado</label>
+                <input type="text" name="address_state" class="form-input">
+                <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin:.9rem 0 .4rem;">Código postal</label>
+                <input type="text" name="address_zip" class="form-input" maxlength="5">
+            </div>
+
             <div style="display:flex; gap:.75rem; justify-content:flex-end;">
                 <button type="button" class="btn btn-outline" onclick="closeUpload()">Cancelar</button>
                 <button type="submit" class="btn btn-primary" style="background:#1D4ED8;">Subir</button>
@@ -513,6 +552,15 @@ function openUpload(category) {
     document.getElementById('upload-category').value = category;
     document.getElementById('upload-file').value = '';
     document.getElementById('upload-cat-name').textContent = catNames[category] || category;
+
+    document.querySelectorAll('.upload-extra-fields').forEach(function(block) {
+        var isMatch = block.dataset.cat === category;
+        block.style.display = isMatch ? 'block' : 'none';
+        if (!isMatch) {
+            block.querySelectorAll('input, select').forEach(function(field) { field.value = ''; });
+        }
+    });
+
     var modal = document.getElementById('upload-modal');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
