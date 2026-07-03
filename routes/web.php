@@ -236,6 +236,8 @@ Route::middleware('auth')->group(function () {
     Route::post('operations/{operation}/comments', [OperationController::class, 'storeComment'])->name('operations.comments.store');
     Route::post('operations/{operation}/oferta-compra', [OperationController::class, 'storePurchaseOffer'])->name('operations.purchase-offer.store');
     Route::get('operations/{operation}/oferta-compra/{purchaseOffer}', [OperationController::class, 'showPurchaseOffer'])->name('operations.purchase-offer.show');
+    Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/accept', [OperationController::class, 'acceptPurchaseOffer'])->name('operations.purchase-offer.accept');
+    Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/reject', [OperationController::class, 'rejectPurchaseOffer'])->name('operations.purchase-offer.reject');
 
     // Rentas
     Route::resource('rentals', RentalProcessController::class);

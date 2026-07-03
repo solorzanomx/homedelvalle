@@ -482,6 +482,16 @@
                             <div style="display:flex;align-items:center;gap:.5rem;">
                                 <span class="badge badge-{{ match($offer->status) { 'accepted' => 'green', 'rejected' => 'red', 'expired' => 'yellow', default => 'blue' } }}">{{ $offer->status_label }}</span>
                                 <a href="{{ route('operations.purchase-offer.show', [$operation->id, $offer->id]) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                                @if($offer->status === 'pending')
+                                <form method="POST" action="{{ route('operations.purchase-offer.accept', [$operation->id, $offer->id]) }}" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm" style="background:#16a34a;color:#fff;">&#10003; Aceptar</button>
+                                </form>
+                                <form method="POST" action="{{ route('operations.purchase-offer.reject', [$operation->id, $offer->id]) }}" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#dc2626;">&#10007; Rechazar</button>
+                                </form>
+                                @endif
                             </div>
                         </div>
                         @endforeach

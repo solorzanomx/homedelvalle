@@ -139,7 +139,7 @@ class DocumentRegistryController extends Controller
         return view('admin.documentos.oferta-compra-flash', compact('clients', 'properties'));
     }
 
-    public function flashStore(Request $request, PurchaseOfferGeneratorService $generator)
+    public function flashStore(Request $request, PurchaseOfferGeneratorService $generator, \App\Services\OperationChecklistService $checklistService)
     {
         $validated = $request->validate([
             'client_id'            => 'required|exists:clients,id',
@@ -160,13 +160,20 @@ class DocumentRegistryController extends Controller
             [
                 'target_type' => 'venta',
                 'phase'       => 'operacion',
-                'stage'       => 'busqueda',
+                'stage'       => 'candidatos',
                 'status'      => 'active',
                 'user_id'     => Auth::id(),
                 'amount'      => $validated['precio_ofertado'],
                 'currency'    => 'MXN',
             ]
         );
+
+        // Si se reutilizó una Operation existente que todavía no había llegado
+        // a "candidatos" (ej. seguía en publicacion), la oferta la empuja ahí.
+        $order = array_flip(Operation::VENTA_STAGES);
+        if (($order[$operation->stage] ?? 0) < ($order['candidatos'] ?? 0)) {
+            $checklistService->changeStage($operation, 'candidatos', Auth::user(), 'Oferta recibida (flash)');
+        }
 
         $offer = PurchaseOffer::create($validated + [
             'operation_id' => $operation->id,

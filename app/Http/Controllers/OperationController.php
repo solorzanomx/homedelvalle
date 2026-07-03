@@ -393,7 +393,52 @@ class OperationController extends Controller
             'status'       => 'verified',
         ]);
 
+        // Recibir una oferta es lo que marca que hay candidatos reales interesados
+        // — si la Operation todavía no llegó ahí, avanza sola (sin bloquear un
+        // movimiento manual distinto que ya se haya hecho desde el kanban).
+        $order = array_flip(Operation::VENTA_STAGES);
+        if (($order[$operation->stage] ?? 0) < ($order['candidatos'] ?? 0)) {
+            $this->checklistService->changeStage($operation, 'candidatos', Auth::user(), 'Oferta recibida');
+        }
+
         return redirect()->route('operations.show', $operation)->with('success', 'Carta Oferta de Compra generada correctamente.');
+    }
+
+    /**
+     * Aceptar una oferta: las demás ofertas pendientes de la misma Operation
+     * se marcan rechazadas automáticamente (solo puede haber un comprador),
+     * el monto de la Operation se actualiza al precio aceptado, y la
+     * Operation avanza a la etapa "oferta_aceptada" si no había llegado ahí.
+     */
+    public function acceptPurchaseOffer(Operation $operation, PurchaseOffer $purchaseOffer)
+    {
+        abort_unless($purchaseOffer->operation_id === $operation->id, 404);
+
+        $purchaseOffer->update(['status' => 'accepted']);
+
+        $operation->purchaseOffers()
+            ->where('id', '!=', $purchaseOffer->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'rejected']);
+
+        $operation->update(['amount' => $purchaseOffer->precio_ofertado]);
+
+        $order = array_flip(Operation::VENTA_STAGES);
+        if (($order[$operation->stage] ?? 0) < ($order['oferta_aceptada'] ?? 0)) {
+            $folio = 'CO-' . str_pad((string) $purchaseOffer->id, 5, '0', STR_PAD_LEFT);
+            $this->checklistService->changeStage($operation, 'oferta_aceptada', Auth::user(), "Oferta aceptada — folio {$folio}");
+        }
+
+        return back()->with('success', 'Oferta aceptada. Las demás ofertas pendientes se marcaron como rechazadas.');
+    }
+
+    public function rejectPurchaseOffer(Operation $operation, PurchaseOffer $purchaseOffer)
+    {
+        abort_unless($purchaseOffer->operation_id === $operation->id, 404);
+
+        $purchaseOffer->update(['status' => 'rejected']);
+
+        return back()->with('success', 'Oferta marcada como rechazada.');
     }
 
     /** Ver/descargar el PDF de una oferta específica ya generada. */

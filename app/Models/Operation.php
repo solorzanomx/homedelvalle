@@ -22,6 +22,8 @@ class Operation extends Model
         'carpeta_lista' => 'Carpeta Lista',
         'publicacion' => 'Publicacion',
         'busqueda' => 'Busqueda',
+        'candidatos' => 'Candidatos',
+        'oferta_aceptada' => 'Oferta Aceptada',
         'investigacion' => 'Investigacion',
         'contrato' => 'Contrato',
         'entrega' => 'Entrega',
@@ -30,7 +32,7 @@ class Operation extends Model
         'renovacion' => 'Renovacion',
     ];
 
-    const VENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre'];
+    const VENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','candidatos','oferta_aceptada','investigacion','contrato','entrega','cierre'];
     const RENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre','activo','renovacion'];
     const CAPTACION_STAGES = ['lead','contacto','visita','revision_docs','avaluo','exclusiva'];
 
@@ -38,7 +40,8 @@ class Operation extends Model
         'lead' => 'captacion', 'contacto' => 'captacion', 'visita' => 'captacion', 'exclusiva' => 'captacion',
         'revision_docs' => 'captacion', 'avaluo' => 'captacion', 'mejoras' => 'captacion',
         'fotos_video' => 'captacion', 'carpeta_lista' => 'captacion',
-        'publicacion' => 'operacion', 'busqueda' => 'operacion', 'investigacion' => 'operacion',
+        'publicacion' => 'operacion', 'busqueda' => 'operacion', 'candidatos' => 'operacion', 'oferta_aceptada' => 'operacion',
+        'investigacion' => 'operacion',
         'contrato' => 'operacion', 'entrega' => 'operacion', 'cierre' => 'operacion',
         'activo' => 'operacion', 'renovacion' => 'operacion',
     ];
@@ -47,7 +50,8 @@ class Operation extends Model
         'lead' => '#94a3b8', 'contacto' => '#60a5fa', 'visita' => '#818cf8', 'exclusiva' => '#a78bfa',
         'revision_docs' => '#f59e0b', 'avaluo' => '#ef4444', 'mejoras' => '#14b8a6',
         'fotos_video' => '#ec4899', 'carpeta_lista' => '#22c55e',
-        'publicacion' => '#34d399', 'busqueda' => '#fbbf24', 'investigacion' => '#f97316',
+        'publicacion' => '#34d399', 'busqueda' => '#fbbf24', 'candidatos' => '#fbbf24', 'oferta_aceptada' => '#16a34a',
+        'investigacion' => '#f97316',
         'contrato' => '#f472b6', 'entrega' => '#22d3ee', 'cierre' => '#10b981',
         'activo' => '#667eea', 'renovacion' => '#8b5cf6',
     ];
