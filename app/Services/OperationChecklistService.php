@@ -184,6 +184,14 @@ class OperationChecklistService
             app(\App\Services\AutomationEngine::class)->processStageChange($operation->client, $fromStage, $newStage, $operation->type);
         }
 
+        // Notificar también al comprador (secondaryClient) en las etapas
+        // post-oferta-aceptada — sufijo '_comprador' en operation_type para
+        // que estas automatizaciones no se crucen con las del vendedor
+        // (mismo to_stage, distinto operation_type en el trigger_config).
+        if ($operation->secondaryClient) {
+            app(\App\Services\AutomationEngine::class)->processStageChange($operation->secondaryClient, $fromStage, $newStage, $operation->type . '_comprador');
+        }
+
         // Auto-calculate referral commissions when operation reaches cierre
         if ($newStage === 'cierre' && $operation->commission_amount) {
             $referrals = Referral::where('operation_id', $operation->id)

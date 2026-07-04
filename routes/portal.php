@@ -72,6 +72,9 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     // En el mercado — progreso post-exclusiva (preparación, publicación, candidatos)
     Route::get('/mi-proceso-de-venta/en-el-mercado', [\App\Http\Controllers\Portal\PortalMercadoController::class, 'show'])->name('mercado');
 
+    // Mi Proceso de Compra — progreso del lado comprador (oferta→cierre)
+    Route::get('/mi-proceso-de-compra', [\App\Http\Controllers\Portal\PortalCompraController::class, 'show'])->name('mi-compra');
+
     // Mi Expediente — datos legales del cliente
     Route::get('/mi-expediente',                      [PortalExpedienteController::class, 'show'])->name('expediente');
     Route::post('/mi-expediente/datos',               [PortalExpedienteController::class, 'saveDatos'])->name('expediente.datos');

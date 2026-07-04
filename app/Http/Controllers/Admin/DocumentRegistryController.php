@@ -167,20 +167,34 @@ class DocumentRegistryController extends Controller
             'comentarios'          => 'nullable|string|max:2000',
         ]);
 
-        // Reutiliza una Operation existente de este cliente+inmueble si ya hay una
-        // (ej. si ya se generó otra oferta antes) — evita duplicar de más.
-        $operation = Operation::firstOrCreate(
-            ['type' => 'venta', 'client_id' => $validated['client_id'], 'property_id' => $validated['property_id']],
-            [
+        // El comprador (client_id del form) NUNCA es el client_id de la
+        // Operation — ese rol es del vendedor. Se reutiliza la Operation de
+        // venta YA EXISTENTE del vendedor para este inmueble (nace al firmar
+        // su exclusiva); si por algún motivo no existe todavía, se crea con
+        // el dueño real de la Property como vendedor. La oferta del comprador
+        // se adjunta vía PurchaseOffer.client_id, no como client_id de la
+        // Operation (bug real detectado en producción — dejaba al comprador
+        // apareciendo como si él mismo estuviera vendiendo el inmueble).
+        $operation = Operation::where('type', 'venta')
+            ->where('property_id', $validated['property_id'])
+            ->latest()
+            ->first();
+
+        if (!$operation) {
+            $property = Property::findOrFail($validated['property_id']);
+            $operation = Operation::create([
+                'type'        => 'venta',
                 'target_type' => 'venta',
                 'phase'       => 'operacion',
                 'stage'       => 'candidatos',
                 'status'      => 'active',
+                'client_id'   => $property->client_id,
+                'property_id' => $validated['property_id'],
                 'user_id'     => Auth::id(),
                 'amount'      => $validated['precio_ofertado'],
                 'currency'    => 'MXN',
-            ]
-        );
+            ]);
+        }
 
         // Si se reutilizó una Operation existente que todavía no había llegado
         // a "candidatos" (ej. seguía en publicacion), la oferta la empuja ahí.
@@ -198,7 +212,7 @@ class DocumentRegistryController extends Controller
 
         \App\Models\Document::create([
             'operation_id' => $operation->id,
-            'client_id'    => $operation->client_id,
+            'client_id'    => $validated['client_id'],
             'uploaded_by'  => Auth::id(),
             'category'     => 'oferta_compra',
             'label'        => 'Carta Oferta de Compra (flash) — ' . now()->format('d/m/Y'),

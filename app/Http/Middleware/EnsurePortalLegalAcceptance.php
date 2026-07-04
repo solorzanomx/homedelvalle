@@ -6,6 +6,7 @@ use App\Models\Captacion;
 use App\Models\Client;
 use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
+use App\Models\Operation;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,6 +41,18 @@ class EnsurePortalLegalAcceptance
         $portalVentaOperation = $portalCaptacion?->operation
             ?->spawnedOperations()->where('type', 'venta')->latest()->first();
         View::share('portalVentaOperation', $portalVentaOperation);
+
+        // Operation donde este cliente es el COMPRADOR — ya sea porque ganó
+        // (secondary_client_id, se setea al aceptar su oferta) o porque tiene
+        // una oferta en curso (purchaseOffers.client_id, desde que la hace,
+        // antes incluso de que se acepte). Fuente real de "Mi Proceso de Compra".
+        $portalBuyerOperation = $portalClient
+            ? Operation::where('secondary_client_id', $portalClient->id)
+                ->orWhereHas('purchaseOffers', fn ($q) => $q->where('client_id', $portalClient->id))
+                ->latest()
+                ->first()
+            : null;
+        View::share('portalBuyerOperation', $portalBuyerOperation);
 
         // Find published aviso de privacidad
         $aviso = LegalDocument::where('type', 'aviso_privacidad')

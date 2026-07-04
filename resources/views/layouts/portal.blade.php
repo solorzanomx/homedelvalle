@@ -400,6 +400,7 @@
     $interests   = $portalClient->interest_types ?? [];
     $isVenta     = !empty(array_intersect(['venta','venta_propietario'], $interests));
     $isRenta     = !empty(array_intersect(['renta_propietario', 'renta_inquilino'], $interests));
+    $isComprador = in_array('compra', $interests);
     $etapa       = $portalCaptacion->portal_etapa ?? 0;
     $etapa4Done  = $portalCaptacion ? $portalCaptacion->isEtapa4Complete() : false;
 
@@ -426,6 +427,7 @@
     $onRental      = request()->routeIs('portal.rentals.*');
     $onMiInmueble  = request()->routeIs('portal.mi-inmueble');
     $onMercado     = request()->routeIs('portal.mercado');
+    $onMiCompra    = request()->routeIs('portal.mi-compra');
     $onExpediente  = request()->routeIs('portal.expediente*');
     $expedienteCompleteness = $portalClient ? $portalClient->legal_completeness : 0;
 
@@ -459,6 +461,30 @@
         if ($currentStageIdx > $maxIdx) return 1;   // done
         if ($currentStageIdx >= $minIdx) return 2;  // active (dentro del bucket)
         return 0;                                   // locked
+    };
+
+    // "Mi Proceso de Compra" — mismo patrón de buckets que "En el mercado"
+    // pero desde el lado del comprador, sobre la misma Operation::VENTA_STAGES
+    // (a partir de candidatos, donde nace su oferta).
+    $buyerBuckets = [
+        'Oferta Enviada'  => ['candidatos'],
+        'Oferta Aceptada' => ['oferta_aceptada'],
+        'Investigación'   => ['investigacion'],
+        'Contrato'        => ['contrato'],
+        'Entrega'         => ['entrega'],
+        'Cierre'          => ['cierre'],
+    ];
+    $buyerStageIdx = ($portalBuyerOperation && isset($ventaStageOrder[$portalBuyerOperation->stage]))
+        ? $ventaStageOrder[$portalBuyerOperation->stage]
+        : null;
+    $buyerSt = function(array $bucketStages) use ($ventaStageOrder, $buyerStageIdx) {
+        if ($buyerStageIdx === null) return 0;
+        $bucketIdxs = array_map(fn($s) => $ventaStageOrder[$s] ?? null, $bucketStages);
+        $minIdx = min($bucketIdxs);
+        $maxIdx = max($bucketIdxs);
+        if ($buyerStageIdx > $maxIdx) return 1;
+        if ($buyerStageIdx >= $minIdx) return 2;
+        return 0;
     };
 @endphp
 
@@ -655,6 +681,25 @@
                 Mis Rentas
             </a>
             @endif
+        </div>
+        @endif
+
+        {{-- ── Mi Proceso de Compra ── --}}
+        @if($isComprador && $portalBuyerOperation)
+        <div class="sb-section">
+            <div class="sb-section-label">Mi proceso de compra</div>
+            @foreach(array_keys($buyerBuckets) as $i => $bucketName)
+                @php $bStatus = $buyerSt($buyerBuckets[$bucketName]); @endphp
+                <a href="{{ $bStatus > 0 ? route('portal.mi-compra') : '#' }}"
+                   class="sb-item {{ $onMiCompra || $bStatus === 2 ? 'active' : ($bStatus === 1 ? 'done' : 'locked') }}">
+                    <span class="sb-stage-num">
+                        @if($bStatus === 1) <span class="sb-stage-check">&#10003;</span>
+                        @else {{ $i + 1 }}
+                        @endif
+                    </span>
+                    {{ $bucketName }}
+                </a>
+            @endforeach
         </div>
         @endif
 
