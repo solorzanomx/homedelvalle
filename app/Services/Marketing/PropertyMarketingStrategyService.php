@@ -64,26 +64,57 @@ SYSTEM;
         $operation->loadMissing('property', 'sourceOperation');
         $property = $operation->property;
 
-        $type       = $property?->property_type ?? 'no especificado';
-        $opType     = $operation->type === 'renta' ? 'renta' : 'venta';
-        $colony     = $property?->colony ?? 'no especificada';
-        $city       = $property?->city ?? 'CDMX';
-        $price      = $operation->type === 'renta'
-            ? ('$' . number_format((float) ($operation->monthly_rent ?? $property?->price ?? 0)) . '/mes')
-            : ('$' . number_format((float) ($property?->price ?? 0)));
-        $m2         = $property?->construction_area ?? $property?->area ?? '—';
-        $bedrooms   = $property?->bedrooms ?? '—';
-        $bathrooms  = $property?->bathrooms ?? '—';
-        $parking    = $property?->parking ?? '—';
-        $amenities  = collect($property?->amenities ?? [])->filter()->implode(', ') ?: 'ninguna registrada';
-        $furnished  = $property?->furnished ? 'sí, amueblado' : 'sin amueblar';
+        // Contexto capturado en la captación original (motivo/urgencia del
+        // propietario, plan de marketing conversado en la llamada inicial) y
+        // su Valuación (etapa Avaluo) — fuente PRIMARIA de las características
+        // del inmueble: Property solo trae lo capturado en LEAD (dirección/
+        // tipo/m² aproximados), casi siempre incompleto para este punto del
+        // proceso. Toda captación que llegó a Exclusiva ya pasó por Avaluo,
+        // así que la valuación debería existir salvo casos legacy.
+        $captacion = $operation->sourceOperation
+            ? Captacion::where('operation_id', $operation->sourceOperation->id)->with('valuation.colonia.zone')->first()
+            : null;
+        $valuation = $captacion?->valuation;
+
+        $opType = $operation->type === 'renta' ? 'renta' : 'venta';
+
+        if ($valuation) {
+            $type      = $valuation->type_label ?? ($property?->property_type ?? 'no especificado');
+            $colony    = $valuation->colonia?->name ?? $property?->colony ?? 'no especificada';
+            $city      = $valuation->colonia?->zone?->name ?? $property?->city ?? 'CDMX';
+            $m2        = $valuation->effective_m2 ?? $property?->construction_area ?? $property?->area ?? '—';
+            $bedrooms  = $valuation->input_bedrooms ?? $property?->bedrooms ?? '—';
+            $bathrooms = $valuation->input_bathrooms ?? $property?->bathrooms ?? '—';
+            $parking   = $valuation->input_parking ?? $property?->parking ?? '—';
+            $amenities = collect([
+                $valuation->input_has_rooftop      ? 'rooftop privado' : null,
+                $valuation->input_has_balcony       ? 'balcón' : null,
+                $valuation->input_has_service_room  ? 'cuarto de servicio' : null,
+                $valuation->input_has_storage       ? 'bodega' : null,
+                $valuation->input_has_gym           ? 'gimnasio' : null,
+                $valuation->input_has_pool          ? 'alberca' : null,
+                $valuation->input_has_lobby         ? 'lobby/recepción' : null,
+            ])->filter()->implode(', ') ?: (collect($property?->amenities ?? [])->filter()->implode(', ') ?: 'ninguna registrada');
+            $priceValue = $captacion?->precio_acordado ?? $valuation->suggested_list_price ?? $property?->price ?? 0;
+        } else {
+            $type      = $property?->property_type ?? 'no especificado';
+            $colony    = $property?->colony ?? 'no especificada';
+            $city      = $property?->city ?? 'CDMX';
+            $m2        = $property?->construction_area ?? $property?->area ?? '—';
+            $bedrooms  = $property?->bedrooms ?? '—';
+            $bathrooms = $property?->bathrooms ?? '—';
+            $parking   = $property?->parking ?? '—';
+            $amenities = collect($property?->amenities ?? [])->filter()->implode(', ') ?: 'ninguna registrada';
+            $priceValue = $captacion?->precio_acordado ?? $property?->price ?? 0;
+        }
+
+        $price = $operation->type === 'renta'
+            ? ('$' . number_format((float) ($operation->monthly_rent ?? $priceValue)) . '/mes')
+            : ('$' . number_format((float) $priceValue));
+
+        $furnished   = $property?->furnished ? 'sí, amueblado' : 'sin amueblar';
         $description = $property?->description ? substr($property->description, 0, 500) : null;
 
-        // Contexto capturado en la captación original (motivo/urgencia del
-        // propietario, plan de marketing conversado en la llamada inicial).
-        $captacion = $operation->sourceOperation
-            ? Captacion::where('operation_id', $operation->sourceOperation->id)->first()
-            : null;
         $motivo    = $captacion?->motivo;
         $urgencia  = $captacion?->urgencia;
         $planNotes = $captacion?->marketing_plan;
