@@ -306,8 +306,11 @@ class ClientController extends Controller
                     $actionsHtml .= '<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:4px 9px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:8px;margin-right:6px;">✅ Asistencia confirmada</span>';
                 }
 
-                // ── Paso 2: Solicitar opinión (solo si ya se envió confirmación y la cita pasó) ──
-                if ($interaction->reminder_sent_at && $interaction->scheduled_at?->isPast()) {
+                // ── Paso 2: Solicitar opinión (visita confirmada, o ya pasó la fecha —
+                // no depende de haber reenviado el recordatorio manualmente: el camino
+                // normal es que el cliente confirme directo desde el correo automático
+                // original y nunca se toque "Enviar confirmación") ──
+                if ($interaction->confirmed_at || $interaction->scheduled_at?->isPast()) {
                     if ($interaction->feedback_submitted_at) {
                         // Mostrar resumen del feedback recibido
                         $reactionEmoji = match($interaction->visitor_reaction) {
