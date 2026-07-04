@@ -244,7 +244,7 @@ function updateStepConfig(i, type, cfg) {
                 + '<input type="number" name="'+prefix+'[due_days]" class="form-input" value="'+(cfg.due_days||3)+'" min="1" placeholder="Dias para vencer" style="width:100px;"></div>';
             break;
         case 'move_pipeline':
-            html = '<div style="display:flex;gap:0.5rem;"><select name="'+prefix+'[operation_type]" class="form-select"><option value="captacion" '+(cfg.operation_type==='captacion'?'selected':'')+'>Captacion</option><option value="venta" '+(cfg.operation_type==='venta'?'selected':'')+'>Venta</option><option value="renta" '+(cfg.operation_type==='renta'?'selected':'')+'>Renta</option></select>'
+            html = '<div style="display:flex;gap:0.5rem;"><select name="'+prefix+'[operation_type]" class="form-select"><option value="captacion" '+(cfg.operation_type==='captacion'?'selected':'')+'>Captacion</option><option value="renta" '+(cfg.operation_type==='renta'?'selected':'')+'>Renta</option></select>'
                 + '<select name="'+prefix+'[stage]" class="form-select"><option value="lead">Lead</option><option value="contacto">Contacto</option></select></div>'
                 + '<p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.25rem;">Crea una operacion en el pipeline existente automaticamente.</p>';
             break;

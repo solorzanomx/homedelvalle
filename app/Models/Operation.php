@@ -183,25 +183,29 @@ class Operation extends Model
     }
 
     // --- Methods ---
-    public function getAvailableStages(): array
+
+    /** Lista de etapas válidas para un type dado — única fuente de verdad,
+     * usada tanto por las instancias (abajo) como por OperationObserver
+     * para rechazar combinaciones type/stage que nunca son válidas. */
+    public static function stagesForType(string $type): array
     {
-        $stages = match($this->type) {
+        return match($type) {
             'captacion' => self::CAPTACION_STAGES,
             'renta' => self::RENTA_STAGES,
             'comprador' => self::COMPRADOR_STAGES,
             default => self::VENTA_STAGES,
         };
+    }
+
+    public function getAvailableStages(): array
+    {
+        $stages = self::stagesForType($this->type);
         return array_intersect_key(self::STAGES, array_flip($stages));
     }
 
     public function getNextStage(): ?string
     {
-        $stages = match($this->type) {
-            'captacion' => self::CAPTACION_STAGES,
-            'renta' => self::RENTA_STAGES,
-            'comprador' => self::COMPRADOR_STAGES,
-            default => self::VENTA_STAGES,
-        };
+        $stages = self::stagesForType($this->type);
         $current = array_search($this->stage, $stages);
         if ($current === false || $current >= count($stages) - 1) return null;
         return $stages[$current + 1];
@@ -209,12 +213,7 @@ class Operation extends Model
 
     public function getPreviousStage(): ?string
     {
-        $stages = match($this->type) {
-            'captacion' => self::CAPTACION_STAGES,
-            'renta' => self::RENTA_STAGES,
-            'comprador' => self::COMPRADOR_STAGES,
-            default => self::VENTA_STAGES,
-        };
+        $stages = self::stagesForType($this->type);
         $current = array_search($this->stage, $stages);
         if ($current === false || $current <= 0) return null;
         return $stages[$current - 1];

@@ -97,7 +97,7 @@ class SeedDemoDocuments extends Command
                 'type'         => 'venta',
                 'target_type'  => 'venta',
                 'phase'        => 'operacion',
-                'stage'        => 'busqueda',
+                'stage'        => 'candidatos',
                 'status'       => 'active',
                 'property_id'  => $property->id,
                 'client_id'    => $client->id,
