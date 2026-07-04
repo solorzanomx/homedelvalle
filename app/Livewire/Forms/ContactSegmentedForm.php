@@ -73,6 +73,21 @@ class ContactSegmentedForm extends Component
             'otro'              => null,
         ];
 
+        // interest_types (vocabulario real: compra|venta|renta_propietario|
+        // renta_inquilino) nunca se guardaba en este form — solo client_type.
+        // Sin esto, el Client resultante al convertir el lead quedaba sin
+        // badges de "interés" en su ficha (bug real reportado por el
+        // usuario 2026-07-04: "no se guardan con la caracteristica que
+        // necesito, por ejemplo comprador" — interest_types es lo que SÍ se
+        // muestra en clients/show.blade.php, client_type casi no se lee en
+        // ningún lado del sistema).
+        $interestTypesMap = [
+            'vender'             => ['venta'],
+            'comprar'            => ['compra'],
+            'rentar_inquilino'   => ['renta_inquilino'],
+            'rentar_propietario' => ['renta_propietario'],
+        ];
+
         $lockKey = 'form_submit_contacto_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
 
@@ -86,6 +101,7 @@ class ContactSegmentedForm extends Component
             'payload'     => collect($data)->except(['nombre', 'email', 'whatsapp', 'aviso'])->toArray(),
             'lead_tag'    => $tagMap[$data['intento']] ?? 'LEAD_OTRO',
             'client_type' => $clientTypeMap[$data['intento']],
+            'interest_types' => $interestTypesMap[$data['intento']] ?? null,
             'lead_temperature' => 'warm',
             'utm_source'  => request()->query('utm_source'),
             'utm_medium'  => request()->query('utm_medium'),
