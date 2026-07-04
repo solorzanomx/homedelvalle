@@ -10,7 +10,7 @@ class AutomationEnrollment extends Model
 {
     protected $fillable = [
         'automation_id', 'client_id', 'current_step',
-        'status', 'next_run_at', 'completed_at',
+        'status', 'next_run_at', 'completed_at', 'attempts', 'failed_at',
     ];
 
     protected function casts(): array
@@ -18,6 +18,7 @@ class AutomationEnrollment extends Model
         return [
             'next_run_at' => 'datetime',
             'completed_at' => 'datetime',
+            'failed_at' => 'datetime',
         ];
     }
 
@@ -54,6 +55,12 @@ class AutomationEnrollment extends Model
         }
     }
 
+    /** Se agotaron los reintentos del paso actual — ver AutomationEngine::MAX_STEP_ATTEMPTS. */
+    public function markFailed(): void
+    {
+        $this->update(['status' => 'failed', 'failed_at' => now(), 'next_run_at' => null]);
+    }
+
     public function advance(): void
     {
         $next = $this->getNextStep();
@@ -61,6 +68,7 @@ class AutomationEnrollment extends Model
             $this->markCompleted();
             return;
         }
-        $this->update(['current_step' => $next->position, 'next_run_at' => now()]);
+        // attempts es por-paso: un paso nuevo merece su propio presupuesto de reintentos.
+        $this->update(['current_step' => $next->position, 'next_run_at' => now(), 'attempts' => 0]);
     }
 }

@@ -38,8 +38,9 @@
 .enr-active { background: #ecfdf5; color: #065f46; }
 .enr-completed { background: #eef2ff; color: #3730a3; }
 .enr-paused { background: #fef3c7; color: #92400e; }
+.enr-failed { background: #fef2f2; color: #991b1b; }
 
-.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
 .stat-box { text-align: center; padding: 0.75rem; background: var(--bg); border-radius: var(--radius); }
 .stat-box-val { font-size: 1.3rem; font-weight: 700; }
 .stat-box-lbl { font-size: 0.72rem; color: var(--text-muted); }
@@ -77,6 +78,7 @@
             <div class="stat-box"><div class="stat-box-val">{{ $automation->enrollment_count }}</div><div class="stat-box-lbl">Total inscritos</div></div>
             <div class="stat-box"><div class="stat-box-val">{{ $automation->enrollments->where('status', 'active')->count() }}</div><div class="stat-box-lbl">Activos</div></div>
             <div class="stat-box"><div class="stat-box-val">{{ $automation->enrollments->where('status', 'completed')->count() }}</div><div class="stat-box-lbl">Completados</div></div>
+            <div class="stat-box"><div class="stat-box-val">{{ $automation->enrollments->where('status', 'failed')->count() }}</div><div class="stat-box-lbl">Fallidos</div></div>
         </div>
 
         {{-- Flow --}}
@@ -135,8 +137,17 @@
                         <div class="enr-name">{{ $enr->client->name ?? 'Eliminado' }}</div>
                         <div class="enr-meta">Paso {{ $enr->current_step + 1 }} &middot; {{ $enr->created_at->diffForHumans() }}</div>
                     </div>
-                    <span class="enr-status {{ $enr->status === 'active' ? 'enr-active' : ($enr->status === 'completed' ? 'enr-completed' : 'enr-paused') }}">
-                        {{ ucfirst($enr->status) }}
+                    @php
+                        $enrStatusLabels = ['active' => 'Activo', 'completed' => 'Completado', 'failed' => 'Fallido', 'paused' => 'Pausado', 'cancelled' => 'Cancelado'];
+                        $enrStatusClass = match($enr->status) {
+                            'active' => 'enr-active',
+                            'completed' => 'enr-completed',
+                            'failed' => 'enr-failed',
+                            default => 'enr-paused',
+                        };
+                    @endphp
+                    <span class="enr-status {{ $enrStatusClass }}">
+                        {{ $enrStatusLabels[$enr->status] ?? ucfirst($enr->status) }}
                     </span>
                 </div>
                 @empty

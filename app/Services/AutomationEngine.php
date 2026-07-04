@@ -357,6 +357,8 @@ class AutomationEngine
 
             if ($result['success'] && ($result['advance'] ?? true)) {
                 $enrollment->advance();
+            } elseif (!$result['success']) {
+                $this->handleStepFailure($enrollment);
             }
 
             return $result['success'];
@@ -371,8 +373,34 @@ class AutomationEngine
                 'executed_at' => now(),
             ]);
 
+            $this->handleStepFailure($enrollment);
+
             return false;
         }
+    }
+
+    /** Máximo de reintentos por paso antes de marcar el enrollment como fallido. */
+    const MAX_STEP_ATTEMPTS = 3;
+
+    /**
+     * Antes de esto, un paso fallido se reintentaba cada minuto para
+     * siempre (nunca se tocaba next_run_at/status en el camino de fallo) —
+     * bug real encontrado en la auditoría 2026-07-04. Backoff lineal simple
+     * (15/30/45 min); al agotar MAX_STEP_ATTEMPTS se marca 'failed' y deja
+     * de ser capturado por AutomationEnrollment::scopeReady() (que filtra
+     * por status='active').
+     */
+    private function handleStepFailure(AutomationEnrollment $enrollment): void
+    {
+        $enrollment->increment('attempts');
+        $enrollment->refresh();
+
+        if ($enrollment->attempts >= self::MAX_STEP_ATTEMPTS) {
+            $enrollment->markFailed();
+            return;
+        }
+
+        $enrollment->update(['next_run_at' => now()->addMinutes(15 * $enrollment->attempts)]);
     }
 
     // ──────────────────────────────────────────────────
@@ -430,7 +458,7 @@ class AutomationEngine
             $message->markFailed();
         }
 
-        return ['success' => $sent, 'message_id' => $message->id];
+        return ['success' => $sent, 'message_id' => $message->id, 'error' => $sent ? null : 'EmailService::send() devolvio false'];
     }
 
     private function executeSendWhatsApp(AutomationEnrollment $enrollment, AutomationStep $step): array
@@ -467,7 +495,7 @@ class AutomationEngine
             $message->markFailed();
         }
 
-        return ['success' => $result['success'], 'message_id' => $message->id];
+        return ['success' => $result['success'], 'message_id' => $message->id, 'error' => $result['error'] ?? null];
     }
 
     private function executeCondition(AutomationEnrollment $enrollment, AutomationStep $step): array
