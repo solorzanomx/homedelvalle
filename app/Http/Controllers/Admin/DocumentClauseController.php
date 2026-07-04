@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DocumentClause;
+use App\Services\ContratoCompraventaGeneratorService;
 use App\Services\ContratoExclusivaGeneratorService;
 use App\Services\PurchaseOfferGeneratorService;
 use Illuminate\Http\Request;
@@ -97,5 +98,47 @@ class DocumentClauseController extends Controller
         }
 
         return redirect()->route('admin.documentos.contrato-exclusiva.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
+    }
+
+    public function editContratoCompraventa()
+    {
+        $documentTitle = 'Contrato de Compraventa';
+        $updateRoute   = route('admin.documentos.contrato-compraventa.clausulas.update');
+        $legalHint     = 'Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas en operaciones reales.';
+        $tokenHint     = null;
+
+        $clauses = collect(ContratoCompraventaGeneratorService::DEFAULT_CLAUSES)->map(function ($default, $key) {
+            return [
+                'key'     => $key,
+                'label'   => ContratoCompraventaGeneratorService::CLAUSE_LABELS[$key],
+                'default' => $default,
+                'value'   => DocumentClause::where('document_key', 'contrato_compraventa')->where('clause_key', $key)->value('value') ?? $default,
+            ];
+        });
+
+        $lastUpdated = DocumentClause::where('document_key', 'contrato_compraventa')
+            ->with('updatedBy')
+            ->latest('updated_at')
+            ->first();
+
+        return view('admin.documentos.clausulas', compact('clauses', 'lastUpdated', 'documentTitle', 'updateRoute', 'legalHint', 'tokenHint'));
+    }
+
+    public function updateContratoCompraventa(Request $request)
+    {
+        $keys = array_keys(ContratoCompraventaGeneratorService::DEFAULT_CLAUSES);
+
+        $validated = $request->validate(
+            collect($keys)->mapWithKeys(fn ($key) => [$key => 'required|string|max:5000'])->all()
+        );
+
+        foreach ($validated as $clauseKey => $value) {
+            DocumentClause::updateOrCreate(
+                ['document_key' => 'contrato_compraventa', 'clause_key' => $clauseKey],
+                ['value' => $value, 'updated_by' => Auth::id()]
+            );
+        }
+
+        return redirect()->route('admin.documentos.contrato-compraventa.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
     }
 }

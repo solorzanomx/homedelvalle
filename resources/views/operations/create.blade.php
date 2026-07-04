@@ -60,6 +60,12 @@
                     <div class="type-label">Captacion</div>
                     <div class="type-desc">Alta de propiedad al portafolio</div>
                 </label>
+                <label class="type-card {{ old('type') === 'comprador' ? 'selected' : '' }}" id="cardComprador">
+                    <input type="radio" name="type" value="comprador" {{ old('type') === 'comprador' ? 'checked' : '' }} required onchange="onTypeChange(this.value)">
+                    <div class="type-icon">&#128100;</div>
+                    <div class="type-label">Comprador</div>
+                    <div class="type-desc">Calificar a un comprador antes de que oferte</div>
+                </label>
             </div>
             @error('type') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
 
@@ -202,6 +208,7 @@ function onTypeChange(type) {
     // Update card selection
     document.getElementById('cardRenta').classList.toggle('selected', type === 'renta');
     document.getElementById('cardCaptacion').classList.toggle('selected', type === 'captacion');
+    document.getElementById('cardComprador').classList.toggle('selected', type === 'comprador');
 
     // Secondary client label
     var label = document.getElementById('secondaryClientLabel');

@@ -93,4 +93,16 @@ return [
         ],
     ],
 
+    'contrato_compraventa' => [
+        'nombre' => 'Contrato de Compraventa',
+        'descripcion' => 'Contrato de compraventa entre vendedor y comprador, firmado en la etapa "Contrato" del pipeline de venta.',
+        'archivo_fuente' => 'resources/views/pdf/contrato-compraventa.blade.php',
+        'donde_generarlo' => 'Ficha de Operation (venta) → etapa Contrato → Generar Contrato',
+        'preview_route' => null,
+        'editar_route' => 'admin.documentos.contrato-compraventa.clausulas',
+        'changelog' => [
+            ['fecha' => '2026-07-03', 'resumen' => 'Creado — mismo patrón que Carta Oferta de Compra/Contrato de Exclusiva (PDF con identidad de marca, cláusulas editables vía DocumentClause). Confirmación de firma manual (sin firma electrónica real), avanza la Operation a Entrega. Pendiente de revisión por un abogado antes de uso definitivo.'],
+        ],
+    ],
+
 ];

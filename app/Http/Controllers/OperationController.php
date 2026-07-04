@@ -53,6 +53,7 @@ class OperationController extends Controller
             'venta' => Operation::VENTA_STAGES,
             'renta' => Operation::RENTA_STAGES,
             'captacion' => Operation::CAPTACION_STAGES,
+            'comprador' => Operation::COMPRADOR_STAGES,
             default => array_keys(Operation::STAGES),
         };
 
@@ -101,8 +102,10 @@ class OperationController extends Controller
     {
         // 'venta' no es un tipo creable manualmente aqui — toda venta nace de una
         // captacion (auto-spawn al firmar exclusiva, ver OperationChecklistService).
+        // 'comprador' = pipeline de calificacion del comprador (Lead->Listo),
+        // no requiere property_id (busca, no posee, un inmueble).
         $validated = $request->validate([
-            'type' => 'required|in:renta,captacion',
+            'type' => 'required|in:renta,captacion,comprador',
             'target_type' => 'nullable|required_if:type,captacion|in:venta,renta',
             'property_id' => 'nullable|exists:properties,id',
             'client_id' => 'required|exists:clients,id',
@@ -121,7 +124,7 @@ class OperationController extends Controller
 
         $validated['user_id'] = Auth::id();
         $validated['stage'] = 'lead';
-        $validated['phase'] = 'captacion';
+        $validated['phase'] = $validated['type'] === 'comprador' ? 'operacion' : 'captacion';
 
         $operation = Operation::create($validated);
 

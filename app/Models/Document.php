@@ -32,6 +32,7 @@ class Document extends Model
         'propuesta_servicios' => 'Propuesta de Servicios PDF',
         'oferta_compra'       => 'Carta Oferta de Compra',
         'contrato_exclusiva'  => 'Contrato de Exclusiva',
+        'contrato_compraventa' => 'Contrato de Compraventa',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',
         'ine_reverso'           => 'INE — Reverso',

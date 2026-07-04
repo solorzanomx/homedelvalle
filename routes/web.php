@@ -241,6 +241,9 @@ Route::middleware('auth')->group(function () {
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/reject', [OperationController::class, 'rejectPurchaseOffer'])->name('operations.purchase-offer.reject');
     Route::post('operations/{operation}/expenses', [\App\Http\Controllers\OperationExpenseController::class, 'store'])->name('operations.expenses.store');
     Route::delete('operations/{operation}/expenses/{expense}', [\App\Http\Controllers\OperationExpenseController::class, 'destroy'])->name('operations.expenses.destroy');
+    Route::post('operations/{operation}/contrato-compraventa/generar', [\App\Http\Controllers\ContratoCompraventaController::class, 'generar'])->name('operations.contrato-compraventa.generar');
+    Route::get('operations/{operation}/contrato-compraventa/pdf', [\App\Http\Controllers\ContratoCompraventaController::class, 'pdf'])->name('operations.contrato-compraventa.pdf');
+    Route::post('operations/{operation}/contrato-compraventa/confirmar-firma', [\App\Http\Controllers\ContratoCompraventaController::class, 'markSigned'])->name('operations.contrato-compraventa.confirmar-firma');
     Route::post('operations/{operation}/marketing-strategy/generate', [MarketingStrategyController::class, 'generate'])->name('operations.marketing-strategy.generate');
     Route::patch('operations/{operation}/marketing-strategy/{marketingStrategy}', [MarketingStrategyController::class, 'update'])->name('operations.marketing-strategy.update');
     Route::post('operations/{operation}/marketing-strategy/{marketingStrategy}/approve', [MarketingStrategyController::class, 'approve'])->name('operations.marketing-strategy.approve');
@@ -316,6 +319,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateOfertaCompra'])->name('documentos.oferta-compra.clausulas.update');
     Route::get('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas');
     Route::post('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas.update');
+    Route::get('/documentos/contrato-compraventa/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoCompraventa'])->name('documentos.contrato-compraventa.clausulas');
+    Route::post('/documentos/contrato-compraventa/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateContratoCompraventa'])->name('documentos.contrato-compraventa.clausulas.update');
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');

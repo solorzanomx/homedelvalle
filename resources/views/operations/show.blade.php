@@ -935,6 +935,37 @@
         </div>
         @endif
 
+        {{-- Contrato de Compraventa --}}
+        @if($operation->type === 'venta' && $operation->stage === 'contrato')
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div class="info-label" style="margin-bottom:0.5rem;">Contrato de Compraventa</div>
+                @php $ccDoc = $operation->documents->where('category', 'contrato_compraventa')->sortByDesc('created_at')->first(); @endphp
+                @if(!$ccDoc)
+                    @if($operation->secondaryClient)
+                        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.6rem;">Genera el contrato de compraventa entre {{ $operation->client->name ?? 'el vendedor' }} y {{ $operation->secondaryClient->name }}.</p>
+                        <form method="POST" action="{{ route('operations.contrato-compraventa.generar', $operation->id) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-primary">Generar Contrato</button>
+                        </form>
+                    @else
+                        <p style="font-size:0.78rem; color:#ef4444;">Esta Operation no tiene un comprador vinculado — acepta una oferta primero.</p>
+                    @endif
+                @else
+                    <a href="{{ route('operations.contrato-compraventa.pdf', $operation->id) }}" target="_blank" class="btn btn-sm btn-outline" style="margin-bottom:0.5rem; display:inline-block;">Ver PDF</a>
+                    <form method="POST" action="{{ route('operations.contrato-compraventa.generar', $operation->id) }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline">Regenerar</button>
+                    </form>
+                    <form method="POST" action="{{ route('operations.contrato-compraventa.confirmar-firma', $operation->id) }}" style="margin-top:0.5rem;">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-primary">Confirmar firma manual</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Estrategia de Promocion --}}
         @if(in_array($operation->type, ['venta','renta']) && in_array($operation->stage, ['fotos_video','carpeta_lista']))
         <div class="card" style="margin-bottom:0.75rem;">

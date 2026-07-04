@@ -30,6 +30,8 @@ class Operation extends Model
         'cierre' => 'Cierre',
         'activo' => 'Activo',
         'renovacion' => 'Renovacion',
+        'precalificacion' => 'Precalificacion',
+        'listo' => 'Listo para ofertar',
     ];
 
     // Sin lead/contacto/visita/exclusiva: toda venta nace de una captacion que ya
@@ -38,6 +40,10 @@ class Operation extends Model
     const VENTA_STAGES = ['mejoras','fotos_video','carpeta_lista','publicacion','candidatos','oferta_aceptada','investigacion','contrato','entrega','cierre'];
     const RENTA_STAGES = ['lead','contacto','visita','exclusiva','mejoras','fotos_video','carpeta_lista','publicacion','busqueda','investigacion','contrato','entrega','cierre','activo','renovacion'];
     const CAPTACION_STAGES = ['lead','contacto','visita','revision_docs','avaluo','exclusiva'];
+    // Pipeline de calificación del comprador ANTES de que haga una oferta real
+    // (eso ya vive como PurchaseOffer sobre la Operation del vendedor) — termina
+    // en 'listo', no genera ninguna Operation nueva automáticamente.
+    const COMPRADOR_STAGES = ['lead','contacto','visita','precalificacion','listo'];
 
     const PHASE_MAP = [
         'lead' => 'captacion', 'contacto' => 'captacion', 'visita' => 'captacion', 'exclusiva' => 'captacion',
@@ -50,6 +56,7 @@ class Operation extends Model
         'investigacion' => 'operacion',
         'contrato' => 'operacion', 'entrega' => 'operacion', 'cierre' => 'operacion',
         'activo' => 'operacion', 'renovacion' => 'operacion',
+        'precalificacion' => 'operacion', 'listo' => 'operacion',
     ];
 
     const STAGE_COLORS = [
@@ -60,6 +67,7 @@ class Operation extends Model
         'investigacion' => '#f97316',
         'contrato' => '#f472b6', 'entrega' => '#22d3ee', 'cierre' => '#10b981',
         'activo' => '#667eea', 'renovacion' => '#8b5cf6',
+        'precalificacion' => '#0ea5e9', 'listo' => '#22c55e',
     ];
 
     const GUARANTEE_TYPES = [
@@ -72,6 +80,7 @@ class Operation extends Model
         'venta' => 'Venta',
         'renta' => 'Renta',
         'captacion' => 'Captacion',
+        'comprador' => 'Comprador',
     ];
 
     protected function casts(): array
@@ -179,6 +188,7 @@ class Operation extends Model
         $stages = match($this->type) {
             'captacion' => self::CAPTACION_STAGES,
             'renta' => self::RENTA_STAGES,
+            'comprador' => self::COMPRADOR_STAGES,
             default => self::VENTA_STAGES,
         };
         return array_intersect_key(self::STAGES, array_flip($stages));
@@ -189,6 +199,7 @@ class Operation extends Model
         $stages = match($this->type) {
             'captacion' => self::CAPTACION_STAGES,
             'renta' => self::RENTA_STAGES,
+            'comprador' => self::COMPRADOR_STAGES,
             default => self::VENTA_STAGES,
         };
         $current = array_search($this->stage, $stages);
@@ -201,6 +212,7 @@ class Operation extends Model
         $stages = match($this->type) {
             'captacion' => self::CAPTACION_STAGES,
             'renta' => self::RENTA_STAGES,
+            'comprador' => self::COMPRADOR_STAGES,
             default => self::VENTA_STAGES,
         };
         $current = array_search($this->stage, $stages);
