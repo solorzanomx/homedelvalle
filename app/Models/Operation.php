@@ -119,6 +119,7 @@ class Operation extends Model
     public function comments() { return $this->hasMany(OperationComment::class)->orderByDesc('created_at'); }
     public function sourceOperation() { return $this->belongsTo(Operation::class, 'source_operation_id'); }
     public function spawnedOperations() { return $this->hasMany(Operation::class, 'source_operation_id'); }
+    public function rentalProcess() { return $this->hasOne(RentalProcess::class); }
     public function marketingStrategy() { return $this->hasOne(PropertyMarketingStrategy::class); }
     public function expenses() { return $this->hasMany(OperationExpense::class); }
 

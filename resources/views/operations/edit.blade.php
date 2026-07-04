@@ -170,6 +170,21 @@
                     </select>
                     @error('guarantee_type') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                 </div>
+                <div class="form-group conditional-field" id="fieldLeaseStart">
+                    <label class="form-label">Inicio de Contrato</label>
+                    <input type="date" name="lease_start_date" class="form-input" value="{{ old('lease_start_date', optional($operation->lease_start_date)->format('Y-m-d')) }}">
+                    @error('lease_start_date') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+                <div class="form-group conditional-field" id="fieldLeaseEnd">
+                    <label class="form-label">Fin de Contrato</label>
+                    <input type="date" name="lease_end_date" class="form-input" value="{{ old('lease_end_date', optional($operation->lease_end_date)->format('Y-m-d')) }}">
+                    @error('lease_end_date') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+                <div class="form-group conditional-field" id="fieldLeaseDuration">
+                    <label class="form-label">Duracion (meses)</label>
+                    <input type="number" name="lease_duration_months" class="form-input" value="{{ old('lease_duration_months', $operation->lease_duration_months) }}" min="1" placeholder="12">
+                    @error('lease_duration_months') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
 
                 {{-- Common fields --}}
                 <div class="form-group">
@@ -255,7 +270,7 @@ function onTypeChange(type) {
     if (labelAmount) labelAmount.textContent = type === 'captacion' ? 'Valor Estimado' : 'Monto de Venta';
 
     // Renta-only fields
-    var rentaFields = ['fieldMonthlyRent', 'fieldDeposit', 'fieldGuarantee'];
+    var rentaFields = ['fieldMonthlyRent', 'fieldDeposit', 'fieldGuarantee', 'fieldLeaseStart', 'fieldLeaseEnd', 'fieldLeaseDuration'];
     rentaFields.forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.classList.toggle('visible', type === 'renta');

@@ -977,6 +977,18 @@
         </div>
         @endif
 
+        {{-- Post-Cierre — puente hacia el expediente de RentalProcess que se
+             genera automaticamente al cerrar una Operation de renta --}}
+        @if($operation->type === 'renta' && $operation->rentalProcess)
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div class="info-label" style="margin-bottom:0.5rem;">Post-Cierre</div>
+                <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.6rem;">Esta renta ya tiene su expediente de seguimiento (pagos, renovación, póliza).</p>
+                <a href="{{ route('admin.rentas.gestion.show', $operation->rentalProcess->id) }}" class="btn btn-sm btn-primary">Ver expediente Post-Cierre →</a>
+            </div>
+        </div>
+        @endif
+
         {{-- Contrato de Compraventa --}}
         @if($operation->type === 'venta' && $operation->stage === 'contrato')
         <div class="card" style="margin-bottom:0.75rem;">
