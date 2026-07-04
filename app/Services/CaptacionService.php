@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\GoogleSignatureRequest;
 use App\Models\Operation;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class CaptacionService
 {
@@ -33,6 +34,14 @@ class CaptacionService
         if (!$captacion->operation_id) {
             $operation = Operation::create([
                 'type'       => 'captacion',
+                // target_type siempre 'venta' aquí: este método solo se llama
+                // desde flujos de venta (ClientPortalService::maybeActivateCaptacion()
+                // ya filtra por interés de venta antes de llamar esto; no existe
+                // un camino de renta hacia getOrCreateForClient). Sin esto,
+                // advanceLinkedOperation() nunca generaba la Operation de venta
+                // al firmar la exclusiva — se quedaba "atorada" en Exclusiva
+                // silenciosamente, sin ningún error (bug real en producción).
+                'target_type'=> 'venta',
                 'stage'      => 'lead',
                 'phase'      => 'captacion',
                 'status'     => 'active',
@@ -133,7 +142,17 @@ class CaptacionService
         // al completarse la última etapa, en vez de empujar a un stage que
         // ya no existe dentro de CAPTACION_STAGES.
         if ($maxEtapa === 4) {
-            if ($operation->stage === 'exclusiva' && $operation->status === 'active' && $operation->target_type) {
+            if ($operation->stage === 'exclusiva' && $operation->status === 'active') {
+                // target_type nulo (dato viejo/legacy) ya no bloquea el spawn
+                // silenciosamente para siempre — se asume 'venta' (único
+                // destino real de una captación) y se deja registro en log.
+                if (!$operation->target_type) {
+                    Log::warning('advanceLinkedOperation: target_type nulo al completar exclusiva, se asume venta', [
+                        'operation_id' => $operation->id,
+                    ]);
+                    $operation->target_type = 'venta';
+                    $operation->save();
+                }
                 $this->checklistService->completeCaptacionAndSpawn($operation, $user);
             }
             return;
