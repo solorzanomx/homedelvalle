@@ -75,6 +75,16 @@ class PortalDocumentController extends Controller
             abort(403, 'No tienes acceso a este documento.');
         }
 
+        // Los PDFs generados por el sistema (Contrato de Exclusiva, Oferta de
+        // Compra, etc.) se guardan con ruta absoluta fuera del disco público
+        // — mismo fix ya aplicado en RentalDocumentController::download().
+        if (str_starts_with($document->file_path, '/') || str_starts_with($document->file_path, storage_path())) {
+            if (!file_exists($document->file_path)) {
+                return back()->with('error', 'Archivo no encontrado.');
+            }
+            return response()->download($document->file_path, $document->file_name ?? basename($document->file_path));
+        }
+
         if (!Storage::disk('public')->exists($document->file_path)) {
             return back()->with('error', 'Archivo no encontrado.');
         }

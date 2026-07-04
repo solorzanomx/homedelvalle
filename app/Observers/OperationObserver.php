@@ -48,10 +48,22 @@ class OperationObserver
         }
 
         if ($operation->type === 'captacion' && !$operation->target_type) {
-            Log::info('OperationObserver: target_type autocompletado a "venta" al crear Operation de captacion', [
+            // El vocabulario de Operation::intent no es consistente en todo el
+            // código (a veces 'renta', a veces 'renta_residencial') — por eso
+            // se busca la palabra 'renta' en vez de comparar contra una lista
+            // fija. Bug real encontrado 2026-07-04: este default siempre caía
+            // en 'venta' sin mirar el intent, y CreateOperationFromLead::
+            // createCaptacionOperation() (leads de "propietario_renta" desde
+            // el sitio publico) nunca ponia target_type — toda captacion de
+            // renta terminaba generando una Operation de venta al completarse.
+            $targetType = (is_string($operation->intent) && str_contains(mb_strtolower($operation->intent), 'renta'))
+                ? 'renta'
+                : 'venta';
+            Log::info("OperationObserver: target_type autocompletado a '{$targetType}' al crear Operation de captacion", [
                 'client_id' => $operation->client_id,
+                'intent'    => $operation->intent,
             ]);
-            $operation->target_type = 'venta';
+            $operation->target_type = $targetType;
         }
     }
 

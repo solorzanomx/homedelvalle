@@ -42,14 +42,19 @@ class WhatsAppService
             ];
         }
 
-        // In production: integrate with Twilio/Meta WhatsApp Business API
-        Log::info("WhatsAppService: Sending to {$phone}", [
+        // No hay ninguna integracion real (Twilio/Meta WhatsApp Business API)
+        // implementada todavia — antes esto devolvia success=true sin mandar
+        // nada, dejando mensajes marcados como "enviados" en la BD sin haber
+        // salido nunca del servidor (bug real encontrado 2026-07-04). Hasta
+        // que se conecte un proveedor real, reportar el fallo honestamente
+        // en vez de fingir exito.
+        Log::error("WhatsAppService: WHATSAPP_ENABLED=true pero no hay ninguna integracion real conectada (Twilio/Meta) — mensaje a {$phone} NO se envio.", [
             'message' => mb_substr($message, 0, 100),
         ]);
 
         return [
-            'success' => true,
-            'message_id' => 'wa_' . uniqid(),
+            'success' => false,
+            'error' => 'No hay una integracion real de WhatsApp conectada todavia. Configura un proveedor (Twilio/Meta) o usa modo mock.',
             'phone' => $phone,
         ];
     }
@@ -59,11 +64,22 @@ class WhatsAppService
      */
     public function sendTemplate(string $phone, string $templateName, array $parameters = []): array
     {
-        Log::info("WhatsAppService [MOCK]: Template '{$templateName}' to {$phone}", $parameters);
+        if ($this->isMock) {
+            Log::warning("WhatsAppService [MOCK]: Template '{$templateName}' a {$phone} no enviado.", $parameters);
+
+            return [
+                'success' => true,
+                'is_mock' => true,
+                'message_id' => 'wa_mock_tpl_' . uniqid(),
+                'template' => $templateName,
+            ];
+        }
+
+        Log::error("WhatsAppService: WHATSAPP_ENABLED=true pero no hay ninguna integracion real conectada (Twilio/Meta) — template '{$templateName}' a {$phone} NO se envio.", $parameters);
 
         return [
-            'success' => true,
-            'message_id' => 'wa_tpl_' . uniqid(),
+            'success' => false,
+            'error' => 'No hay una integracion real de WhatsApp conectada todavia. Configura un proveedor (Twilio/Meta) o usa modo mock.',
             'template' => $templateName,
         ];
     }

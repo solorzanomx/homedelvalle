@@ -175,11 +175,15 @@ class ClientPortalService
         $activationUrl = "https://miportal.homedelvalle.mx/activar/{$token}";
 
         try {
+            $settings = \App\Models\SiteSetting::first();
             $emailService = app(\App\Services\EmailService::class);
-            $emailService->sendTemplated('portal_welcome', $user->email, [
+            $emailService->sendTemplate('portal_welcome', $user->email, [
                 'Nombre'          => $user->name,
                 'ActivationLink'  => $activationUrl,
                 'Email'           => $user->email,
+                'Sitio'           => $settings?->site_name ?? 'Home del Valle',
+                'LogoURL'         => $settings?->logo_path ? url('storage/' . $settings->logo_path) : '',
+                'Fecha'           => now()->format('d/m/Y'),
             ]);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('ClientPortalService: no se pudo enviar portal_welcome', [

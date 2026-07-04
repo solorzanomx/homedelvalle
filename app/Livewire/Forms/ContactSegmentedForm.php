@@ -65,7 +65,7 @@ class ContactSegmentedForm extends Component
         $clientTypeMap = [
             'vender'            => 'owner',
             'comprar'           => 'buyer',
-            'rentar_inquilino'  => 'tenant',
+            'rentar_inquilino'  => 'renter',
             'rentar_propietario'=> 'owner',
             'b2b'               => 'investor',
             'admin'             => 'owner',

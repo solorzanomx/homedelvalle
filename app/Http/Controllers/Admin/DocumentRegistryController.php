@@ -182,6 +182,11 @@ class DocumentRegistryController extends Controller
 
         if (!$operation) {
             $property = Property::findOrFail($validated['property_id']);
+
+            if (!$property->client_id) {
+                return back()->withInput()->with('error', 'Este inmueble no tiene un propietario (cliente vendedor) asignado — asígnalo primero desde la ficha de la propiedad antes de generar una oferta.');
+            }
+
             $operation = Operation::create([
                 'type'        => 'venta',
                 'target_type' => 'venta',
