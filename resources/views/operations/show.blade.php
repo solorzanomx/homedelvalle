@@ -885,6 +885,48 @@
         </div>
         @endif
 
+        {{-- Historial del comprador — su actividad real vive adjunta a la
+             Operation del vendedor sobre la que ofertó, se consolida aquí
+             por client_id para tener "todo el registro" en un solo lugar. --}}
+        @if($operation->type === 'comprador')
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div class="info-label" style="margin-bottom:0.5rem;">Ofertas realizadas</div>
+                @forelse($clientOffers as $offer)
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.8rem;">
+                    <div>
+                        <div style="font-weight:600;">{{ $offer->operation->property->title ?? $offer->operation->property->address ?? 'Inmueble #' . $offer->operation->property_id }}</div>
+                        <div style="color:var(--text-muted); font-size:0.72rem;">${{ number_format($offer->precio_ofertado, 0) }} &middot; {{ $offer->offered_at->format('d/m/Y') }}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                        <span class="badge badge-{{ match($offer->status) { 'accepted' => 'green', 'rejected' => 'red', 'expired' => 'yellow', default => 'blue' } }}">{{ $offer->status_label }}</span>
+                        <a href="{{ route('operations.show', $offer->operation_id) }}" class="btn btn-sm btn-outline">Ver Operación →</a>
+                    </div>
+                </div>
+                @empty
+                <p style="font-size:0.78rem; color:var(--text-muted);">Sin ofertas registradas todavía.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div class="info-label" style="margin-bottom:0.5rem;">Documentos del comprador</div>
+                @forelse($clientDocuments as $doc)
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.8rem;">
+                    <div>
+                        <div style="font-weight:600;">{{ $doc->label ?? \App\Models\Document::CATEGORIES[$doc->category] ?? $doc->category }}</div>
+                        <div style="color:var(--text-muted); font-size:0.72rem;">{{ $doc->created_at->format('d/m/Y') }} &middot; Operation #{{ $doc->operation_id }}</div>
+                    </div>
+                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-sm btn-outline">Ver</a>
+                </div>
+                @empty
+                <p style="font-size:0.78rem; color:var(--text-muted);">Sin documentos registrados todavía.</p>
+                @endforelse
+            </div>
+        </div>
+        @endif
+
         {{-- Gastos de promocion --}}
         @if(in_array($operation->type, ['venta','renta']))
         <div class="card" style="margin-bottom:0.75rem;">

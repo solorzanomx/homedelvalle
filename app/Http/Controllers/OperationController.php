@@ -215,7 +215,32 @@ class OperationController extends Controller
         $contractTemplates = ContractTemplate::active()->get();
         $clients = $operation->type === 'venta' ? Client::orderBy('name')->get() : collect();
 
-        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients'));
+        // El pipeline de Compradores (type=comprador) es la ficha de LA PERSONA,
+        // no de un inmueble — su actividad real (ofertas, documentos) vive
+        // adjunta a la Operation del VENDEDOR sobre la que ofertó, no a esta
+        // Operation. Se consolida aquí por client_id para tener "todo el
+        // registro" en un solo lugar, sin duplicar dónde vive cada dato.
+        $clientOffers = collect();
+        $clientDocuments = collect();
+        if ($operation->type === 'comprador') {
+            $clientOffers = \App\Models\PurchaseOffer::where('client_id', $operation->client_id)
+                ->where('operation_id', '!=', $operation->id)
+                ->with('operation.property')
+                ->latest('offered_at')
+                ->get();
+            // Excluye las categorías de documentos legales generados por el
+            // sistema (viven en storage_path absoluto, no en el disco público
+            // 'public' — se ven desde "Ofertas realizadas" con su propio botón
+            // "Ver PDF" dedicado, no con un link genérico de asset()).
+            $clientDocuments = Document::where('client_id', $operation->client_id)
+                ->where('operation_id', '!=', $operation->id)
+                ->whereNotIn('category', ['oferta_compra', 'contrato_exclusiva', 'contrato_compraventa'])
+                ->with('uploader')
+                ->latest()
+                ->get();
+        }
+
+        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments'));
     }
 
     public function edit(string $id)
