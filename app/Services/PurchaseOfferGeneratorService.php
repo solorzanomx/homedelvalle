@@ -104,9 +104,14 @@ class PurchaseOfferGeneratorService
 
     public function renderHtml(PurchaseOffer $offer): string
     {
-        $offer->loadMissing('operation.client', 'operation.property');
+        $offer->loadMissing('client', 'operation.client', 'operation.secondaryClient', 'operation.property');
         $operation = $offer->operation;
-        $client    = $operation->client;
+        // El comprador es quien hizo ESTA oferta (offer->client), o en su
+        // defecto el comprador general de la Operation (secondaryClient) —
+        // operation->client es el VENDEDOR (heredado de la captación), nunca
+        // el comprador; usarlo aquí ponía el nombre del propietario como
+        // oferente en el documento (bug real encontrado 2026-07-03).
+        $client    = $offer->client ?? $operation->secondaryClient;
         $property  = $operation->property;
 
         $folio = 'CO-' . str_pad((string) $offer->id, 5, '0', STR_PAD_LEFT);

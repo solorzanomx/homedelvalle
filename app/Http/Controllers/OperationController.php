@@ -155,7 +155,7 @@ class OperationController extends Controller
             'contracts.template', 'contracts.signer',
             'poliza.events.user', 'commissions',
             'sourceOperation', 'spawnedOperations',
-            'comments.user', 'marketingStrategy', 'expenses.createdBy',
+            'comments.user', 'marketingStrategy', 'expenses.createdBy', 'purchaseOffers.client',
         ])->findOrFail($id);
 
         // Build timeline
@@ -210,8 +210,9 @@ class OperationController extends Controller
         $progress = $this->checklistService->getStageProgress($operation);
         $documentCategories = Document::CATEGORIES;
         $contractTemplates = ContractTemplate::active()->get();
+        $clients = $operation->type === 'venta' ? Client::orderBy('name')->get() : collect();
 
-        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates'));
+        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients'));
     }
 
     public function edit(string $id)
@@ -372,6 +373,7 @@ class OperationController extends Controller
     public function storePurchaseOffer(Request $request, Operation $operation, PurchaseOfferGeneratorService $generator)
     {
         $validated = $request->validate([
+            'client_id'            => 'nullable|exists:clients,id',
             'precio_ofertado'      => 'required|numeric|min:0',
             'monto_apartado'       => 'nullable|numeric|min:0',
             'pago_firma_contrato'  => 'nullable|numeric|min:0',
@@ -429,7 +431,10 @@ class OperationController extends Controller
             ->where('status', 'pending')
             ->update(['status' => 'rejected']);
 
-        $operation->update(['amount' => $purchaseOffer->precio_ofertado]);
+        $operation->update(array_filter([
+            'amount'              => $purchaseOffer->precio_ofertado,
+            'secondary_client_id' => $purchaseOffer->client_id,
+        ]));
 
         $order = array_flip(Operation::VENTA_STAGES);
         if (($order[$operation->stage] ?? 0) < ($order['oferta_aceptada'] ?? 0)) {

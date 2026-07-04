@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PurchaseOffer extends Model
 {
     protected $fillable = [
-        'operation_id', 'precio_ofertado', 'monto_apartado', 'pago_firma_contrato',
+        'operation_id', 'client_id', 'precio_ofertado', 'monto_apartado', 'pago_firma_contrato',
         'pago_firma_escritura', 'forma_pago', 'vigencia_dias', 'folio_real',
         'comentarios', 'status', 'offered_at', 'last_pdf_path',
     ];
@@ -35,6 +35,11 @@ class PurchaseOffer extends Model
     public function operation(): BelongsTo
     {
         return $this->belongsTo(Operation::class);
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function getStatusLabelAttribute(): string

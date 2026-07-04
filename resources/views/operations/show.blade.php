@@ -476,7 +476,7 @@
                         @foreach($operation->purchaseOffers->sortByDesc('offered_at') as $offer)
                         <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
                             <div>
-                                <strong>${{ number_format($offer->precio_ofertado) }}</strong>
+                                <strong>{{ $offer->client?->name ?? 'Sin candidato vinculado' }}</strong> &middot; <strong>${{ number_format($offer->precio_ofertado) }}</strong>
                                 <span style="color:var(--text-muted);"> &middot; {{ $offer->offered_at->format('d/m/Y') }} &middot; vigente hasta {{ $offer->vigente_hasta->format('d/m/Y') }}</span>
                             </div>
                             <div style="display:flex;align-items:center;gap:.5rem;">
@@ -501,6 +501,15 @@
                     <form id="offer-form" method="POST" action="{{ route('operations.purchase-offer.store', $operation->id) }}" style="display:none;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border);">
                         @csrf
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem;">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Candidato / comprador</label>
+                                <select name="client_id" class="form-select">
+                                    <option value="">-- Sin vincular --</option>
+                                    @foreach($clients as $c)
+                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="form-group" style="margin:0;">
                                 <label class="form-label" style="font-size:0.72rem;">Precio ofertado *</label>
                                 <input type="number" step="0.01" name="precio_ofertado" class="form-input" required value="{{ old('precio_ofertado', $operation->amount) }}">
