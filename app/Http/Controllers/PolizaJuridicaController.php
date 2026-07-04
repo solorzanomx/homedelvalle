@@ -20,6 +20,8 @@ class PolizaJuridicaController extends Controller
         }
 
         $validated = $request->validate([
+            'provider_company_id' => 'nullable|exists:provider_companies,id',
+            'provider_contact_id' => 'nullable|exists:provider_contacts,id',
             'insurance_company' => 'nullable|string|max:255',
             'policy_number' => 'nullable|string|max:100',
             'cost' => 'nullable|numeric|min:0',
@@ -52,6 +54,8 @@ class PolizaJuridicaController extends Controller
         }
 
         $validated = $request->validate([
+            'provider_company_id' => 'nullable|exists:provider_companies,id',
+            'provider_contact_id' => 'nullable|exists:provider_contacts,id',
             'insurance_company' => 'nullable|string|max:255',
             'policy_number' => 'nullable|string|max:100',
             'cost' => 'nullable|numeric|min:0',
@@ -80,6 +84,8 @@ class PolizaJuridicaController extends Controller
         $poliza = PolizaJuridica::findOrFail($polizaId);
 
         $validated = $request->validate([
+            'provider_company_id' => 'nullable|exists:provider_companies,id',
+            'provider_contact_id' => 'nullable|exists:provider_contacts,id',
             'insurance_company' => 'nullable|string|max:255',
             'policy_number' => 'nullable|string|max:100',
             'cost' => 'nullable|numeric|min:0',

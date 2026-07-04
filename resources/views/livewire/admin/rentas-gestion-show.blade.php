@@ -274,6 +274,13 @@
         </div>
         @endif
 
+        {{-- Proveedores del proceso --}}
+        @include('providers._charges-card', [
+            'charges' => $providerCharges,
+            'providerCompanies' => $providerCompanies,
+            'storeRoute' => route('rentals.provider-charges.store', $rental->id),
+        ])
+
         {{-- Historial / Notas --}}
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
             <div style="padding:.75rem 1.1rem;border-bottom:1px solid #e2e8f0;">

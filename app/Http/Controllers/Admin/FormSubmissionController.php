@@ -89,11 +89,14 @@ class FormSubmissionController extends Controller
             return back()->with('success', 'Este lead ya tiene un cliente asociado.');
         }
 
+        // client_type se re-deriva de interest_types en vez de copiarse tal
+        // cual del FormSubmission — mismo bug ya corregido en
+        // FormSubmissionsTable::convertToClient() (auditoría 2026-07-04).
         $data = [
             'name'             => $formSubmission->full_name,
             'phone'            => $formSubmission->phone,
             'whatsapp'         => $formSubmission->phone,
-            'client_type'      => $formSubmission->client_type,
+            'client_type'      => \App\Models\Client::deriveClientType($formSubmission->interest_types ?? []) ?? $formSubmission->client_type,
             'lead_temperature' => $formSubmission->lead_temperature ?? 'warm',
             'budget_min'       => $formSubmission->budget_min,
             'budget_max'       => $formSubmission->budget_max,

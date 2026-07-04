@@ -738,6 +738,9 @@
                         <a href="{{ route('referrers.index') }}" class="nav-item {{ request()->routeIs('referrers.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="link" class="w-4 h-4" /></span> Comisionistas
                         </a>
+                        <a href="{{ route('providers.index') }}" class="nav-item {{ request()->routeIs('providers.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="briefcase" class="w-4 h-4" /></span> Proveedores
+                        </a>
                         @endpermission
                     </div>
                 </div>

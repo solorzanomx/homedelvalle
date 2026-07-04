@@ -568,6 +568,15 @@
                                 @csrf
                                 <div class="form-grid">
                                     <div class="form-group">
+                                        <label class="form-label">Proveedor (opcional)</label>
+                                        <select name="provider_company_id" class="form-select">
+                                            <option value="">-- Sin catálogo, usar texto libre --</option>
+                                            @foreach($providerCompanies->where('type', 'poliza_juridica') as $pc)
+                                            <option value="{{ $pc->id }}">{{ $pc->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
                                         <label class="form-label">Compania de Seguros</label>
                                         <input type="text" name="insurance_company" class="form-input" placeholder="Ej: Juridica Integral">
                                     </div>
@@ -621,6 +630,12 @@
                         </div>
 
                         <div class="form-grid">
+                            @if($poliza->providerCompany)
+                            <div class="detail-row" style="padding:0;">
+                                <span class="label">Proveedor</span>
+                                <span class="value">{{ $poliza->providerCompany->name }}</span>
+                            </div>
+                            @endif
                             <div class="detail-row" style="padding:0;">
                                 <span class="label">Compania</span>
                                 <span class="value">{{ $poliza->insurance_company ?? '—' }}</span>

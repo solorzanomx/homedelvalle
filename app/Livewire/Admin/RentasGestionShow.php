@@ -262,6 +262,8 @@ class RentasGestionShow extends Component
             'stages'      => \App\Models\RentalProcess::STAGES,
             'hasPayments' => $hasPayments,
             'payments'    => $payments,
+            'providerCharges' => $this->rental->providerCharges()->with(['providerCompany', 'providerContact'])->latest()->get(),
+            'providerCompanies' => \App\Models\ProviderCompany::where('status', 'active')->with('contacts')->orderBy('name')->get(),
         ]);
     }
 }

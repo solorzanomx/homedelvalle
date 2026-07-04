@@ -64,11 +64,15 @@ class FormSubmissionsTable extends Component
             return;
         }
 
+        // client_type se re-deriva de interest_types en vez de copiarse tal
+        // cual del FormSubmission — antes heredaba directo cualquier valor
+        // inconsistente que ya trajera el submission (bug real, auditoría
+        // 2026-07-04).
         $data = [
             'name'             => $submission->full_name,
             'phone'            => $submission->phone,
             'whatsapp'         => $submission->phone,
-            'client_type'      => $submission->client_type,
+            'client_type'      => \App\Models\Client::deriveClientType($submission->interest_types ?? []) ?? $submission->client_type,
             'lead_temperature' => $submission->lead_temperature ?? 'warm',
             'budget_min'       => $submission->budget_min,
             'budget_max'       => $submission->budget_max,

@@ -134,20 +134,7 @@ class ClientController extends Controller
         $validated['assigned_user_id'] = Auth::id();
         $validated['lead_source'] = 'manual';
 
-        // client_type se deriva de interest_types (mismo mapeo que ya usa
-        // CreateOperationFromLead para clientes creados desde formularios
-        // web) para que quede consistente sin importar por dónde se creó
-        // el cliente. "Es inversionista" pisa el mapeo automático.
-        $interestTypes = $validated['interest_types'] ?? [];
-        if ($request->boolean('is_investor')) {
-            $validated['client_type'] = 'investor';
-        } elseif (in_array('venta', $interestTypes) || in_array('renta_propietario', $interestTypes)) {
-            $validated['client_type'] = 'owner';
-        } elseif (in_array('compra', $interestTypes)) {
-            $validated['client_type'] = 'buyer';
-        } elseif (in_array('renta_inquilino', $interestTypes)) {
-            $validated['client_type'] = 'renter';
-        }
+        $validated['client_type'] = Client::deriveClientType($validated['interest_types'] ?? [], $request->boolean('is_investor'));
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('clients', 'public');
@@ -523,6 +510,15 @@ class ClientController extends Controller
         // Ensure interest_types is cleared when no checkboxes are selected
         if (!$request->has('interest_types')) {
             $validated['interest_types'] = [];
+        }
+
+        // Re-derivar client_type al editar interest_types — antes quedaba
+        // desactualizado (bug real, auditoría 2026-07-04). El form de edición
+        // no tiene checkbox "es inversionista" (a diferencia de create), así
+        // que se preserva ese estado si ya lo tenía.
+        $derivedClientType = Client::deriveClientType($validated['interest_types'] ?? [], $client->client_type === 'investor');
+        if ($derivedClientType) {
+            $validated['client_type'] = $derivedClientType;
         }
 
         $client->update($validated);

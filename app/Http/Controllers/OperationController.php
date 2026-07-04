@@ -240,7 +240,9 @@ class OperationController extends Controller
                 ->get();
         }
 
-        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments'));
+        $providerCompanies = \App\Models\ProviderCompany::where('status', 'active')->with('contacts')->orderBy('name')->get();
+
+        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'providerCompanies'));
     }
 
     public function edit(string $id)

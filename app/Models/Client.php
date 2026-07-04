@@ -49,6 +49,33 @@ class Client extends Model
         'infonavit_balance'       => 'decimal:2',
     ];
 
+    /**
+     * Deriva client_type (enum owner|buyer|investor|renter) a partir de
+     * interest_types (compra|venta|renta_propietario|renta_inquilino) —
+     * único algoritmo correcto en el sistema, antes solo vivía inline en
+     * ClientController::store(); varios otros puntos de alta/edición de
+     * Client (webhook, AutomationEngine, conversión de FormSubmission,
+     * CreateOperationFromLead) lo omitían o usaban valores fuera del enum
+     * real (bug real encontrado en la auditoría 2026-07-04). is_investor
+     * pisa todo lo demás.
+     */
+    public static function deriveClientType(array $interestTypes, bool $isInvestor = false): ?string
+    {
+        if ($isInvestor) {
+            return 'investor';
+        }
+        if (in_array('venta', $interestTypes) || in_array('renta_propietario', $interestTypes)) {
+            return 'owner';
+        }
+        if (in_array('compra', $interestTypes)) {
+            return 'buyer';
+        }
+        if (in_array('renta_inquilino', $interestTypes)) {
+            return 'renter';
+        }
+        return null;
+    }
+
     public function broker(): BelongsTo
     {
         return $this->belongsTo(Broker::class);

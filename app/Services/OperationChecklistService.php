@@ -6,6 +6,7 @@ use App\Models\Operation;
 use App\Models\OperationChecklistItem;
 use App\Models\OperationStageLog;
 use App\Models\PolizaJuridica;
+use App\Models\ProviderCharge;
 use App\Models\Referral;
 use App\Models\RentalProcess;
 use App\Models\RentalStageLog;
@@ -280,6 +281,24 @@ class OperationChecklistService
                 $referral->update([
                     'status' => 'por_pagar',
                     'commission_amount' => $amount,
+                ]);
+            }
+        }
+
+        // Auto-calcular ProviderCharge por porcentaje al cerrar (mismo
+        // mecanismo que Referral arriba) — solo confirma el monto, no lo
+        // marca liquidado (el pago real se registra aparte).
+        if ($newStage === 'cierre' && $operation->commission_amount) {
+            $pendingCharges = ProviderCharge::where('operation_id', $operation->id)
+                ->where('status', 'registrado')
+                ->whereNotNull('commission_percentage')
+                ->whereNull('amount')
+                ->get();
+
+            foreach ($pendingCharges as $charge) {
+                $charge->update([
+                    'status' => 'confirmado',
+                    'amount' => $charge->calculateCommission(),
                 ]);
             }
         }

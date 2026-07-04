@@ -181,8 +181,9 @@ class RentalProcessController extends Controller
         $documentCategories = \App\Models\Document::CATEGORIES;
 
         $contractTemplates = ContractTemplate::active()->get();
+        $providerCompanies = \App\Models\ProviderCompany::where('status', 'active')->with('contacts')->orderBy('name')->get();
 
-        return view('rentals.show', compact('rental', 'timeline', 'documentCategories', 'contractTemplates'));
+        return view('rentals.show', compact('rental', 'timeline', 'documentCategories', 'contractTemplates', 'providerCompanies'));
     }
 
     public function edit(string $id)

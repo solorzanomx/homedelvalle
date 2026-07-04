@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PolizaJuridica extends Model
 {
-    protected $fillable = ['rental_process_id', 'operation_id', 'tenant_client_id', 'insurance_company', 'policy_number', 'status', 'submitted_at', 'review_started_at', 'resolved_at', 'rejection_reason', 'cost', 'currency', 'coverage_start', 'coverage_end', 'notes',];
+    protected $fillable = ['rental_process_id', 'operation_id', 'provider_company_id', 'provider_contact_id', 'tenant_client_id', 'insurance_company', 'policy_number', 'status', 'submitted_at', 'review_started_at', 'resolved_at', 'rejection_reason', 'cost', 'currency', 'coverage_start', 'coverage_end', 'notes',];
     const STATUSES = [
         'pending' => 'Pendiente',
         'documents_submitted' => 'Documentos Enviados',
@@ -39,6 +39,8 @@ class PolizaJuridica extends Model
 
     public function rentalProcess() { return $this->belongsTo(RentalProcess::class); }
     public function operation() { return $this->belongsTo(Operation::class); }
+    public function providerCompany() { return $this->belongsTo(ProviderCompany::class); }
+    public function providerContact() { return $this->belongsTo(ProviderContact::class); }
     public function tenantClient() { return $this->belongsTo(Client::class, 'tenant_client_id'); }
     public function events() { return $this->hasMany(PolizaEvent::class)->orderByDesc('created_at'); }
 

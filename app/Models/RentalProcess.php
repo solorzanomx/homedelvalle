@@ -77,6 +77,7 @@ class RentalProcess extends Model
 
     // Relationships
     public function operation() { return $this->belongsTo(Operation::class); }
+    public function providerCharges() { return $this->hasMany(ProviderCharge::class); }
     public function property() { return $this->belongsTo(Property::class); }
     public function ownerClient() { return $this->belongsTo(Client::class, 'owner_client_id'); }
     public function tenantClient() { return $this->belongsTo(Client::class, 'tenant_client_id'); }

@@ -167,6 +167,13 @@ class AutomationEngine
                 $q->where('slug', 'super_admin');
             })->first();
 
+            // interest_types/client_type solo se derivan si el caller ya trae
+            // esa señal en $data (los 3 form-callers actuales no la traen;
+            // el webhook la agrega después vía $client->update() — ver
+            // WebhookController::lead()) — bug real encontrado en la
+            // auditoría 2026-07-04: antes ambos campos quedaban null siempre.
+            $interestTypes = $data['interest_types'] ?? [];
+
             $client = Client::create([
                 'name' => $data['name'] ?? 'Lead sin nombre',
                 'email' => $email,
@@ -178,6 +185,8 @@ class AutomationEngine
                 'utm_source' => $data['utm_source'] ?? null,
                 'utm_medium' => $data['utm_medium'] ?? null,
                 'utm_campaign' => $data['utm_campaign'] ?? null,
+                'interest_types' => $interestTypes ?: null,
+                'client_type' => Client::deriveClientType($interestTypes),
             ]);
 
             Log::info("AutomationEngine: Client #{$client->id} created from {$source} form submission");

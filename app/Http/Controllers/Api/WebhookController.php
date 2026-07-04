@@ -69,7 +69,22 @@ class WebhookController extends Controller
             $extra['city'] = $validated['zone'];
         }
         if (!empty($validated['interest'])) {
-            $extra['interest_types'] = [$validated['interest']];
+            // El webhook usa un vocabulario propio (compra|renta|venta) que
+            // no coincide con el real de interest_types
+            // (compra|venta|renta_propietario|renta_inquilino) — antes esto
+            // guardaba 'renta' directo, un valor que ninguna lógica de
+            // negocio reconoce (bug real, auditoría 2026-07-04). 'renta' es
+            // ambiguo sin más contexto — se usa lead_type para desambiguar
+            // cuando está presente.
+            $interestType = match ($validated['interest']) {
+                'renta' => match ($validated['lead_type'] ?? null) {
+                    'comprador' => 'renta_inquilino',
+                    default => 'renta_propietario',
+                },
+                default => $validated['interest'],
+            };
+            $extra['interest_types'] = [$interestType];
+            $extra['client_type'] = \App\Models\Client::deriveClientType([$interestType]);
         }
         if (!empty($validated['property_type'])) {
             $extra['property_type'] = $validated['property_type'];

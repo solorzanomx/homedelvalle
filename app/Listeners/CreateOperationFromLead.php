@@ -39,21 +39,27 @@ class CreateOperationFromLead
             }
 
             // ── 2. Buscar o crear Client ───────────────────────────────────────
+            $interestTypes = $sub->form_type === 'arrendatario'
+                ? ['renta_inquilino']
+                : ['renta_propietario'];
+
             $client = Client::firstOrCreate(
                 ['email' => $sub->email],
                 [
                     'name'             => $sub->full_name,
                     'phone'            => $sub->phone,
                     'whatsapp'         => $sub->phone,
-                    'client_type'      => $sub->client_type ?? 'lead',
+                    // 'lead' no es un valor valido del enum client_type
+                    // (owner|buyer|investor|renter) — bug real encontrado en
+                    // la auditoria 2026-07-04, ahora se deriva del mismo
+                    // interest_types que ya se construye correctamente abajo.
+                    'client_type'      => $sub->client_type ?? Client::deriveClientType($interestTypes),
                     'lead_temperature' => $sub->lead_temperature ?? 'warm',
                     'lead_source'      => 'web_form',
                     'utm_source'       => $sub->utm_source,
                     'utm_medium'       => $sub->utm_medium,
                     'utm_campaign'     => $sub->utm_campaign,
-                    'interest_types'   => $sub->form_type === 'arrendatario'
-                                         ? ['renta_inquilino']
-                                         : ['renta_propietario'],
+                    'interest_types'   => $interestTypes,
                     'initial_notes'    => $this->buildClientNotes($sub),
                 ]
             );

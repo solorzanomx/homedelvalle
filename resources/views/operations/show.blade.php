@@ -688,6 +688,15 @@
                     <div id="polizaForm" style="display:none; text-align:left; margin-top:1rem;">
                         <form method="POST" action="{{ route('operations.poliza.store', $operation->id) }}">@csrf
                             <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Proveedor (opcional)</label>
+                                    <select name="provider_company_id" class="form-select">
+                                        <option value="">-- Sin catálogo, usar texto libre --</option>
+                                        @foreach($providerCompanies->where('type', 'poliza_juridica') as $pc)
+                                        <option value="{{ $pc->id }}">{{ $pc->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="form-group"><label class="form-label">Compania</label><input type="text" name="insurance_company" class="form-input" placeholder="Ej: Juridica Integral"></div>
                                 <div class="form-group"><label class="form-label">No. Poliza</label><input type="text" name="policy_number" class="form-input"></div>
                                 <div class="form-group"><label class="form-label">Costo</label><input type="number" name="cost" class="form-input" step="0.01" min="0"></div>
@@ -714,6 +723,7 @@
                             @endforeach
                         </div>
                         <div class="form-grid" style="font-size:0.82rem;">
+                            @if($poliza->providerCompany) <div class="info-row"><span class="lbl">Proveedor</span><span class="val">{{ $poliza->providerCompany->name }}</span></div> @endif
                             @if($poliza->insurance_company) <div class="info-row"><span class="lbl">Compania</span><span class="val">{{ $poliza->insurance_company }}</span></div> @endif
                             @if($poliza->policy_number) <div class="info-row"><span class="lbl">No. Poliza</span><span class="val">{{ $poliza->policy_number }}</span></div> @endif
                             @if($poliza->cost) <div class="info-row"><span class="lbl">Costo</span><span class="val">{{ $poliza->currency }} ${{ number_format($poliza->cost, 0) }}</span></div> @endif
@@ -963,6 +973,15 @@
                 </form>
             </div>
         </div>
+        @endif
+
+        {{-- Proveedores del proceso --}}
+        @if(in_array($operation->type, ['venta','renta']))
+        @include('providers._charges-card', [
+            'charges' => $operation->providerCharges()->with(['providerCompany', 'providerContact'])->latest()->get(),
+            'providerCompanies' => $providerCompanies,
+            'storeRoute' => route('operations.provider-charges.store', $operation->id),
+        ])
         @endif
 
         {{-- Fotos y video del inmueble --}}
