@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Observers\CaptacionObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
+#[ObservedBy(CaptacionObserver::class)]
 class Captacion extends Model implements HasMedia
 {
     use InteractsWithMedia;

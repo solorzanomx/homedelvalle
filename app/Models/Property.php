@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Observers\PropertyObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,9 +11,26 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Collection;
 
+#[ObservedBy(PropertyObserver::class)]
 class Property extends Model
 {
     protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'market_colonia_id', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'is_featured', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'youtube_url'];
+
+    const PROPERTY_TYPES = [
+        'House' => 'Casa',
+        'Apartment' => 'Departamento',
+        'Land' => 'Terreno',
+        'Office' => 'Oficina',
+        'Commercial' => 'Comercial',
+        'Warehouse' => 'Bodega',
+        'Building' => 'Edificio',
+    ];
+
+    const OPERATION_TYPES = [
+        'sale' => 'Venta',
+        'rental' => 'Renta',
+        'temporary_rental' => 'Renta Temporal',
+    ];
 
     public function marketColonia(): BelongsTo
     {

@@ -44,6 +44,16 @@ class Operation extends Model
     // (eso ya vive como PurchaseOffer sobre la Operation del vendedor) — termina
     // en 'listo', no genera ninguna Operation nueva automáticamente.
     const COMPRADOR_STAGES = ['lead','contacto','visita','precalificacion','listo'];
+    // Mismo patrón que COMPRADOR_STAGES pero para quien busca rentar (no
+    // posee un inmueble, no requiere property_id). Antes un lead de
+    // "arrendatario" nacía como type='renta' con property_id=null y convivía
+    // en el mismo kanban que las operaciones reales de una propiedad en
+    // renta, lo que rompía filtros como whereHas('property', ...) en los
+    // kanbans de Colocación (bug encontrado en la auditoría 2026-07-04).
+    // Termina en 'listo' cuando el broker lo matchea con un inmueble real —
+    // esa colocación real se registra aparte como Operation type='renta'
+    // (con property_id), sin transición automática entre ambas.
+    const INQUILINO_STAGES = ['lead','contacto','visita','precalificacion','listo'];
 
     const PHASE_MAP = [
         'lead' => 'captacion', 'contacto' => 'captacion', 'visita' => 'captacion', 'exclusiva' => 'captacion',
@@ -81,6 +91,7 @@ class Operation extends Model
         'renta' => 'Renta',
         'captacion' => 'Captacion',
         'comprador' => 'Comprador',
+        'inquilino' => 'Inquilino',
     ];
 
     protected function casts(): array
@@ -195,6 +206,7 @@ class Operation extends Model
             'captacion' => self::CAPTACION_STAGES,
             'renta' => self::RENTA_STAGES,
             'comprador' => self::COMPRADOR_STAGES,
+            'inquilino' => self::INQUILINO_STAGES,
             default => self::VENTA_STAGES,
         };
     }

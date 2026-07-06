@@ -2,12 +2,22 @@
 
 namespace App\Models;
 
+use App\Observers\ClientObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy(ClientObserver::class)]
 class Client extends Model
 {
+    const CLIENT_TYPES = [
+        'owner' => 'Propietario',
+        'buyer' => 'Comprador',
+        'investor' => 'Inversionista',
+        'renter' => 'Inquilino',
+    ];
+
     protected $fillable = [
         'name', 'email', 'phone', 'whatsapp',
         'address', 'city', 'curp', 'rfc',

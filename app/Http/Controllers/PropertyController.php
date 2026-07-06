@@ -11,6 +11,7 @@ use App\Models\Property;
 use App\Models\PropertyView;
 use App\Services\EasyBrokerService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PropertyController extends Controller
 {
@@ -222,8 +223,8 @@ class PropertyController extends Controller
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
             'status' => 'nullable|in:captacion,available,reserved,sold,rented',
-            'property_type' => 'nullable|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
-            'operation_type' => 'nullable|string|in:sale,rental,temporary_rental',
+            'property_type' => ['nullable', 'string', Rule::in(array_keys(Property::PROPERTY_TYPES))],
+            'operation_type' => ['nullable', 'string', Rule::in(array_keys(Property::OPERATION_TYPES))],
             'currency' => 'nullable|string|in:MXN,USD',
             'description' => 'nullable|string',
             'broker_id' => 'nullable|exists:brokers,id',
@@ -308,8 +309,8 @@ class PropertyController extends Controller
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
             'status' => 'nullable|in:captacion,available,reserved,sold,rented',
-            'property_type' => 'nullable|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
-            'operation_type' => 'nullable|string|in:sale,rental,temporary_rental',
+            'property_type' => ['nullable', 'string', Rule::in(array_keys(Property::PROPERTY_TYPES))],
+            'operation_type' => ['nullable', 'string', Rule::in(array_keys(Property::OPERATION_TYPES))],
             'currency' => 'nullable|string|in:MXN,USD',
             'description' => 'nullable|string',
             'broker_id' => 'nullable|exists:brokers,id',

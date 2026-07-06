@@ -54,6 +54,7 @@ class OperationController extends Controller
             'renta' => Operation::RENTA_STAGES,
             'captacion' => Operation::CAPTACION_STAGES,
             'comprador' => Operation::COMPRADOR_STAGES,
+            'inquilino' => Operation::INQUILINO_STAGES,
             default => array_keys(Operation::STAGES),
         };
 
@@ -102,10 +103,10 @@ class OperationController extends Controller
     {
         // 'venta' no es un tipo creable manualmente aqui — toda venta nace de una
         // captacion (auto-spawn al firmar exclusiva, ver OperationChecklistService).
-        // 'comprador' = pipeline de calificacion del comprador (Lead->Listo),
-        // no requiere property_id (busca, no posee, un inmueble).
+        // 'comprador'/'inquilino' = pipelines de calificacion de una persona
+        // (Lead->Listo), no requieren property_id (buscan, no poseen, un inmueble).
         $validated = $request->validate([
-            'type' => 'required|in:renta,captacion,comprador',
+            'type' => 'required|in:renta,captacion,comprador,inquilino',
             'target_type' => 'nullable|required_if:type,captacion|in:venta,renta',
             'property_id' => 'nullable|exists:properties,id',
             'client_id' => 'required|exists:clients,id',
@@ -124,7 +125,7 @@ class OperationController extends Controller
 
         $validated['user_id'] = Auth::id();
         $validated['stage'] = 'lead';
-        $validated['phase'] = $validated['type'] === 'comprador' ? 'operacion' : 'captacion';
+        $validated['phase'] = in_array($validated['type'], ['comprador', 'inquilino']) ? 'operacion' : 'captacion';
 
         $operation = Operation::create($validated);
 
@@ -240,9 +241,23 @@ class OperationController extends Controller
                 ->get();
         }
 
+        // Mismo criterio que el pipeline de Compradores: el pipeline de
+        // Inquilinos (type=inquilino) es la ficha de LA PERSONA buscando
+        // rentar, no de un inmueble. Su colocación real, una vez que el
+        // broker lo matchea con un inmueble, vive como una Operation aparte
+        // (type=renta, con property_id) — se consolida aquí por client_id.
+        $clientRentaOperations = collect();
+        if ($operation->type === 'inquilino') {
+            $clientRentaOperations = Operation::where('client_id', $operation->client_id)
+                ->where('type', 'renta')
+                ->with('property')
+                ->latest()
+                ->get();
+        }
+
         $providerCompanies = \App\Models\ProviderCompany::where('status', 'active')->with('contacts')->orderBy('name')->get();
 
-        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'providerCompanies'));
+        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'clientRentaOperations', 'providerCompanies'));
     }
 
     public function edit(string $id)

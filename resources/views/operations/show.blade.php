@@ -937,6 +937,29 @@
         </div>
         @endif
 
+        {{-- Colocaciones del inquilino — su actividad real (una vez matcheado
+             con un inmueble) vive como Operation aparte type=renta, se
+             consolida aquí por client_id para tener "todo el registro" en un
+             solo lugar. --}}
+        @if($operation->type === 'inquilino')
+        <div class="card" style="margin-bottom:0.75rem;">
+            <div class="card-body" style="padding:0.85rem;">
+                <div class="info-label" style="margin-bottom:0.5rem;">Colocaciones</div>
+                @forelse($clientRentaOperations as $rentaOp)
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border); font-size:0.8rem;">
+                    <div>
+                        <div style="font-weight:600;">{{ $rentaOp->property->title ?? $rentaOp->property->address ?? 'Sin propiedad' }}</div>
+                        <div style="color:var(--text-muted); font-size:0.72rem;">{{ $rentaOp->stage_label }} &middot; {{ $rentaOp->created_at->format('d/m/Y') }}</div>
+                    </div>
+                    <a href="{{ route('operations.show', $rentaOp->id) }}" class="btn btn-sm btn-outline">Ver Operación →</a>
+                </div>
+                @empty
+                <p style="font-size:0.78rem; color:var(--text-muted);">Todavía no se le ha asignado ningún inmueble.</p>
+                @endforelse
+            </div>
+        </div>
+        @endif
+
         {{-- Gastos de promocion --}}
         @if(in_array($operation->type, ['venta','renta']))
         <div class="card" style="margin-bottom:0.75rem;">

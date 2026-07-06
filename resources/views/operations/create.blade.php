@@ -8,7 +8,7 @@
     margin: 1.5rem 0 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
 }
 .section-title:first-child { margin-top: 0; }
-.type-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem; }
+.type-cards { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem; }
 .type-card {
     position: relative; border: 2px solid var(--border); border-radius: var(--radius);
     padding: 1.25rem; text-align: center; cursor: pointer; transition: all 0.2s;
@@ -65,6 +65,12 @@
                     <div class="type-icon">&#128100;</div>
                     <div class="type-label">Comprador</div>
                     <div class="type-desc">Calificar a un comprador antes de que oferte</div>
+                </label>
+                <label class="type-card {{ old('type') === 'inquilino' ? 'selected' : '' }}" id="cardInquilino">
+                    <input type="radio" name="type" value="inquilino" {{ old('type') === 'inquilino' ? 'checked' : '' }} required onchange="onTypeChange(this.value)">
+                    <div class="type-icon">&#128273;</div>
+                    <div class="type-label">Inquilino</div>
+                    <div class="type-desc">Calificar a alguien que busca rentar</div>
                 </label>
             </div>
             @error('type') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
@@ -209,6 +215,7 @@ function onTypeChange(type) {
     document.getElementById('cardRenta').classList.toggle('selected', type === 'renta');
     document.getElementById('cardCaptacion').classList.toggle('selected', type === 'captacion');
     document.getElementById('cardComprador').classList.toggle('selected', type === 'comprador');
+    document.getElementById('cardInquilino').classList.toggle('selected', type === 'inquilino');
 
     // Secondary client label
     var label = document.getElementById('secondaryClientLabel');

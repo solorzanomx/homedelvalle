@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Cuando llega un lead de renta crea Client + Operation en el kanban.
  *
- * arrendatario      → Operation(type='renta',     stage='lead')  → Colocación Activa
- * propietario_renta → Operation(type='captacion', stage='lead')  → Captación de Renta
+ * arrendatario      → Operation(type='inquilino', stage='lead')  → Pipeline de Inquilinos
+ * propietario_renta → Operation(type='captacion',  stage='lead')  → Captación de Renta
  */
 class CreateOperationFromLead
 {
@@ -98,7 +98,7 @@ class CreateOperationFromLead
         }
     }
 
-    // ── Arrendatario → Colocación Activa (type='renta') ───────────────────────
+    // ── Arrendatario → Pipeline de Inquilinos (type='inquilino') ──────────────
 
     private function createRentaOperation($sub, Client $client, array $payload, int $adminId): void
     {
@@ -108,8 +108,7 @@ class CreateOperationFromLead
         ];
 
         Operation::create([
-            'type'         => 'renta',
-            'phase'        => 'colocacion',
+            'type'         => 'inquilino',
             'stage'        => 'lead',
             'status'       => 'active',
             'client_id'    => $client->id,

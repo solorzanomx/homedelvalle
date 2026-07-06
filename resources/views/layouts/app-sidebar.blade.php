@@ -382,7 +382,7 @@
                         </a>
                         @endif
                         @if(Route::has('operations.index'))
-                        <a href="{{ route('operations.index') }}" class="nav-item {{ request()->routeIs('operations.*') && !in_array(request('type'), ['venta','comprador']) ? 'active' : '' }}">
+                        <a href="{{ route('operations.index') }}" class="nav-item {{ request()->routeIs('operations.*') && !in_array(request('type'), ['venta','comprador','inquilino']) ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="circle-play" class="w-4 h-4" /></span> Pipeline
                         </a>
                         <a href="{{ route('operations.index', ['type' => 'venta']) }}" class="nav-item {{ request()->routeIs('operations.*') && request('type') === 'venta' ? 'active' : '' }}">
@@ -390,6 +390,9 @@
                         </a>
                         <a href="{{ route('operations.index', ['type' => 'comprador']) }}" class="nav-item {{ request()->routeIs('operations.*') && request('type') === 'comprador' ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="users-round" class="w-4 h-4" /></span> Compradores
+                        </a>
+                        <a href="{{ route('operations.index', ['type' => 'inquilino']) }}" class="nav-item {{ request()->routeIs('operations.*') && request('type') === 'inquilino' ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="key" class="w-4 h-4" /></span> Inquilinos
                         </a>
                         @endif
                         @if(Route::has('deals.index'))
