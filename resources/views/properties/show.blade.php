@@ -718,6 +718,78 @@
             </div>
         </div>
 
+        {{-- Rendimiento en Portales Externos (Inmuebles24, sin API — carga manual) --}}
+        <div class="side-card">
+            <div class="side-card-header">
+                <span>&#127760; Rendimiento en Portales Externos</span>
+            </div>
+            <div class="side-card-body">
+                @foreach($portalReports as $portalKey => $reports)
+                    @php
+                        $latest = $reports->last();
+                        $chartData = $reports->map(fn($r) => [
+                            'label' => \Carbon\Carbon::parse($r->week_start)->format('d/m'),
+                            'visualizaciones' => $r->visualizaciones,
+                        ])->values();
+                    @endphp
+                    <div style="font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.5rem;">{{ \App\Models\PropertyPortalReport::PORTALS[$portalKey] ?? ucfirst($portalKey) }}</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:.8rem;">
+                        <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--text);">{{ number_format($latest->exposicion) }}</div>
+                            <div style="font-size:.68rem;color:var(--text-muted);">Exposición (última sem.)</div>
+                        </div>
+                        <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--text);">{{ number_format($latest->visualizaciones) }}</div>
+                            <div style="font-size:.68rem;color:var(--text-muted);">Visualizaciones</div>
+                        </div>
+                        <div style="background:var(--bg,#f8fafc);border-radius:8px;padding:.6rem .7rem;">
+                            <div style="font-size:1.1rem;font-weight:700;color:var(--text);">{{ number_format($latest->consultas_recibidas) }}</div>
+                            <div style="font-size:.68rem;color:var(--text-muted);">Consultas</div>
+                        </div>
+                    </div>
+                    <div style="position:relative;width:100%;height:90px;margin-bottom:.8rem;">
+                        <canvas id="portalReportChart-{{ $portalKey }}" data-chart="{{ json_encode($chartData) }}"></canvas>
+                    </div>
+                    <div style="overflow-x:auto;margin-bottom:.9rem;">
+                        <table style="width:100%;font-size:.72rem;border-collapse:collapse;">
+                            <thead>
+                                <tr style="color:var(--text-muted);text-align:left;">
+                                    <th style="padding:.25rem .4rem;">Semana</th>
+                                    <th style="padding:.25rem .4rem;">Vis.</th>
+                                    <th style="padding:.25rem .4rem;">Consultas</th>
+                                    <th style="padding:.25rem .4rem;">WhatsApp</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($reports->reverse()->take(6) as $r)
+                                <tr style="border-top:1px solid var(--border);">
+                                    <td style="padding:.25rem .4rem;">{{ \Carbon\Carbon::parse($r->week_start)->format('d/m') }}-{{ \Carbon\Carbon::parse($r->week_end)->format('d/m') }}</td>
+                                    <td style="padding:.25rem .4rem;">{{ $r->visualizaciones }}</td>
+                                    <td style="padding:.25rem .4rem;">{{ $r->consultas_recibidas }}</td>
+                                    <td style="padding:.25rem .4rem;">{{ $r->contactaron_whatsapp }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endforeach
+                @if($portalReports->isEmpty())
+                <div style="font-size:.78rem;color:var(--text-muted);text-align:center;padding:.5rem 0 .8rem;">Aún no hay reportes de portales externos cargados.</div>
+                @endif
+                <form method="POST" action="{{ route('properties.portal-reports.store', $property) }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:.4rem;border-top:1px solid var(--border);padding-top:.7rem;">
+                    @csrf
+                    <label style="font-size:.72rem;color:var(--text-muted);">Cargar Excel de rendimiento (Inmuebles24)</label>
+                    <select name="portal" class="form-select" style="font-size:.78rem;padding:.3rem .5rem;">
+                        @foreach(\App\Models\PropertyPortalReport::PORTALS as $val => $label)
+                        <option value="{{ $val }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <input type="file" name="file" accept=".xlsx" required style="font-size:.75rem;">
+                    <button class="btn btn-sm btn-primary" style="align-self:flex-start;">Importar</button>
+                </form>
+            </div>
+        </div>
+
         {{-- Owner (Propietario) --}}
         <div class="side-card">
             <div class="side-card-header">Propietario</div>
@@ -1208,8 +1280,9 @@ document.getElementById('visitModal').addEventListener('click', function(e) {
 });
 </script>
 
-@if($viewsTotal > 0)
+@if($viewsTotal > 0 || $portalReports->isNotEmpty())
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+@if($viewsTotal > 0)
 <script>
 (function() {
     const el = document.getElementById('propertyViewsChart');
@@ -1246,6 +1319,47 @@ document.getElementById('visitModal').addEventListener('click', function(e) {
                 y: { display: false, beginAtZero: true },
             },
         },
+    });
+})();
+</script>
+@endif
+<script>
+(function() {
+    document.querySelectorAll('canvas[id^="portalReportChart-"]').forEach(function(el) {
+        const data = JSON.parse(el.dataset.chart || '[]');
+        if (!data.length) return;
+        const ctx = el.getContext('2d');
+        const color = '#16a34a';
+        const gradient = ctx.createLinearGradient(0, 0, 0, 90);
+        gradient.addColorStop(0, color + '30');
+        gradient.addColorStop(1, color + '00');
+
+        Chart.defaults.font.size = 10;
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.label),
+                datasets: [{
+                    data: data.map(d => d.visualizaciones),
+                    borderColor: color,
+                    backgroundColor: gradient,
+                    fill: true,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    tension: .35,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { display: false, beginAtZero: true },
+                },
+            },
+        });
     });
 })();
 </script>

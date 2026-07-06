@@ -72,6 +72,11 @@ class Property extends Model
         return $this->hasMany(PropertyView::class);
     }
 
+    public function portalReports(): HasMany
+    {
+        return $this->hasMany(PropertyPortalReport::class);
+    }
+
     public function qrCode(): HasOne
     {
         return $this->hasOne(PropertyQrCode::class);

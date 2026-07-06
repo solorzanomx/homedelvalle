@@ -85,10 +85,15 @@ class PortalPropertyController extends Controller
             ])
             ->values();
 
+        // Rendimiento en portales externos (Inmuebles24, cargado a mano por
+        // el broker — sin API). Agrupado por portal por si en el futuro hay
+        // mas de uno.
+        $portalReports = $property->portalReports()->orderBy('week_start')->get()->groupBy('portal');
+
         return view('portal.mi-inmueble', compact(
             'client', 'property', 'captacion', 'visits',
             'totalVisits', 'confirmedVisits', 'confirmRate', 'daysOnMarket',
-            'weeklyData', 'reactionSummary', 'priceSummary', 'comments'
+            'weeklyData', 'reactionSummary', 'priceSummary', 'comments', 'portalReports'
         ));
     }
 }

@@ -195,6 +195,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'update'])->name('properties.photos.update');
     Route::post('properties/{property}/photos/reorder', [PropertyPhotoController::class, 'reorder'])->name('properties.photos.reorder');
     Route::delete('properties/{property}/photos/{photo}', [PropertyPhotoController::class, 'destroy'])->name('properties.photos.destroy');
+    Route::post('properties/{property}/portal-reports', [PropertyController::class, 'uploadPortalReport'])->name('properties.portal-reports.store');
     Route::get('properties/{property}/pdf', [PropertyFichaController::class, 'pdf'])->name('properties.pdf');
     Route::post('properties/{property}/send-ficha', [PropertyFichaController::class, 'email'])->name('properties.send-ficha');
     // QR Codes

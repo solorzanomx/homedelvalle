@@ -224,6 +224,50 @@
     </div>
 </div>
 
+{{-- ── Rendimiento en portales externos ── --}}
+@if($portalReports->isNotEmpty())
+@foreach($portalReports as $portalKey => $reports)
+@php
+    $portalLabel = \App\Models\PropertyPortalReport::PORTALS[$portalKey] ?? ucfirst($portalKey);
+    $latestReport = $reports->last();
+    $maxViews = $reports->max('visualizaciones') ?: 1;
+@endphp
+<div class="card" style="margin-bottom:1.25rem;">
+    <div class="card-header">
+        <span style="font-size:.82rem;font-weight:700;">Rendimiento en {{ $portalLabel }}</span>
+        <span style="font-size:.75rem;color:var(--text-muted);">semana del {{ \Carbon\Carbon::parse($latestReport->week_start)->locale('es')->isoFormat('D MMM') }}</span>
+    </div>
+    <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;margin-bottom:1rem;">
+            <div style="text-align:center;">
+                <div style="font-size:1.2rem;font-weight:700;color:#0E304B;">{{ number_format($latestReport->exposicion) }}</div>
+                <div style="font-size:.68rem;color:var(--text-muted);">Exposición</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:1.2rem;font-weight:700;color:#0E304B;">{{ number_format($latestReport->visualizaciones) }}</div>
+                <div style="font-size:.68rem;color:var(--text-muted);">Visualizaciones</div>
+            </div>
+            <div style="text-align:center;">
+                <div style="font-size:1.2rem;font-weight:700;color:#0E304B;">{{ number_format($latestReport->consultas_recibidas) }}</div>
+                <div style="font-size:.68rem;color:var(--text-muted);">Consultas</div>
+            </div>
+        </div>
+        <div class="pulse-bars">
+            @foreach($reports as $r)
+            @php $pct = round(($r->visualizaciones / $maxViews) * 100); @endphp
+            <div class="pulse-bar-wrap">
+                <div class="pulse-bar-count">{{ $r->visualizaciones }}</div>
+                <div class="pulse-bar" style="height:{{ max(4, $pct) }}%;"></div>
+                <div class="pulse-bar-label">{{ \Carbon\Carbon::parse($r->week_start)->format('d/m') }}</div>
+            </div>
+            @endforeach
+        </div>
+        <div style="font-size:.72rem;color:var(--text-muted);margin-top:.6rem;">Visualizaciones por semana en {{ $portalLabel }}.</div>
+    </div>
+</div>
+@endforeach
+@endif
+
 {{-- ── Retroalimentación anónima ── --}}
 @if($reactionSummary['total'] > 0)
 <div class="card" style="margin-bottom:1.25rem;">

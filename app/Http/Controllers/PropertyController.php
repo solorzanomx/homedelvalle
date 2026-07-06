@@ -126,10 +126,31 @@ class PropertyController extends Controller
             'count' => $viewsByDay->get(now()->subDays($daysAgo)->format('Y-m-d'), 0),
         ])->values();
 
+        // Rendimiento en portales externos (Inmuebles24, sin API — se carga
+        // manual). Agrupado por portal por si en el futuro hay mas de uno.
+        $portalReports = $property->portalReports()->orderBy('week_start')->get()->groupBy('portal');
+
         return view('properties.show', compact(
             'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients', 'users',
-            'viewsTotal', 'viewsUnique', 'views7d', 'views30d', 'viewsChartData'
+            'viewsTotal', 'viewsUnique', 'views7d', 'views30d', 'viewsChartData', 'portalReports'
         ));
+    }
+
+    public function uploadPortalReport(Request $request, Property $property)
+    {
+        $validated = $request->validate([
+            'portal' => 'required|in:' . implode(',', array_keys(\App\Models\PropertyPortalReport::PORTALS)),
+            'file' => 'required|file|mimes:xlsx|max:5120',
+        ]);
+
+        $result = app(\App\Services\PropertyPortalReportImportService::class)->import(
+            $property,
+            $validated['portal'],
+            $request->file('file'),
+            \Illuminate\Support\Facades\Auth::user()
+        );
+
+        return back()->with('success', "Reporte importado: {$result['created']} semana(s) nueva(s), {$result['updated']} actualizada(s).");
     }
 
     /** Dashboard de reporte de analítica de vistas (ranking general, o drill-down de una propiedad vía ?property=). */
