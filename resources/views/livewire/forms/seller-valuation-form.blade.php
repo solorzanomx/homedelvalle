@@ -22,6 +22,11 @@
         <p class="text-sm text-gray-500 mt-1.5 mb-6">Responderemos en menos de 24 horas.</p>
 
         <form wire:submit="submit" class="space-y-4">
+            {{-- Honeypot anti-spam: invisible para un humano, un bot que recorre el DOM sí lo llena --}}
+            <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+                <label for="website_url">Sitio web</label>
+                <input type="text" id="website_url" wire:model="website_url" tabindex="-1" autocomplete="off">
+            </div>
             {{-- Row 1: Nombre completo --}}
             <div>
                 <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1.5">Nombre completo</label>

@@ -737,15 +737,13 @@ class ClientController extends Controller
             return back()->with('error', 'El cliente necesita un email para crear acceso al portal.');
         }
 
-        $password = $request->input('password');
-
         $service = app(ClientPortalService::class);
-        $result = $service->createPortalAccount($client, $password);
+        $result = $service->createPortalAccount($client);
 
-        // Send welcome email
+        // Link de activación — el cliente define su propia contraseña, nunca
+        // se manda en claro (auditoria 2026-07-06).
         try {
-            $emailService = app(\App\Services\EmailService::class);
-            $emailService->sendPortalWelcome($client->name, $client->email, $result['password'], $client->interest_types ?? []);
+            $service->sendWelcomeInvitation($result['user']);
         } catch (\Exception $e) {
             // Don't fail the account creation if email fails
             \Illuminate\Support\Facades\Log::warning('Portal welcome email failed: ' . $e->getMessage());

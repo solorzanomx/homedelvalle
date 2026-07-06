@@ -37,8 +37,8 @@ class FinanceController extends Controller
             ];
         }
 
-        $recentTransactions = Transaction::with(['deal', 'property', 'broker'])->latest('date')->limit(10)->get();
-        $pendingCommissions = Commission::with(['deal', 'broker'])->where('status', 'pending')->latest()->limit(10)->get();
+        $recentTransactions = Transaction::with(['deal', 'operation.property', 'property', 'broker'])->latest('date')->limit(10)->get();
+        $pendingCommissions = Commission::with(['deal.property', 'operation.property', 'broker'])->where('status', 'pending')->latest()->limit(10)->get();
 
         return view('admin.finance.dashboard', compact('stats', 'monthlyData', 'recentTransactions', 'pendingCommissions'));
     }
@@ -129,7 +129,7 @@ class FinanceController extends Controller
 
     public function commissions(Request $request)
     {
-        $query = Commission::with(['deal.property', 'deal.client', 'broker'])->latest();
+        $query = Commission::with(['deal.property', 'deal.client', 'operation.property', 'operation.client', 'broker'])->latest();
         if ($request->status) $query->where('status', $request->status);
         if ($request->broker_id) $query->where('broker_id', $request->broker_id);
 

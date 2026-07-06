@@ -89,4 +89,10 @@ return [
         'key' => env('GOOGLE_MAPS_KEY'),
     ],
 
+    'blog_ai' => [
+        // Tope simple sin decisión de negocio compleja — ajustable por .env
+        // sin tocar código (auditoria 2026-07-06).
+        'monthly_cap' => env('BLOG_AI_MONTHLY_CAP', 30),
+    ],
+
 ];

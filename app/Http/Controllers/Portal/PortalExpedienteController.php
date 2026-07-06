@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\Notification;
 use App\Models\RentalAval;
 use App\Models\RentalProcess;
 use App\Services\ClientPortalService;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PortalExpedienteController extends Controller
@@ -213,7 +216,7 @@ class PortalExpedienteController extends Controller
         $file  = $request->file('file');
         $path  = $file->store('expediente/client-' . $client->id, 'public');
 
-        Document::create([
+        $document = Document::create([
             'client_id'         => $client->id,
             'rental_process_id' => $request->rental_process_id,
             'uploaded_by'       => Auth::id(),
@@ -225,6 +228,36 @@ class PortalExpedienteController extends Controller
             'file_size'         => $file->getSize(),
             'status'            => 'received',
         ]);
+
+        // Antes nada avisaba al broker de un documento nuevo — se enteraba
+        // solo si entraba manualmente a revisar (auditoria 2026-07-06).
+        $assignedUserId = $client->assigned_user_id;
+        if ($assignedUserId) {
+            Notification::create([
+                'user_id' => $assignedUserId,
+                'type'    => 'system',
+                'title'   => 'Documento subido en expediente',
+                'body'    => "{$client->name} subio un documento a su expediente: {$document->label}.",
+                'data'    => ['url' => route('clients.show', $client->id), 'client_id' => $client->id, 'document_id' => $document->id],
+            ]);
+            try {
+                $asesorUser = \App\Models\User::find($assignedUserId);
+                if ($asesorUser?->email) {
+                    app(EmailService::class)->send(
+                        $asesorUser->email,
+                        'Documento subido en expediente — ' . $client->name,
+                        "<p>{$client->name} subio un documento a su expediente: <strong>{$document->label}</strong>.</p>"
+                        . '<p><a href="' . route('clients.show', $client->id) . '">Ver expediente</a></p>',
+                        $asesorUser->name
+                    );
+                }
+            } catch (\Exception $e) {
+                Log::warning('PortalExpedienteController: no se pudo notificar por correo al asesor', [
+                    'client_id' => $client->id,
+                    'error'     => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with('success', 'Documento subido correctamente.');
     }

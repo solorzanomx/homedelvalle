@@ -181,7 +181,7 @@
                 <div class="comm-avatar">{{ strtoupper(substr($comm->broker->name ?? 'N', 0, 1)) }}</div>
                 <div class="comm-info">
                     <div class="comm-broker">{{ $comm->broker->name ?? 'Sin broker' }}</div>
-                    <div class="comm-deal">{{ $comm->deal->property->title ?? 'Deal #' . $comm->deal_id }}</div>
+                    <div class="comm-deal">{{ $comm->operation?->property->title ?? $comm->deal?->property->title ?? ($comm->operation_id ? 'Operacion #' . $comm->operation_id : 'Deal #' . $comm->deal_id) }}</div>
                 </div>
                 <div class="comm-right">
                     <div class="comm-amount">${{ number_format($comm->amount, 0) }}</div>

@@ -16,6 +16,11 @@
         </div>
     @else
         <form wire:submit="submit" class="space-y-5">
+            {{-- Honeypot anti-spam: invisible para un humano, un bot que recorre el DOM sí lo llena --}}
+            <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+                <label for="website_url">Sitio web</label>
+                <input type="text" id="website_url" wire:model="website_url" tabindex="-1" autocomplete="off">
+            </div>
             <div class="mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">Solicita tu asesoría gratuita</h2>
                 <p class="text-gray-500 mt-1 text-sm">Responderemos en menos de 24 horas con un rango de renta y un plan personalizado.</p>

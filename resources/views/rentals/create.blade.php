@@ -245,9 +245,9 @@
                             <label class="form-label">Tipo de garantía</label>
                             <select name="guarantee_type" class="form-select">
                                 <option value="">Seleccionar...</option>
-                                <option value="deposito" {{ old('guarantee_type') === 'deposito' ? 'selected' : '' }}>Depósito en efectivo</option>
-                                <option value="poliza_juridica" {{ old('guarantee_type') === 'poliza_juridica' ? 'selected' : '' }}>Póliza jurídica</option>
-                                <option value="fianza" {{ old('guarantee_type') === 'fianza' ? 'selected' : '' }}>Fianza</option>
+                                @foreach(\App\Models\RentalProcess::GUARANTEE_TYPES as $val => $label)
+                                <option value="{{ $val }}" {{ old('guarantee_type') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="form-group">

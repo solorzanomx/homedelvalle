@@ -59,21 +59,23 @@ class ProcesarDocumentoFirmadoGoogle implements ShouldQueue
                     $portalService = app(ClientPortalService::class);
                     $result = $portalService->createPortalAccount($client);
 
+                    // Link de activación — el cliente define su propia
+                    // contraseña, nunca se manda en claro (auditoria 2026-07-06).
+                    $portalService->sendWelcomeInvitation($result['user']);
+
                     Log::info('DocumentoFirmadoGoogle: portal creado tras firma', [
                         'client_id' => $client->id,
                         'email'     => $client->email,
                     ]);
 
-                    // Enviar WhatsApp con credenciales
+                    // Avisar por WhatsApp que revise su correo para activar
                     $phone = $client->whatsapp ?? $client->phone ?? null;
-                    if ($phone && isset($result['password'])) {
+                    if ($phone) {
                         try {
                             app(WhatsAppService::class)->send(
                                 $phone,
                                 "¡Hola {$client->name}! Firmaste tu contrato de confidencialidad. " .
-                                'Ya tienes acceso a tu portal de valuación en: ' . url('/portal') .
-                                ' — Usuario: ' . $client->email .
-                                ' — Contraseña: ' . $result['password']
+                                'Revisa tu correo (' . $client->email . ') para activar tu acceso al portal de valuación.'
                             );
                         } catch (\Throwable $e) {
                             Log::warning('DocumentoFirmadoGoogle: no se pudo enviar WhatsApp de bienvenida', [

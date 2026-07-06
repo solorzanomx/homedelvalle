@@ -5,22 +5,24 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
+/**
+ * ESTA CLASE NO ESTA ENLAZADA — bootstrap/app.php usa el patron de Laravel
+ * 11+ (`Application::configure(...)->withRouting(commands: routes/console.php)`)
+ * y nunca liga App\Console\Kernel como el Contracts\Console\Kernel real, asi
+ * que `schedule()` de aqui JAMAS se ejecuta. Confirmado con
+ * `php artisan schedule:list`: solo listaba las tareas definidas en
+ * routes/console.php. Hasta el 2026-07-06 esta clase tenia 7 tareas
+ * programadas (blog:publish-scheduled, leads:check-uncontacted, las 2
+ * alertas de captacion, etc) que llevaban quien sabe cuanto tiempo sin
+ * correr en produccion — se migraron todas a routes/console.php, que es la
+ * unica fuente de verdad real del schedule en esta app. No agregar nada
+ * nuevo aqui; los comandos individuales (no el schedule) si se auto-
+ * descubren solos desde app/Console/Commands sin necesitar esta clase.
+ */
 class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('social:publish-scheduled')->everyMinute()->withoutOverlapping();
-        $schedule->command('blog:publish-scheduled')->everyMinute()->withoutOverlapping();
-        $schedule->command('visits:send-reminders')->dailyAt('07:00');
-        $schedule->command('leads:check-uncontacted')->everyFifteenMinutes()->withoutOverlapping();
-        $schedule->command('captaciones:check-exclusiva-pending')->dailyAt('09:00');
-        $schedule->command('captaciones:check-valuacion-pendiente')->dailyAt('09:00');
-        $schedule->job(new \App\Jobs\SendWeeklyPropertySummary)->weeklyOn(1, '08:00'); // Monday 8 AM
-    }
-
-    protected function commands(): void
-    {
-        $this->load(__DIR__.'/Commands');
-        require base_path('routes/console.php');
+        //
     }
 }

@@ -56,7 +56,7 @@ class PublicController extends Controller
 
     public function propiedadShow(Request $request, int $id, string $slug = null)
     {
-        $property = Property::with('photos')->findOrFail($id);
+        $property = Property::available()->with('photos')->findOrFail($id);
 
         PropertyView::record($property, $request);
 

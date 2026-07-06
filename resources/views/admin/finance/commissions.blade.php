@@ -142,6 +142,10 @@
                         <span>Deal #{{ $comm->deal->id }}</span>
                         @if($comm->deal->property)<span>&middot; {{ Str::limit($comm->deal->property->title, 25) }}</span>@endif
                         @if($comm->deal->client)<span>&middot; {{ $comm->deal->client->name }}</span>@endif
+                    @elseif($comm->operation)
+                        <span>Operacion #{{ $comm->operation->id }}</span>
+                        @if($comm->operation->property)<span>&middot; {{ Str::limit($comm->operation->property->title, 25) }}</span>@endif
+                        @if($comm->operation->client)<span>&middot; {{ $comm->operation->client->name }}</span>@endif
                     @endif
                     @if($comm->percentage)<span>&middot; {{ number_format($comm->percentage, 1) }}%</span>@endif
                     @if($comm->paid_at)<span>&middot; Pagada {{ \Carbon\Carbon::parse($comm->paid_at)->format('d/m/Y') }}</span>@endif

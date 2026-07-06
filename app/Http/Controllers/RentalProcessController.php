@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class RentalProcessController extends Controller
 {
@@ -86,7 +87,7 @@ class RentalProcessController extends Controller
             'commission_amount'          => 'nullable|numeric|min:0',
             'commission_percentage'      => 'nullable|numeric|min:0|max:100',
             'broker_commission_amount'   => 'nullable|numeric|min:0',
-            'guarantee_type'             => 'nullable|in:deposito,poliza_juridica,fianza',
+            'guarantee_type'             => ['nullable', Rule::in(array_keys(RentalProcess::GUARANTEE_TYPES))],
             'lease_start_date'           => 'nullable|date',
             'lease_end_date'             => 'nullable|date|after_or_equal:lease_start_date',
             'lease_duration_months'      => 'nullable|integer|min:1',
@@ -210,7 +211,7 @@ class RentalProcessController extends Controller
             'commission_amount'          => 'nullable|numeric|min:0',
             'commission_percentage'      => 'nullable|numeric|min:0|max:100',
             'broker_commission_amount'   => 'nullable|numeric|min:0',
-            'guarantee_type'             => 'nullable|in:deposito,poliza_juridica,fianza',
+            'guarantee_type'             => ['nullable', Rule::in(array_keys(RentalProcess::GUARANTEE_TYPES))],
             'lease_start_date'           => 'nullable|date',
             'lease_end_date'             => 'nullable|date|after_or_equal:lease_start_date',
             'lease_duration_months'      => 'nullable|integer|min:1',

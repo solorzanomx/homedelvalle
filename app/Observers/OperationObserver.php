@@ -3,7 +3,9 @@
 namespace App\Observers;
 
 use App\Actions\Valuation\RecordClosedSaleAction;
+use App\Models\Commission;
 use App\Models\Operation;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Log;
 
 class OperationObserver
@@ -80,6 +82,9 @@ class OperationObserver
         if ($operation->status !== 'completed') {
             return;
         }
+
+        $this->recordCommission($operation);
+
         // Only sale operations with a price and a property
         if (!$operation->amount || !$operation->property_id) {
             return;
@@ -111,5 +116,47 @@ class OperationObserver
             (float) $operation->amount,
             $operation->completed_at ?? now(),
         );
+    }
+
+    /**
+     * El dashboard de Finanzas (/admin/finance) leía Transaction/Commission,
+     * un subsistema paralelo que nada alimentaba desde Operation — no había
+     * ninguna cifra real de comisiones ganadas (auditoría 2026-07-06).
+     * Aplica a venta Y renta (a diferencia del bloque de arriba, que solo
+     * corre para venta con property/valuación).
+     */
+    private function recordCommission(Operation $operation): void
+    {
+        if (!$operation->commission_amount) {
+            return;
+        }
+        if (Commission::where('operation_id', $operation->id)->exists()) {
+            return;
+        }
+
+        $commission = Commission::create([
+            'operation_id' => $operation->id,
+            'broker_id'    => $operation->broker_id,
+            'amount'       => $operation->commission_amount,
+            'percentage'   => $operation->commission_percentage,
+            'status'       => 'pending',
+        ]);
+
+        Transaction::create([
+            'type'         => 'income',
+            'category'     => 'commission',
+            'description'  => "Comision — Operation #{$operation->id}",
+            'amount'       => $operation->commission_amount,
+            'date'         => ($operation->completed_at ?? now())->toDateString(),
+            'operation_id' => $operation->id,
+            'property_id'  => $operation->property_id,
+            'broker_id'    => $operation->broker_id,
+            'user_id'      => $operation->user_id,
+        ]);
+
+        Log::info('OperationObserver: Commission/Transaction generadas al cerrar la operacion', [
+            'operation_id'  => $operation->id,
+            'commission_id' => $commission->id,
+        ]);
     }
 }

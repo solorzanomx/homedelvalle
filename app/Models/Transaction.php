@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaction extends Model
 {
-    protected $fillable = ['type', 'category', 'description', 'amount', 'currency', 'date', 'deal_id', 'property_id', 'broker_id', 'user_id', 'payment_method', 'reference', 'notes'];
+    protected $fillable = ['type', 'category', 'description', 'amount', 'currency', 'date', 'deal_id', 'operation_id', 'property_id', 'broker_id', 'user_id', 'payment_method', 'reference', 'notes'];
     protected function casts(): array
     {
         return [
@@ -16,6 +16,7 @@ class Transaction extends Model
     }
 
     public function deal() { return $this->belongsTo(Deal::class); }
+    public function operation() { return $this->belongsTo(Operation::class); }
     public function property() { return $this->belongsTo(Property::class); }
     public function broker() { return $this->belongsTo(Broker::class); }
     public function user() { return $this->belongsTo(User::class); }

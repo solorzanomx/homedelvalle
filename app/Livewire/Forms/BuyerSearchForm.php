@@ -4,7 +4,11 @@ namespace App\Livewire\Forms;
 
 use App\Models\FormSubmission;
 use App\Models\Client;
+use App\Models\LegalAcceptance;
+use App\Models\LegalDocument;
 use App\Helpers\BudgetHelper;
+use App\Services\AutomationEngine;
+use App\Services\SpamProtectionService;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,6 +16,9 @@ use Livewire\WithFileUploads;
 class BuyerSearchForm extends Component
 {
     use WithFileUploads;
+
+    // Honeypot — un humano nunca lo llena (oculto por CSS, no type=hidden).
+    public string $website_url = '';
 
     // State
     public array $tipo_inmueble = [];
@@ -66,11 +73,24 @@ class BuyerSearchForm extends Component
         'aviso' => 'aviso de privacidad',
     ];
 
-    public function submit(): void
+    public function submit(SpamProtectionService $spam, AutomationEngine $engine): void
     {
         $data = $this->validate(); // valida primero — si falla, isProcessing nunca se bloquea
         if ($this->isProcessing) return;
         $this->isProcessing = true;
+
+        if ($this->website_url !== '') {
+            $this->reset();
+            $this->submitted = true;
+            return;
+        }
+
+        $spamCheck = $spam->check($data, null, request()->ip(), 'comprador');
+        if (! $spamCheck['pass']) {
+            $this->reset();
+            $this->submitted = true;
+            return;
+        }
 
         $lockKey = 'form_submit_comprador_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
@@ -100,6 +120,28 @@ class BuyerSearchForm extends Component
             'ip'          => request()->ip(),
             'user_agent'  => request()->userAgent(),
         ]);
+
+        $engine->processFormSubmitted([
+            'name' => $data['nombre'],
+            'email' => $data['email'],
+            'phone' => $data['whatsapp'],
+            'utm_source' => request()->query('utm_source'),
+            'utm_medium' => request()->query('utm_medium'),
+            'utm_campaign' => request()->query('utm_campaign'),
+            'interest_types' => ['compra'],
+        ], 'comprador');
+
+        $privacyDoc = LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
+        if ($privacyDoc && $privacyDoc->current_version_id) {
+            LegalAcceptance::record(
+                $privacyDoc->id,
+                $privacyDoc->current_version_id,
+                $data['email'],
+                request(),
+                'comprador',
+                ['name' => $data['nombre']]
+            );
+        }
 
         $savedName  = $data['nombre'];
         $savedFolio = 'HDV-' . strtoupper(substr(md5($submission->id . 'comprador'), 0, 4)) . '-' . $submission->id;

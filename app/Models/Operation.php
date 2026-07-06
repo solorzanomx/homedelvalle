@@ -80,8 +80,15 @@ class Operation extends Model
         'precalificacion' => '#0ea5e9', 'listo' => '#22c55e',
     ];
 
+    // Sincronizado con RentalProcess::GUARANTEE_TYPES — antes solo tenia 3 de
+    // los 6 valores reales, bloqueando aval/pagares/aval_pagares pese a que
+    // ya estan construidos (migraciones, RentalAval/RentalPagare, UI del
+    // Portal) — auditoria 2026-07-06.
     const GUARANTEE_TYPES = [
         'deposito' => 'Deposito',
+        'aval' => 'Aval',
+        'pagares' => 'Pagares',
+        'aval_pagares' => 'Aval + Pagares',
         'poliza_juridica' => 'Poliza Juridica',
         'fianza' => 'Fianza',
     ];

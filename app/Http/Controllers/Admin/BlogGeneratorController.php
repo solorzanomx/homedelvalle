@@ -270,8 +270,30 @@ class BlogGeneratorController extends Controller
 
     // ── Helpers ───────────────────────────────────────────────────────
 
+    /**
+     * Tope simple sin decisión de negocio compleja: un default razonable,
+     * ajustable via .env. Sin esto no habia ningun limite de costo/tokens
+     * en la generacion con IA (auditoria 2026-07-06) — todo post nace en
+     * borrador y requiere revision humana, asi que el riesgo real era bajo,
+     * pero no estaba acotado.
+     */
+    private function assertUnderMonthlyCap(): void
+    {
+        $cap = (int) config('services.blog_ai.monthly_cap', 30);
+
+        $generatedThisMonth = Post::where('ai_generated', true)
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->count();
+
+        if ($generatedThisMonth >= $cap) {
+            abort(429, "Se alcanzó el límite de {$cap} artículos generados por IA este mes. Ajusta BLOG_AI_MONTHLY_CAP si necesitas más.");
+        }
+    }
+
     private function createPlaceholder(Request $request): Post
     {
+        $this->assertUnderMonthlyCap();
+
         return Post::create([
             'title'                => $request->input('title'),
             'slug'                 => Str::slug($request->input('title')) . '-' . substr((string) Str::uuid(), 0, 8),

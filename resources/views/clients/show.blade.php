@@ -770,10 +770,9 @@
                         </form>
                     @endif
 
-                    <form method="POST" action="{{ route('clients.create-portal', $client) }}" style="display:flex; gap:0.4rem;">
+                    <form method="POST" action="{{ route('clients.create-portal', $client) }}">
                         @csrf
-                        <input type="password" name="password" class="form-input" placeholder="Contrasena (opc)" style="flex:1; font-size:0.82rem; padding:0.35rem 0.6rem;">
-                        <button class="btn btn-sm btn-primary">Crear acceso</button>
+                        <button class="btn btn-sm btn-primary" style="width:100%;">Crear acceso y enviar link de activación</button>
                     </form>
                 @endif
             </div>

@@ -4,6 +4,10 @@ namespace App\Livewire\Forms;
 
 use App\Models\FormSubmission;
 use App\Models\Client;
+use App\Models\LegalAcceptance;
+use App\Models\LegalDocument;
+use App\Services\AutomationEngine;
+use App\Services\SpamProtectionService;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -11,6 +15,9 @@ use Livewire\WithFileUploads;
 class DeveloperBriefForm extends Component
 {
     use WithFileUploads;
+
+    // Honeypot — un humano nunca lo llena (oculto por CSS, no type=hidden).
+    public string $website_url = '';
 
     public array $tipo_operacion = [];
     public array $uso = [];
@@ -67,11 +74,24 @@ class DeveloperBriefForm extends Component
         'aviso' => 'aviso de privacidad',
     ];
 
-    public function submit(): void
+    public function submit(SpamProtectionService $spam, AutomationEngine $engine): void
     {
         $data = $this->validate(); // valida primero — si falla, isProcessing nunca se bloquea
         if ($this->isProcessing) return;
         $this->isProcessing = true;
+
+        if ($this->website_url !== '') {
+            $this->reset();
+            $this->submitted = true;
+            return;
+        }
+
+        $spamCheck = $spam->check($data, null, request()->ip(), 'b2b');
+        if (! $spamCheck['pass']) {
+            $this->reset();
+            $this->submitted = true;
+            return;
+        }
 
         $lockKey = 'form_submit_b2b_' . md5($data['email']);
         if (! Cache::lock($lockKey, 30)->get()) return;
@@ -100,6 +120,27 @@ class DeveloperBriefForm extends Component
         if ($this->brief_file) {
             $submission->addMedia($this->brief_file)
                 ->toMediaCollection('briefs');
+        }
+
+        $engine->processFormSubmitted([
+            'name' => $data['nombre_rol'],
+            'email' => $data['email'],
+            'phone' => $data['telefono'],
+            'utm_source' => request()->query('utm_source'),
+            'utm_medium' => request()->query('utm_medium'),
+            'utm_campaign' => request()->query('utm_campaign'),
+        ], 'b2b');
+
+        $privacyDoc = LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
+        if ($privacyDoc && $privacyDoc->current_version_id) {
+            LegalAcceptance::record(
+                $privacyDoc->id,
+                $privacyDoc->current_version_id,
+                $data['email'],
+                request(),
+                'b2b',
+                ['name' => $data['nombre_rol']]
+            );
         }
 
         $savedName  = $data['nombre_rol'];

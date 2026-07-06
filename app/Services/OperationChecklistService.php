@@ -60,19 +60,31 @@ class OperationChecklistService
     }
 
     /**
+     * ¿Faltan ítems requeridos por completar en esta etapa? Única fuente de
+     * verdad para bloquear un avance de etapa (manual o automático) — antes
+     * vivía duplicada inline en RentasKanbanFase1/2 con un guard
+     * Schema::hasColumn('operation_checklist_items','is_required') que
+     * siempre es false (esa columna vive en stage_checklist_template, no
+     * aquí), así que esas 2 vistas en realidad bloqueaban por CUALQUIER
+     * ítem incompleto, incluso los opcionales.
+     */
+    public function hasIncompleteRequiredItems(Operation $operation, string $stage): bool
+    {
+        return $operation->checklistItems()
+            ->where('stage', $stage)
+            ->where('is_completed', false)
+            ->whereHas('template', fn($q) => $q->where('is_required', true))
+            ->exists();
+    }
+
+    /**
      * Check if all required items are done and auto-advance if so.
      */
     public function checkAndAutoAdvance(Operation $operation, User $user): bool
     {
         $operation->refresh();
 
-        $pendingRequired = $operation->checklistItems()
-            ->where('stage', $operation->stage)
-            ->where('is_completed', false)
-            ->whereHas('template', fn($q) => $q->where('is_required', true))
-            ->count();
-
-        if ($pendingRequired > 0) {
+        if ($this->hasIncompleteRequiredItems($operation, $operation->stage)) {
             return false;
         }
 

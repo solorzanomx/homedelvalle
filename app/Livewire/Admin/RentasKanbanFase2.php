@@ -60,18 +60,9 @@ class RentasKanbanFase2 extends Component
 
         // Validar checklist solo en avance
         if ($newIndex > $oldIndex) {
-            $checklistQuery = $op->checklistItems()
-                ->where('stage', $oldStage)
-                ->where('is_completed', false);
-
-            if (\Illuminate\Support\Facades\Schema::hasColumn('operation_checklist_items', 'is_required')) {
-                $checklistQuery->where('is_required', true);
-            }
-
-            if ($checklistQuery->count() > 0) {
-                $pending = $checklistQuery->count();
+            if (app(\App\Services\OperationChecklistService::class)->hasIncompleteRequiredItems($op, $oldStage)) {
                 $this->dispatch('kanban-error', [
-                    'message' => "Hay {$pending} tarea(s) requerida(s) pendientes en '{$oldStage}' antes de avanzar.",
+                    'message' => "Hay tarea(s) requerida(s) pendientes en '{$oldStage}' antes de avanzar.",
                     'operationId' => $operationId,
                 ]);
                 return;

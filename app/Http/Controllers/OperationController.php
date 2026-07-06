@@ -21,6 +21,7 @@ use App\Services\PurchaseOfferGeneratorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\Rule;
 
 class OperationController extends Controller
 {
@@ -118,7 +119,7 @@ class OperationController extends Controller
             'deposit_amount' => 'nullable|numeric|min:0',
             'commission_amount' => 'nullable|numeric|min:0',
             'commission_percentage' => 'nullable|numeric|min:0|max:100',
-            'guarantee_type' => 'nullable|in:deposito,poliza_juridica,fianza',
+            'guarantee_type' => ['nullable', Rule::in(array_keys(Operation::GUARANTEE_TYPES))],
             'expected_close_date' => 'nullable|date',
             'notes' => 'nullable|string|max:2000',
         ]);
@@ -287,7 +288,7 @@ class OperationController extends Controller
             'deposit_amount' => 'nullable|numeric|min:0',
             'commission_amount' => 'nullable|numeric|min:0',
             'commission_percentage' => 'nullable|numeric|min:0|max:100',
-            'guarantee_type' => 'nullable|in:deposito,poliza_juridica,fianza',
+            'guarantee_type' => ['nullable', Rule::in(array_keys(Operation::GUARANTEE_TYPES))],
             'expected_close_date' => 'nullable|date',
             'lease_start_date' => 'nullable|date',
             'lease_end_date' => 'nullable|date|after_or_equal:lease_start_date',
@@ -311,6 +312,18 @@ class OperationController extends Controller
 
         if ($validated['stage'] === $operation->stage) {
             return back()->with('error', 'La operacion ya esta en esa etapa.');
+        }
+
+        // Solo bloquea al AVANZAR — retroceder de etapa nunca requiere
+        // checklist completo (mismo criterio ya usado en los kanbans de
+        // Renta).
+        $stages = Operation::stagesForType($operation->type);
+        $oldIndex = array_search($operation->stage, $stages, true);
+        $newIndex = array_search($validated['stage'], $stages, true);
+        $isAdvancing = $oldIndex !== false && $newIndex !== false && $newIndex > $oldIndex;
+
+        if ($isAdvancing && $this->checklistService->hasIncompleteRequiredItems($operation, $operation->stage)) {
+            return back()->with('error', 'Faltan requisitos por completar en la etapa actual antes de avanzar.');
         }
 
         $this->checklistService->changeStage($operation, $validated['stage'], Auth::user(), $validated['notes'] ?? null);
