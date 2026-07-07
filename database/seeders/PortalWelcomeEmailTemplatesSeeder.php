@@ -16,7 +16,7 @@ class PortalWelcomeEmailTemplatesSeeder extends Seeder
   Estamos muy contentos de acompañarte en este proceso. Tu inmueble merece la mejor estrategia de venta posible, y eso es exactamente lo que te ofrecemos.
 </p>
 <p style="margin:0 0 24px;font-size:15px;line-height:1.75;color:#475569;">
-  Desde tu portal podrás dar seguimiento a cada etapa: documentación, valuación, acuerdo de precio y firma del contrato de exclusiva. Nuestro equipo estará contigo en cada paso.
+  Desde tu portal podrás dar seguimiento a cada etapa: documentación, valuación, acuerdo de precio y firma del Acuerdo de Representación. Nuestro equipo estará contigo en cada paso.
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
@@ -41,7 +41,7 @@ class PortalWelcomeEmailTemplatesSeeder extends Seeder
   <tr>
     <td style="padding:11px 0;">
       <span style="display:inline-block;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:13px;font-weight:700;text-align:center;line-height:30px;margin-right:12px;vertical-align:middle;">4</span>
-      <span style="font-size:14px;color:#334155;vertical-align:middle;font-weight:500;">Firma el contrato de exclusiva y ¡empezamos!</span>
+      <span style="font-size:14px;color:#334155;vertical-align:middle;font-weight:500;">Firma tu Acuerdo de Representación y ¡empezamos!</span>
     </td>
   </tr>
 </table>

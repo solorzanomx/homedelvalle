@@ -50,8 +50,8 @@ class CheckExclusivaPendingSignature extends Command
             Notification::create([
                 'user_id' => $operation->user_id,
                 'type'    => self::ALERT_TYPE,
-                'title'   => 'Exclusiva pendiente de firma',
-                'body'    => "{$clientName} lleva {$days} días sin firmar el contrato de exclusiva — dale seguimiento.",
+                'title'   => 'Acuerdo de Representación pendiente de firma',
+                'body'    => "{$clientName} lleva {$days} días sin firmar el Acuerdo de Representación — dale seguimiento.",
                 'data'    => ['url' => $captacion ? route('admin.captaciones.show', $captacion) : null, 'operation_id' => $operation->id],
             ]);
 
@@ -60,7 +60,7 @@ class CheckExclusivaPendingSignature extends Command
                 try {
                     app(WhatsAppService::class)->send(
                         $broker->whatsapp ?? $broker->phone,
-                        "{$clientName} lleva {$days} días sin firmar la exclusiva. Dale seguimiento cuanto antes."
+                        "{$clientName} lleva {$days} días sin firmar el Acuerdo de Representación. Dale seguimiento cuanto antes."
                     );
                 } catch (\Throwable $e) {
                     Log::warning('CheckExclusivaPendingSignature: WhatsApp failed: ' . $e->getMessage());
@@ -70,7 +70,7 @@ class CheckExclusivaPendingSignature extends Command
             $notified++;
         }
 
-        $this->info("Done. {$notified} recordatorios de exclusiva pendiente enviados.");
+        $this->info("Done. {$notified} recordatorios de Acuerdo pendiente enviados.");
 
         return Command::SUCCESS;
     }

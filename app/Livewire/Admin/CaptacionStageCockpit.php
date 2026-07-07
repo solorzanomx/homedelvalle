@@ -55,7 +55,7 @@ class CaptacionStageCockpit extends Component
         'visita' => 'La etapa más importante de todo el proceso: aquí se decide si firmas la exclusiva o no.',
         'revision_docs' => 'Reunir los documentos del propietario sin frenar la negociación de precio.',
         'avaluo' => 'Llegar a un precio de lista acordado con el propietario, respaldado por datos.',
-        'exclusiva' => 'Firmar el contrato de exclusiva y dejar claro qué va a pasar después.',
+        'exclusiva' => 'Firmar el Acuerdo de Representación y dejar claro qué va a pasar después.',
     ];
 
     public const STAGE_MOTIVATION = [

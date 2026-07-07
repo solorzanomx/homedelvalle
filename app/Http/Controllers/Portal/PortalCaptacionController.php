@@ -140,6 +140,6 @@ class PortalCaptacionController extends Controller
         $captacion->update(['etapa3_completed_at' => now()]);
         $this->captacionService->recalculateStage($captacion);
 
-        return back()->with('success', 'Precio confirmado. Ahora procederemos con el contrato de exclusiva.');
+        return back()->with('success', 'Precio confirmado. Ahora procederemos con el Acuerdo de Representación.');
     }
 }

@@ -480,7 +480,7 @@
                             @foreach($stages as $s)
                             @php
                                 $stageColors = \App\Models\Operation::STAGE_COLORS;
-                                $stageLabels = ['lead'=>'Lead','contacto'=>'Contacto','visita'=>'Visita','exclusiva'=>'Exclusiva','publicacion'=>'Publicacion','busqueda'=>'Busqueda','investigacion'=>'Investigacion','contrato'=>'Contrato','entrega'=>'Entrega','cierre'=>'Cierre','activo'=>'Activo','renovacion'=>'Renovacion','revision_docs'=>'Rev. Docs','avaluo'=>'Avaluo','mejoras'=>'Mejoras','fotos_video'=>'Fotos/Video','carpeta_lista'=>'Carpeta Lista'];
+                                $stageLabels = ['lead'=>'Lead','contacto'=>'Contacto','visita'=>'Visita','exclusiva'=>'Acuerdo de Representación','publicacion'=>'Publicacion','busqueda'=>'Busqueda','investigacion'=>'Investigacion','contrato'=>'Contrato','entrega'=>'Entrega','cierre'=>'Cierre','activo'=>'Activo','renovacion'=>'Renovacion','revision_docs'=>'Rev. Docs','avaluo'=>'Avaluo','mejoras'=>'Mejoras','fotos_video'=>'Fotos/Video','carpeta_lista'=>'Carpeta Lista'];
                             @endphp
                             <div class="pipeline-row">
                                 <span class="pipeline-dot" style="background:{{ $stageColors[$s->stage] ?? '#94a3b8' }};"></span>
@@ -512,7 +512,7 @@
                 <div style="display:flex;flex-direction:column;gap:.4rem;">
                     @foreach($captacionesPipeline as $cap)
                     @php
-                        $etapaLabels = [1=>'Documentación',2=>'Valuación',3=>'Precio',4=>'Exclusiva'];
+                        $etapaLabels = [1=>'Documentación',2=>'Valuación',3=>'Precio',4=>'Acuerdo'];
                         $etapaColors = [1=>'#f59e0b',2=>'#3b82f6',3=>'#8b5cf6',4=>'#10b981'];
                         $ec = $etapaColors[$cap->portal_etapa] ?? '#94a3b8';
                         $el = $etapaLabels[$cap->portal_etapa] ?? 'Etapa '.$cap->portal_etapa;

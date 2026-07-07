@@ -186,7 +186,7 @@
         1 => ['label' => 'Documentación',   'short' => 'Documentos'],
         2 => ['label' => 'Opinión de valor', 'short' => 'Valuación'],
         3 => ['label' => 'Precio de venta',  'short' => 'Precio'],
-        4 => ['label' => 'Contrato firmado', 'short' => 'Exclusiva'],
+        4 => ['label' => 'Acuerdo firmado', 'short' => 'Acuerdo'],
     ];
 
     $propAddress = $captacion?->property_address ?? ($properties->first()?->address ?? null);
@@ -249,8 +249,8 @@
             } else {
                 $nextAction = [
                     'eyebrow' => 'Precio confirmado',
-                    'title'   => 'Generando tu contrato de exclusiva',
-                    'desc'    => 'Ya acordamos el precio. Tu asesor está preparando el contrato. Lo recibirás por correo para firma digital.',
+                    'title'   => 'Generando tu Acuerdo de Representación',
+                    'desc'    => 'Ya acordamos el precio. Tu asesor está preparando tu Acuerdo. Lo recibirás por correo para firma digital.',
                     'cta'     => 'Ver mi proceso',
                     'url'     => route('portal.captacion'),
                 ];
@@ -259,16 +259,16 @@
             if (!$captacion->isEtapa4Complete()) {
                 $nextAction = [
                     'eyebrow' => 'Último paso',
-                    'title'   => 'Firma tu contrato de exclusiva',
+                    'title'   => 'Firma tu Acuerdo de Representación',
                     'desc'    => 'Revisa tu correo — ahí encontrarás el enlace para firmarlo digitalmente. Una vez firmado, salimos oficialmente al mercado.',
-                    'cta'     => 'Ver mi contrato',
+                    'cta'     => 'Ver mi Acuerdo',
                     'url'     => route('portal.captacion'),
                 ];
             } else {
                 $nextAction = [
-                    'eyebrow' => '¡Exclusiva activa!',
+                    'eyebrow' => '¡Acuerdo activo!',
                     'title'   => 'Tu inmueble ya está en el mercado',
-                    'desc'    => 'Contrato firmado. Estamos trabajando activamente para encontrar al comprador ideal para ti.',
+                    'desc'    => 'Acuerdo firmado. Estamos trabajando activamente para encontrar al comprador ideal para ti.',
                     'cta'     => 'Ver actividad',
                     'url'     => route('portal.captacion'),
                 ];
@@ -303,7 +303,7 @@
 
     if ($captacion) {
         if ($captacion->etapa4_completed_at)
-            $activities[] = ['icon' => '🤝', 'bg' => '#ECFDF5', 'text' => 'Contrato de exclusiva firmado — tu inmueble ya está en el mercado.', 'time' => $captacion->etapa4_completed_at->diffForHumans()];
+            $activities[] = ['icon' => '🤝', 'bg' => '#ECFDF5', 'text' => 'Acuerdo de Representación firmado — tu inmueble ya está en el mercado.', 'time' => $captacion->etapa4_completed_at->diffForHumans()];
         if ($captacion->etapa3_completed_at)
             $activities[] = ['icon' => '✓',  'bg' => '#ECFDF5', 'text' => 'Precio de venta confirmado: $' . number_format($captacion->precio_acordado, 0) . ' MXN.', 'time' => $captacion->etapa3_completed_at->diffForHumans()];
         if ($captacion->etapa2_completed_at)

@@ -205,7 +205,7 @@ class CaptacionAdminController extends Controller
             ->take(30)
             ->get();
 
-        $etapaLabels = [1 => 'Documentación', 2 => 'Valuación', 3 => 'Precio', 4 => 'Exclusiva'];
+        $etapaLabels = [1 => 'Documentación', 2 => 'Valuación', 3 => 'Precio', 4 => 'Acuerdo'];
         $etapaColors = [1 => '#f59e0b', 2 => '#3b82f6', 3 => '#8b5cf6', 4 => '#10b981'];
 
         // Brief pre-visita: precio de referencia del Observatorio para la
@@ -305,7 +305,7 @@ class CaptacionAdminController extends Controller
     public function generarExclusiva(Request $request, Captacion $captacion)
     {
         if (!$captacion->precio_acordado) {
-            return back()->with('error', 'Establece el precio antes de generar el contrato de exclusiva.');
+            return back()->with('error', 'Establece el precio antes de generar el Acuerdo de Representación.');
         }
 
         $validated = $request->validate(['vigencia_dias' => 'nullable|integer|min:90|max:365']);
@@ -319,22 +319,22 @@ class CaptacionAdminController extends Controller
             return back()->with('error', 'Error al generar contrato: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Contrato de exclusiva generado correctamente.');
+        return back()->with('success', 'Acuerdo de Representación generado correctamente.');
     }
 
     public function markExclusivaSigned(Captacion $captacion)
     {
         if (!$captacion->etapa4_signature_id) {
-            return back()->with('error', 'No hay contrato de exclusiva generado.');
+            return back()->with('error', 'No hay Acuerdo de Representación generado.');
         }
 
         $captacion->signatureRequest->update(['status' => 'completed', 'completed_at' => now()]);
         $this->service->recalculateStage($captacion);
 
-        return back()->with('success', 'Contrato marcado como firmado. Proceso completado.');
+        return back()->with('success', 'Acuerdo marcado como firmado. Proceso completado.');
     }
 
-    /** Ver/descargar el PDF del contrato de exclusiva ya generado. */
+    /** Ver/descargar el PDF del Acuerdo de Representación ya generado. */
     public function exclusivaPdf(Captacion $captacion)
     {
         $path = $captacion->signatureRequest?->local_pdf_path;

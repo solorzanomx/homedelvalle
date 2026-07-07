@@ -34,7 +34,7 @@ class Document extends Model
         'opinion_valor'       => 'Opinión de Valor PDF',
         'propuesta_servicios' => 'Propuesta de Servicios PDF',
         'oferta_compra'       => 'Carta Oferta de Compra',
-        'contrato_exclusiva'  => 'Contrato de Exclusiva',
+        'contrato_exclusiva'  => 'Acuerdo de Representación',
         'contrato_compraventa' => 'Contrato de Compraventa',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',

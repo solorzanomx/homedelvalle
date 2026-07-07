@@ -128,7 +128,7 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
 
     <div class="cover-tag">Uso Interno · Confidencial</div>
     <h1 class="cover-title">Manual del Broker<br>Proceso de Captación</h1>
-    <p class="cover-sub">Qué hacer, en qué momento y con qué herramienta del sistema — desde que llega un lead de propietario hasta que firmas la exclusiva.</p>
+    <p class="cover-sub">Qué hacer, en qué momento y con qué herramienta del sistema — desde que llega un lead de propietario hasta que firma el Acuerdo de Representación.</p>
 
     <div class="cover-spacer"></div>
 
@@ -140,7 +140,7 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
         <li>Etapa: Contacto</li>
         <li>Etapa: Visita</li>
         <li>Revisión de documentos / Avalúo</li>
-        <li>Etapa: Exclusiva</li>
+        <li>Etapa: Acuerdo de Representación</li>
         <li>Manejo de objeciones comunes</li>
         <li>Qué NO prometer y errores comunes</li>
       </ol>
@@ -164,13 +164,17 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
     <div class="section-tag">Antes de cualquier otra cosa</div>
     <h2 class="section-h2">Principios generales</h2>
     <div class="accent-bar"></div>
-    <p>Tu meta en cada caso es una sola: <strong>llegar a la exclusiva firmada</strong>, lo más rápido y con la mejor experiencia posible para el propietario.</p>
+    <p>Tu meta en cada caso es una sola: <strong>llegar al Acuerdo de Representación firmado</strong>, lo más rápido y con la mejor experiencia posible para el propietario.</p>
     <ul class="steps">
       <li><span class="step-n">1</span><strong>La velocidad de respuesta es tu ventaja #1.</strong> Un propietario que recibe una llamada en los primeros 30-60 minutos percibe profesionalismo automáticamente. Uno que espera un día ya empezó a llamar a otras inmobiliarias.</li>
       <li><span class="step-n">2</span><strong>Nunca llegues a una llamada o visita sin prepararte.</strong> El sistema te da los datos (precio de referencia de la zona, historial del cliente) — úsalos antes de marcar.</li>
       <li><span class="step-n">3</span><strong>Nunca termines una interacción sin dejar la siguiente acción agendada.</strong> Un lead sin próximo paso definido es un lead que se enfría.</li>
       <li><span class="step-n">4</span><strong>Cada etapa que avanzas en el kanban debe reflejar la realidad</strong>, no lo que esperas que pase. Si no ha pasado, no lo muevas.</li>
     </ul>
+    <div class="mkt-box">
+      <h4>La Cabina de Etapa</h4>
+      <p>Cuando entras a la ficha de una captación no vas a encontrar solo una lista de checkboxes sueltos — cada etapa tiene su propia cabina con los botones de acción directa (llamar, WhatsApp, agendar), el objetivo de esa etapa, y lo que ya lograste a un lado de lo que sigue. Resuelve todo desde ahí.</p>
+    </div>
   </div></div>
   <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Manual del Broker</span></div>
 </div>
@@ -214,7 +218,7 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
     <p>Agenda la visita ahí mismo, mientras tienes el interés fresco. No dejes "te aviso" sin fecha concreta.</p>
     <div class="mkt-box">
       <h4>🔑 Portal del Cliente — se activa aquí</h4>
-      <p>Junto con la Presentación, invita al propietario a su Portal del Cliente. Ver que ya existe un espacio propio con su proceso reduce su duda más común ("¿esto va en serio?") antes de que lleguemos a la visita — es la ventana de mayor ansiedad de todo el proceso.</p>
+      <p>Junto con la Presentación, invita al propietario a su Portal del Cliente — no esperes al Acuerdo de Representación firmado. Ver que ya existe un espacio propio con su proceso reduce su duda más común ("¿esto va en serio?") antes de que lleguemos a la visita — es la ventana de mayor ansiedad de todo el proceso.</p>
     </div>
     <div class="warn-box"><p><strong>Qué NO hacer:</strong> no mandes la presentación sin haber hablado primero por teléfono — pierde el toque personal y baja la tasa de respuesta.</p></div>
   </div></div>
@@ -233,7 +237,7 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
     <div class="section-tag">Etapa 3 de 6 · La más importante de todo el proceso</div>
     <h2 class="section-h2">Visita</h2>
     <div class="accent-bar"></div>
-    <p>Esta es la etapa que decide si firmas la exclusiva o no. Prepárate en serio.</p>
+    <p>Esta es la etapa que decide si firma el Acuerdo de Representación o no. Prepárate en serio.</p>
     <h3 class="sub">Antes de ir</h3>
     <ul class="blist">
       <li>Revisa el precio de referencia de la colonia en el Observatorio (<code>/precios</code>).</li>
@@ -241,12 +245,14 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
       <li>Confirma la cita el día anterior.</li>
       <li>Lleva el checklist de documentos impreso — deja algo tangible en la mesa, y evita el "se me olvidó qué pedían" de la próxima llamada.</li>
     </ul>
+    <h3 class="sub">Qué llevar</h3>
+    <p>Laptop o tablet con acceso al CRM, cámara para fotos preliminares, tu criterio para dar una primera impresión de precio.</p>
     <h3 class="sub">Durante la visita</h3>
     <ul class="steps">
       <li><span class="step-n">1</span>Recorre el inmueble y documenta su estado (fotos preliminares, notas).</li>
       <li><span class="step-n">2</span><strong>Da una Opinión de Valor en el momento</strong>, usando Valor Rápido o Valuación Constructor desde tu dispositivo — no te vayas prometiendo "te aviso en unos días".</li>
       <li><span class="step-n">3</span>Presenta la <strong>Propuesta de Servicios</strong> ahí mismo: explica el plan de comercialización, apóyate en comparables reales de la zona.</li>
-      <li><span class="step-n">4</span><strong>Si el propietario está listo, ofrece firmar la exclusiva en el momento.</strong> No hay mejor momento que cuando el interés está al máximo.</li>
+      <li><span class="step-n">4</span><strong>Si el propietario está listo, ofrece firmar el Acuerdo de Representación en el momento.</strong> No hay mejor momento que cuando el interés está al máximo.</li>
     </ul>
     <div class="warn-box"><p><strong>Qué NO hacer:</strong> no salgas de la visita sin haber intentado cerrar o, como mínimo, sin una fecha concreta de decisión.</p></div>
   </div></div>
@@ -265,13 +271,19 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
     <div class="section-tag">Etapa 4 de 6</div>
     <h2 class="section-h2">Revisión de documentos / Avalúo</h2>
     <div class="accent-bar"></div>
-    <p><strong>Qué hacer:</strong> solicita al propietario los documentos requeridos (identificación, CURP, comprobante de domicilio) — puede subirlos directo desde su Portal del Cliente si ya tiene cuenta, o mándaselos por WhatsApp/email para que los suba. Vincula la valuación formal a la captación desde la ficha.</p>
-    <div class="insight-box"><p><strong>No dejes que esto frene la negociación</strong> — puede correr en paralelo mientras cierras el precio con el propietario.</p></div>
+    <p><strong>Qué hacer:</strong> el sistema organiza el expediente del propietario en 4 grupos — pídelos a su ritmo, no todos de golpe. No dejes que esto frene la negociación: puede correr en paralelo mientras cierras el precio con el propietario.</p>
+    <ul class="blist">
+      <li><strong>Personales</strong> — identificación oficial, CURP, comprobante de domicilio (no mayor a 3 meses), constancia de situación fiscal, y estado de cuenta o carátula bancaria con CLABE.</li>
+      <li><strong>Según estado civil</strong> — el sistema pide el documento correcto automáticamente: Acta de Matrimonio (casado/unión libre), Acta de Divorcio + Convenio (divorciado), Testamento o Declaratoria de Herederos si heredó el inmueble.</li>
+      <li><strong>Del inmueble</strong> — escritura, cancelación de hipoteca si aplica, carta finiquito si aplica, predial y agua (boleta + pago), no adeudo de mantenimiento, reglamento de condominio. El propietario puede subir todo desde su Portal.</li>
+      <li><strong>Notariales</strong> — libertad de gravámenes, no adeudo de contribuciones, avalúo notarial/fiscal, cálculo de impuestos. Estos <strong>no se le piden al propietario</strong> — los tramita la notaría, tú solo das seguimiento.</li>
+    </ul>
+    <div class="insight-box"><p>Vincula la valuación formal a la captación desde la ficha en cuanto la tengas.</p></div>
   </div></div>
   <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Manual del Broker</span></div>
 </div>
 
-{{-- ═══════════ EXCLUSIVA ═══════════ --}}
+{{-- ═══════════ ACUERDO DE REPRESENTACIÓN ═══════════ --}}
 <div class="page">
   <div class="page-header-inner">
     @if(!empty($brandLogoSrcLight))<img src="{{ $brandLogoSrcLight }}" alt="Home del Valle">
@@ -281,11 +293,11 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
   </div>
   <div class="page-body"><div class="inner">
     <div class="section-tag">Etapa 5 de 6</div>
-    <h2 class="section-h2">Exclusiva</h2>
+    <h2 class="section-h2">Acuerdo de Representación</h2>
     <div class="accent-bar"></div>
-    <p><strong>Qué hacer:</strong> una vez acordado el precio, genera el contrato de exclusiva desde el botón correspondiente en la ficha de la captación. Envíalo al propietario y da seguimiento activo hasta la firma — no lo dejes "esperando a que firme solo".</p>
+    <p><strong>Qué hacer:</strong> una vez acordado el precio, genera el Acuerdo de Representación desde el botón correspondiente en la ficha de la captación. Envíalo al propietario y da seguimiento activo hasta la firma — no lo dejes "esperando a que firme solo".</p>
     <div class="mkt-box">
-      <h4>Al entregar el contrato</h4>
+      <h4>Al entregar el Acuerdo</h4>
       <p>Explica con claridad qué va a pasar después (fecha estimada de fotos, de publicación, primer reporte) — esto reduce la duda más común: "¿y si firmo y no hacen nada?"</p>
     </div>
   </div></div>
@@ -310,7 +322,7 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
         <tr><td>"Su precio me parece bajo"</td><td>Muestra los comparables reales del Observatorio de Precios de su colonia — datos, no opinión.</td></tr>
         <tr><td>"Quiero pensarlo"</td><td>Pregunta qué le genera duda específicamente y resuélvelo ahí (precio, plazo, confianza). No presiones, pero tampoco te vayas sin agendar cuándo te va a dar respuesta.</td></tr>
         <tr><td>"Otra inmobiliaria me ofrece un precio más alto"</td><td>Explica que un precio inflado sin respaldo de mercado solo alarga el tiempo en venta — un inmueble sobrevaluado se queda sin visitas. Usa datos, no discurso genérico.</td></tr>
-        <tr><td>"No quiero exclusiva, prefiero varias inmobiliarias"</td><td>Explica el modelo boutique: pocas propiedades = más atención, mejor comercialización, sin competir contigo mismo bajando precio.</td></tr>
+        <tr><td>"No quiero exclusividad, prefiero varias inmobiliarias"</td><td>Explica el modelo boutique: pocas propiedades = más atención, mejor comercialización, sin competir contigo mismo bajando precio. No es que "no pueda" trabajar con otros — es que representarlo de verdad requiere que trabajemos juntos, no en competencia con otras 5 inmobiliarias bajando el precio entre ellas.</td></tr>
       </tbody>
     </table>
   </div></div>
@@ -344,6 +356,7 @@ h3.sub { font-size: 13px; font-weight: 700; color: var(--hdv-navy); margin: 14px
       <li>Salir de la visita sin intentar cerrar o sin fecha concreta de decisión.</li>
       <li>Mover una tarjeta de etapa en el kanban antes de que la acción real haya sucedido.</li>
       <li>Prometer plazos o resultados que no dependen de ti.</li>
+      <li>Pedirle al propietario documentación notarial (libertad de gravámenes, no adeudo de contribuciones, avalúo fiscal) — eso lo tramita la notaría, no él.</li>
     </ol>
   </div></div>
   <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Manual del Broker</span></div>

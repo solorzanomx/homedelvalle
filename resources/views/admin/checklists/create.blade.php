@@ -64,7 +64,7 @@
             <div class="section-title">Detalle</div>
             <div class="form-group">
                 <label class="form-label">Titulo <span class="required">*</span></label>
-                <input type="text" name="title" class="form-input" value="{{ old('title') }}" required placeholder="Ej: Firmar contrato de exclusiva">
+                <input type="text" name="title" class="form-input" value="{{ old('title') }}" required placeholder="Ej: Firmar el Acuerdo de Representación">
                 @error('title') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
             </div>
             <div class="form-group">

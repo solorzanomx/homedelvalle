@@ -18,7 +18,7 @@ class GenerarContratoExclusivaAction
 
     public function execute(Client $client, Captacion $captacion, int $vigenciaDias = 180): GoogleSignatureRequest
     {
-        $documentName = 'Contrato de Exclusiva — ' . $client->name;
+        $documentName = 'Acuerdo de Representación — ' . $client->name;
 
         $path = $this->generator->generatePdf($captacion, $vigenciaDias);
 
@@ -29,7 +29,7 @@ class GenerarContratoExclusivaAction
             'category'     => 'contrato_exclusiva',
             'label'        => $documentName,
             'file_path'    => $path,
-            'file_name'    => 'CE-' . str_pad((string) $captacion->id, 5, '0', STR_PAD_LEFT) . '.pdf',
+            'file_name'    => 'AR-' . str_pad((string) $captacion->id, 5, '0', STR_PAD_LEFT) . '.pdf',
             'mime_type'    => 'application/pdf',
             'file_size'    => file_exists($path) ? filesize($path) : null,
             'status'       => 'verified',

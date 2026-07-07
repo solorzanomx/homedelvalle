@@ -54,6 +54,6 @@ class PortalValuacionController extends Controller
         $captacion->update(['etapa3_completed_at' => now()]);
 
         return redirect()->route('portal.valuacion')
-            ->with('success', '¡Precio confirmado! Tu asesor comenzará a preparar el contrato de exclusiva.');
+            ->with('success', '¡Precio confirmado! Tu asesor comenzará a preparar tu Acuerdo de Representación.');
     }
 }

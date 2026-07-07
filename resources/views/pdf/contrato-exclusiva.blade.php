@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Contrato de Exclusiva — {{ $folio }}</title>
+<title>Acuerdo de Representación — {{ $folio }}</title>
 <style>
 {!! $brandCssVars ?? '' !!}
 @if($brandFontB64)
@@ -102,12 +102,12 @@ strong { color: #0f172a; }
   </div>
   <div class="page-body"><div class="inner">
 
-    <div class="doc-title">Contrato de Exclusiva</div>
+    <div class="doc-title">Acuerdo de Representación</div>
     <div class="doc-folio">Folio {{ $folio }} · Ciudad de México, a {{ $fecha }}</div>
 
     <p class="meta-line"><strong>HOME DEL VALLE BIENES RAÍCES</strong><br>P R E S E N T E. —</p>
 
-    <p>Por medio del presente, el/la propietario(a) que suscribe otorga a <strong>Home del Valle Bienes Raíces</strong> el derecho de exclusiva para la comercialización del inmueble ubicado en <strong>{{ $propertyAddress }}</strong>{{ $propertyColonyLabel ? ', ' . $propertyColonyLabel : '' }}, sujeto a los términos y condiciones establecidos en este documento:</p>
+    <p>Por medio del presente, el/la propietario(a) que suscribe designa a <strong>Home del Valle Bienes Raíces</strong> como su representante para la comercialización del inmueble ubicado en <strong>{{ $propertyAddress }}</strong>{{ $propertyColonyLabel ? ', ' . $propertyColonyLabel : '' }}, sujeto a los términos y condiciones establecidos en este documento:</p>
 
     <div class="owner-box">
       <div class="row"><span class="lbl">Propietario</span><span class="val">{{ $ownerName }}</span></div>
@@ -157,7 +157,7 @@ strong { color: #0f172a; }
     <div class="privacy-note">Documento confidencial. Generado por el sistema de Home del Valle el {{ $fecha }}. Folio {{ $folio }}.</div>
 
   </div></div>
-  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Contrato de Exclusiva · {{ $folio }}</span></div>
+  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Acuerdo de Representación · {{ $folio }}</span></div>
 </div>
 
 </body>

@@ -111,7 +111,7 @@
 <div class="page-header">
     <div>
         <h2>Pipeline de Captación</h2>
-        <p style="color:var(--text-muted);font-size:.82rem;">Propietarios en proceso de firma de exclusiva</p>
+        <p style="color:var(--text-muted);font-size:.82rem;">Propietarios en proceso de firma del Acuerdo de Representación</p>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;">
         <a href="{{ route('admin.captaciones.manual-broker') }}" target="_blank" class="btn btn-outline btn-sm">
@@ -170,7 +170,7 @@
 {{-- ===== Registro histórico: exclusivas firmadas ===== --}}
 <div class="card" style="margin-bottom:1.25rem;">
     <div class="card-body" style="padding:1rem 1.25rem;">
-        <div style="font-size:.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.6rem;">Exclusivas firmadas — últimos 6 meses</div>
+        <div style="font-size:.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.6rem;">Acuerdos firmados — últimos 6 meses</div>
         <div style="height:140px;"><canvas id="exclusivasChart"></canvas></div>
     </div>
 </div>
@@ -324,10 +324,10 @@
                         @if($captacionId)
                         <form method="POST" action="{{ route('admin.captaciones.generar-exclusiva', $captacionId) }}" style="display:inline;">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-primary">&#9997;&#65039; Exclusiva</button>
+                            <button type="submit" class="btn btn-sm btn-primary">&#9997;&#65039; Acuerdo</button>
                         </form>
                         @else
-                        <button class="btn btn-sm" disabled>&#9997;&#65039; Exclusiva</button>
+                        <button class="btn btn-sm" disabled>&#9997;&#65039; Acuerdo</button>
                         @endif
 
                     @else
@@ -396,7 +396,7 @@
         data: {
             labels: trend.map(d => d.label),
             datasets: [{
-                label: 'Exclusivas firmadas',
+                label: 'Acuerdos firmados',
                 data: trend.map(d => d.count),
                 backgroundColor: '#8b5cf6',
                 borderRadius: 4,

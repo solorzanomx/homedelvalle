@@ -446,7 +446,7 @@
         <div class="agreement-price">${{ number_format($precioAcordado) }}</div>
         <div class="agreement-label">Confirmado el {{ $captacion->etapa3_completed_at->format('d/m/Y') }}</div>
         <div style="font-size:.8rem;color:#6EE7B7;background:rgba(255,255,255,.07);border-radius:8px;padding:.75rem 1rem;">
-            ✓ Tu asesor está preparando el contrato de exclusiva. Lo recibirás pronto por correo para firma digital.
+            ✓ Tu asesor está preparando tu Acuerdo de Representación. Lo recibirás pronto por correo para firma digital.
         </div>
     </div>
     @else
@@ -456,7 +456,7 @@
         <div class="agreement-price">${{ number_format($precioAcordado) }}</div>
         <div class="agreement-label">Precio de venta al mercado · MXN</div>
         <p style="font-size:.82rem;color:#94A3B8;margin-bottom:1.25rem;line-height:1.5;">
-            Basado en el análisis de mercado y las características de tu inmueble. Cuando confirmes, tu asesor generará el contrato de exclusiva.
+            Basado en el análisis de mercado y las características de tu inmueble. Cuando confirmes, tu asesor preparará tu Acuerdo de Representación.
         </p>
         <form method="POST" action="{{ route('portal.valuacion.confirm-price') }}">
             @csrf

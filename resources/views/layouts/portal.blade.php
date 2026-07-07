@@ -594,7 +594,7 @@
                 Precio de Salida
             </a>
 
-            {{-- Stage 4: Firma de Exclusiva --}}
+            {{-- Stage 4: Firma del Acuerdo de Representación --}}
             @php $s4 = $etapa4Done ? 1 : $st(4); @endphp
             <a href="{{ $s4 > 0 ? route('portal.captacion') : '#' }}"
                class="sb-item {{ ($onCaptacion && $etapa === 4) ? 'active' : ($s4 === 1 ? 'done' : ($s4 === 0 ? 'locked' : '')) }}">
@@ -603,7 +603,7 @@
                     @else 4
                     @endif
                 </span>
-                Firma de Exclusiva
+                Firma del Acuerdo
             </a>
         </div>
 

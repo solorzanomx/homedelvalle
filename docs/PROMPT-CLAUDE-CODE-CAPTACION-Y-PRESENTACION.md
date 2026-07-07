@@ -272,7 +272,7 @@ La presentación NO es legalmente vinculante. Es la herramienta de cierre comerc
 6. **Comisión y próximos pasos:** % editado en wizard + propuesta de "agendar visita técnica esta semana" + datos del agente (foto, teléfono, email, WhatsApp).
 
 **Disclaimer pequeño al pie de la última página:**
-*"Este documento es informativo y no constituye oferta vinculante. Los términos comerciales se formalizan al firmar el contrato de exclusiva o de comercialización con Home del Valle Bienes Raíces."*
+*"Este documento es informativo y no constituye oferta vinculante. Los términos comerciales se formalizan al firmar el Acuerdo de Representación con Home del Valle Bienes Raíces."*
 
 ### E. Stage "declinar caso" (filtro boutique)
 **Después** del wizard (no dentro), en la vista de la captación, debe existir un botón **"Declinar amistosamente"** con campo de razón obligatoria. Esto:

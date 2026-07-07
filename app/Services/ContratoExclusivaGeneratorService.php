@@ -17,16 +17,16 @@ class ContratoExclusivaGeneratorService
      * 'vigencia' y 'comision' son las únicas con placeholders dinámicos.
      */
     const DEFAULT_CLAUSES = [
-        'objeto' => '<strong>Objeto y exclusiva.</strong> El propietario otorga a Home del Valle Bienes Raíces el derecho exclusivo de comercializar el inmueble descrito en este documento, obligándose a abstenerse de contratar a otro intermediario inmobiliario o de vender directamente el inmueble sin la intervención de Home del Valle durante la vigencia del presente contrato.',
-        'vigencia' => '<strong>Vigencia.</strong> El presente contrato tiene una vigencia de {{vigencia_dias}} días naturales contados a partir de la fecha de firma, es decir, hasta el {{vigencia_hasta}}, pudiendo renovarse por acuerdo expreso entre las partes.',
-        'comision' => '<strong>Comisión.</strong> Home del Valle Bienes Raíces percibirá una comisión del {{comision_pct}}% sobre el valor final de la operación, pagadera al momento de la firma del contrato de compraventa o de la escrituración correspondiente. Esta comisión se causará también si, dentro de los 90 días naturales posteriores a la terminación del presente contrato, se concreta la venta del inmueble con un comprador presentado por Home del Valle durante la vigencia de la exclusiva.',
+        'objeto' => '<strong>Objeto y representación.</strong> El propietario designa a Home del Valle Bienes Raíces como su representante para la comercialización del inmueble descrito en este documento. Durante la vigencia de este Acuerdo, el propietario se compromete a trabajar únicamente con Home del Valle para la venta del inmueble, lo que nos permite invertir en su promoción con la certeza de representarlo activamente hasta encontrar al comprador adecuado.',
+        'vigencia' => '<strong>Vigencia.</strong> El presente Acuerdo tiene una vigencia de {{vigencia_dias}} días naturales contados a partir de la fecha de firma, es decir, hasta el {{vigencia_hasta}}, pudiendo renovarse por acuerdo expreso entre las partes.',
+        'comision' => '<strong>Comisión.</strong> Home del Valle Bienes Raíces percibirá una comisión del {{comision_pct}}% sobre el valor final de la operación, pagadera al momento de la firma del contrato de compraventa o de la escrituración correspondiente. Esta comisión se causará también si, dentro de los 90 días naturales posteriores a la terminación del presente Acuerdo, se concreta la venta del inmueble con un comprador presentado por Home del Valle durante la vigencia de este Acuerdo.',
         'obligaciones_hdv' => '<strong>Obligaciones de Home del Valle.</strong> Home del Valle se compromete a realizar la promoción activa del inmueble, incluyendo su publicación en portales inmobiliarios y redes sociales, la gestión de visitas con candidatos interesados, y la entrega de reportes periódicos de actividad al propietario.',
         'obligaciones_propietario' => '<strong>Obligaciones del propietario.</strong> El propietario se compromete a proporcionar acceso al inmueble para su promoción y visitas, mantenerlo en condiciones adecuadas para su exhibición, entregar la documentación necesaria para la operación, e informar con veracidad cualquier dato relevante sobre la situación legal o física del inmueble.',
         'privacidad' => '<strong>Aviso de Privacidad.</strong> Los datos personales proporcionados en este documento serán tratados por Home del Valle Bienes Raíces conforme a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, únicamente para los fines relacionados con la comercialización del inmueble. El Aviso de Privacidad completo está disponible en el sitio web de Home del Valle.',
     ];
 
     const CLAUSE_LABELS = [
-        'objeto' => 'Objeto y exclusiva',
+        'objeto' => 'Objeto y representación',
         'vigencia' => 'Vigencia',
         'comision' => 'Comisión',
         'obligaciones_hdv' => 'Obligaciones de Home del Valle',
@@ -102,7 +102,7 @@ class ContratoExclusivaGeneratorService
         $client   = $captacion->client;
         $property = $captacion->property;
 
-        $folio = 'CE-' . str_pad((string) $captacion->id, 5, '0', STR_PAD_LEFT);
+        $folio = 'AR-' . str_pad((string) $captacion->id, 5, '0', STR_PAD_LEFT);
         $fecha = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
         $vigenciaHasta = now()->addDays($vigenciaDias)->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 

@@ -812,7 +812,7 @@ body {
                             <div class="cond-sub">Sobre el precio de<br>{{ $esRenta ? 'primera mensualidad' : 'la operación' }}</div>
                         </div>
                         <div class="cond-box secondary">
-                            <div class="cond-label">Vigencia Exclusiva</div>
+                            <div class="cond-label">Vigencia del Acuerdo</div>
                             <div class="cond-value dark">{{ $vigenciaExclusiva }}</div>
                             <div class="cond-sub">Renovable de mutuo acuerdo</div>
                             <div class="cond-check">✓ Renovable</div>
@@ -845,7 +845,7 @@ body {
                         </div>
                         <div class="agent-cta">
                             <div class="agent-cta-label">Siguiente paso</div>
-                            <div class="agent-cta-action">Firmar Exclusiva</div>
+                            <div class="agent-cta-action">Firmar Acuerdo</div>
                         </div>
                     </div>
                 </div>
@@ -857,10 +857,10 @@ body {
         {{-- Closing CTA --}}
         <div class="closing-cta">
             <h3>¿Listo para comenzar la comercialización?</h3>
-            <p>El siguiente paso es formalizar el acuerdo de exclusiva para activar de inmediato la campaña de marketing de su inmueble.</p>
+            <p>El siguiente paso es formalizar el Acuerdo de Representación para activar de inmediato la campaña de marketing de su inmueble.</p>
             <div class="closing-next-steps">
                 <div class="next-step-pill">1. Revisar esta propuesta</div>
-                <div class="next-step-pill highlight">2. Firmar contrato de exclusiva</div>
+                <div class="next-step-pill highlight">2. Firmar Acuerdo de Representación</div>
                 <div class="next-step-pill">3. Sesión fotográfica en 48 hrs</div>
                 <div class="next-step-pill">4. Publicación activa</div>
             </div>

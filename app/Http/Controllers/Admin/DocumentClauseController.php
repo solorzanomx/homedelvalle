@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 /**
  * Edición de las cláusulas legales editables de los documentos de marca:
  * Carta Oferta de Compra (PurchaseOfferGeneratorService::DEFAULT_CLAUSES) y
- * Contrato de Exclusiva (ContratoExclusivaGeneratorService::DEFAULT_CLAUSES).
+ * Acuerdo de Representación (ContratoExclusivaGeneratorService::DEFAULT_CLAUSES).
  */
 class DocumentClauseController extends Controller
 {
@@ -60,7 +60,7 @@ class DocumentClauseController extends Controller
 
     public function editContratoExclusiva()
     {
-        $documentTitle = 'Contrato de Exclusiva';
+        $documentTitle = 'Acuerdo de Representación';
         $updateRoute   = route('admin.documentos.contrato-exclusiva.clausulas.update');
         $legalHint     = 'Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas con propietarios reales — especialmente la de comisión.';
         $tokenHint     = null;

@@ -82,13 +82,14 @@ return [
     ],
 
     'contrato_exclusiva' => [
-        'nombre' => 'Contrato de Exclusiva',
-        'descripcion' => 'Contrato de exclusiva de comercialización que firma el propietario en la Etapa 4 de captación.',
+        'nombre' => 'Acuerdo de Representación',
+        'descripcion' => 'Acuerdo de representación que firma el propietario en la Etapa 4 de captación, autorizando a Home del Valle a comercializar el inmueble.',
         'archivo_fuente' => 'resources/views/pdf/contrato-exclusiva.blade.php',
-        'donde_generarlo' => 'Ficha de captación → Etapa 4 — Exclusiva → Generar Contrato',
+        'donde_generarlo' => 'Ficha de captación → Etapa 4 — Acuerdo de Representación → Generar Acuerdo',
         'preview_route' => 'admin.documentos.preview.contrato-exclusiva',
         'editar_route' => 'admin.documentos.contrato-exclusiva.clausulas',
         'changelog' => [
+            ['fecha' => '2026-07-07', 'resumen' => 'Renombrado de "Contrato de Exclusiva" a "Acuerdo de Representación" — mismo contenido legal de fondo (representación única durante la vigencia), solo cambia el nombre y el tono de la cláusula de objeto (de "otorga el derecho exclusivo, obligándose a abstenerse..." a "designa como su representante...") para que el propietario no lo perciba como una atadura. Key interna (contrato_exclusiva), rutas y nombres de archivo/clase se mantienen sin cambio.'],
             ['fecha' => '2026-07-03', 'resumen' => 'Creado — reemplaza la integración con Google Drive (Google Doc + template en Legal > Documentos) por un PDF con identidad de marca, mismo patrón que Carta Oferta de Compra. La confirmación de firma sigue siendo manual (sin firma electrónica real), sin cambios ahí. Pendiente de revisión por un abogado antes de uso definitivo — el contenido es una redacción estándar, no viene de un contrato de referencia previo.'],
         ],
     ],

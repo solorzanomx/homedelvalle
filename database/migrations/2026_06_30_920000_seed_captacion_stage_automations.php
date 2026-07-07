@@ -22,7 +22,7 @@ return new class extends Migration
             'contacto' => 'Hola {{nombre}}, ya estamos trabajando en tu captación con Home del Valle — en breve recibirás la presentación de nuestros servicios.',
             'visita'   => 'Hola {{nombre}}, agendamos la visita a tu inmueble. Cualquier duda antes de la cita, contáctanos.',
             'avaluo'   => 'Hola {{nombre}}, ya tenemos avance en la valuación de tu inmueble. Tu asesor te compartirá los resultados en breve.',
-            'exclusiva'=> 'Hola {{nombre}}, ¡gracias por tu confianza! Tu contrato de exclusiva está en proceso — pronto comenzamos con fotos y publicación.',
+            'exclusiva'=> 'Hola {{nombre}}, ¡gracias por tu confianza! Tu Acuerdo de Representación está en proceso — pronto comenzamos con fotos y publicación.',
         ];
 
         $now = now();

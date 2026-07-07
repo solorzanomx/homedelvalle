@@ -17,7 +17,7 @@ class Operation extends Model
         'revision_docs' => 'Revision Docs',
         'avaluo' => 'Avaluo',
         'mejoras' => 'Mejoras',
-        'exclusiva' => 'Exclusiva',
+        'exclusiva' => 'Acuerdo de Representación',
         'fotos_video' => 'Fotos/Video',
         'carpeta_lista' => 'Carpeta Lista',
         'publicacion' => 'Publicacion',

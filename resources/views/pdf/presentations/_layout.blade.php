@@ -929,7 +929,7 @@ strong { color: #1e293b; }
         @foreach([
           'Agendamos la visita técnica al inmueble esta semana',
           'Tomamos fotografías y preparamos los materiales de difusión',
-          'Firmamos el contrato de exclusiva de arrendamiento',
+          'Firmamos el Acuerdo de Representación de arrendamiento',
           'Iniciamos la búsqueda activa y calificación de candidatos',
         ] as $i => $paso)
         <li><span class="step-n">{{ $i + 1 }}</span>{{ $paso }}</li>
@@ -938,7 +938,7 @@ strong { color: #1e293b; }
         @foreach([
           'Agendamos la visita técnica al inmueble esta semana',
           'Presentamos nuestra valuación y confirmamos el precio de salida',
-          'Firmamos el contrato de exclusiva o de comercialización',
+          'Firmamos el Acuerdo de Representación',
           'Iniciamos la estrategia de marketing de inmediato',
         ] as $i => $paso)
         <li><span class="step-n">{{ $i + 1 }}</span>{{ $paso }}</li>
@@ -975,7 +975,7 @@ strong { color: #1e293b; }
       </div>
 
       <div class="disclaimer">
-        Este documento es informativo y no constituye oferta vinculante. Los términos comerciales se formalizan al firmar el contrato de exclusiva o de comercialización con Home del Valle Bienes Raíces. Los datos de mercado son referenciales y se actualizan periódicamente en el Observatorio de Precios HDV.
+        Este documento es informativo y no constituye oferta vinculante. Los términos comerciales se formalizan al firmar el Acuerdo de Representación con Home del Valle Bienes Raíces. Los datos de mercado son referenciales y se actualizan periódicamente en el Observatorio de Precios HDV.
       </div>
 
     </div>

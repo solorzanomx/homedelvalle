@@ -15,7 +15,7 @@ class ContratoCompraventaGeneratorService
     /**
      * Texto por defecto de las cláusulas legales — editable desde
      * /admin/documentos/contrato-compraventa/clausulas (App\Models\DocumentClause).
-     * Mismo mecanismo genérico ya usado por Contrato de Exclusiva y Carta
+     * Mismo mecanismo genérico ya usado por Acuerdo de Representación y Carta
      * Oferta de Compra.
      */
     const DEFAULT_CLAUSES = [

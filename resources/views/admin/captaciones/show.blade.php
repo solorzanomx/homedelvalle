@@ -624,7 +624,7 @@
                 </ul>
                 @if($waLink)
                 @php
-                    $docsMsg = "Hola {$client->name}, para ir avanzando con tu propiedad necesitamos que nos compartas: " . implode(', ', $pendingDocLabels) . ". Los puedes subir directo desde tu Portal cuando puedas, antes de llegar a la firma de exclusiva.";
+                    $docsMsg = "Hola {$client->name}, para ir avanzando con tu propiedad necesitamos que nos compartas: " . implode(', ', $pendingDocLabels) . ". Los puedes subir directo desde tu Portal cuando puedas, antes de llegar a la firma del Acuerdo de Representación.";
                 @endphp
                 <a href="{{ $waLink }}?text={{ urlencode($docsMsg) }}" target="_blank" class="action-btn wa" style="width:100%;">&#128172; Recordar por WhatsApp</a>
                 @endif
@@ -812,10 +812,10 @@
             </div>
         </div>
 
-        {{-- Etapa 4: Contrato de Exclusiva --}}
+        {{-- Etapa 4: Acuerdo de Representación --}}
         <div class="side-card">
             <div class="side-card-header">
-                <span class="side-card-title" style="color:#10b981;">&#9632; Etapa 4 &mdash; Exclusiva</span>
+                <span class="side-card-title" style="color:#10b981;">&#9632; Etapa 4 &mdash; Acuerdo de Representación</span>
                 @if($captacion->isEtapa4Complete())<span style="color:var(--success);font-size:.72rem;">&#10003; Firmado</span>@endif
             </div>
             <div class="side-card-body">
@@ -835,10 +835,10 @@
                     <button type="submit" class="btn btn-sm btn-primary" style="width:100%;">Confirmar firma manual</button>
                 </form>
                 @else
-                <p style="font-size:.75rem;color:var(--success);margin-top:.5rem;">&#10003; Contrato firmado</p>
+                <p style="font-size:.75rem;color:var(--success);margin-top:.5rem;">&#10003; Acuerdo firmado</p>
                 @endif
                 @else
-                <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Genera el contrato de exclusiva para el cliente.</p>
+                <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Genera el Acuerdo de Representación para el cliente.</p>
                 <form method="POST" action="{{ route('admin.captaciones.generar-exclusiva', $captacion) }}">
                     @csrf
                     <div class="form-group" style="margin-bottom:.5rem;">

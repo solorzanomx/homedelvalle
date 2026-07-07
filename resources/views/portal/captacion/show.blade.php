@@ -134,7 +134,7 @@
         </p>
     </div>
     @if($etapa4Done)
-        <span class="badge badge-green" style="font-size:.78rem; padding:.35rem .85rem;">&#10003; Exclusiva firmada</span>
+        <span class="badge badge-green" style="font-size:.78rem; padding:.35rem .85rem;">&#10003; Acuerdo firmado</span>
     @else
         <span class="badge badge-blue" style="font-size:.78rem; padding:.35rem .85rem;">Etapa {{ $etapa }} de 4</span>
     @endif
@@ -418,7 +418,7 @@
 
 
 {{-- ════════════════════════════════════════
-     ETAPA 4 — Firma de Exclusiva
+     ETAPA 4 — Firma del Acuerdo de Representación
 ════════════════════════════════════════ --}}
 <div class="stage-card {{ $etapa4Done ? 'done' : ($etapa === 4 ? 'active' : 'locked') }}">
     <div class="sc-header">
@@ -426,8 +426,8 @@
             @if($etapa4Done) &#10003; @else 4 @endif
         </div>
         <div class="sc-title">
-            <div class="sc-title-main">Firma de Exclusiva</div>
-            <div class="sc-title-sub">Contrato de representación exclusiva</div>
+            <div class="sc-title-main">Firma del Acuerdo</div>
+            <div class="sc-title-sub">Acuerdo de Representación</div>
         </div>
         @if($etapa < 4)
             <span class="badge badge-yellow">Pendiente</span>
@@ -444,7 +444,7 @@
         <div style="display:flex; align-items:center; gap:1rem; padding:.25rem 0;">
             <div style="width:40px; height:40px; border-radius:10px; background:#dcfce7; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">&#9989;</div>
             <div>
-                <div style="font-weight:600; font-size:.88rem; margin-bottom:.2rem; color:#15803d;">¡Contrato firmado!</div>
+                <div style="font-weight:600; font-size:.88rem; margin-bottom:.2rem; color:#15803d;">¡Acuerdo firmado!</div>
                 <div style="font-size:.78rem; color:var(--text-muted);">Tu inmueble ya está en proceso de preparación para salir al mercado.</div>
             </div>
         </div>
@@ -452,9 +452,9 @@
         <div class="sig-status">
             <span class="sig-dot" style="background:#f59e0b;"></span>
             <div>
-                <div style="font-weight:600; font-size:.85rem;">Contrato pendiente de firma</div>
+                <div style="font-weight:600; font-size:.85rem;">Acuerdo pendiente de firma</div>
                 <div style="font-size:.75rem; color:var(--text-muted); margin-top:.15rem;">
-                    Revisa tu correo electrónico — te enviamos el contrato para firma digital.
+                    Revisa tu correo electrónico — te enviamos el Acuerdo de Representación para firma digital.
                     Estado: <strong>{{ ucfirst($captacion->signatureRequest->status) }}</strong>
                 </div>
             </div>
@@ -463,8 +463,8 @@
         <div style="display:flex; align-items:center; gap:1rem; padding:.5rem 0;">
             <div style="width:40px; height:40px; border-radius:10px; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0;">&#128221;</div>
             <div>
-                <div style="font-weight:600; font-size:.88rem; margin-bottom:.2rem;">Contrato en preparación</div>
-                <div style="font-size:.78rem; color:var(--text-muted);">Tu asesor generará el contrato de exclusiva. Recibirás un correo cuando esté listo para firmar.</div>
+                <div style="font-weight:600; font-size:.88rem; margin-bottom:.2rem;">Acuerdo en preparación</div>
+                <div style="font-size:.78rem; color:var(--text-muted);">Tu asesor preparará tu Acuerdo de Representación. Recibirás un correo cuando esté listo para firmar.</div>
             </div>
         </div>
         @endif
