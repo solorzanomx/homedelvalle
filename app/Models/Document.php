@@ -55,6 +55,19 @@ class Document extends Model
         'aval_libertad_gravamen'=> 'Libertad de Gravamen (Aval)',
         // Pagarés
         'pagare'                => 'Pagaré',
+        // Expediente del Vendedor — checklist real de la notaría (2026-07-07),
+        // ver App\Support\SellerDocumentChecklist
+        'documento_migratorio'   => 'Documento Migratorio',
+        'constancia_situacion_fiscal' => 'Constancia de Situación Fiscal',
+        'acta_divorcio'          => 'Acta de Divorcio',
+        'convenio_divorcio'      => 'Sentencia/Convenio de Divorcio',
+        'adjudicacion_conyugal'  => 'Adjudicación del Inmueble (Sociedad Conyugal)',
+        'cancelacion_hipoteca'   => 'Cancelación de Hipoteca / Liberación de Gravamen',
+        'carta_finiquito'        => 'Carta Finiquito Bancaria',
+        'carta_no_adeudo_mantenimiento' => 'Carta de No Adeudo de Mantenimiento',
+        'certificado_no_adeudo_contribuciones' => 'Certificado de No Adeudo de Contribuciones',
+        'avaluo_notarial'        => 'Avalúo Notarial/Fiscal',
+        'calculo_impuestos_notariales' => 'Cálculo de Impuestos y Gastos Notariales',
     ];
 
     const STATUSES = [

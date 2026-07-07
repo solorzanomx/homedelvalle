@@ -131,9 +131,25 @@ class PropertyController extends Controller
         // manual). Agrupado por portal por si en el futuro hay mas de uno.
         $portalReports = $property->portalReports()->orderBy('week_start')->get()->groupBy('portal');
 
+        // Expediente legal del vendedor — checklist real de la notaría
+        // (2026-07-07). Solo lectura aquí: la carga real ya pasa por
+        // CaptacionAdminController::uploadDocument() (captación en curso) o
+        // RentalDocumentController::storeForOperation() (venta en curso) o
+        // el Portal del cliente — este widget solo consolida el estado.
+        $sellerChecklist = $property->owner
+            ? \App\Support\SellerDocumentChecklist::clientFacing($property->owner) + \App\Support\SellerDocumentChecklist::NOTARIAL
+            : [];
+        $sellerDocuments = $property->owner
+            ? \App\Models\Document::where('property_id', $property->id)->orWhere('client_id', $property->client_id)->get()->groupBy('category')
+            : collect();
+        $sellerCaptacion = $property->owner
+            ? \App\Models\Captacion::where('property_id', $property->id)->latest()->first()
+            : null;
+
         return view('properties.show', compact(
             'property', 'deals', 'operations', 'interactions', 'emails', 'interestedClients', 'valuations', 'clients', 'users',
-            'viewsTotal', 'viewsUnique', 'views7d', 'views30d', 'viewsChartData', 'portalReports'
+            'viewsTotal', 'viewsUnique', 'views7d', 'views30d', 'viewsChartData', 'portalReports',
+            'sellerChecklist', 'sellerDocuments', 'sellerCaptacion'
         ));
     }
 

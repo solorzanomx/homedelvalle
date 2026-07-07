@@ -790,6 +790,45 @@
             </div>
         </div>
 
+        {{-- Expediente Legal del Vendedor — checklist real de la notaría
+             (2026-07-07). Solo lectura: la carga real pasa por Captación,
+             la Operación de venta, o el Portal del cliente. --}}
+        @if($property->owner)
+        <div class="side-card">
+            <div class="side-card-header">
+                <span>&#128193; Expediente Legal del Vendedor</span>
+                @if($sellerCaptacion)
+                <a href="{{ route('admin.captaciones.show', $sellerCaptacion) }}" style="font-size:.72rem;font-weight:500;">Ver Captación →</a>
+                @endif
+            </div>
+            <div class="side-card-body">
+                @php
+                    $sellerGroups = [
+                        'Personal' => \App\Support\SellerDocumentChecklist::PERSONAL + \App\Support\SellerDocumentChecklist::estadoCivilDocs($property->owner->marital_status),
+                        'Inmueble' => \App\Support\SellerDocumentChecklist::INMUEBLE,
+                        'Notarial (la tramita la notaría)' => \App\Support\SellerDocumentChecklist::NOTARIAL,
+                    ];
+                    $sellerTotal = count($sellerChecklist);
+                    $sellerFilled = collect(array_keys($sellerChecklist))->filter(fn($k) => $sellerDocuments->has($k))->count();
+                @endphp
+                <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.6rem;">{{ $sellerFilled }}/{{ $sellerTotal }} documentos recibidos</div>
+                @foreach($sellerGroups as $groupLabel => $groupDocs)
+                <div style="font-size:.7rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:.7rem 0 .3rem;">{{ $groupLabel }}</div>
+                @foreach($groupDocs as $cat => $label)
+                <div style="display:flex;align-items:center;gap:.4rem;padding:.25rem 0;font-size:.8rem;">
+                    @if($sellerDocuments->has($cat))
+                    <span style="color:#166534;">✅</span>
+                    @else
+                    <span style="color:var(--text-muted);">○</span>
+                    @endif
+                    {{ $label }}
+                </div>
+                @endforeach
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         {{-- Owner (Propietario) --}}
         <div class="side-card">
             <div class="side-card-header">Propietario</div>

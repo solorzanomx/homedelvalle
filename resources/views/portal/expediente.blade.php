@@ -445,6 +445,36 @@
                 </div>
                 @endforeach
             </div>
+
+            {{-- Documentos personales del vendedor (checklist real de la notaría, 2026-07-07).
+                 comprobante_domicilio se excluye aquí a propósito — ya se pide arriba
+                 en "Documentos de identificación", mismo category key, no duplicar la fila. --}}
+            @if($isVendedor)
+            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Documentos personales (vendedor)</div>
+                @foreach(collect(\App\Support\SellerDocumentChecklist::PERSONAL)->except('comprobante_domicilio') as $cat => $label)
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
+                    <span style="font-size:.82rem;">
+                        @if($documents->has($cat))
+                        <span style="color:#166534;">✅</span>
+                        @else
+                        <span style="color:var(--text-muted);">○</span>
+                        @endif
+                        {{ $label }}
+                    </span>
+                    @if($documents->has($cat))
+                    <span style="font-size:.72rem;color:var(--text-muted);">Subido</span>
+                    @else
+                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;align-items:center;">
+                        @csrf
+                        <input type="hidden" name="category" value="{{ $cat }}">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
+                    </form>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -468,7 +498,7 @@
             <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.5;">
                 Sube los documentos de tu inmueble para acelerar el proceso. Puedes subir fotos o PDFs directamente desde tu teléfono.
             </p>
-            @foreach(['escritura'=>'Escritura / Título de Propiedad','predial'=>'Boleta Predial (último pago)','agua'=>'Boleta de Agua (último pago)','libertad_gravamen'=>'Certificado de Libertad de Gravamen','reglamento_condominio'=>'Reglamento de Condominio (si aplica)'] as $cat => $label)
+            @foreach(\App\Support\SellerDocumentChecklist::INMUEBLE as $cat => $label)
             <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border);">
                 <div style="font-size:.83rem;">
                     @if($documents->has($cat))
@@ -494,8 +524,67 @@
                 @endif
             </div>
             @endforeach
+
+            {{-- Documentos según estado civil (solo vendedor — casado/unión libre/divorciado) --}}
+            @if($isVendedor && ($civilDocs = \App\Support\SellerDocumentChecklist::estadoCivilDocs($client->marital_status)))
+            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Documentos según estado civil</div>
+                @foreach($civilDocs as $cat => $label)
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 0;border-bottom:1px solid var(--border);">
+                    <div style="font-size:.83rem;">
+                        @if($documents->has($cat))
+                        <span style="color:#166534;">✅</span>
+                        @else
+                        <span style="color:var(--text-muted);">○</span>
+                        @endif
+                        <strong style="margin-left:.3rem;">{{ $label }}</strong>
+                    </div>
+                    @if($documents->has($cat))
+                    <div>
+                        @foreach($documents->get($cat) as $doc)
+                        <a href="{{ route('portal.documents.download', $doc->id) }}" style="font-size:.75rem;color:var(--primary);">Ver →</a>
+                        @endforeach
+                    </div>
+                    @else
+                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;align-items:center;">
+                        @csrf
+                        <input type="hidden" name="category" value="{{ $cat }}">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:180px;" onchange="this.form.submit()">
+                    </form>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+            @endif
         </div>
     </div>
+
+    {{-- Documentación notarial (solo vendedor, solo lectura — la tramita
+         la notaría, no se le pide subir al cliente). Misma exp-section
+         que "Documentos del inmueble", no una nueva — evita un id duplicado
+         que rompería el toggle de tabs por JS. --}}
+    @if($isVendedor)
+    <div class="card" style="margin-top:1rem;">
+        <div class="card-header"><span style="font-size:.85rem;font-weight:700;">Documentación notarial</span></div>
+        <div class="card-body">
+            <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1rem;line-height:1.5;">
+                Esta documentación la tramita la notaría directamente — aquí solo se muestra el estado, no necesitas subir nada.
+            </p>
+            @foreach(\App\Support\SellerDocumentChecklist::NOTARIAL as $cat => $label)
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
+                <span style="font-size:.82rem;">
+                    @if($documents->has($cat))
+                    <span style="color:#166534;">✅</span>
+                    @else
+                    <span style="color:var(--text-muted);">○ pendiente</span>
+                    @endif
+                    {{ $label }}
+                </span>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
 @endif
 

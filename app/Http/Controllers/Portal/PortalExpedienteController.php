@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Models\Captacion;
 use App\Models\Document;
 use App\Models\Notification;
+use App\Models\Property;
 use App\Models\RentalAval;
 use App\Models\RentalProcess;
 use App\Services\ClientPortalService;
 use App\Services\EmailService;
+use App\Support\SellerDocumentChecklist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -216,8 +219,18 @@ class PortalExpedienteController extends Controller
         $file  = $request->file('file');
         $path  = $file->store('expediente/client-' . $client->id, 'public');
 
+        // property_id era fillable pero nunca se poblaba aquí — sin esto,
+        // el widget de expediente en la ficha de propiedad (admin) no podía
+        // filtrar por property_id, solo por client_id (auditoria 2026-07-07).
+        // Misma resolución que PortalPropertyController::show(): la
+        // Captación más reciente del cliente y su property, o la property
+        // más reciente asignada directo a él.
+        $captacion = Captacion::where('client_id', $client->id)->with('property')->latest()->first();
+        $property = $captacion?->property ?? Property::where('client_id', $client->id)->latest()->first();
+
         $document = Document::create([
             'client_id'         => $client->id,
+            'property_id'       => $property?->id,
             'rental_process_id' => $request->rental_process_id,
             'uploaded_by'       => Auth::id(),
             'category'          => $request->category,
@@ -323,11 +336,23 @@ class PortalExpedienteController extends Controller
             $sections['financiamiento'] = ['filled' => $finFilled, 'total' => count($finFields), 'pct' => count($finFields) > 0 ? round($finFilled / count($finFields) * 100) : 0];
         }
 
-        // Documentos del inmueble (arrendador / vendedor)
+        // Documentos del inmueble (arrendador / vendedor) — antes una lista
+        // fija de 4 que además nunca contaba reglamento_condominio pese a
+        // poder subirse en el blade; ahora usa el checklist real del
+        // vendedor (SellerDocumentChecklist::INMUEBLE), 7 documentos.
         if ($isArrendador || $isVendedor) {
-            $docKeys = ['escritura','predial','agua','libertad_gravamen'];
+            $docKeys = array_keys(SellerDocumentChecklist::INMUEBLE);
             $docFilled = collect($docKeys)->filter(fn($k) => $documents->has($k))->count();
             $sections['documentos_inmueble'] = ['filled' => $docFilled, 'total' => count($docKeys), 'pct' => round($docFilled / count($docKeys) * 100)];
+        }
+
+        // Documentación notarial (solo vendedor) — la tramita la notaría,
+        // no el cliente; se muestra en el Portal como estado, no cuenta
+        // como "pendiente del cliente".
+        if ($isVendedor) {
+            $notarialKeys = array_keys(SellerDocumentChecklist::NOTARIAL);
+            $notarialFilled = collect($notarialKeys)->filter(fn($k) => $documents->has($k))->count();
+            $sections['documentos_notariales'] = ['filled' => $notarialFilled, 'total' => count($notarialKeys), 'pct' => round($notarialFilled / count($notarialKeys) * 100)];
         }
 
         return $sections;
