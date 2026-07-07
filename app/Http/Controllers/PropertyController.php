@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\ClientEmail;
 use App\Models\MarketColonia;
 use App\Models\Property;
+use App\Models\PropertyPortalReport;
 use App\Models\PropertyView;
 use App\Services\EasyBrokerService;
 use Illuminate\Http\Request;
@@ -168,8 +169,15 @@ class PropertyController extends Controller
             $recentViews = $property->views()->where('viewed_at', '>=', $since)->latest('viewed_at')->limit(100)->get();
             $trendData = $this->dailyViewSeries($property->views(), $since, $rangeDays);
 
+            // Rendimiento en portales externos (Inmuebles24, carga manual) en el mismo rango
+            $propertyPortalReports = $property->portalReports()
+                ->where('week_start', '>=', $since)
+                ->orderBy('week_start')
+                ->get();
+
             return view('properties.analytics', compact(
-                'property', 'rangeDays', 'propertyViewsTotal', 'propertyViewsUnique', 'recentViews', 'trendData'
+                'property', 'rangeDays', 'propertyViewsTotal', 'propertyViewsUnique', 'recentViews', 'trendData',
+                'propertyPortalReports'
             ));
         }
 
@@ -197,8 +205,27 @@ class PropertyController extends Controller
         $avgPerProperty = $ranking->count() > 0 ? round($viewsTotal / $ranking->count(), 1) : 0;
         $trendData = $this->dailyViewSeries(PropertyView::query(), $since, $rangeDays);
 
+        // Ranking de rendimiento en portales externos (Inmuebles24, carga
+        // manual) — agregado por propiedad en el mismo rango de fechas.
+        $portalRanking = PropertyPortalReport::query()
+            ->join('properties', 'properties.id', '=', 'property_portal_reports.property_id')
+            ->where('property_portal_reports.week_start', '>=', $since)
+            ->selectRaw('properties.id, properties.title, properties.colony, properties.city,
+                SUM(property_portal_reports.exposicion) as exposicion_total,
+                SUM(property_portal_reports.visualizaciones) as visualizaciones_total,
+                SUM(property_portal_reports.consultas_recibidas) as consultas_total')
+            ->groupBy('properties.id', 'properties.title', 'properties.colony', 'properties.city')
+            ->orderByDesc('visualizaciones_total')
+            ->limit(50)
+            ->get();
+
+        $portalViewsTotal = PropertyPortalReport::where('week_start', '>=', $since)->sum('visualizaciones');
+        $portalConsultasTotal = PropertyPortalReport::where('week_start', '>=', $since)->sum('consultas_recibidas');
+        $topPortalProperty = $portalRanking->first();
+
         return view('properties.analytics', compact(
-            'rangeDays', 'ranking', 'viewsTotal', 'viewsUnique', 'topProperty', 'avgPerProperty', 'trendData'
+            'rangeDays', 'ranking', 'viewsTotal', 'viewsUnique', 'topProperty', 'avgPerProperty', 'trendData',
+            'portalRanking', 'portalViewsTotal', 'portalConsultasTotal', 'topPortalProperty'
         ));
     }
 

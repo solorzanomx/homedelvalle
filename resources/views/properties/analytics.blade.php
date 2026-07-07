@@ -96,6 +96,29 @@
     @endif
 </div>
 
+<div class="an-card">
+    <h3>&#127760; Rendimiento en Portales Externos</h3>
+    @if($propertyPortalReports->isEmpty())
+    <p style="color:var(--text-muted);font-size:0.85rem;">Sin reportes de portales externos cargados en este rango.</p>
+    @else
+    <table class="an-table">
+        <thead><tr><th>Semana</th><th>Portal</th><th>Exposición</th><th>Visualizaciones</th><th>Consultas</th><th>WhatsApp</th></tr></thead>
+        <tbody>
+            @foreach($propertyPortalReports as $r)
+            <tr>
+                <td>{{ $r->week_start->format('d/m') }}–{{ $r->week_end->format('d/m') }}</td>
+                <td>{{ $r->portal_label }}</td>
+                <td>{{ number_format($r->exposicion) }}</td>
+                <td style="font-weight:700;">{{ number_format($r->visualizaciones) }}</td>
+                <td>{{ number_format($r->consultas_recibidas) }}</td>
+                <td>{{ number_format($r->contactaron_whatsapp) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+</div>
+
 <script>
 const chartData = @json($trendData);
 </script>
@@ -150,6 +173,46 @@ const chartData = @json($trendData);
                 <td style="font-weight:700;">{{ number_format($p->views_count) }}</td>
                 <td>{{ number_format($p->unique_count) }}</td>
                 <td><a href="{{ route('properties.analytics', ['property' => $p->id, 'range' => $rangeDays]) }}" style="font-size:0.78rem;">Ver detalle →</a></td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    @endif
+</div>
+
+<div class="an-card">
+    <h3>&#127760; Rendimiento en Portales Externos</h3>
+    <div class="an-stats" style="margin-bottom:1rem;">
+        <div class="an-stat">
+            <div class="an-stat-val">{{ number_format($portalViewsTotal) }}</div>
+            <div class="an-stat-label">Visualizaciones ({{ $rangeDays }} días)</div>
+        </div>
+        <div class="an-stat">
+            <div class="an-stat-val">{{ number_format($portalConsultasTotal) }}</div>
+            <div class="an-stat-label">Consultas recibidas</div>
+        </div>
+        <div class="an-stat">
+            <div class="an-stat-val" style="font-size:1.1rem;">{{ $topPortalProperty->title ?? '—' }}</div>
+            <div class="an-stat-label">Más visualizada ({{ number_format($topPortalProperty->visualizaciones_total ?? 0) }})</div>
+        </div>
+    </div>
+    @if($portalRanking->isEmpty())
+    <p style="color:var(--text-muted);font-size:0.85rem;">Sin reportes de portales externos cargados en este rango. Se cargan desde la ficha de cada propiedad.</p>
+    @else
+    <table class="an-table">
+        <thead><tr><th>#</th><th>Propiedad</th><th>Exposición</th><th>Visualizaciones</th><th>Consultas</th><th></th></tr></thead>
+        <tbody>
+            @foreach($portalRanking as $i => $p)
+            <tr>
+                <td><span class="an-rank">{{ $i + 1 }}</span></td>
+                <td>
+                    <div style="font-weight:600;">{{ $p->title }}</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">{{ $p->colony }}, {{ $p->city }}</div>
+                </td>
+                <td>{{ number_format($p->exposicion_total) }}</td>
+                <td style="font-weight:700;">{{ number_format($p->visualizaciones_total) }}</td>
+                <td>{{ number_format($p->consultas_total) }}</td>
+                <td><a href="{{ route('properties.show', $p->id) }}" style="font-size:0.78rem;">Ver ficha →</a></td>
             </tr>
             @endforeach
         </tbody>
