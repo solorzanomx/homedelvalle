@@ -29,6 +29,9 @@
     @endif
 </div>
 
+{{-- Bloque de identidad — aplica a quien representa a un inmueble propio (vendedor o propietario en renta) --}}
+<div class="type-section" data-types="venta,renta_propietario">
+
 {{-- ── Nombre desglosado ── --}}
 <div class="section-title" style="margin-top:0;font-size:.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;border-bottom:none;padding-bottom:0;margin-bottom:.6rem;">Nombre para contratos</div>
 <div class="form-grid">
@@ -224,7 +227,11 @@
     </div>
 </div>
 
-{{-- ── Datos bancarios (propietario renta) ── --}}
+</div>
+{{-- /type-section venta,renta_propietario --}}
+
+{{-- ── Datos bancarios (propietario renta) — solo aplica a quien recibe depósitos de renta ── --}}
+<div class="type-section" data-types="renta_propietario">
 <div class="section-title" style="font-size:.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;border-bottom:none;padding-bottom:0;margin-bottom:.6rem;">Datos bancarios <span style="font-weight:400;font-style:italic;">(para depósito de rentas)</span></div>
 <div class="form-grid">
     <div class="form-group">
@@ -237,6 +244,8 @@
         <input type="text" name="bank_name" class="form-input" value="{{ old('bank_name', $c?->bank_name) }}" placeholder="BBVA, Banorte, HSBC...">
     </div>
 </div>
+</div>
+{{-- /type-section renta_propietario --}}
 
 <script>
 // ── CURP Validator ──────────────────────────────────────────
@@ -331,6 +340,20 @@ function toggleSpouseFields(val) {
     document.getElementById('spouse-section').style.display = show ? 'block' : 'none';
 }
 
+// ── Progressive disclosure por tipo de cliente ─────────────────
+// Muestra/oculta cualquier .type-section[data-types] de la página (de este
+// partial o de quien lo incluya, ej. create.blade.php) según los checkboxes
+// interest_types[] marcados. Sin nada marcado, se muestra todo (default
+// conservador — nunca ocultar antes de que el broker indique una intención).
+function updateVisibleSections() {
+    var checked = Array.from(document.querySelectorAll('input[name="interest_types[]"]:checked')).map(function(cb) { return cb.value; });
+    document.querySelectorAll('.type-section[data-types]').forEach(function(el) {
+        var types = el.dataset.types.split(',');
+        var show = checked.length === 0 || types.some(function(t) { return checked.includes(t); });
+        el.style.display = show ? '' : 'none';
+    });
+}
+
 // ── Preview nombre legal ──────────────────────────────────────
 function updateLegalNamePreview() {
     var fn  = (document.querySelector('input[name="first_name"]')?.value||'').trim().toUpperCase();
@@ -385,5 +408,13 @@ document.addEventListener('DOMContentLoaded', function(){
     var msEl = document.getElementById('marital_status_sel');
     if (msEl && msEl.value) toggleSpouseFields(msEl.value);
     updateLegalCompleteness();
+
+    // Progressive disclosure por tipo de cliente — enlaza el change de los
+    // checkboxes interest_types[] (estén donde estén en la página) y aplica
+    // el estado inicial correcto tras un error de validación con old().
+    document.querySelectorAll('input[name="interest_types[]"]').forEach(function(cb) {
+        cb.addEventListener('change', updateVisibleSections);
+    });
+    updateVisibleSections();
 });
 </script>

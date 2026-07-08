@@ -102,7 +102,8 @@
                 </label>
             </div>
 
-            {{-- ══ 3. PREFERENCIAS DE BÚSQUEDA ══ --}}
+            {{-- ══ 3. PREFERENCIAS DE BÚSQUEDA — solo aplica a quien busca (compra/renta inquilino) ══ --}}
+            <div class="type-section" data-types="compra,renta_inquilino">
             <div class="section-title">Preferencias de Busqueda</div>
             <div class="form-grid">
                 <div class="form-group">
@@ -131,6 +132,7 @@
                     <label class="form-label">Presupuesto Maximo</label>
                     <input type="number" name="budget_max" class="form-input" value="{{ old('budget_max') }}" min="0" step="0.01">
                 </div>
+            </div>
             </div>
 
             {{-- ══ 4. CLASIFICACIÓN Y ASIGNACIÓN ══ --}}
@@ -189,10 +191,13 @@
                 </div>
             </details>
 
-            {{-- ══ 6. CALIFICACIÓN FINANCIERA — colapsado ══ --}}
+            {{-- ══ 6. CALIFICACIÓN FINANCIERA — colapsado, e internamente dividido:
+                 Ingresos aplica a compra/renta inquilino, Financiamiento solo a compra
+                 (un inquilino no tramita crédito hipotecario) ══ --}}
             <details class="collapsible-section">
                 <summary>Calificacion Financiera <span class="hint">(comprador/arrendatario — opcional por ahora)</span></summary>
                 <div class="collapsible-body">
+                    <div class="type-section" data-types="compra,renta_inquilino">
                     <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Tipo de Ingreso</label>
@@ -207,6 +212,10 @@
                             <label class="form-label">Monto de Ingreso Mensual</label>
                             <input type="number" name="income_amount" class="form-input" value="{{ old('income_amount') }}" min="0" step="0.01">
                         </div>
+                    </div>
+                    </div>
+                    <div class="type-section" data-types="compra">
+                    <div class="form-grid">
                         <div class="form-group">
                             <label class="form-label">Tipo de Financiamiento</label>
                             <select name="financing_type" class="form-select" id="financingTypeSelect" onchange="toggleFinancingFields(this.value)">
@@ -230,6 +239,7 @@
                             <label class="form-label">Saldo Infonavit</label>
                             <input type="number" name="infonavit_balance" class="form-input" value="{{ old('infonavit_balance') }}" min="0" step="0.01">
                         </div>
+                    </div>
                     </div>
                 </div>
             </details>
