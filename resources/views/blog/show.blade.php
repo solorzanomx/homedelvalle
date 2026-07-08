@@ -124,8 +124,14 @@
             </div>
             @endif
 
-            {{-- Article body --}}
-            <article class="prose prose-lg prose-gray max-w-none
+            {{-- Article body — post-procesado por BlogBodyEnhancer: links de
+                 colonias en tablas → Observatorio, CTA de opinión de valor
+                 tras la primera tabla, banner predio→desarrolladora en el
+                 cierre, y el cuerpo partido a media lectura para embeber el
+                 mini-form de captura (Livewire no puede vivir dentro del
+                 HTML crudo que viene de BD). --}}
+            @php
+                $proseClasses = 'prose prose-lg prose-gray max-w-none
                 prose-headings:font-extrabold prose-headings:tracking-tight prose-headings:text-gray-900
                 prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:pb-3 prose-h2:border-b prose-h2:border-gray-100
                 prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
@@ -141,10 +147,26 @@
                 prose-hr:border-gray-200 prose-hr:my-10
                 prose-table:overflow-hidden prose-table:rounded-xl prose-table:border prose-table:border-gray-200
                 prose-th:bg-brand-50 prose-th:text-brand-700 prose-th:font-bold prose-th:text-sm prose-th:uppercase prose-th:tracking-wider
-                prose-td:text-gray-600 prose-td:text-sm"
+                prose-td:text-gray-600 prose-td:text-sm';
+
+                $enhanced = \App\Support\BlogBodyEnhancer::enhance(
+                    $post->rendered_body,
+                    view('blog._cta-valuacion')->render(),
+                    view('blog._cta-predio')->render(),
+                );
+            @endphp
+            <article class="{{ $proseClasses }}"
                 x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
-                {!! $post->rendered_body !!}
+                {!! $enhanced['first'] !!}
             </article>
+
+            <livewire:forms.blog-quick-valuation-form :source-page="'/blog/' . $post->slug" />
+
+            @if($enhanced['second'] !== '')
+            <article class="{{ $proseClasses }}">
+                {!! $enhanced['second'] !!}
+            </article>
+            @endif
 
             {{-- Auto CTA by category --}}
             @php
