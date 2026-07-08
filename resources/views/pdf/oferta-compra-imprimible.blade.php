@@ -87,7 +87,7 @@ strong { color: #0f172a; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
-.sign-row { display: flex; justify-content: center; margin-top: 8px; }
+.sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 8px; }
 .sign-col { width: 260px; text-align: center; }
 .sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 18px; font-size: 9.5px; color: #475569; }
 
@@ -147,6 +147,9 @@ strong { color: #0f172a; }
     <div class="sign-row">
       <div class="sign-col">
         <div class="sign-line">Nombre y firma del oferente</div>
+      </div>
+      <div class="sign-col">
+        <div class="sign-line">Nombre y firma del propietario — Acepta la oferta</div>
       </div>
     </div>
 

@@ -84,7 +84,7 @@ strong { color: #0f172a; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 8px; color: var(--hdv-navy); font-weight: 800; font-size: 11px; }
 .clause strong { color: #0f172a; }
 
-.sign-row { display: flex; justify-content: center; margin-top: 8px; }
+.sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 8px; }
 .sign-col { width: 260px; text-align: center; }
 .sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 18px; font-size: 9.5px; color: #475569; }
 .sign-name { font-size: 11px; font-weight: 700; color: #0f172a; }
@@ -150,6 +150,8 @@ strong { color: #0f172a; }
       <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('naturaleza_juridica') !!}</div>
 
       <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('privacidad') !!}</div>
+
+      <div class="clause">{!! \App\Services\PurchaseOfferGeneratorService::clause('aceptacion') !!}</div>
     </div>
 
     @if($offer->comentarios)
@@ -161,6 +163,12 @@ strong { color: #0f172a; }
         <div class="sign-line">
           <div class="sign-name">{{ $buyerName }}</div>
           Nombre y firma del oferente
+        </div>
+      </div>
+      <div class="sign-col">
+        <div class="sign-line">
+          <div class="sign-name">{{ $sellerName }}</div>
+          Nombre y firma del propietario — Acepta la oferta
         </div>
       </div>
     </div>

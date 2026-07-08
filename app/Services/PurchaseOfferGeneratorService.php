@@ -22,6 +22,7 @@ class PurchaseOfferGeneratorService
         'apartado' => '<strong>Naturaleza del apartado.</strong> El monto señalado como apartado, en caso de existir, se entregará a cuenta del precio ofertado una vez aceptada la oferta. Las condiciones de devolución o retención del apartado en caso de que cualquiera de las partes decida no continuar con la operación se establecerán en el contrato de promesa de compraventa o compraventa correspondiente, y deberán ser validadas por el asesor legal de cada parte antes de la firma.',
         'naturaleza_juridica' => '<strong>Naturaleza jurídica de este documento.</strong> La presente carta constituye una manifestación de intención de compra y no representa, por sí misma, un contrato de compraventa ni obligación de transmisión de dominio. La formalización de la operación quedará sujeta a la firma del contrato de compraventa (o promesa de compraventa) correspondiente y, en su caso, a la escrituración ante notario público.',
         'privacidad' => '<strong>Aviso de Privacidad.</strong> Los datos personales proporcionados en este documento serán tratados por Home del Valle Bienes Raíces conforme a lo dispuesto por la Ley Federal de Protección de Datos Personales en Posesión de los Particulares, únicamente para los fines relacionados con la presente oferta. El Aviso de Privacidad completo está disponible en el sitio web de Home del Valle.',
+        'aceptacion' => '<strong>Aceptación del propietario.</strong> El propietario del inmueble, enterado en este acto de los términos y condiciones de la presente oferta, la acepta en todos sus términos, comprometiéndose a formalizar la operación conforme a lo aquí establecido y a lo que se determine en el contrato de compraventa correspondiente.',
     ];
 
     const CLAUSE_LABELS = [
@@ -30,6 +31,7 @@ class PurchaseOfferGeneratorService
         'apartado' => 'Naturaleza del apartado',
         'naturaleza_juridica' => 'Naturaleza jurídica del documento',
         'privacidad' => 'Aviso de Privacidad',
+        'aceptacion' => 'Aceptación del propietario',
     ];
 
     public static function clause(string $clauseKey, array $tokens = []): string
@@ -121,13 +123,18 @@ class PurchaseOfferGeneratorService
         ['buyerName' => $buyerName, 'buyerId' => $buyerId, 'buyerCurpRfc' => $buyerCurpRfc, 'buyerAddress' => $buyerAddress] = self::buyerInfo($client);
         $buyerName = $buyerName ?: '—';
 
+        // Firma de aceptación del vendedor — operation->client SÍ es el
+        // vendedor aquí (a diferencia del comprador arriba), reusa el mismo
+        // helper de armado de nombre.
+        $sellerName = self::buyerInfo($operation->client)['buyerName'] ?: '—';
+
         ['propertyAddress' => $propertyAddress, 'propertyExtra' => $propertyExtra, 'propertyFull' => $propertyFull] = self::propertyInfo($property);
 
         $precioLetras = NumeroALetras::pesos((float) $offer->precio_ofertado);
 
         return view('pdf.oferta-compra', compact(
             'offer', 'operation', 'client', 'property', 'folio', 'fecha', 'vigenciaHasta',
-            'buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress',
+            'buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress', 'sellerName',
             'propertyAddress', 'propertyExtra', 'propertyFull', 'precioLetras'
         ))->render();
     }
