@@ -119,7 +119,8 @@
             @if($post->tags->count())
             <div class="flex flex-wrap gap-2 mb-8" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 @foreach($post->tags as $tag)
-                <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200/60">{{ $tag->name }}</span>
+                <a href="{{ url('/blog?tag=' . $tag->slug) }}"
+                   class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200/60 hover:border-brand-200 hover:text-brand-600 hover:bg-brand-50/50 transition-colors duration-200">{{ $tag->name }}</a>
                 @endforeach
             </div>
             @endif
@@ -176,10 +177,15 @@
                     'vender-tu-propiedad'        => ['icon' => 'home',         'title' => '¿Quieres vender tu propiedad?',             'desc' => 'Valuación gratuita en 24 horas, venta en 45 días promedio y seguridad jurídica completa.',        'btn' => 'Solicitar valuación gratuita', 'url' => route('landing.vende')],
                     'comprar'                    => ['icon' => 'search',       'title' => '¿Buscas propiedad en la Benito Juárez?',    'desc' => 'Propiedades seleccionadas con asesoría personalizada y acompañamiento legal de inicio a fin.',    'btn' => 'Ver propiedades disponibles', 'url' => route('propiedades.index')],
                     'inversion-inmobiliaria'     => ['icon' => 'trending-up',  'title' => '¿Te interesa invertir en bienes raíces?',   'desc' => 'Conoce las mejores oportunidades de inversión en Colonia del Valle y Benito Juárez.',          'btn' => 'Hablar con un asesor',        'url' => route('contacto')],
-                    'mercado-inmobiliario-cdmx'  => ['icon' => 'bar-chart-2',  'title' => '¿Cuánto vale tu propiedad hoy?',            'desc' => 'Obtén un precio de mercado actualizado con nuestra valuación profesional sin costo.',           'btn' => 'Valúa tu propiedad',          'url' => route('landing.vende')],
+                    // OJO: 'bar-chart-2' NO existe en el set de íconos — tronaba con 500
+                    // en cuanto un post caía en esta categoría (bug latente encontrado
+                    // al re-categorizar el post de precios). Verificar íconos nuevos
+                    // con Blade::render antes de usarlos.
+                    'mercado-inmobiliario-cdmx'  => ['icon' => 'bar-chart-3',  'title' => '¿Cuánto vale tu propiedad hoy?',            'desc' => 'Obtén un precio de mercado actualizado con nuestra valuación profesional sin costo.',           'btn' => 'Valúa tu propiedad',          'url' => route('landing.vende')],
                     'colonias-de-benito-juarez'  => ['icon' => 'map-pin',      'title' => '¿Buscas propiedad en Benito Juárez?',       'desc' => 'Conocemos cada colonia a fondo. Encuentra tu propiedad ideal con asesoría especializada.',       'btn' => 'Ver propiedades disponibles', 'url' => route('propiedades.index')],
                     'expertos-insights'          => ['icon' => 'shield-check', 'title' => '¿Tienes dudas sobre tu operación?',         'desc' => 'Nuestro equipo te orienta en cada etapa: valuación, contrato, escrituración y entrega.',         'btn' => 'Consulta gratuita',           'url' => route('contacto')],
-                    'zonificacion-desarrollo'    => ['icon' => 'landmark',     'title' => '¿Tienes un proyecto de desarrollo?',        'desc' => 'Asesoramos a desarrolladores en adquisición de suelo, zonificación y comercialización.',         'btn' => 'Hablar con un especialista',  'url' => route('contacto')],
+                    'zonificacion-desarrollo'    => ['icon' => 'trending-up',  'title' => '¿Tu casa o predio tiene potencial de desarrollo?', 'desc' => 'Constructoras de nuestra cartera buscan predios en Benito Juárez ahora mismo. Evaluación gratuita, confidencial y sin compromiso.', 'btn' => 'Evaluar mi propiedad como terreno', 'url' => route('landing.vende-desarrolladora')],
+                    'herencias-y-sucesiones'     => ['icon' => 'shield-check', 'title' => '¿Heredaste una propiedad y no sabes por dónde empezar?', 'desc' => 'Te acompañamos de la sucesión a la venta: orientación legal, valuación gratuita y venta segura.', 'btn' => 'Recibir orientación gratuita', 'url' => route('landing.vende')],
                 ];
                 $cta = $ctaMap[$slug] ?? ['icon' => 'message-circle', 'title' => '¿Tienes una propiedad en la Benito Juárez?', 'desc' => 'Platícanos tu caso. Asesoría personalizada, sin costo y sin compromiso.', 'btn' => 'Contactar a un asesor', 'url' => route('contacto')];
             @endphp

@@ -18,8 +18,21 @@ class BlogController extends Controller
             });
         }
 
+        if (request()->filled('tag')) {
+            $query->whereHas('tags', function ($q) {
+                $q->where('slug', request('tag'));
+            });
+        }
+
         $posts = $query->paginate(12)->withQueryString();
-        $categories = PostCategory::withCount(['posts' => fn($q) => $q->published()])->orderBy('name')->get();
+
+        // Solo categorías con contenido — una píldora que filtra a una
+        // lista vacía es un callejón sin salida para el lector.
+        $categories = PostCategory::withCount(['posts' => fn($q) => $q->published()])
+            ->orderBy('name')
+            ->get()
+            ->filter(fn ($c) => $c->posts_count > 0)
+            ->values();
 
         return view('blog.index', compact('posts', 'categories'));
     }
