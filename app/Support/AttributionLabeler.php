@@ -31,6 +31,7 @@ class AttributionLabeler
             $routeName === 'landing.vende' => 'Landing: Vende',
             $routeName === 'landing.compra' => 'Landing: Compra',
             $routeName === 'landing.desarrolladores' => 'Landing: Desarrolladores',
+            $routeName === 'landing.vende-desarrolladora' => 'Landing: Vende a Desarrolladora',
             in_array($routeName, ['landing.rentar', 'landing.renta-tu-propiedad']) => 'Landing: Renta',
             str_starts_with($routeName, 'precios.') => 'Precios',
             $routeName === 'nosotros' => 'Nosotros',

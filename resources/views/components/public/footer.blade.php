@@ -65,6 +65,7 @@
                         <li><a href="{{ $item->resolveUrl() }}" class="hover:text-brand-400 transition-colors duration-200" @if($item->target === '_blank') target="_blank" rel="noopener noreferrer" @endif>{{ $item->label }}</a></li>
                         @endforeach
                     @else
+                    <li><a href="{{ url('/vende-a-desarrolladora') }}" class="hover:text-brand-400 transition-colors duration-200">Vender a desarrolladora</a></li>
                     <li><a href="{{ url('/comprar') }}" class="hover:text-brand-400 transition-colors duration-200">Comprar propiedad</a></li>
                     <li><a href="{{ url('/vende-tu-propiedad') }}" class="hover:text-brand-400 transition-colors duration-200">Vender propiedad</a></li>
                     <li><a href="{{ url('/rentar') }}" class="hover:text-brand-400 transition-colors duration-200">Rentar para vivir</a></li>

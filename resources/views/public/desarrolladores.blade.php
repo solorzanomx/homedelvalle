@@ -20,6 +20,16 @@
 
 @section('content')
 
+{{-- Desvío: dueño de casa/predio que cayó en la página B2B por error --}}
+<div class="bg-emerald-50 border-b border-emerald-200">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+        <p class="text-sm text-emerald-900 text-center">
+            ¿Eres <strong>dueño de una casa o predio</strong> en Benito Juárez? Esta página es para desarrolladores —
+            <a href="{{ route('landing.vende-desarrolladora') }}" class="font-semibold underline hover:text-emerald-700">aquí evaluamos lo que tu propiedad vale para una constructora →</a>
+        </p>
+    </div>
+</div>
+
 {{-- HERO + FORM --}}
 <section class="relative overflow-hidden bg-brand-950" id="inicio">
     <div class="absolute inset-0 bg-gradient-to-br from-brand-950 via-brand-900/90 to-brand-800/80"></div>

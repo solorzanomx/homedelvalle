@@ -142,6 +142,25 @@ class LandingController extends Controller
     }
 
     /**
+     * Show the land-owner → developer landing page (funnel principal:
+     * dueño de casa/predio en BJ que podría vender a una constructora
+     * de la cartera propia — el lado opuesto de desarrolladores()).
+     */
+    public function vendeDesarrolladora(Request $request)
+    {
+        $page = \App\Models\Page::where('slug', 'vende-a-desarrolladora')->first();
+
+        return view('public.vende-a-desarrolladora', [
+            'page' => $page ?? (object)[
+                'title' => 'Vende tu casa o predio a una desarrolladora en Benito Juárez',
+                'meta_title' => 'Vende tu casa o predio a una desarrolladora en Benito Juárez',
+                'meta_description' => 'Tu casa en Benito Juárez podría valer más como terreno. Tenemos cartera propia de constructoras buscando predios en Del Valle, Narvarte, Nápoles, Portales y Xoco. Evaluación confidencial y sin compromiso.',
+                'body' => '',
+            ],
+        ]);
+    }
+
+    /**
      * Show the renter search landing page.
      */
     public function rentar(Request $request)

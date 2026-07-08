@@ -24,6 +24,7 @@
             ['label'=>'Total',        'val'=>$counts['total'],    'color'=>'#6366f1'],
             ['label'=>'Sin revisar',  'val'=>$counts['unseen'],   'color'=>'#f59e0b'],
             ['label'=>'Vendedor',  'val'=>$counts['vendedor'],  'color'=>'#3b82f6'],
+            ['label'=>'Predio',    'val'=>$counts['predio'],    'color'=>'#0ea5e9'],
             ['label'=>'Comprador', 'val'=>$counts['comprador'], 'color'=>'#10b981'],
             ['label'=>'B2B',       'val'=>$counts['b2b'],       'color'=>'#8b5cf6'],
             ['label'=>'Contacto',  'val'=>$counts['contacto'],  'color'=>'#64748b'],
@@ -42,6 +43,7 @@
         <select wire:model.live="type" class="form-select" style="width:auto">
             <option value="">Todos los tipos</option>
             <option value="vendedor">Vendedor</option>
+            <option value="vendedor_predio">Predio → Desarrolladora</option>
             <option value="comprador">Comprador</option>
             <option value="b2b">B2B</option>
             <option value="contacto">Contacto</option>

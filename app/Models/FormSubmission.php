@@ -122,6 +122,7 @@ class FormSubmission extends Model implements HasMedia
     {
         return match ($this->form_type) {
             'vendedor' => 'Vendedor/Valuación',
+            'vendedor_predio' => 'Predio → Desarrolladora',
             'comprador' => 'Comprador/Búsqueda',
             'b2b' => 'Desarrollador/Inversionista',
             'contacto' => 'Contacto General',

@@ -39,6 +39,7 @@ class FormSubmissionController extends Controller
             'total'     => FormSubmission::count(),
             'new'       => FormSubmission::where('status', 'new')->count(),
             'vendedor'  => FormSubmission::where('form_type', 'vendedor')->count(),
+            'predio'    => FormSubmission::where('form_type', 'vendedor_predio')->count(),
             'comprador' => FormSubmission::where('form_type', 'comprador')->count(),
             'b2b'       => FormSubmission::where('form_type', 'b2b')->count(),
             'contacto'  => FormSubmission::where('form_type', 'contacto')->count(),
@@ -74,11 +75,12 @@ class FormSubmissionController extends Controller
 
     public function convertToClient(FormSubmission $formSubmission)
     {
-        // Leads de propietario (quiere vender/rentar su inmueble) van directo
-        // al wizard de captación con el cliente ya cargado — evita re-teclear
-        // y duplicar. Otros tipos (comprador, b2b, contacto) solo se convierten
-        // a Client, sin captación. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
-        $goesToCaptacion = $formSubmission->form_type === 'vendedor';
+        // Leads de propietario (quiere vender/rentar su inmueble, o vender su
+        // predio a una desarrolladora) van directo al wizard de captación con
+        // el cliente ya cargado — evita re-teclear y duplicar. Otros tipos
+        // (comprador, b2b, contacto) solo se convierten a Client, sin
+        // captación. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
+        $goesToCaptacion = in_array($formSubmission->form_type, ['vendedor', 'vendedor_predio']);
 
         if ($formSubmission->client_id) {
             if ($goesToCaptacion) {

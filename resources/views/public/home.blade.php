@@ -90,10 +90,10 @@
             {{-- Headline + subheadline --}}
             <div class="max-w-3xl">
                 <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-white tracking-tight leading-[1.08]">
-                    {{ $siteSettings?->hero_heading ?? 'Pocos inmuebles. Más control. Mejores resultados.' }}
+                    {{ $siteSettings?->hero_heading ?? 'Operamos desde la demanda, no desde la oferta.' }}
                 </h1>
                 <p class="mt-6 text-lg sm:text-xl text-brand-200/80 max-w-2xl leading-relaxed">
-                    {{ $siteSettings?->hero_subheading ?? 'Vendemos, rentamos y conseguimos inmuebles en Benito Juárez. Elige tu perfil y recibe asesoría personalizada en menos de 24 horas.' }}
+                    {{ $siteSettings?->hero_subheading ?? 'Constructoras de nuestra cartera buscan predios en Benito Juárez ahora mismo — tu casa podría valer más como terreno. También vendemos, rentamos y encontramos inmuebles con asesoría en menos de 24 horas.' }}
                 </p>
             </div>
 
@@ -172,6 +172,24 @@
                 </a>
 
             </div>
+
+            {{-- ── Banner funnel principal: predio → desarrolladora ── --}}
+            <a href="{{ route('landing.vende-desarrolladora') }}"
+               class="group mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 px-6 py-5 hover:bg-emerald-500/15 hover:border-emerald-400/50 transition-all duration-300">
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-400/20 shrink-0">
+                        <x-icon name="trending-up" class="w-5 h-5 text-emerald-300" />
+                    </div>
+                    <p class="text-sm sm:text-base text-white leading-snug">
+                        <span class="font-bold">¿Tu casa podría valer más como terreno?</span>
+                        <span class="text-brand-200/80"> Constructoras de nuestra cartera buscan predios en Del Valle, Narvarte, Nápoles, Portales y Xoco.</span>
+                    </p>
+                </div>
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300 group-hover:text-emerald-200 whitespace-nowrap transition-colors duration-300">
+                    Descúbrelo sin compromiso
+                    <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </span>
+            </a>
 
             {{-- Trust metrics --}}
             <div class="mt-10 flex flex-wrap gap-x-10 gap-y-4 text-sm border-t border-white/8 pt-8">
@@ -260,6 +278,10 @@
                     @if($siteSettings?->business_model_content)
                     <div class="mt-6 text-gray-600 leading-relaxed">{!! nl2br(e($siteSettings->business_model_content)) !!}</div>
                     @endif
+                    <a href="{{ route('landing.vende-desarrolladora') }}" class="group mt-8 inline-flex items-center gap-2 rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300">
+                        Descubre lo que tu predio vale para esa demanda
+                        <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </a>
                 </div>
 
                 {{-- Right: steps --}}

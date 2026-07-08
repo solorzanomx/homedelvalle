@@ -60,6 +60,28 @@
     </div>
 </section>
 
+{{-- ¿VALE MÁS COMO TERRENO? — puente al funnel predio → desarrolladora --}}
+<section class="bg-brand-950">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-14">
+        <a href="{{ route('landing.vende-desarrolladora') }}"
+           class="group flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 px-6 py-5 hover:bg-emerald-500/15 hover:border-emerald-400/50 transition-all duration-300">
+            <div class="flex items-center gap-3 flex-1">
+                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-400/20 shrink-0">
+                    <x-icon name="trending-up" class="w-5 h-5 text-emerald-300" />
+                </div>
+                <p class="text-sm sm:text-base text-white leading-snug">
+                    <span class="font-bold">¿Casa o terreno en una colonia con demanda de desarrolladoras?</span>
+                    <span class="text-brand-200/80"> Podría valer más como terreno — tenemos constructoras buscando predios ahora mismo.</span>
+                </p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-300 group-hover:text-emerald-200 whitespace-nowrap transition-colors duration-300">
+                Evaluar como terreno
+                <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </span>
+        </a>
+    </div>
+</section>
+
 {{-- BENEFITS --}}
 <section class="py-20 sm:py-24 bg-white">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

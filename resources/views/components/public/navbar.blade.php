@@ -98,6 +98,15 @@
                          class="absolute left-0 top-full mt-2 w-72 rounded-2xl bg-white shadow-premium-xl border border-gray-100/80 overflow-hidden"
                          @click="dropPropietario = false">
                         <div class="p-2">
+                            <a href="{{ route('landing.vende-desarrolladora') }}" class="group flex items-start gap-3.5 rounded-xl p-3.5 hover:bg-emerald-50 transition-colors duration-200">
+                                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 group-hover:bg-emerald-500 transition-colors duration-300 shrink-0 mt-0.5">
+                                    <x-icon name="trending-up" class="w-4 h-4 text-emerald-600 group-hover:text-white transition-colors duration-300" />
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-900">Vender a desarrolladora <span class="text-[0.6rem] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5 ml-1">★ Nuevo</span></p>
+                                    <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Tu casa podría valer más como terreno — constructoras buscando predios.</p>
+                                </div>
+                            </a>
                             <a href="{{ route('landing.vende') }}" class="group flex items-start gap-3.5 rounded-xl p-3.5 hover:bg-gray-50 transition-colors duration-200">
                                 <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50 group-hover:bg-brand-500 transition-colors duration-300 shrink-0 mt-0.5">
                                     <x-icon name="home" class="w-4 h-4 text-brand-500 group-hover:text-white transition-colors duration-300" />
@@ -192,6 +201,12 @@
 
             {{-- Grupo: Soy propietario --}}
             <p class="px-4 pt-4 pb-1 text-[0.65rem] font-bold tracking-widest uppercase text-gray-400">Soy propietario</p>
+            <a href="{{ route('landing.vende-desarrolladora') }}" @click="open = false"
+               class="flex items-center gap-3 rounded-xl mx-2 px-3 py-3 text-sm font-medium text-gray-700 hover:bg-emerald-50 hover:text-gray-900 transition-all duration-200">
+                <x-icon name="trending-up" class="w-4 h-4 text-emerald-600 shrink-0" />
+                Vender a desarrolladora
+                <span class="text-[0.6rem] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">★ Nuevo</span>
+            </a>
             <a href="{{ route('landing.vende') }}" @click="open = false"
                class="flex items-center gap-3 rounded-xl mx-2 px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200">
                 <x-icon name="home" class="w-4 h-4 text-brand-500 shrink-0" />

@@ -80,7 +80,7 @@
                 <div>
                     <label for="tipo_propiedad" class="block text-sm font-medium text-gray-700 mb-1.5">Tipo de propiedad</label>
                     <select
-                        wire:model="tipo_propiedad"
+                        wire:model.live="tipo_propiedad"
                         id="tipo_propiedad"
                         class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
                         required
@@ -95,6 +95,12 @@
                     @error('tipo_propiedad')
                         <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                     @enderror
+                    @if(in_array($tipo_propiedad, ['casa', 'terreno']))
+                    <p class="mt-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 leading-relaxed">
+                        💡 Una {{ $tipo_propiedad === 'casa' ? 'casa' : 'propiedad así' }} en Benito Juárez puede valer más como terreno para una desarrolladora.
+                        <a href="{{ route('landing.vende-desarrolladora') }}" class="font-semibold underline hover:text-emerald-800">Evalúala también por ese camino →</a>
+                    </p>
+                    @endif
                 </div>
                 <div>
                     <label for="colonia" class="block text-sm font-medium text-gray-700 mb-1.5">Colonia o dirección</label>

@@ -121,6 +121,7 @@ class FormSubmissionsTable extends Component
             'total'     => FormSubmission::count(),
             'unseen'    => FormSubmission::whereNull('seen_at')->count(),
             'vendedor'  => FormSubmission::where('form_type', 'vendedor')->count(),
+            'predio'    => FormSubmission::where('form_type', 'vendedor_predio')->count(),
             'comprador' => FormSubmission::where('form_type', 'comprador')->count(),
             'b2b'       => FormSubmission::where('form_type', 'b2b')->count(),
             'contacto'  => FormSubmission::where('form_type', 'contacto')->count(),

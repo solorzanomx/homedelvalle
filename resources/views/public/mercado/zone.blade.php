@@ -635,6 +635,23 @@
 {{-- ══════════════════════════════════════════════════════
      CTA FINAL
 ════════════════════════════════════════════════════════ --}}
+{{-- ¿VALE MÁS COMO TERRENO? — puente al funnel predio → desarrolladora --}}
+<section style="background:#ecfdf5;border-top:1px solid #a7f3d0;padding:2.2rem 1.5rem;text-align:center;">
+    <div style="max-width:600px;margin:0 auto;">
+        <h2 style="font-size:1.1rem;font-weight:700;color:#065f46;margin-bottom:.5rem;">
+            ¿Sabías que tu casa en {{ $zone->name }} podría valer más como terreno?
+        </h2>
+        <p style="font-size:.86rem;color:#047857;margin-bottom:1.1rem;line-height:1.65;">
+            Cuando una constructora puede levantar un edificio sobre tu predio, no paga el precio de la casa —
+            paga el potencial del terreno. Tenemos cartera propia de desarrolladoras buscando en Benito Juárez.
+        </p>
+        <a href="{{ route('landing.vende-desarrolladora') }}"
+           style="display:inline-block;background:#059669;color:#fff;padding:.7rem 1.6rem;border-radius:8px;font-weight:600;font-size:.9rem;text-decoration:none;">
+            Evaluar mi propiedad como terreno →
+        </a>
+    </div>
+</section>
+
 <section style="background:#f8fafc;border-top:1px solid #e5e7eb;padding:3.5rem 1.5rem;text-align:center;">
     <div style="max-width:600px;margin:0 auto;">
         <div style="font-size:1.75rem;margin-bottom:.75rem;">🏡</div>
