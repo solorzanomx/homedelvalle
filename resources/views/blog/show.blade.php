@@ -153,6 +153,7 @@
                     $post->rendered_body,
                     view('blog._cta-valuacion')->render(),
                     view('blog._cta-predio')->render(),
+                    $post->title,
                 );
             @endphp
             <article class="{{ $proseClasses }}"
@@ -193,8 +194,12 @@
                             <h3 class="text-xl font-extrabold text-gray-900">{{ $cta['title'] }}</h3>
                             <p class="mt-1 text-sm text-gray-500 leading-relaxed">{{ $cta['desc'] }}</p>
                         </div>
+                        {{-- style de fondo obligatorio: sin él el botón queda
+                             texto blanco sobre fondo claro — invisible (bug
+                             real reportado, el CTA final "no tenía botón"). --}}
                         <a href="{{ $cta['url'] }}"
-                           class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 shrink-0 shadow-brand">
+                           class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 shrink-0 shadow-brand"
+                           style="background: var(--color-primary, #3B82C4);">
                             {{ $cta['btn'] }}
                             <x-icon name="arrow-right" class="w-4 h-4" />
                         </a>

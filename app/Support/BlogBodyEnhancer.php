@@ -29,8 +29,9 @@ class BlogBodyEnhancer
      * @return array{first: string, second: string} — 'second' vacío si no
      *         hubo dónde partir (el form se muestra al final igualmente).
      */
-    public static function enhance(string $html, string $valuationCta = '', string $predioCta = ''): array
+    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = ''): array
     {
+        $html = self::fixImages($html, $postTitle);
         $html = self::linkColonias($html);
 
         if ($valuationCta !== '') {
@@ -48,6 +49,39 @@ class BlogBodyEnhancer
         }
 
         return ['first' => $first, 'second' => $second];
+    }
+
+    /**
+     * Higiene SEO de las imágenes del cuerpo (los posts generados por AI
+     * traen defectos ya vistos en producción):
+     *  - src con el typo de dominio "homedelvalle.mx.com" → dominio real
+     *    (defensa en render; también hay migración de datos que lo corrige
+     *    de raíz en la BD).
+     *  - alt vacío o ausente → título del post (imperfecto pero muchísimo
+     *    mejor que vacío para Google Imágenes y accesibilidad).
+     *  - loading="lazy" si falta — todas las imágenes del cuerpo están
+     *    debajo del fold.
+     */
+    public static function fixImages(string $html, string $postTitle = ''): string
+    {
+        return preg_replace_callback('/<img\b[^>]*>/i', function ($m) use ($postTitle) {
+            $img = str_replace('homedelvalle.mx.com', 'homedelvalle.mx', $m[0]);
+
+            if ($postTitle !== '') {
+                $alt = e($postTitle);
+                if (preg_match('/\balt=(""|\'\')/', $img)) {
+                    $img = preg_replace('/\balt=(""|\'\')/', 'alt="' . $alt . '"', $img, 1);
+                } elseif (!preg_match('/\balt=/i', $img)) {
+                    $img = preg_replace('/^<img\b/i', '<img alt="' . $alt . '"', $img, 1);
+                }
+            }
+
+            if (!preg_match('/\bloading=/i', $img)) {
+                $img = preg_replace('/^<img\b/i', '<img loading="lazy"', $img, 1);
+            }
+
+            return $img;
+        }, $html) ?? $html;
     }
 
     /**
