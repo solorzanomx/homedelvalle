@@ -48,7 +48,7 @@ body {
 .page-header-inner span.phi-text { font-size: 12px; font-weight: 700; color: #fff; }
 .page-header-inner .phi-tag { font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: rgba(199,210,254,.7); }
 .page-body  { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-.inner      { flex: 1; padding: 34px 52px 16px; display: flex; flex-direction: column; overflow: hidden; }
+.inner      { flex: 1; padding: 22px 52px 12px; display: flex; flex-direction: column; overflow: hidden; }
 .page-foot  {
     flex-shrink: 0; border-top: 1px solid #e2e8f0; padding: 8px 52px;
     display: flex; justify-content: space-between; align-items: center;
@@ -56,40 +56,40 @@ body {
 }
 .page-foot strong { color: var(--hdv-navy); font-weight: 600; }
 
-.doc-title { font-size: 18px; font-weight: 800; color: var(--hdv-navy); text-align: center; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-.doc-folio { font-size: 9px; color: #94a3b8; text-align: center; margin-bottom: 22px; letter-spacing: .5px; }
+.doc-title { font-size: 17px; font-weight: 800; color: var(--hdv-navy); text-align: center; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+.doc-folio { font-size: 9px; color: #94a3b8; text-align: center; margin-bottom: 14px; letter-spacing: .5px; }
 
-.meta-line { font-size: 11.5px; color: #334155; margin-bottom: 4px; }
+.meta-line { font-size: 11px; color: #334155; margin-bottom: 3px; }
 .meta-line strong { color: #0f172a; }
 
-p { color: #334155; font-size: 11.5px; line-height: 1.7; margin-bottom: 10px; text-align: justify; }
+p { color: #334155; font-size: 11px; line-height: 1.55; margin-bottom: 7px; text-align: justify; }
 strong { color: #0f172a; }
 
-.buyer-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin: 12px 0 16px; }
+.buyer-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 16px; margin: 8px 0 12px; }
 .buyer-box .row { display: flex; gap: 6px; font-size: 10.5px; margin-bottom: 3px; }
 .buyer-box .row:last-child { margin-bottom: 0; }
 .buyer-box .lbl { color: #94a3b8; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-top: 1px; }
 .buyer-box .val { color: #0f172a; font-weight: 600; }
 
-.offer-table { width: 100%; border-collapse: collapse; margin: 4px 0 16px; font-size: 11px; }
-.offer-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; }
+.offer-table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 11px; }
+.offer-table td { padding: 6px 12px; border-bottom: 1px solid #f1f5f9; }
 .offer-table td:first-child { color: #64748b; width: 42%; }
 .offer-table td:last-child { color: var(--hdv-navy); font-weight: 700; text-align: right; }
 .offer-table tr:last-child td { border-bottom: none; }
 .offer-table .letras { font-size: 8.5px; color: #94a3b8; font-weight: 400; text-align: right; text-transform: uppercase; }
 
-.clauses { counter-reset: clause; margin: 6px 0 14px; }
-.clause { counter-increment: clause; padding: 8px 0 8px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 11px; line-height: 1.65; color: #334155; text-align: justify; }
+.clauses { counter-reset: clause; margin: 4px 0 8px; }
+.clause { counter-increment: clause; padding: 5px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; }
 .clause:last-child { border-bottom: none; }
-.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 8px; color: var(--hdv-navy); font-weight: 800; font-size: 11px; }
+.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
-.sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 8px; }
+.sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 4px; }
 .sign-col { width: 260px; text-align: center; }
-.sign-line { border-top: 1px solid #0f172a; padding-top: 6px; margin-top: 18px; font-size: 9.5px; color: #475569; }
+.sign-line { border-top: 1px solid #0f172a; padding-top: 5px; margin-top: 12px; font-size: 9.5px; color: #475569; }
 .sign-name { font-size: 11px; font-weight: 700; color: #0f172a; }
 
-.privacy-note { font-size: 8.5px; color: #94a3b8; line-height: 1.6; margin-top: 18px; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+.privacy-note { font-size: 8px; color: #94a3b8; line-height: 1.4; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 6px; }
 </style>
 </head>
 <body>
@@ -113,8 +113,6 @@ strong { color: #0f172a; }
     <div class="buyer-box">
       <div class="row"><span class="lbl">Oferente</span><span class="val">{{ $buyerName }}</span></div>
       @if($buyerId)<div class="row"><span class="lbl">Identificación</span><span class="val">{{ $buyerId }}</span></div>@endif
-      @if($buyerCurpRfc)<div class="row"><span class="lbl">CURP / RFC</span><span class="val">{{ $buyerCurpRfc }}</span></div>@endif
-      @if($buyerAddress)<div class="row"><span class="lbl">Domicilio</span><span class="val">{{ $buyerAddress }}</span></div>@endif
       @if($propertyFull)<div class="row"><span class="lbl">Inmueble</span><span class="val">{{ $propertyFull }}</span></div>@endif
     </div>
 
