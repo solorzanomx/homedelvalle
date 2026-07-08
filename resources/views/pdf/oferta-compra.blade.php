@@ -84,9 +84,9 @@ strong { color: #0f172a; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
-.sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 4px; }
+.sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 10px; }
 .sign-col { width: 260px; text-align: center; }
-.sign-line { border-top: 1px solid #0f172a; padding-top: 5px; margin-top: 12px; font-size: 9.5px; color: #475569; }
+.sign-line { border-top: 1px solid #0f172a; padding-top: 5px; margin-top: 30px; font-size: 9.5px; color: #475569; }
 .sign-name { font-size: 11px; font-weight: 700; color: #0f172a; }
 
 .privacy-note { font-size: 8px; color: #94a3b8; line-height: 1.4; margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 6px; }

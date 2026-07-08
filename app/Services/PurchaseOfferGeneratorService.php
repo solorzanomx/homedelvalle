@@ -83,22 +83,29 @@ class PurchaseOfferGeneratorService
         return compact('buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress');
     }
 
-    /** Dirección + colonia del inmueble, en formato título. */
+    /** Dirección completa del inmueble (calle, colonia, alcaldía/ciudad y C.P.), en formato título. */
     private static function propertyInfo(?\App\Models\Property $property): array
     {
         $propertyAddress = self::tituloCase($property?->address ?: ($property ? ($property->colony . ', ' . $property->city) : null));
         $propertyColony  = self::tituloCase($property?->colony);
         $propertyCity    = self::tituloCase($property?->city);
+        $propertyZip     = $property?->zipcode;
 
+        // Colonia + alcaldía/ciudad + C.P. — se agrega a ambos lugares donde
+        // aparece la dirección (párrafo inicial y recuadro del oferente),
+        // el inmueble debe quedar plenamente identificado en el documento.
         $propertyExtra = collect([
             $propertyColony ? "Colonia {$propertyColony}" : null,
             $propertyCity,
+            $propertyZip ? "C.P. {$propertyZip}" : null,
         ])->filter()->implode(', ') ?: null;
 
-        // Dirección + colonia juntas, para la fila "Inmueble" del recuadro del oferente.
+        // Dirección completa junta, para la fila "Inmueble" del recuadro del oferente.
         $propertyFull = collect([
             $propertyAddress,
             $propertyColony ? "Colonia {$propertyColony}" : null,
+            $propertyCity,
+            $propertyZip ? "C.P. {$propertyZip}" : null,
         ])->filter()->implode(', ') ?: null;
 
         return compact('propertyAddress', 'propertyExtra', 'propertyFull');
