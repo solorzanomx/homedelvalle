@@ -62,7 +62,14 @@ class BlogBodyEnhancer
      */
     public static function stripImageSlots(string $html): string
     {
-        return preg_replace('/<div class="hdv-img-slot">.*?<\/div>/is', '', $html) ?? $html;
+        return preg_replace_callback('/<div class="hdv-img-slot">(.*?)<\/div>/is', function ($m) {
+            // Si el editor insertó la imagen DENTRO del recuadro (en vez de
+            // reemplazarlo completo — caso real: las imágenes desaparecían
+            // del público junto con el marcador), se rescata el <img> y solo
+            // se elimina el envoltorio con el texto de instrucciones.
+            preg_match_all('/<img\b[^>]*>/i', $m[1], $imgs);
+            return implode('', $imgs[0]);
+        }, $html) ?? $html;
     }
 
     /**
