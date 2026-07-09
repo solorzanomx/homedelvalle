@@ -95,7 +95,7 @@ class BlogQuickValuationForm extends Component
             'email' => $data['email'],
             'phone' => $data['whatsapp'],
             'interest_types' => ['venta'],
-        ], 'vendedor');
+        ], 'vendedor', notifyAdmins: false);
 
         $privacyDoc = LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
         if ($privacyDoc && $privacyDoc->current_version_id) {

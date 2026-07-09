@@ -120,7 +120,7 @@ class SellerValuationForm extends Component
             'utm_medium' => request()->query('utm_medium'),
             'utm_campaign' => request()->query('utm_campaign'),
             'interest_types' => ['venta'],
-        ], 'vendedor');
+        ], 'vendedor', notifyAdmins: false);
 
         $privacyDoc = LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
         if ($privacyDoc && $privacyDoc->current_version_id) {

@@ -153,7 +153,7 @@ class AutomationEngine
      * @param array  $data   Submission data (name, email, phone, message, etc.)
      * @param string $source Source identifier: 'contact', 'landing', 'form'
      */
-    public function processFormSubmitted(array $data, string $source = 'contact'): ?Client
+    public function processFormSubmitted(array $data, string $source = 'contact', bool $notifyAdmins = true): ?Client
     {
         $email = $data['email'] ?? null;
         if (!$email) return null;
@@ -232,8 +232,13 @@ class AutomationEngine
             $this->enroll($automation, $client);
         }
 
-        // Send instant email notification to admins
-        $this->notifyAdminsNewLead($data, $source);
+        // Email inmediato a admins — SOLO para flujos que no crean un
+        // FormSubmission: esos ya notifican al equipo vía LeadInternoMail
+        // (plantilla 'lead-interno' del panel). Mandar ambos duplicaba el
+        // correo al broker en cada formulario (bug real reportado).
+        if ($notifyAdmins) {
+            $this->notifyAdminsNewLead($data, $source);
+        }
 
         return $client;
     }

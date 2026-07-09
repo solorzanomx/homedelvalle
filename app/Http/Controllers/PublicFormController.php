@@ -101,7 +101,7 @@ class PublicFormController extends Controller
             'utm_source' => $request->input('utm_source'),
             'utm_medium' => $request->input('utm_medium'),
             'utm_campaign' => $request->input('utm_campaign'),
-        ], 'form');
+        ], 'form', notifyAdmins: false);
 
         return back()->with('success', $form->settings['success_message'] ?? 'Formulario enviado correctamente. Gracias.');
     }

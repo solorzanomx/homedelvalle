@@ -129,7 +129,7 @@ class DeveloperBriefForm extends Component
             'utm_source' => request()->query('utm_source'),
             'utm_medium' => request()->query('utm_medium'),
             'utm_campaign' => request()->query('utm_campaign'),
-        ], 'b2b');
+        ], 'b2b', notifyAdmins: false);
 
         $privacyDoc = LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
         if ($privacyDoc && $privacyDoc->current_version_id) {
