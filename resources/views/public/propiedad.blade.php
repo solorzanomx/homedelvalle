@@ -130,7 +130,7 @@
             <div class="mb-8" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <div class="flex flex-wrap items-center gap-3 mb-3">
                     @if($badge = $property->public_status_badge)
-                    <span class="inline-flex items-center rounded-lg {{ $badge['classes'] }} px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-md">{{ $badge['label'] }}</span>
+                    <span style="{{ $badge['style'] }}">{{ $badge['label'] }}</span>
                     @endif
                     @if($property->operation_type)
                     <span class="inline-flex items-center rounded-lg gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-brand">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>

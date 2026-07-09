@@ -142,15 +142,35 @@ class Property extends Model
         return $query->whereIn('status', ['available', 'reserved', 'sold', 'rented']);
     }
 
-    /** Letrero público para estados cerrados; null si no lleva letrero. */
+    /**
+     * Letrero público para estados cerrados; null si no lleva letrero.
+     * 'style' es CSS inline completo a propósito: producción NO recompila
+     * Tailwind en el deploy, así que cualquier clase de utilidad nueva no
+     * existe en el bundle (bug real: el letrero salió sin color y encimado).
+     */
     public function getPublicStatusBadgeAttribute(): ?array
     {
-        return match ($this->status) {
-            'reserved' => ['label' => 'Reservada', 'classes' => 'bg-amber-500/95 text-white'],
-            'sold'     => ['label' => 'Vendida',   'classes' => 'bg-red-600/95 text-white'],
-            'rented'   => ['label' => 'Rentada',   'classes' => 'bg-violet-600/95 text-white'],
+        $color = match ($this->status) {
+            'reserved' => '#d97706',
+            'sold'     => '#dc2626',
+            'rented'   => '#7c3aed',
             default    => null,
         };
+
+        if (! $color) {
+            return null;
+        }
+
+        $label = match ($this->status) {
+            'reserved' => 'Reservada',
+            'sold'     => 'Vendida',
+            'rented'   => 'Rentada',
+        };
+
+        return [
+            'label' => $label,
+            'style' => "display:inline-flex;align-items:center;border-radius:0.5rem;padding:0.375rem 0.75rem;font-size:0.75rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#fff;background:{$color};box-shadow:0 2px 6px rgba(0,0,0,.25);",
+        ];
     }
 
     public function scopeFeatured($query)

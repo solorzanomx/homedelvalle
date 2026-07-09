@@ -18,9 +18,12 @@ class HomeController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        $featuredProperties = Property::available()->featured()->latest()->take(6)->get();
+        // publiclyVisible (no available): una destacada que se reservó o
+        // vendió sigue en el home CON su letrero — pedido explícito; se
+        // quita marcándola como no destacada o archivándola.
+        $featuredProperties = Property::publiclyVisible()->featured()->latest()->take(6)->get();
 
-        // Fallback: si no hay destacadas, mostrar las más recientes
+        // Fallback: si no hay destacadas, mostrar las más recientes disponibles
         if ($featuredProperties->isEmpty()) {
             $featuredProperties = Property::available()->latest()->take(6)->get();
         }

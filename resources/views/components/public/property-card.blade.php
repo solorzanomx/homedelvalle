@@ -18,8 +18,13 @@
             </div>
         @endif
 
-        {{-- Badges --}}
+        {{-- Badges — el letrero de estado cerrado va PRIMERO en la misma fila
+             (nada de posicionarlo aparte: se encimaba con los chips) y con
+             estilo inline porque producción no recompila Tailwind. --}}
         <div class="absolute top-3 left-3 flex gap-2">
+            @if($badge = $property->public_status_badge)
+            <span style="{{ $badge['style'] }}">{{ $badge['label'] }}</span>
+            @endif
             @if($property->operation_type)
             <span class="inline-flex items-center rounded-lg bg-brand-600/90 backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-white shadow-sm">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>
             @endif
@@ -27,13 +32,6 @@
             <span class="inline-flex items-center rounded-lg bg-white/90 backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm">{{ $typeLabels[$property->property_type] ?? $property->property_type }}</span>
             @endif
         </div>
-
-        {{-- Letrero de estado cerrado (Reservada/Vendida/Rentada) --}}
-        @if($badge = $property->public_status_badge)
-        <div class="absolute top-3 right-3">
-            <span class="inline-flex items-center rounded-lg {{ $badge['classes'] }} backdrop-blur-sm px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-md">{{ $badge['label'] }}</span>
-        </div>
-        @endif
     </div>
 
     {{-- Content --}}
