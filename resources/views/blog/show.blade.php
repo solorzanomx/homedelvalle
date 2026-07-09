@@ -172,8 +172,13 @@
             </article>
             @endif
 
-            {{-- Auto CTA by category --}}
+            {{-- Auto CTA by category — se SUPRIME si el cuerpo del post ya
+                 termina con un CTA propio (el {{CTA2}} de la BD suele vivir
+                 al final): dos tarjetas de CTA encimadas al cierre se
+                 canibalizan entre sí (bug real reportado con captura). --}}
             @php
+                $bodyTail = mb_substr($enhanced['second'] !== '' ? $enhanced['second'] : $enhanced['first'], -2200);
+                $bodyEndsWithCta = str_contains($bodyTail, 'not-prose my-10');
                 $slug = $post->category?->slug ?? '';
                 $ctaMap = [
                     'vender-tu-propiedad'        => ['icon' => 'home',         'title' => '¿Quieres vender tu propiedad?',             'desc' => 'Valuación gratuita en 24 horas, venta en 45 días promedio y seguridad jurídica completa.',        'btn' => 'Solicitar valuación gratuita', 'url' => route('landing.vende')],
@@ -191,6 +196,7 @@
                 ];
                 $cta = $ctaMap[$slug] ?? ['icon' => 'message-circle', 'title' => '¿Tienes una propiedad en la Benito Juárez?', 'desc' => 'Platícanos tu caso. Asesoría personalizada, sin costo y sin compromiso.', 'btn' => 'Contactar a un asesor', 'url' => route('contacto')];
             @endphp
+            @if(!$bodyEndsWithCta)
             <div class="mt-10 not-prose" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-brand-50 to-white border border-brand-100">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-l-2xl"></div>
@@ -214,6 +220,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             {{-- Caja de autor — señal E-E-A-T para contenido de dinero/legal:
                  Google premia que un artículo de precios o herencias lo firme
