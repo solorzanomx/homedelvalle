@@ -30,8 +30,9 @@ class PostController extends Controller
     {
         $categories = PostCategory::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
+        $users = \App\Models\User::orderBy('name')->get(['id', 'name', 'last_name']);
 
-        return view('admin.posts.create', compact('categories', 'tags'));
+        return view('admin.posts.create', compact('categories', 'tags', 'users'));
     }
 
     public function store(Request $request)
@@ -42,6 +43,7 @@ class PostController extends Controller
             'body' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|max:2048',
+            'user_id' => 'required|exists:users,id',
             'category_id' => 'nullable|exists:post_categories,id',
             'status' => 'required|in:draft,scheduled,published,archived',
             'published_at' => 'nullable|date',
@@ -74,7 +76,8 @@ class PostController extends Controller
             $validated['featured_image_data'] = $imageData;
         }
 
-        $validated['user_id'] = auth()->id();
+        // user_id ya viene validado del selector de Autor (solo usuarios del
+        // sistema) — antes se fijaba forzosamente a auth()->id().
         $validated['ctas'] = $this->filterCtas($request->input('ctas', []));
         unset($validated['tags']);
 
@@ -92,8 +95,9 @@ class PostController extends Controller
         $post->load('tags');
         $categories = PostCategory::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
+        $users = \App\Models\User::orderBy('name')->get(['id', 'name', 'last_name']);
 
-        return view('admin.posts.edit', compact('post', 'categories', 'tags'));
+        return view('admin.posts.edit', compact('post', 'categories', 'tags', 'users'));
     }
 
     public function update(Request $request, Post $post)
@@ -104,6 +108,7 @@ class PostController extends Controller
             'body' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|max:2048',
+            'user_id' => 'required|exists:users,id',
             'category_id' => 'nullable|exists:post_categories,id',
             'status' => 'required|in:draft,scheduled,published,archived',
             'published_at' => 'nullable|date',

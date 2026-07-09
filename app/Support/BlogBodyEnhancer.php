@@ -31,6 +31,7 @@ class BlogBodyEnhancer
      */
     public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = ''): array
     {
+        $html = self::stripImageSlots($html);
         $html = self::fixImages($html, $postTitle);
         $html = self::linkColonias($html);
 
@@ -49,6 +50,19 @@ class BlogBodyEnhancer
         }
 
         return ['first' => $first, 'second' => $second];
+    }
+
+    /**
+     * Los cuerpos de post pueden traer marcadores editoriales
+     * <div class="hdv-img-slot">…</div> que indican dónde va cada imagen y
+     * qué foto poner — visibles al editar en el admin, pero NUNCA para el
+     * público: si el editor aún no sube la imagen, el marcador se elimina
+     * del render sin dejar rastro. Al subir la foto, se reemplaza el div
+     * completo por el <img> en el editor.
+     */
+    public static function stripImageSlots(string $html): string
+    {
+        return preg_replace('/<div class="hdv-img-slot">.*?<\/div>/is', '', $html) ?? $html;
     }
 
     /**

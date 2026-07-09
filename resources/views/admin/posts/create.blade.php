@@ -112,6 +112,18 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">Autor</label>
+                        <select name="user_id" class="form-select" required>
+                            @foreach($users as $u)
+                                <option value="{{ $u->id }}" {{ old('user_id', auth()->id()) == $u->id ? 'selected' : '' }}>
+                                    {{ $u->name }}{{ $u->last_name ? ' ' . $u->last_name : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="form-hint">Aparece como autor público del artículo.</p>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">Imagen Destacada</label>
                         <div class="image-upload-area" onclick="document.getElementById('imageInput').click()">
                             <img id="imagePreview" style="display: none;" alt="">
