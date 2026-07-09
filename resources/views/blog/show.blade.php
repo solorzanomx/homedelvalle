@@ -19,7 +19,9 @@
         'headline'      => $post->meta_title ?: $post->title,
         'datePublished' => $post->published_at?->toIso8601String(),
         'dateModified'  => $post->updated_at?->toIso8601String(),
-        'author'        => ['@type' => 'Organization', 'name' => 'Home del Valle Bienes Raíces', 'url' => url('/')],
+        'author'        => $post->author
+            ? ['@type' => 'Person', 'name' => trim($post->author->name . ' ' . ($post->author->last_name ?? '')), 'jobTitle' => $post->author->title ?: 'Broker en Benito Juárez', 'url' => url('/nosotros'), 'worksFor' => ['@type' => 'Organization', 'name' => 'Home del Valle Bienes Raíces', 'url' => url('/')]]
+            : ['@type' => 'Organization', 'name' => 'Home del Valle Bienes Raíces', 'url' => url('/')],
         'publisher'     => [
             '@type' => 'Organization',
             'name'  => 'Home del Valle Bienes Raíces',
@@ -212,6 +214,35 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Caja de autor — señal E-E-A-T para contenido de dinero/legal:
+                 Google premia que un artículo de precios o herencias lo firme
+                 una persona real con credenciales, no una marca anónima. --}}
+            @if($post->author)
+            <div class="mt-8 not-prose rounded-2xl border border-gray-200/60 bg-gray-50/60 p-6 sm:p-7 flex items-start gap-5" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+                <div class="w-16 h-16 rounded-full overflow-hidden shrink-0 ring-4 ring-brand-100">
+                    @if($post->author->avatar_path)
+                        <img src="{{ Storage::url($post->author->avatar_path) }}" alt="{{ trim($post->author->name . ' ' . ($post->author->last_name ?? '')) }}" class="w-full h-full object-cover" loading="lazy">
+                    @else
+                        <div class="w-full h-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-xl font-bold">
+                            {{ strtoupper(substr($post->author->name, 0, 1)) }}{{ strtoupper(substr($post->author->last_name ?? '', 0, 1)) }}
+                        </div>
+                    @endif
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[0.65rem] font-bold tracking-widest uppercase text-gray-400">Escrito por</p>
+                    <p class="mt-1 text-base font-extrabold text-gray-900">{{ trim($post->author->name . ' ' . ($post->author->last_name ?? '')) }}</p>
+                    <p class="text-sm text-brand-600 font-medium">{{ $post->author->title ?: 'Broker en Benito Juárez · 30+ años de experiencia' }}</p>
+                    @if($post->author->bio)
+                    <p class="mt-2 text-sm text-gray-500 leading-relaxed">{{ $post->author->bio }}</p>
+                    @endif
+                    <a href="{{ route('nosotros') }}" class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+                        Conoce al equipo
+                        <x-icon name="arrow-right" class="w-3.5 h-3.5" />
+                    </a>
+                </div>
+            </div>
+            @endif
 
             {{-- Enlace al Observatorio si el post tiene zona relacionada --}}
             @if($post->zona_mercado_slug)
