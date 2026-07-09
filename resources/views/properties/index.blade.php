@@ -208,6 +208,7 @@
         <button class="p-tab {{ request('status') === 'reserved' ? 'active' : '' }}" data-status="reserved">Reservadas <span class="p-tab-count">{{ $stats['reserved'] }}</span></button>
         <button class="p-tab {{ request('status') === 'sold' ? 'active' : '' }}" data-status="sold">Vendidas <span class="p-tab-count">{{ $stats['sold'] }}</span></button>
         <button class="p-tab {{ request('status') === 'rented' ? 'active' : '' }}" data-status="rented">Rentadas <span class="p-tab-count">{{ $stats['rented'] }}</span></button>
+        <button class="p-tab {{ request('status') === 'archived' ? 'active' : '' }}" data-status="archived">Archivadas <span class="p-tab-count">{{ $stats['archived'] }}</span></button>
     </div>
     <button type="button" class="p-filters-toggle {{ request()->hasAny(['property_type','operation_type','broker_id','price_min','price_max']) ? 'active' : '' }}" onclick="toggleFilters()">
         &#9776; Filtros

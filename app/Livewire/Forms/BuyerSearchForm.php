@@ -44,7 +44,10 @@ class BuyerSearchForm extends Component
         return [
             'tipo_inmueble' => 'required|array|min:1',
             'tipo_inmueble.*' => 'in:departamento,casa,terreno,oficina,comercial',
-            'operacion' => 'required|in:compra,renta',
+            // Fija en 'compra' (default de la propiedad) — el radio se quitó
+            // del formulario: /comprar es específico de compra, renta tiene
+            // su propio form en /rentar.
+            'operacion' => 'required|in:compra',
             'zonas' => 'required|array|min:1',
             'recamaras' => 'required|in:1,2,3,4+',
             'presupuesto' => 'required|in:hasta_4m,4m_6m,6m_9m,9m_14m,14m_plus',
@@ -112,7 +115,10 @@ class BuyerSearchForm extends Component
             'budget_min'  => $budgetMin,
             'budget_max'  => $budgetMax,
             'property_type' => implode(',', $data['tipo_inmueble']),
-            'interest_types' => $data['tipo_inmueble'],
+            // interest_types son intenciones (compra/venta/renta_*), no tipos
+            // de inmueble — guardar aquí el tipo_inmueble rompía la derivación
+            // de client_type al convertir el lead a Client.
+            'interest_types' => ['compra'],
             'utm_source'  => request()->query('utm_source'),
             'utm_medium'  => request()->query('utm_medium'),
             'utm_campaign'=> request()->query('utm_campaign'),

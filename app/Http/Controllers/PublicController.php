@@ -19,7 +19,9 @@ class PublicController extends Controller
 {
     public function propiedades(Request $request)
     {
-        $query = Property::available();
+        // Reservadas/vendidas/rentadas siguen visibles con su letrero hasta
+        // que el equipo las archive — ver Property::scopePubliclyVisible().
+        $query = Property::publiclyVisible();
 
         if ($request->filled('operation_type')) {
             $query->where('operation_type', $request->operation_type);
@@ -35,6 +37,10 @@ class PublicController extends Controller
                   ->orWhere('title', 'like', "%{$search}%");
             });
         }
+
+        // Las disponibles siempre primero; los estados cerrados al final del
+        // listado, y dentro de cada grupo aplica el orden elegido.
+        $query->orderByRaw("CASE status WHEN 'available' THEN 0 WHEN 'reserved' THEN 1 WHEN 'sold' THEN 2 ELSE 3 END");
 
         // Sorting
         $sort = $request->input('sort', 'latest');
@@ -56,7 +62,9 @@ class PublicController extends Controller
 
     public function propiedadShow(Request $request, int $id, string $slug = null)
     {
-        $property = Property::available()->with('photos')->findOrFail($id);
+        // publiclyVisible (no available): la ficha de una reservada/vendida
+        // sigue abierta — se llega a ella desde el listado con letrero.
+        $property = Property::publiclyVisible()->with('photos')->findOrFail($id);
 
         PropertyView::record($property, $request);
 

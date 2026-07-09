@@ -339,6 +339,7 @@
                                     <option value="reserved" {{ old('status', $property->status) === 'reserved' ? 'selected' : '' }}>Reservada</option>
                                     <option value="sold" {{ old('status', $property->status) === 'sold' ? 'selected' : '' }}>Vendida</option>
                                     <option value="rented" {{ old('status', $property->status) === 'rented' ? 'selected' : '' }}>Rentada</option>
+                                    <option value="archived" {{ old('status', $property->status) === 'archived' ? 'selected' : '' }}>Archivada (fuera del sitio)</option>
                                 </select>
                             </div>
                             <div class="form-group">

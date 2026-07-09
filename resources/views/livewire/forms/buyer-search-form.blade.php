@@ -46,21 +46,9 @@
                 @error('tipo_inmueble') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Operación --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-900 mb-2">
-                    Operación <span class="text-red-600">*</span>
-                </label>
-                <div class="flex gap-4">
-                    @foreach (['compra' => 'Compra', 'renta' => 'Renta'] as $value => $label)
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" wire:model.live="operacion" value="{{ $value }}" class="rounded-full">
-                            <span class="text-sm">{{ $label }}</span>
-                        </label>
-                    @endforeach
-                </div>
-                @error('operacion') <p class="text-red-600 text-xs mt-1">{{ $message }}</p> @enderror
-            </div>
+            {{-- Operación: fija en 'compra' — esta landing es específica de
+                 compra (renta tiene su propio formulario en /rentar); el
+                 radio Compra/Renta solo confundía (feedback real). --}}
 
             {{-- Zonas de interés --}}
             <div>

@@ -30,6 +30,7 @@
                     'reserved'   => 'Reservada',
                     'sold'       => 'Vendida',
                     'rented'     => 'Rentada',
+                    'archived'   => 'Archivada',
                     default      => 'En Captación',
                 } }}
             </div>

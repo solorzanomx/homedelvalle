@@ -19,6 +19,7 @@ class NotifyAdminsNewLead
 
         $typeLabels = [
             'vendedor'  => 'Vendedor',
+            'vendedor_predio' => 'Predio → Desarrolladora',
             'comprador' => 'Comprador',
             'b2b'       => 'B2B',
             'contacto'  => 'Contacto',

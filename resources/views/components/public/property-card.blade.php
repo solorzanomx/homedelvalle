@@ -27,6 +27,13 @@
             <span class="inline-flex items-center rounded-lg bg-white/90 backdrop-blur-sm px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm">{{ $typeLabels[$property->property_type] ?? $property->property_type }}</span>
             @endif
         </div>
+
+        {{-- Letrero de estado cerrado (Reservada/Vendida/Rentada) --}}
+        @if($badge = $property->public_status_badge)
+        <div class="absolute top-3 right-3">
+            <span class="inline-flex items-center rounded-lg {{ $badge['classes'] }} backdrop-blur-sm px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-md">{{ $badge['label'] }}</span>
+        </div>
+        @endif
     </div>
 
     {{-- Content --}}

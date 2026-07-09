@@ -130,6 +130,29 @@ class Property extends Model
         return $query->where('status', 'available');
     }
 
+    /**
+     * Lo que el sitio público muestra en listados y fichas: disponibles,
+     * pero también reservadas/vendidas/rentadas CON su letrero (prueba
+     * social — el interesado ve que el inventario se mueve) — hasta que el
+     * equipo la pase a 'archived' (o siga en 'captacion'), que es el
+     * interruptor de "ya no aparece".
+     */
+    public function scopePubliclyVisible($query)
+    {
+        return $query->whereIn('status', ['available', 'reserved', 'sold', 'rented']);
+    }
+
+    /** Letrero público para estados cerrados; null si no lleva letrero. */
+    public function getPublicStatusBadgeAttribute(): ?array
+    {
+        return match ($this->status) {
+            'reserved' => ['label' => 'Reservada', 'classes' => 'bg-amber-500/95 text-white'],
+            'sold'     => ['label' => 'Vendida',   'classes' => 'bg-red-600/95 text-white'],
+            'rented'   => ['label' => 'Rentada',   'classes' => 'bg-violet-600/95 text-white'],
+            default    => null,
+        };
+    }
+
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);

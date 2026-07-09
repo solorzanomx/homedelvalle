@@ -58,6 +58,7 @@ class PropertyController extends Controller
             'reserved'  => Property::where('status', 'reserved')->count(),
             'sold'      => Property::where('status', 'sold')->count(),
             'rented'    => Property::where('status', 'rented')->count(),
+            'archived'  => Property::where('status', 'archived')->count(),
         ];
 
         if ($request->ajax()) {
@@ -286,7 +287,7 @@ class PropertyController extends Controller
             'furnished' => 'nullable|string|in:sin_amueblar,semi_amueblado,amueblado',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
-            'status' => 'nullable|in:captacion,available,reserved,sold,rented',
+            'status' => 'nullable|in:captacion,available,reserved,sold,rented,archived',
             'property_type' => ['nullable', 'string', Rule::in(array_keys(Property::PROPERTY_TYPES))],
             'operation_type' => ['nullable', 'string', Rule::in(array_keys(Property::OPERATION_TYPES))],
             'currency' => 'nullable|string|in:MXN,USD',
@@ -372,7 +373,7 @@ class PropertyController extends Controller
             'furnished' => 'nullable|string|in:sin_amueblar,semi_amueblado,amueblado',
             'amenities' => 'nullable|array',
             'amenities.*' => 'string',
-            'status' => 'nullable|in:captacion,available,reserved,sold,rented',
+            'status' => 'nullable|in:captacion,available,reserved,sold,rented,archived',
             'property_type' => ['nullable', 'string', Rule::in(array_keys(Property::PROPERTY_TYPES))],
             'operation_type' => ['nullable', 'string', Rule::in(array_keys(Property::OPERATION_TYPES))],
             'currency' => 'nullable|string|in:MXN,USD',

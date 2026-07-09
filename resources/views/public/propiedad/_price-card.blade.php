@@ -10,8 +10,13 @@
             {{ collect([$property->colony, $property->city])->filter()->join(', ') }}
         </p>
         @endif
-        @if($property->operation_type)
-        <span class="mt-3 inline-flex items-center rounded-lg gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-brand">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>
-        @endif
+        <div class="mt-3 flex flex-wrap gap-2">
+            @if($badge = $property->public_status_badge)
+            <span class="inline-flex items-center rounded-lg {{ $badge['classes'] }} px-3 py-1.5 text-xs font-bold uppercase tracking-wider shadow-md">{{ $badge['label'] }}</span>
+            @endif
+            @if($property->operation_type)
+            <span class="inline-flex items-center rounded-lg gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-brand">{{ $opLabels[$property->operation_type] ?? $property->operation_type }}</span>
+            @endif
+        </div>
     </div>
 </div>
