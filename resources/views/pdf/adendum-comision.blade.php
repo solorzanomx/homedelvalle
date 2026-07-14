@@ -130,7 +130,9 @@ strong { color: #0f172a; }
       </div>
       <div class="sign-col">
         <div class="sign-line">
-          <div class="sign-name">{{ $representante }}</div>
+          {{-- Mismo tratamiento que la firma del propietario (MAYÚSCULAS) —
+               antes una firma salía en altas y la otra en mixtas. --}}
+          <div class="sign-name">{{ mb_strtoupper($representante, 'UTF-8') }}</div>
           HOME DEL VALLE BIENES RAÍCES — Representante
         </div>
       </div>

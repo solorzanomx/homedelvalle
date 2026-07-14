@@ -77,8 +77,15 @@ class AdendumComisionGeneratorService
             'comision_escritura_letras' => NumeroALetras::pesos((float) $addendum->comision_firma_escritura),
         ];
 
-        // Desglose a)/b) de la SEGUNDA — pagos del comprador según la oferta.
+        // Desglose de la SEGUNDA — pagos del comprador según la oferta. El
+        // apartado/anticipo abre la lista (a cuenta del precio): sin él, los
+        // incisos no sumaban el precio ofertado (bug real reportado).
         $pagos = collect([
+            $offer->monto_apartado ? [
+                'monto'  => $fmt($offer->monto_apartado),
+                'letras' => NumeroALetras::pesos((float) $offer->monto_apartado),
+                'texto'  => 'entregados como apartado a la aceptación de la oferta, a cuenta del precio pactado.',
+            ] : null,
             $offer->pago_firma_contrato ? [
                 'monto'  => $fmt($offer->pago_firma_contrato),
                 'letras' => NumeroALetras::pesos((float) $offer->pago_firma_contrato),
