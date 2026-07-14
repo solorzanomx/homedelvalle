@@ -100,6 +100,48 @@ class DocumentClauseController extends Controller
         return redirect()->route('admin.documentos.contrato-exclusiva.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
     }
 
+    public function editAdendumComision()
+    {
+        $documentTitle = 'Adéndum de Comisión Mercantil';
+        $updateRoute   = route('admin.documentos.adendum-comision.clausulas.update');
+        $legalHint     = 'Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas con propietarios reales — especialmente las de comisión.';
+        $tokenHint     = 'Tokens disponibles: {{contrato_nombre}}, {{contrato_fecha}}, {{comprador}}, {{precio}}, {{precio_letras}}, {{comision}}, {{comision_letras}}, {{comision_contrato}}, {{comision_contrato_letras}}, {{comision_escritura}}, {{comision_escritura_letras}}.';
+
+        $clauses = collect(\App\Services\AdendumComisionGeneratorService::DEFAULT_CLAUSES)->map(function ($default, $key) {
+            return [
+                'key'     => $key,
+                'label'   => \App\Services\AdendumComisionGeneratorService::CLAUSE_LABELS[$key],
+                'default' => $default,
+                'value'   => DocumentClause::where('document_key', 'adendum_comision')->where('clause_key', $key)->value('value') ?? $default,
+            ];
+        });
+
+        $lastUpdated = DocumentClause::where('document_key', 'adendum_comision')
+            ->with('updatedBy')
+            ->latest('updated_at')
+            ->first();
+
+        return view('admin.documentos.clausulas', compact('clauses', 'lastUpdated', 'documentTitle', 'updateRoute', 'legalHint', 'tokenHint'));
+    }
+
+    public function updateAdendumComision(Request $request)
+    {
+        $keys = array_keys(\App\Services\AdendumComisionGeneratorService::DEFAULT_CLAUSES);
+
+        $validated = $request->validate(
+            collect($keys)->mapWithKeys(fn ($key) => [$key => 'required|string|max:5000'])->all()
+        );
+
+        foreach ($validated as $clauseKey => $value) {
+            DocumentClause::updateOrCreate(
+                ['document_key' => 'adendum_comision', 'clause_key' => $clauseKey],
+                ['value' => $value, 'updated_by' => Auth::id()]
+            );
+        }
+
+        return redirect()->route('admin.documentos.adendum-comision.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
+    }
+
     public function editContratoCompraventa()
     {
         $documentTitle = 'Contrato de Compraventa';

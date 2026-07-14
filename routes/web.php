@@ -248,6 +248,8 @@ Route::middleware('auth')->group(function () {
     Route::post('operations/{operation}/comments', [OperationController::class, 'storeComment'])->name('operations.comments.store');
     Route::post('operations/{operation}/oferta-compra', [OperationController::class, 'storePurchaseOffer'])->name('operations.purchase-offer.store');
     Route::get('operations/{operation}/oferta-compra/{purchaseOffer}', [OperationController::class, 'showPurchaseOffer'])->name('operations.purchase-offer.show');
+    Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/adendum', [OperationController::class, 'storeOfferAddendum'])->name('operations.purchase-offer.adendum.store');
+    Route::get('operations/{operation}/oferta-compra/{purchaseOffer}/adendum/{addendum}', [OperationController::class, 'showOfferAddendum'])->name('operations.purchase-offer.adendum.show');
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/accept', [OperationController::class, 'acceptPurchaseOffer'])->name('operations.purchase-offer.accept');
     Route::post('operations/{operation}/oferta-compra/{purchaseOffer}/reject', [OperationController::class, 'rejectPurchaseOffer'])->name('operations.purchase-offer.reject');
     Route::post('operations/{operation}/expenses', [\App\Http\Controllers\OperationExpenseController::class, 'store'])->name('operations.expenses.store');
@@ -328,6 +330,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/documentos/oferta-compra/flash', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'flashStore'])->name('documentos.oferta-compra.flash.store');
     Route::get('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editOfertaCompra'])->name('documentos.oferta-compra.clausulas');
     Route::post('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateOfertaCompra'])->name('documentos.oferta-compra.clausulas.update');
+    Route::get('/documentos/adendum-comision/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editAdendumComision'])->name('documentos.adendum-comision.clausulas');
+    Route::post('/documentos/adendum-comision/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateAdendumComision'])->name('documentos.adendum-comision.clausulas.update');
     Route::get('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas');
     Route::post('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas.update');
     Route::get('/documentos/contrato-compraventa/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoCompraventa'])->name('documentos.contrato-compraventa.clausulas');

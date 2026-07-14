@@ -61,6 +61,17 @@ return [
         ],
     ],
 
+    'adendum_comision' => [
+        'nombre' => 'Adéndum de Comisión Mercantil',
+        'descripcion' => 'Registra formalmente al comprador conseguido por HDV, su oferta y forma de pago, y ratifica el derecho y monto de la comisión — al Contrato de Comisión Mercantil o Acuerdo de Representación. Soporta comisión en una sola exhibición o proporcional a los pagos del comprador (anticipo fuerte).',
+        'archivo_fuente' => 'resources/views/pdf/adendum-comision.blade.php',
+        'donde_generarlo' => 'Ficha de la Operación de venta → pestaña Docs → botón "Adéndum" en la fila de la oferta',
+        'editar_route' => 'admin.documentos.adendum-comision.clausulas',
+        'changelog' => [
+            ['fecha' => '2026-07-14', 'resumen' => 'Documento nuevo — basado en el adéndum real de comisión mercantil (registro de comprador Oscar/Roberto). Cláusulas editables, montos en número y letra, esquema de comisión única o proporcional al anticipo. Pendiente de revisión por abogado.'],
+        ],
+    ],
+
     'oferta_compra' => [
         'nombre' => 'Carta Oferta de Compra',
         'descripcion' => 'Oferta formal de compraventa que llena un comprador durante la fase de Promoción.',

@@ -36,6 +36,7 @@ class Document extends Model
         'oferta_compra'       => 'Carta Oferta de Compra',
         'contrato_exclusiva'  => 'Acuerdo de Representación',
         'contrato_compraventa' => 'Contrato de Compraventa',
+        'adendum_comision' => 'Adéndum de Comisión Mercantil',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',
         'ine_reverso'           => 'INE — Reverso',

@@ -42,6 +42,11 @@ class PurchaseOffer extends Model
         return $this->belongsTo(Client::class);
     }
 
+    public function addendums()
+    {
+        return $this->hasMany(PurchaseOfferAddendum::class)->orderBy('numero');
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return self::STATUS_LABELS[$this->status] ?? $this->status;

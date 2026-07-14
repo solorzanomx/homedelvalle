@@ -50,7 +50,7 @@ class PurchaseOfferGeneratorService
      * en formato título — reutilizado por el documento real y la versión
      * imprimible (cuando se elige un cliente del CRM para prellenar).
      */
-    private static function buyerInfo(?\App\Models\Client $client): array
+    public static function buyerInfo(?\App\Models\Client $client): array
     {
         // Client.name se captura siempre desde el primer contacto (nombre completo);
         // los campos divididos (first_name/last_name_*) se llenan después, si acaso,
@@ -84,7 +84,7 @@ class PurchaseOfferGeneratorService
     }
 
     /** Dirección completa del inmueble (calle, colonia, alcaldía y C.P.), en formato título. */
-    private static function propertyInfo(?\App\Models\Property $property): array
+    public static function propertyInfo(?\App\Models\Property $property): array
     {
         $propertyAddress = self::tituloCase($property?->address ?: ($property ? ($property->colony . ', ' . $property->city) : null));
         $propertyColony  = self::tituloCase($property?->colony);

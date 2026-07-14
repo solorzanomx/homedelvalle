@@ -160,7 +160,7 @@ class OperationController extends Controller
             'contracts.template', 'contracts.signer',
             'poliza.events.user', 'commissions',
             'sourceOperation', 'spawnedOperations',
-            'comments.user', 'marketingStrategy', 'expenses.createdBy', 'purchaseOffers.client',
+            'comments.user', 'marketingStrategy', 'expenses.createdBy', 'purchaseOffers.client', 'purchaseOffers.addendums.representative',
         ])->findOrFail($id);
 
         // Build timeline
@@ -258,7 +258,16 @@ class OperationController extends Controller
 
         $providerCompanies = \App\Models\ProviderCompany::where('status', 'active')->with('contacts')->orderBy('name')->get();
 
-        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'clientRentaOperations', 'providerCompanies'));
+        // Para el Adéndum de Comisión: usuarios firmantes y fecha del contrato
+        // original (firma de la exclusiva de la captación origen, si existe).
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->get(['id', 'name', 'last_name']);
+        $contratoOriginalFecha = null;
+        if ($operation->type === 'venta' && $operation->source_operation_id) {
+            $contratoOriginalFecha = \App\Models\Captacion::where('operation_id', $operation->source_operation_id)
+                ->first()?->signatureRequest?->completed_at?->format('Y-m-d');
+        }
+
+        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'clientRentaOperations', 'providerCompanies', 'users', 'contratoOriginalFecha'));
     }
 
     public function edit(string $id)
@@ -510,6 +519,62 @@ class OperationController extends Controller
         $purchaseOffer->update(['status' => 'rejected']);
 
         return back()->with('success', 'Oferta marcada como rechazada.');
+    }
+
+    /**
+     * Adéndum al Contrato de Comisión Mercantil — registra al comprador de
+     * la oferta, su forma de pago y ratifica la comisión (esquema único o
+     * proporcional a los pagos, según la regla de negocio del anticipo).
+     */
+    public function storeOfferAddendum(Request $request, Operation $operation, PurchaseOffer $purchaseOffer, \App\Services\AdendumComisionGeneratorService $generator)
+    {
+        abort_unless($purchaseOffer->operation_id === $operation->id, 404);
+
+        $validated = $request->validate([
+            'numero'                   => 'required|integer|min:1|max:99',
+            'contrato_nombre'          => 'required|string|max:120',
+            'contrato_fecha'           => 'required|date',
+            'comision_amount'          => 'required|numeric|min:0',
+            'comision_esquema'         => 'required|in:exhibicion_unica,proporcional',
+            'comision_firma_contrato'  => 'required_if:comision_esquema,proporcional|nullable|numeric|min:0',
+            'comision_firma_escritura' => 'required_if:comision_esquema,proporcional|nullable|numeric|min:0',
+            'representative_user_id'   => 'required|exists:users,id',
+        ]);
+
+        $addendum = \App\Models\PurchaseOfferAddendum::create($validated + [
+            'purchase_offer_id' => $purchaseOffer->id,
+        ]);
+
+        $path = $generator->generatePdf($addendum);
+
+        Document::create([
+            'operation_id' => $operation->id,
+            'client_id'    => $operation->client_id,
+            'uploaded_by'  => Auth::id(),
+            'category'     => 'adendum_comision',
+            'label'        => 'Adéndum No. ' . $addendum->numero . ' — Comisión Mercantil — ' . now()->format('d/m/Y'),
+            'file_path'    => $path,
+            'file_name'    => 'adendum-' . $addendum->numero . '-oferta-' . $purchaseOffer->id . '.pdf',
+            'mime_type'    => 'application/pdf',
+            'file_size'    => file_exists($path) ? filesize($path) : null,
+            'status'       => 'verified',
+        ]);
+
+        return back()->with('success', 'Adéndum No. ' . $addendum->numero . ' generado.');
+    }
+
+    public function showOfferAddendum(Operation $operation, PurchaseOffer $purchaseOffer, \App\Models\PurchaseOfferAddendum $addendum)
+    {
+        abort_unless($purchaseOffer->operation_id === $operation->id && $addendum->purchase_offer_id === $purchaseOffer->id, 404);
+
+        if (empty($addendum->last_pdf_path) || !file_exists($addendum->last_pdf_path)) {
+            abort(404, 'PDF no encontrado.');
+        }
+
+        return Response::make(file_get_contents($addendum->last_pdf_path), 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="adendum-comision.pdf"',
+        ]);
     }
 
     /** Ver/descargar el PDF de una oferta específica ya generada. */

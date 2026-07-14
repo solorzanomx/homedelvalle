@@ -474,7 +474,8 @@
                     @if($operation->purchaseOffers->isNotEmpty())
                     <div style="display:flex;flex-direction:column;gap:.4rem;">
                         @foreach($operation->purchaseOffers->sortByDesc('offered_at') as $offer)
-                        <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                        <div style="padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
                             <div>
                                 <strong>{{ $offer->client?->name ?? 'Sin candidato vinculado' }}</strong> &middot; <strong>${{ number_format($offer->precio_ofertado) }}</strong>
                                 <span style="color:var(--text-muted);"> &middot; {{ $offer->offered_at->format('d/m/Y') }} &middot; vigente hasta {{ $offer->vigente_hasta->format('d/m/Y') }}</span>
@@ -492,7 +493,81 @@
                                     <button type="submit" class="btn btn-sm btn-outline" style="color:#dc2626;border-color:#dc2626;">&#10007; Rechazar</button>
                                 </form>
                                 @endif
+                                <button type="button" class="btn btn-sm btn-outline" onclick="var f=document.getElementById('adendum-form-{{ $offer->id }}');f.style.display=f.style.display==='none'?'block':'none';">
+                                    &#128221; Adéndum
+                                </button>
                             </div>
+                            </div>
+
+                            {{-- Adéndums ya generados de esta oferta --}}
+                            @if($offer->addendums->isNotEmpty())
+                            <div style="margin-top:.4rem;padding-top:.4rem;border-top:1px dashed var(--border);display:flex;flex-direction:column;gap:.25rem;">
+                                @foreach($offer->addendums as $adendum)
+                                <div style="display:flex;justify-content:space-between;align-items:center;font-size:.74rem;color:var(--text-muted);">
+                                    <span>Adéndum No. {{ $adendum->numero }} &middot; comisión ${{ number_format($adendum->comision_amount) }} {{ $adendum->comision_esquema === 'proporcional' ? '(proporcional a los pagos)' : '(una exhibición)' }} &middot; {{ $adendum->created_at->format('d/m/Y') }}</span>
+                                    <a href="{{ route('operations.purchase-offer.adendum.show', [$operation->id, $offer->id, $adendum->id]) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                                </div>
+                                @endforeach
+                            </div>
+                            @endif
+
+                            {{-- Mini-form del adéndum --}}
+                            @php
+                                $comisionDefault = $operation->commission_amount
+                                    ?: ($operation->commission_percentage ? round($operation->commission_percentage / 100 * $offer->precio_ofertado, 2) : round(0.05 * $offer->precio_ofertado, 2));
+                                $anticipoPct = $offer->precio_ofertado > 0 ? ($offer->pago_firma_contrato ?? 0) / $offer->precio_ofertado : 0;
+                                $esquemaDefault = $anticipoPct >= 0.20 ? 'proporcional' : 'exhibicion_unica';
+                            @endphp
+                            <form id="adendum-form-{{ $offer->id }}" method="POST" action="{{ route('operations.purchase-offer.adendum.store', [$operation->id, $offer->id]) }}"
+                                  style="display:none;margin-top:.5rem;padding-top:.5rem;border-top:1px dashed var(--border);"
+                                  data-precio="{{ $offer->precio_ofertado }}" data-anticipo="{{ $offer->pago_firma_contrato ?? 0 }}">
+                                @csrf
+                                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">No. de adéndum</label>
+                                        <input type="number" name="numero" class="form-input" value="{{ $offer->addendums->max('numero') + 1 ?: 1 }}" min="1" required>
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Contrato original</label>
+                                        <input type="text" name="contrato_nombre" class="form-input" value="Contrato de Comisión Mercantil" required>
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Fecha del contrato original</label>
+                                        <input type="date" name="contrato_fecha" class="form-input" value="{{ $contratoOriginalFecha ?? '' }}" required>
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Comisión total $</label>
+                                        <input type="number" step="0.01" name="comision_amount" class="form-input adx-total" value="{{ $comisionDefault }}" required>
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Esquema de cobro</label>
+                                        <select name="comision_esquema" class="form-select adx-esquema">
+                                            <option value="exhibicion_unica" {{ $esquemaDefault === 'exhibicion_unica' ? 'selected' : '' }}>Una exhibición (a escrituras)</option>
+                                            <option value="proporcional" {{ $esquemaDefault === 'proporcional' ? 'selected' : '' }}>Proporcional a los pagos</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Firma por HDV</label>
+                                        <select name="representative_user_id" class="form-select" required>
+                                            @foreach($users as $u)
+                                            <option value="{{ $u->id }}" {{ Auth::id() === $u->id ? 'selected' : '' }}>{{ $u->name }} {{ $u->last_name ?? '' }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="adx-split" style="display:{{ $esquemaDefault === 'proporcional' ? 'grid' : 'none' }};grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.5rem;">
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Comisión a firma de contrato $</label>
+                                        <input type="number" step="0.01" name="comision_firma_contrato" class="form-input adx-contrato">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label class="form-label" style="font-size:0.7rem;">Comisión a firma de escritura $</label>
+                                        <input type="number" step="0.01" name="comision_firma_escritura" class="form-input adx-escritura">
+                                    </div>
+                                </div>
+                                <p class="form-hint" style="margin:0 0 .5rem;">Anticipo del comprador: {{ number_format($anticipoPct * 100, 1) }}% del precio{{ $anticipoPct >= 0.20 ? ' — se sugiere cobrar la comisión en la misma proporción.' : '.' }}</p>
+                                <button type="submit" class="btn btn-sm btn-primary">Generar Adéndum</button>
+                            </form>
                         </div>
                         @endforeach
                     </div>
@@ -1308,5 +1383,35 @@ function switchTab(name, btn) {
     function highlightItem(dd, idx) { dd.querySelectorAll('.mention-item').forEach(function(el, i) { el.classList.toggle('selected', i === idx); }); }
     function escHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 })();
+
+// ── Adéndum de Comisión: esquema proporcional a los pagos ──────────────
+// Regla de negocio: si el anticipo del comprador rebasa ~20% del precio,
+// la comisión se cobra en la misma proporción a la firma del contrato y
+// el resto a escrituras. Auto-calcula al cambiar esquema o comisión total;
+// los montos siguen siendo editables a mano.
+document.querySelectorAll('form[id^="adendum-form-"]').forEach(function(form) {
+    var total    = form.querySelector('.adx-total');
+    var esquema  = form.querySelector('.adx-esquema');
+    var split    = form.querySelector('.adx-split');
+    var contrato = form.querySelector('.adx-contrato');
+    var escritura= form.querySelector('.adx-escritura');
+    var precio   = parseFloat(form.dataset.precio) || 0;
+    var anticipo = parseFloat(form.dataset.anticipo) || 0;
+
+    function recalc() {
+        var proporcional = esquema.value === 'proporcional';
+        split.style.display = proporcional ? 'grid' : 'none';
+        if (proporcional && precio > 0) {
+            var t = parseFloat(total.value) || 0;
+            var parte = Math.round(t * (anticipo / precio) * 100) / 100;
+            contrato.value  = parte.toFixed(2);
+            escritura.value = (t - parte).toFixed(2);
+        }
+    }
+
+    esquema.addEventListener('change', recalc);
+    total.addEventListener('input', function() { if (esquema.value === 'proporcional') recalc(); });
+    if (esquema.value === 'proporcional') recalc();
+});
 </script>
 @endsection
