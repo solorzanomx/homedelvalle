@@ -83,7 +83,7 @@ class PurchaseOfferGeneratorService
         return compact('buyerName', 'buyerId', 'buyerCurpRfc', 'buyerAddress');
     }
 
-    /** Dirección completa del inmueble (calle, colonia, alcaldía/ciudad y C.P.), en formato título. */
+    /** Dirección completa del inmueble (calle, colonia, alcaldía y C.P.), en formato título. */
     private static function propertyInfo(?\App\Models\Property $property): array
     {
         $propertyAddress = self::tituloCase($property?->address ?: ($property ? ($property->colony . ', ' . $property->city) : null));
@@ -91,22 +91,40 @@ class PurchaseOfferGeneratorService
         $propertyCity    = self::tituloCase($property?->city);
         $propertyZip     = $property?->zipcode;
 
+        // Property no tiene campo de alcaldía y su 'city' suele traer
+        // "Mexico"/"CDMX" genérico — la alcaldía real vive en las colonias
+        // del Observatorio: vía market_colonia_id o, si el inmueble no está
+        // vinculado, buscando la colonia por nombre.
+        $alcaldia = null;
+        if ($property) {
+            $alcaldia = $property->marketColonia?->alcaldia;
+            if (! $alcaldia && $property->colony) {
+                $alcaldia = \App\Models\MarketColonia::where('name', trim($property->colony))->value('alcaldia');
+            }
+        }
+
+        // Con alcaldía resuelta, la ciudad genérica ("Mexico") es ruido — las
+        // alcaldías solo existen en CDMX, así que se normaliza; sin alcaldía,
+        // se conserva la city como antes.
+        $ubicacion = $alcaldia
+            ? ['Alcaldía ' . $alcaldia, 'Ciudad de México']
+            : [$propertyCity];
+
         // Colonia + alcaldía/ciudad + C.P. — se agrega a ambos lugares donde
         // aparece la dirección (párrafo inicial y recuadro del oferente),
         // el inmueble debe quedar plenamente identificado en el documento.
-        $propertyExtra = collect([
-            $propertyColony ? "Colonia {$propertyColony}" : null,
-            $propertyCity,
-            $propertyZip ? "C.P. {$propertyZip}" : null,
-        ])->filter()->implode(', ') ?: null;
+        $propertyExtra = collect(array_merge(
+            [$propertyColony ? "Colonia {$propertyColony}" : null],
+            $ubicacion,
+            [$propertyZip ? "C.P. {$propertyZip}" : null],
+        ))->filter()->implode(', ') ?: null;
 
         // Dirección completa junta, para la fila "Inmueble" del recuadro del oferente.
-        $propertyFull = collect([
-            $propertyAddress,
-            $propertyColony ? "Colonia {$propertyColony}" : null,
-            $propertyCity,
-            $propertyZip ? "C.P. {$propertyZip}" : null,
-        ])->filter()->implode(', ') ?: null;
+        $propertyFull = collect(array_merge(
+            [$propertyAddress, $propertyColony ? "Colonia {$propertyColony}" : null],
+            $ubicacion,
+            [$propertyZip ? "C.P. {$propertyZip}" : null],
+        ))->filter()->implode(', ') ?: null;
 
         return compact('propertyAddress', 'propertyExtra', 'propertyFull');
     }
