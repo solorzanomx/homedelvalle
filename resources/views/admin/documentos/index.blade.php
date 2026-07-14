@@ -42,7 +42,7 @@
             @if(!empty($doc['flash_route']) && Route::has($doc['flash_route']))
             <a href="{{ route($doc['flash_route']) }}" class="btn btn-sm" style="background:#f59e0b;color:#fff;">&#9889; Flash</a>
             @endif
-            @if($doc['preview_route'] && Route::has($doc['preview_route']))
+            @if(!empty($doc['preview_route']) && Route::has($doc['preview_route']))
             <a href="{{ route($doc['preview_route']) }}" target="_blank" class="btn btn-sm btn-primary">Ver PDF</a>
             @endif
             <span class="doc-meta">Actualizado {{ \Carbon\Carbon::parse($doc['ultima_actualizacion']['fecha'])->format('d/m/Y') }}</span>
