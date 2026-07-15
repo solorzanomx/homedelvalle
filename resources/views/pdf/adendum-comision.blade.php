@@ -94,7 +94,7 @@ strong { color: #0f172a; }
     <div class="doc-title">Adéndum No. {{ $addendum->numero }}</div>
     <div class="doc-sub">al {{ $tokens['contrato_nombre'] }}</div>
 
-    <p>Adéndum No. {{ $addendum->numero }} al {{ $tokens['contrato_nombre'] }} que celebran, por una parte, <strong>{{ $propietario }}</strong>, en su carácter de propietario del inmueble objeto del contrato (en lo sucesivo <strong>"EL PROPIETARIO"</strong>), y por la otra <strong>HOME DEL VALLE BIENES RAÍCES</strong>, representada por <strong>{{ mb_strtoupper($representante, 'UTF-8') }}</strong> (en lo sucesivo <strong>"LA COMISIONISTA"</strong>), al tenor de las siguientes:</p>
+    <p>Adéndum No. {{ $addendum->numero }} al {{ $tokens['contrato_nombre'] }} que celebran, por una parte, <strong>{{ $propietario }}</strong>, en su carácter de propietario del inmueble objeto del contrato (en lo sucesivo "EL PROPIETARIO"), y por la otra <strong>HOME DEL VALLE BIENES RAÍCES</strong>, representada por <strong>{{ mb_strtoupper($representante, 'UTF-8') }}</strong> (en lo sucesivo "LA COMISIONISTA"), al tenor de las siguientes:</p>
 
     <div class="sec-title">DECLARACIONES</div>
 
