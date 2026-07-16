@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // 301 www.homedelvalle.mx → homedelvalle.mx (consolidación SEO);
+        // va primero para cortar antes de cualquier otra lógica
+        $middleware->prepend(\App\Http\Middleware\RedirectToCanonicalHost::class);
         // Middleware global para redirigir admin.homedelvalle.mx a /admin
         $middleware->append(\App\Http\Middleware\SubdomainRedirect::class);
         // Redirige homedelvalle.mx/portal/* → miportal.homedelvalle.mx/*
