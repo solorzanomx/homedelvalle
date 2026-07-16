@@ -502,7 +502,7 @@ correo o escríbeme por WhatsApp.
 {{NombreAgente}}
 Home del Valle Bienes Raíces
 Pocos inmuebles. Más control. Mejores resultados.
-Heriberto Frías 903-C · Col. del Valle · CDMX
+Heriberto Frías 903-A · Col. del Valle · CDMX
 
 <img src="{{TrackingPixel}}" width="1" height="1" alt="" />
 ```

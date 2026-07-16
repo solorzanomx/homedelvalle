@@ -131,7 +131,7 @@ textarea.comment-box:focus{border-color:#0E304B;}
     <div class="footer">
         <strong>Home del Valle</strong><br>
         +52 55 1345 0978 &middot; contacto@homedelvalle.mx<br>
-        Heriberto Frías 903-C, Col. del Valle, CDMX<br>
+        Heriberto Frías 903-A, Col. del Valle, CDMX<br>
         © Home del Valle 2026
     </div>
 </div>

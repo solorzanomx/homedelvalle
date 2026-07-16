@@ -18,6 +18,6 @@ Puedes explorar nuestras propiedades disponibles y el observatorio de precios de
 **Pocos inmuebles. Más control. Mejores resultados.**
 
 Home del Valle Bienes Raíces
-Heriberto Frías 903-C, Colonia del Valle
+Heriberto Frías 903-A, Colonia del Valle
 Benito Juárez, CDMX 03100
 @endcomponent

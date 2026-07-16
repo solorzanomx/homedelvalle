@@ -207,7 +207,7 @@ body { font-family:'Inter',sans-serif; background:#f8fafc; color:#1e293b; -webki
     <p>
         Este documento es informativo y no constituye oferta vinculante.<br>
         Los términos comerciales se formalizan al firmar el contrato con Home del Valle Bienes Raíces.<br>
-        Heriberto Frías 903-C · Col. del Valle · CDMX
+        Heriberto Frías 903-A · Col. del Valle · CDMX
     </p>
 </div>
 

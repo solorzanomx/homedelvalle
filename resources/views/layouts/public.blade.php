@@ -32,7 +32,7 @@
         'slogan'      => 'Pocos inmuebles. Más control. Mejores resultados.',
         'address'     => [
             '@type'           => 'PostalAddress',
-            'streetAddress'   => $siteSettings?->address ?? 'Heriberto Frías 903-C',
+            'streetAddress'   => $siteSettings?->address ?? 'Heriberto Frías 903-A',
             'addressLocality' => 'Colonia del Valle',
             'addressRegion'   => 'Ciudad de México',
             'postalCode'      => '03100',

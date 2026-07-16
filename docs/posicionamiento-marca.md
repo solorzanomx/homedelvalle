@@ -101,7 +101,7 @@ Técnico pero cercano. Habla de "predios", "potencial de desarrollo", "TIR", "du
 - Sitio web: homedelvalle.mx
 - Correo: contacto@homedelvalle.mx
 - Teléfono / WhatsApp: +52 55 1345 0978
-- Dirección: Heriberto Frías 903-C, Colonia del Valle, Alcaldía Benito Juárez, CDMX
+- Dirección: Heriberto Frías 903-A, Colonia del Valle, Alcaldía Benito Juárez, CDMX
 - Redes: Facebook /homedelvalle · Instagram @homedelvalle · X @HomeDelValleMX
 
 ## El sitio web todavía no está alineado al negocio principal
