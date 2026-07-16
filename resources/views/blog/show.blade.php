@@ -155,7 +155,7 @@
                 $enhanced = \App\Support\BlogBodyEnhancer::enhance(
                     $post->rendered_body,
                     view('blog._cta-valuacion')->render(),
-                    view('blog._cta-predio')->render(),
+                    view('blog._cta-predio', ['post' => $post])->render(),
                     $post->title,
                 );
             @endphp
