@@ -118,6 +118,7 @@ class ContactSegmentedForm extends Component
         $this->submitted  = true;
         $this->folio      = $savedFolio;
         $this->clientName = $savedName;
+        $this->dispatch('lead-conversion', formType: 'contacto');
     }
     // Limpia el error del campo en cuanto el usuario lo corrige
     public function updated(string $propertyName): void

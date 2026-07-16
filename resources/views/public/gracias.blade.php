@@ -133,4 +133,15 @@
 
     </div>
 </section>
+
+{{-- Conversión GA4: solo si llegó con flash real (honeypot/spam redirigen sin flash) --}}
+@if(session('form_type'))
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.hdvTrack) {
+        window.hdvTrack('generate_lead', { form_type: @json(session('form_type')), page_path: '/gracias' });
+    }
+});
+</script>
+@endif
 @endsection

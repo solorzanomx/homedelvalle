@@ -152,6 +152,11 @@ class PublicController extends Controller
         $source = $request->input('form_source', 'contact');
         $engine->processFormSubmitted($validated, $source);
 
+        // Flash distingue el envío real de los redirects de honeypot/spam
+        // (que llegan a /gracias sin sesión) — /gracias dispara generate_lead
+        // solo cuando hay form_type en flash.
+        $flash = ['form_type' => 'contacto', 'client_name' => $validated['name'] ?? ''];
+
         // Record privacy acceptance if checkbox was checked
         if ($request->boolean('accept_privacy')) {
             $privacyDoc = \App\Models\LegalDocument::where('type', 'aviso_privacidad')
@@ -169,7 +174,7 @@ class PublicController extends Controller
             }
         }
 
-        return redirect()->route('contacto.gracias');
+        return redirect()->route('contacto.gracias')->with($flash);
     }
 
     public function gracias()

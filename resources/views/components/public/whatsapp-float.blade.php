@@ -61,6 +61,7 @@
                 href="https://wa.me/{{ $waNumber }}?text={{ urlencode($option['message']) }}"
                 target="_blank"
                 rel="noopener noreferrer"
+                data-track-location="whatsapp_float"
                 class="flex items-start gap-3 p-3 rounded-xl hover:bg-green-50 transition-colors group cursor-pointer"
             >
                 <span class="text-xl mt-0.5 group-hover:scale-110 transition-transform">{{ $option['icon'] }}</span>

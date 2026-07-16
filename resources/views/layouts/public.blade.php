@@ -97,6 +97,58 @@
     @if($siteSettings?->custom_head_scripts)
     {!! $siteSettings->custom_head_scripts !!}
     @endif
+
+    {{-- Eventos de conversión → GA4 / GTM (clicks WhatsApp/tel/mailto + formularios Livewire) --}}
+    @if(($siteSettings?->ga_enabled && $siteSettings?->google_analytics_id) || ($siteSettings?->gtm_enabled && $siteSettings?->gtm_id))
+    <script>
+    (function () {
+        // Un solo punto de salida: gtag si GA4 está directo; dataLayer si solo hay GTM.
+        // Nunca ambos — gtag() ya empuja al dataLayer y duplicaría los triggers de GTM.
+        window.hdvTrack = function (name, params) {
+            params = params || {};
+            if (typeof window.gtag === 'function') {
+                window.gtag('event', name, params);
+            } else {
+                window.dataLayer = window.dataLayer || [];
+                window.dataLayer.push(Object.assign({ event: name }, params));
+            }
+        };
+
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest ? e.target.closest('a[href]') : null;
+            if (!a) return;
+            var href = a.getAttribute('href') || '';
+            var params = {
+                page_path: window.location.pathname,
+                link_text: (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80)
+            };
+            if (a.dataset.trackLocation) params.cta_location = a.dataset.trackLocation;
+
+            if (/wa\.me\/\?/.test(href)) {
+                window.hdvTrack('whatsapp_share', params); // compartir propiedad, sin número destino
+            } else if (/wa\.me\/|api\.whatsapp\.com/.test(href)) {
+                window.hdvTrack('whatsapp_click', params);
+            } else if (href.lastIndexOf('tel:', 0) === 0) {
+                window.hdvTrack('phone_click', params);
+            } else if (href.lastIndexOf('mailto:', 0) === 0) {
+                window.hdvTrack('email_click', params);
+            }
+        }, true);
+
+        // Formularios Livewire: cada form dispara 'lead-conversion' SOLO en el
+        // camino de éxito real (honeypot y spam muestran éxito pero no disparan).
+        document.addEventListener('livewire:init', function () {
+            Livewire.on('lead-conversion', function (payload) {
+                var p = Array.isArray(payload) ? payload[0] : (payload || {});
+                window.hdvTrack('generate_lead', {
+                    form_type: p.formType || 'desconocido',
+                    page_path: window.location.pathname
+                });
+            });
+        });
+    })();
+    </script>
+    @endif
 </head>
 <body class="font-sans antialiased text-gray-900 bg-white overflow-x-hidden">
 

@@ -112,6 +112,7 @@ class BlogQuickValuationForm extends Component
         $savedName = $data['nombre'];
         $this->resetForm();
         $this->clientName = $savedName;
+        $this->dispatch('lead-conversion', formType: 'vendedor');
     }
 
     /** reset() sin tocar sourcePage — se pasa al montar y debe sobrevivir. */

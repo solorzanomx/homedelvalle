@@ -141,6 +141,7 @@ class SellerValuationForm extends Component
         $this->submitted  = true;
         $this->folio      = $savedFolio;
         $this->clientName = $savedName;
+        $this->dispatch('lead-conversion', formType: 'vendedor');
     }
 
     /**
