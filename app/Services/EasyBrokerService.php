@@ -4,12 +4,49 @@ namespace App\Services;
 
 use App\Models\EasyBrokerSetting;
 use App\Models\Property;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Integración con la API pública de EasyBroker (dev.easybroker.com).
+ *
+ * Reescrito 2026-07-16 contra la referencia oficial, verificado contra el
+ * ambiente de pruebas (api.stagingeb.com). Lo que la versión anterior hacía
+ * mal (sesión de debugging 2026-04-25): mandaba city_id /
+ * administrative_division_id (no existen en la API), location como bolsa de
+ * campos sueltos, property_type en inglés minúsculas, y buscaba ubicaciones
+ * con `search` (el parámetro real es `query`).
+ *
+ * Formato correcto (POST /properties, endpoint marcado Beta):
+ * - property_type: nombre EXACTO del catálogo /property_types (español:
+ *   "Casa", "Departamento", "Casa con uso de suelo", "Terreno"…).
+ * - location: OBJETO { name (full_name del catálogo /locations, ej.
+ *   "Del Valle Norte, Benito Juárez, Ciudad de México"), street, latitude,
+ *   longitude, postal_code, show_exact_location }.
+ * - operations: [{ type: sale|rental, amount, currency }].
+ *
+ * Nota Beta: en staging el POST con el payload documentado responde
+ * {"errors":{"operation_type":["no ha sido seleccionado"]}} — si producción
+ * repite ese error, es ticket a soporte de EasyBroker (la doc lo pide
+ * explícitamente para el endpoint Beta).
+ */
 class EasyBrokerService
 {
     private ?EasyBrokerSetting $config = null;
+
+    /** Interno (inglés, BD local) → catálogo EasyBroker (español, exacto). */
+    private const PROPERTY_TYPE_MAP = [
+        'House'      => 'Casa',
+        'Apartment'  => 'Departamento',
+        'Land'       => 'Terreno',
+        'Office'     => 'Oficina',
+        'Commercial' => 'Local comercial',
+        'Warehouse'  => 'Bodega comercial',
+        'Building'   => 'Edificio',
+    ];
+
+    private const DEFAULT_LOCATION = 'Benito Juárez, Ciudad de México';
 
     private function getConfig(): ?EasyBrokerSetting
     {
@@ -30,9 +67,94 @@ class EasyBrokerService
         return $this->getConfig()?->api_key;
     }
 
+    private function http(): \Illuminate\Http\Client\PendingRequest
+    {
+        return Http::withHeaders([
+            'X-Authorization' => $this->getApiKey(),
+            'Content-Type'    => 'application/json',
+        ])->timeout(15);
+    }
+
     public function isConfigured(): bool
     {
-        return $this->getConfig() !== null && !empty($this->getApiKey());
+        return $this->getConfig() !== null && ! empty($this->getApiKey());
+    }
+
+    public function validateConfig(): array
+    {
+        $errors = [];
+        if (! $this->isConfigured()) {
+            $errors[] = 'Falta API Key. Configúrala en Administración → EasyBroker.';
+        }
+
+        return $errors;
+    }
+
+    public function testConnection(): array
+    {
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'message' => 'No hay API key configurada.'];
+        }
+
+        try {
+            $response = $this->http()->get($this->getBaseUrl() . '/properties', ['limit' => 1]);
+
+            if ($response->successful()) {
+                $total = $response->json('pagination.total');
+
+                return [
+                    'success' => true,
+                    'message' => 'Conexión exitosa con EasyBroker.'
+                        . ($total !== null ? " Tu cuenta tiene {$total} propiedades." : ''),
+                ];
+            }
+
+            return ['success' => false, 'message' => $this->parseApiError($response)];
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Error de conexión: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * GET /locations — jerárquico: sin query devuelve el país y sus estados;
+     * con query (el full_name de una ubicación) devuelve esa ubicación y sus
+     * hijos. Ej.: "Benito Juárez, Ciudad de México" → sus colonias.
+     */
+    public function searchLocations(string $query): array
+    {
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'data' => [], 'message' => 'API Key no configurada.'];
+        }
+
+        try {
+            $response = $this->http()->get($this->getBaseUrl() . '/locations', ['query' => $query]);
+
+            if ($response->successful()) {
+                $data = $response->json() ?? [];
+
+                return ['success' => true, 'data' => is_array($data) ? $data : []];
+            }
+
+            return ['success' => false, 'data' => [], 'message' => $this->parseApiError($response)];
+        } catch (\Exception $e) {
+            return ['success' => false, 'data' => [], 'message' => $e->getMessage()];
+        }
+    }
+
+    /** Nombres del catálogo /property_types (cache 1 h). */
+    public function propertyTypes(): array
+    {
+        if (! $this->isConfigured()) {
+            return [];
+        }
+
+        return Cache::remember('easybroker.property_types', 3600, function () {
+            $response = $this->http()->get($this->getBaseUrl() . '/property_types');
+
+            return $response->successful()
+                ? array_column($response->json('content') ?? [], 'name')
+                : [];
+        });
     }
 
     public function publish(Property $property): array
@@ -51,67 +173,65 @@ class EasyBrokerService
         try {
             Log::info('EasyBroker: POST /properties payload', [
                 'property_id' => $property->id,
-                'payload' => $payload,
+                'payload'     => $payload,
             ]);
 
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-                'Content-Type' => 'application/json',
-            ])->post($this->getBaseUrl() . '/properties', $payload);
+            $response = $this->http()->post($this->getBaseUrl() . '/properties', $payload);
 
             Log::info('EasyBroker: POST /properties response', [
                 'property_id' => $property->id,
                 'status_code' => $response->status(),
-                'response' => $response->json(),
+                'response'    => $response->json(),
             ]);
 
             if ($response->successful()) {
                 $data = $response->json();
                 $property->update([
-                    'easybroker_id' => $data['public_id'] ?? null,
-                    'easybroker_status' => 'published',
+                    'easybroker_id'           => $data['public_id'] ?? null,
+                    'easybroker_status'       => 'not_published',
                     'easybroker_published_at' => now(),
-                    'easybroker_public_url' => $data['public_url'] ?? null,
+                    'easybroker_public_url'   => $data['public_url'] ?? null,
                 ]);
 
-                return ['success' => true, 'message' => 'Propiedad publicada en EasyBroker exitosamente.'];
+                // Se crea como borrador a propósito: la doc advierte que una
+                // propiedad creada como published se manda de inmediato a
+                // todos los portales vinculados.
+                return [
+                    'success' => true,
+                    'message' => 'Propiedad creada en EasyBroker como borrador (not_published). Revísala y publícala desde EasyBroker.',
+                ];
             }
 
-            Log::warning('EasyBroker: Error al publicar', [
-                'property_id' => $property->id,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
             return ['success' => false, 'message' => $this->parseApiError($response)];
-
         } catch (\Exception $e) {
-            Log::error('EasyBroker: Excepcion al publicar', [
+            Log::error('EasyBroker: Excepción al publicar', [
                 'property_id' => $property->id,
-                'error' => $e->getMessage(),
+                'error'       => $e->getMessage(),
             ]);
 
-            return ['success' => false, 'message' => 'Error de conexion: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error de conexión: ' . $e->getMessage()];
         }
     }
 
     public function update(Property $property): array
     {
-        if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'EasyBroker no esta configurado.'];
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'message' => 'EasyBroker no está configurado.'];
         }
 
-        if (!$property->hasEasyBrokerId()) {
+        if (! $property->hasEasyBrokerId()) {
             return $this->publish($property);
         }
 
-        $payload = $this->mapPropertyToPayload($property);
+        // Sin 'status': el estado de publicación se administra en EasyBroker
+        // y un PATCH no debe re-publicar ni despublicar por accidente.
+        $payload = $this->mapPropertyToPayload($property, includeStatus: false);
 
         try {
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-                'Content-Type' => 'application/json',
-            ])->patch($this->getBaseUrl() . '/properties/' . $property->easybroker_id, $payload);
+            $response = $this->http()->patch(
+                $this->getBaseUrl() . '/properties/' . $property->easybroker_id,
+                $payload
+            );
 
             Log::info('EasyBroker: PATCH /properties/' . $property->easybroker_id, [
                 'property_id' => $property->id,
@@ -119,48 +239,35 @@ class EasyBrokerService
             ]);
 
             if ($response->successful()) {
-                $property->update([
-                    'easybroker_status' => 'published',
-                    'easybroker_published_at' => now(),
-                ]);
-
                 return ['success' => true, 'message' => 'Propiedad actualizada en EasyBroker.'];
             }
 
             return ['success' => false, 'message' => $this->parseApiError($response)];
-
         } catch (\Exception $e) {
-            Log::error('EasyBroker: Excepcion al actualizar', [
+            Log::error('EasyBroker: Excepción al actualizar', [
                 'property_id' => $property->id,
-                'error' => $e->getMessage(),
+                'error'       => $e->getMessage(),
             ]);
 
-            return ['success' => false, 'message' => 'Error de conexion: ' . $e->getMessage()];
+            return ['success' => false, 'message' => 'Error de conexión: ' . $e->getMessage()];
         }
     }
 
     public function unpublish(Property $property): array
     {
-        if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'EasyBroker no esta configurado.'];
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'message' => 'EasyBroker no está configurado.'];
         }
 
-        if (!$property->hasEasyBrokerId()) {
-            return ['success' => false, 'message' => 'Esta propiedad no esta publicada en EasyBroker.'];
+        if (! $property->hasEasyBrokerId()) {
+            return ['success' => false, 'message' => 'Esta propiedad no está publicada en EasyBroker.'];
         }
 
         try {
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-                'Content-Type' => 'application/json',
-            ])->patch($this->getBaseUrl() . '/properties/' . $property->easybroker_id, [
-                'status' => 'not_published',
-            ]);
-
-            Log::info('EasyBroker: Unpublish /properties/' . $property->easybroker_id, [
-                'property_id' => $property->id,
-                'status_code' => $response->status(),
-            ]);
+            $response = $this->http()->patch(
+                $this->getBaseUrl() . '/properties/' . $property->easybroker_id,
+                ['status' => 'not_published']
+            );
 
             if ($response->successful()) {
                 $property->update(['easybroker_status' => 'not_published']);
@@ -169,171 +276,36 @@ class EasyBrokerService
             }
 
             return ['success' => false, 'message' => $this->parseApiError($response)];
-
         } catch (\Exception $e) {
-            Log::error('EasyBroker: Excepcion al despublicar', [
-                'property_id' => $property->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return ['success' => false, 'message' => 'Error de conexion: ' . $e->getMessage()];
-        }
-    }
-
-    public function testConnection(): array
-    {
-        if (!$this->isConfigured()) {
-            return ['success' => false, 'message' => 'No hay API key configurada.'];
-        }
-
-        try {
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-            ])->get($this->getBaseUrl() . '/properties', ['limit' => 1]);
-
-            if ($response->successful()) {
-                return ['success' => true, 'message' => 'Conexion exitosa con EasyBroker.'];
-            }
-
-            return ['success' => false, 'message' => 'Error: HTTP ' . $response->status() . ' - ' . $response->body()];
-
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Error de conexion: ' . $e->getMessage()];
-        }
-    }
-
-    public function validateConfig(): array
-    {
-        $errors = [];
-        if (!$this->isConfigured()) {
-            $errors[] = 'Falta API Key. Configúrala en Administración → EasyBroker.';
-        }
-        $config = $this->getConfig();
-        if (!$config?->default_latitude || !$config?->default_longitude) {
-            $errors[] = 'Faltan coordenadas por defecto (latitud/longitud). Configúralas en Administración → EasyBroker.';
-        }
-        return $errors;
-    }
-
-    private function mapPropertyToPayload(Property $property): array
-    {
-        $config = $this->getConfig();
-
-        $lat     = $property->latitude  ?? $config?->default_latitude;
-        $lng     = $property->longitude ?? $config?->default_longitude;
-        $cityId  = $config?->default_city_id;
-        $adminId = $config?->default_admin_division_id;
-
-        $opType = $property->operation_type ?? $config?->default_operation_type ?? 'sale';
-
-        // city_id = municipality name, administrative_division_id = state name
-        $resolvedCityId  = $cityId  ?: null;
-        $resolvedAdminId = $adminId ?: null;
-
-        $location = [];
-        if ($property->address)   $location['street']      = $property->address;
-        if ($property->zipcode)   $location['postal_code'] = $property->zipcode;
-        if ($lat && $lng) {
-            $location['latitude']  = (float) $lat;
-            $location['longitude'] = (float) $lng;
-        }
-
-        // EasyBroker property_type must be lowercase
-        $propertyTypeMap = [
-            'House'      => 'house',
-            'Apartment'  => 'apartment',
-            'Land'       => 'land',
-            'Office'     => 'office',
-            'Commercial' => 'commercial',
-            'Warehouse'  => 'warehouse',
-            'Building'   => 'building',
-        ];
-        $propertyType = $propertyTypeMap[$property->property_type ?? ''] ?? 'house';
-
-        $payload = [
-            'title'         => $property->title,
-            'status'        => 'published',
-            'property_type' => $propertyType,
-            'location'      => $location,
-        ];
-
-        if ($resolvedCityId)  $payload['city_id']                  = (int) $resolvedCityId;
-        if ($resolvedAdminId) $payload['administrative_division_id'] = (int) $resolvedAdminId;
-
-        $payload['operations'] = [
-            [
-                'type'     => $opType,
-                'amount'   => (float) $property->price,
-                'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
-            ],
-        ];
-
-        $description = trim($property->description ?: $property->title);
-        if ($description)                    $payload['description']       = $description;
-        if ($property->bedrooms !== null)    $payload['bedrooms']          = (int) $property->bedrooms;
-        if ($property->bathrooms !== null)   $payload['bathrooms']         = (float) $property->bathrooms;
-        if ($property->parking !== null)     $payload['parking_spaces']    = (int) $property->parking;
-        if ($property->area !== null)        $payload['construction_size'] = (float) $property->area;
-        if ($property->lot_area !== null)    $payload['lot_size']          = (float) $property->lot_area;
-
-        return $payload;
-    }
-
-    public function searchLocations(string $query): array
-    {
-        if (!$this->isConfigured()) {
-            return ['success' => false, 'data' => [], 'message' => 'API Key no configurada.'];
-        }
-
-        try {
-            // EasyBroker uses 'search' not 'q'
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-            ])->get($this->getBaseUrl() . '/locations', ['search' => $query, 'limit' => 20]);
-
-            if ($response->successful()) {
-                $data = $response->json('content') ?? $response->json() ?? [];
-                return ['success' => true, 'data' => is_array($data) ? $data : []];
-            }
-
-            Log::warning('EasyBroker: locations search failed', [
-                'status' => $response->status(),
-                'body'   => $response->body(),
-            ]);
-
-            return ['success' => false, 'data' => [], 'message' => $this->parseApiError($response)];
-        } catch (\Exception $e) {
-            return ['success' => false, 'data' => [], 'message' => $e->getMessage()];
+            return ['success' => false, 'message' => 'Error de conexión: ' . $e->getMessage()];
         }
     }
 
     public function detectLocationFromProperties(): array
     {
-        if (!$this->isConfigured()) {
+        if (! $this->isConfigured()) {
             return ['success' => false, 'data' => null, 'message' => 'API Key no configurada.'];
         }
 
         try {
-            $response = Http::withHeaders([
-                'X-Authorization' => $this->getApiKey(),
-            ])->get($this->getBaseUrl() . '/properties', ['limit' => 5, 'page' => 1]);
+            $response = $this->http()->get($this->getBaseUrl() . '/properties', ['limit' => 5, 'page' => 1]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 return ['success' => false, 'data' => null, 'message' => $this->parseApiError($response)];
             }
 
-            $props = $response->json('content') ?? [];
-            foreach ($props as $prop) {
-                $loc = $prop['location'] ?? [];
-                if (!empty($loc['city_id']) || !empty($loc['administrative_division_id'])) {
+            foreach (($response->json('content') ?? []) as $prop) {
+                $loc = $prop['location'] ?? null;
+                if (is_string($loc) && $loc !== '') {
                     return [
                         'success' => true,
-                        'data'    => [
-                            'city_id'    => $loc['city_id'] ?? null,
-                            'admin_id'   => $loc['administrative_division_id'] ?? null,
-                            'city_name'  => $loc['city'] ?? $loc['name'] ?? null,
-                            'source'     => $prop['title'] ?? $prop['public_id'] ?? 'propiedad existente',
-                        ],
+                        'data'    => ['location_name' => $loc, 'source' => $prop['title'] ?? $prop['public_id'] ?? 'propiedad existente'],
+                    ];
+                }
+                if (is_array($loc) && ! empty($loc['name'])) {
+                    return [
+                        'success' => true,
+                        'data'    => ['location_name' => $loc['name'], 'source' => $prop['title'] ?? $prop['public_id'] ?? 'propiedad existente'],
                     ];
                 }
             }
@@ -344,142 +316,117 @@ class EasyBrokerService
         }
     }
 
-    public function testPatch(string $publicId): array
+    /**
+     * Resuelve la colonia local al full_name del catálogo de EasyBroker.
+     * Consulta las colonias de Benito Juárez una vez (cache 1 h) y hace match
+     * insensible a mayúsculas/acentos. Fallback: la alcaldía completa.
+     */
+    private function resolveLocationName(Property $property): string
     {
-        if (!$this->isConfigured()) {
-            return ['error' => 'API Key no configurada'];
+        $colonia = $property->marketColonia?->name ?: $property->colony;
+        if (! $colonia) {
+            return self::DEFAULT_LOCATION;
         }
 
-        $base = $this->getBaseUrl() . '/properties';
-        $headers = ['X-Authorization' => $this->getApiKey(), 'Content-Type' => 'application/json'];
-        $results = [];
+        $localities = Cache::remember('easybroker.bj_localities', 3600, function () {
+            $result = $this->searchLocations(self::DEFAULT_LOCATION);
 
-        $results = [];
-        $baseOps = [['type' => 'sale', 'amount' => 100, 'currency' => 'MXN']];
+            return $result['success'] ? ($result['data']['localities'] ?? []) : [];
+        });
 
-        // AA: location with city + region (doc-mentioned fields) — no city_area
-        $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST AA ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => ['street' => 'Amores', 'city' => 'Benito Juárez', 'region' => 'Ciudad de México', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
-            'operations' => $baseOps,
-        ]);
-        $results['AA_city_region'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
-
-        // AB: city_area + city + region all together
-        $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST AB ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'city' => 'Benito Juárez', 'region' => 'Ciudad de México', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
-            'operations' => $baseOps,
-        ]);
-        $results['AB_all_location_fields'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
-
-        // AC: try listing_type instead of operation_type
-        $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST AC ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'listing_type' => 'sale',
-            'location'     => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
-            'operations'   => $baseOps,
-        ]);
-        $results['AC_listing_type'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
-
-        // AD: try "listing_type" inside operations
-        $r = Http::withHeaders($headers)->post($base, [
-            'title' => 'TEST AD ' . now()->format('H:i:s'), 'status' => 'not_published', 'property_type' => 'apartment',
-            'location'   => ['street' => 'Amores', 'city_area' => 'Del Valle Centro', 'latitude' => 19.3853, 'longitude' => -99.166, 'postal_code' => '03100'],
-            'operations' => [['type' => 'sale', 'listing_type' => 'sale', 'amount' => 100, 'currency' => 'MXN']],
-        ]);
-        $results['AD_listing_type_in_ops'] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
-
-        return $results;
-
-        foreach ($variants as $key => $payload) {
-            try {
-                $r = Http::withHeaders($headers)->post($base, $payload);
-                $results[$key] = ['status' => $r->status(), 'response' => $r->json() ?? $r->body()];
-            } catch (\Exception $e) {
-                $results[$key] = ['error' => $e->getMessage()];
+        $wanted = $this->normalize($colonia);
+        foreach ($localities as $loc) {
+            if ($this->normalize($loc['name'] ?? '') === $wanted) {
+                return $loc['full_name'];
+            }
+        }
+        // Segundo intento: contiene (ej. "Del Valle" → "Del Valle Centro")
+        foreach ($localities as $loc) {
+            if (str_contains($this->normalize($loc['name'] ?? ''), $wanted)) {
+                return $loc['full_name'];
             }
         }
 
-        return $results;
+        return self::DEFAULT_LOCATION;
     }
 
-    public function rawProperties(?string $publicId = null): array
+    private function normalize(string $value): string
     {
-        if (!$this->isConfigured()) {
-            return ['error' => 'API Key no configurada'];
-        }
+        $value = mb_strtolower(trim($value));
 
-        try {
-            if ($publicId) {
-                $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
-                    ->get($this->getBaseUrl() . '/properties/' . $publicId);
-            } else {
-                $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
-                    ->get($this->getBaseUrl() . '/properties', ['limit' => 10, 'page' => 1]);
-            }
-
-            return $response->json() ?? ['error' => $response->body()];
-        } catch (\Exception $e) {
-            return ['error' => $e->getMessage()];
-        }
+        return strtr($value, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n']);
     }
 
-    public function rawLocationSearch(): array
+    private function mapPropertyToPayload(Property $property, bool $includeStatus = true): array
     {
-        if (!$this->isConfigured()) {
-            return ['error' => 'API Key no configurada'];
+        $config = $this->getConfig();
+
+        $lat = $property->latitude  ?? $config?->default_latitude;
+        $lng = $property->longitude ?? $config?->default_longitude;
+
+        $location = [
+            'name'                => $this->resolveLocationName($property),
+            'show_exact_location' => false,
+        ];
+        if ($property->address) $location['street']      = $property->address;
+        if ($property->zipcode) $location['postal_code'] = $property->zipcode;
+        if ($lat && $lng) {
+            $location['latitude']  = (float) $lat;
+            $location['longitude'] = (float) $lng;
         }
 
-        $results = [];
-        $attempts = [
-            // Try navigating into CDMX to find municipalities with IDs
-            ['url' => '/locations', 'params' => ['search' => 'Ciudad de México']],
-            ['url' => '/locations', 'params' => ['search' => 'Benito Juárez']],
-            ['url' => '/locations', 'params' => ['search' => 'Benito Juárez', 'type' => 'municipality']],
-            ['url' => '/locations', 'params' => ['search' => 'Del Valle']],
-            // Path-based navigation attempts
-            ['url' => '/locations/Ciudad%20de%20M%C3%A9xico', 'params' => []],
-            ['url' => '/locations/M%C3%A9xico/Ciudad%20de%20M%C3%A9xico', 'params' => []],
-            ['url' => '/locations/Mexico/Benito-Juarez', 'params' => []],
-            // Try with limit to get more results
-            ['url' => '/locations', 'params' => ['limit' => 50]],
+        $type = $property->operation_type === 'rental' ? 'rental' : 'sale';
+
+        $payload = [
+            'title'         => $property->title,
+            'description'   => trim($property->description ?: $property->title),
+            'property_type' => self::PROPERTY_TYPE_MAP[$property->property_type ?? ''] ?? 'Casa',
+            'location'      => $location,
+            'operations'    => [[
+                'type'     => $type,
+                'amount'   => (float) $property->price,
+                'currency' => $property->currency ?? $config?->default_currency ?? 'MXN',
+            ]],
+            'internal_id'   => 'HDV-' . $property->id,
         ];
 
-        foreach ($attempts as $attempt) {
-            try {
-                $response = Http::withHeaders(['X-Authorization' => $this->getApiKey()])
-                    ->timeout(8)
-                    ->get($this->getBaseUrl() . $attempt['url'], $attempt['params']);
-
-                $body = $response->json() ?? $response->body();
-                $results[] = [
-                    'url'    => $attempt['url'],
-                    'params' => $attempt['params'],
-                    'status' => $response->status(),
-                    'body'   => $body,
-                ];
-            } catch (\Exception $e) {
-                $results[] = ['url' => $attempt['url'], 'error' => $e->getMessage()];
-            }
+        if ($includeStatus) {
+            $payload['status'] = 'not_published';
         }
 
-        return $results;
+        if ($property->bedrooms !== null)          $payload['bedrooms']          = (int) $property->bedrooms;
+        if ($property->bathrooms !== null)         $payload['bathrooms']         = (int) $property->bathrooms;
+        if ($property->half_bathrooms !== null)    $payload['half_bathrooms']    = (int) $property->half_bathrooms;
+        if ($property->parking !== null)           $payload['parking_spaces']    = (int) $property->parking;
+        if ($property->construction_area ?? $property->area) {
+            $payload['construction_size'] = (float) ($property->construction_area ?? $property->area);
+        }
+        if ($property->lot_area !== null)          $payload['lot_size']          = (float) $property->lot_area;
+
+        return $payload;
     }
 
     private function parseApiError(\Illuminate\Http\Client\Response $response): string
     {
         $json = $response->json();
         if (is_array($json)) {
-            if (!empty($json['errors']) && is_array($json['errors'])) {
-                return 'HTTP ' . $response->status() . ': ' . implode(', ', array_map(
-                    fn($e) => is_array($e) ? ($e['message'] ?? json_encode($e)) : $e,
-                    $json['errors']
-                ));
+            // Formato {"errors": {"campo": ["mensaje", ...]}}
+            if (! empty($json['errors']) && is_array($json['errors'])) {
+                $parts = [];
+                foreach ($json['errors'] as $field => $messages) {
+                    $messages = is_array($messages) ? implode(', ', array_map(
+                        fn ($m) => is_array($m) ? ($m['message'] ?? json_encode($m)) : $m,
+                        $messages
+                    )) : $messages;
+                    $parts[] = is_int($field) ? $messages : "{$field}: {$messages}";
+                }
+
+                return 'HTTP ' . $response->status() . ': ' . implode(' | ', $parts);
             }
-            if (!empty($json['error'])) return 'HTTP ' . $response->status() . ': ' . $json['error'];
-            if (!empty($json['message'])) return 'HTTP ' . $response->status() . ': ' . $json['message'];
+            if (! empty($json['error']))   return 'HTTP ' . $response->status() . ': ' . $json['error'];
+            if (! empty($json['message'])) return 'HTTP ' . $response->status() . ': ' . $json['message'];
         }
+
         return 'HTTP ' . $response->status() . ': ' . $response->body();
     }
 }
