@@ -36,8 +36,7 @@ class EasyBrokerSettingsController extends Controller
             'default_property_type'    => 'required|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
             'default_operation_type'   => 'required|string|in:sale,rental,temporary_rental',
             'default_currency'         => 'required|string|in:MXN,USD',
-            'default_city_id'          => 'nullable|string|max:100',
-            'default_admin_division_id'=> 'nullable|string|max:100',
+            'default_location_name'    => 'nullable|string|max:255',
             'default_latitude'         => 'nullable|numeric|between:-90,90',
             'default_longitude'        => 'nullable|numeric|between:-180,180',
         ]);

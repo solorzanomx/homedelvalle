@@ -323,9 +323,11 @@ class EasyBrokerService
      */
     private function resolveLocationName(Property $property): string
     {
+        $default = $this->getConfig()?->default_location_name ?: self::DEFAULT_LOCATION;
+
         $colonia = $property->marketColonia?->name ?: $property->colony;
         if (! $colonia) {
-            return self::DEFAULT_LOCATION;
+            return $default;
         }
 
         $localities = Cache::remember('easybroker.bj_localities', 3600, function () {
@@ -347,7 +349,7 @@ class EasyBrokerService
             }
         }
 
-        return self::DEFAULT_LOCATION;
+        return $default;
     }
 
     private function normalize(string $value): string

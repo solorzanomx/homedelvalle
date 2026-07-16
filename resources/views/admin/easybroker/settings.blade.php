@@ -62,40 +62,38 @@
                             Ubicacion por defecto (opcional)
                         </div>
                         <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
-                            Si tienes el City ID de EasyBroker puedes ingresarlo para mayor precision, pero no es obligatorio.
+                            EasyBroker ubica por nombre de catálogo (colonia o alcaldía), no por IDs.
+                            Esta ubicación se usa cuando una propiedad no tiene colonia asignada; si se
+                            deja vacía se usa "Benito Juárez, Ciudad de México".
                         </div>
 
                         {{-- Auto-detect from existing EB properties --}}
                         <div style="margin-bottom:1rem;">
                             <button type="button" id="eb-detect-btn" class="btn btn-outline" style="width:100%; justify-content:center;" onclick="ebDetectLocation()">
-                                &#128270; Detectar IDs desde mis propiedades en EasyBroker
+                                &#128270; Detectar desde mis propiedades en EasyBroker
                             </button>
-                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Si ya tienes propiedades en EasyBroker, extrae los IDs automáticamente.</p>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Si ya tienes propiedades en EasyBroker, toma la ubicación de la primera.</p>
                         </div>
 
                         {{-- Location search --}}
                         <div class="form-group">
-                            <label class="form-label">O buscar ubicacion manualmente</label>
+                            <label class="form-label">O buscar en el catálogo de EasyBroker</label>
                             <div style="display:flex; gap:0.5rem;">
-                                <input type="text" id="eb-location-search" class="form-input" placeholder="Ej: Benito Juarez, Ciudad de Mexico..." style="flex:1;">
+                                <input type="text" id="eb-location-search" class="form-input" placeholder="Ej: Benito Juárez, Ciudad de México" style="flex:1;">
                                 <button type="button" class="btn btn-outline" onclick="ebSearchLocations()">Buscar</button>
                             </div>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">Busca una alcaldía o ciudad para ver sus colonias; haz clic en una para seleccionarla.</p>
                             <div id="eb-location-results" style="display:none; margin-top:0.5rem; border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; background:#fff;"></div>
                         </div>
 
+                        <div class="form-group">
+                            <label class="form-label">Ubicación por defecto (formato EasyBroker)</label>
+                            <input type="text" name="default_location_name" id="eb-location-name" class="form-input"
+                                value="{{ old('default_location_name', $ebSettings->default_location_name ?? '') }}"
+                                placeholder="Benito Juárez, Ciudad de México">
+                        </div>
+
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                            <div class="form-group">
-                                <label class="form-label">City ID</label>
-                                <input type="text" name="default_city_id" id="eb-city-id" class="form-input"
-                                    value="{{ old('default_city_id', $ebSettings->default_city_id ?? '') }}"
-                                    placeholder="Ej: 153">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Administrative Division ID</label>
-                                <input type="text" name="default_admin_division_id" id="eb-admin-div-id" class="form-input"
-                                    value="{{ old('default_admin_division_id', $ebSettings->default_admin_division_id ?? '') }}"
-                                    placeholder="Ej: 14">
-                            </div>
                             <div class="form-group">
                                 <label class="form-label">Latitud por defecto</label>
                                 <input type="number" name="default_latitude" class="form-input" step="0.0000001"
@@ -200,19 +198,25 @@ function ebSearchLocations() {
     fetch('{{ route('admin.easybroker.locations') }}?q=' + encodeURIComponent(q))
         .then(r => r.json())
         .then(resp => {
-            const data = resp.data ?? resp;
-            if (!Array.isArray(data) || !data.length) {
+            // La API devuelve la ubicación raíz encontrada y sus hijas
+            // (localities): país→estados, estado→ciudades, ciudad→colonias.
+            const root = resp.data ?? {};
+            const options = [];
+            if (root.full_name) options.push(root);
+            (root.localities ?? []).forEach(l => options.push(l));
+
+            if (!options.length) {
                 const msg = resp.message ? ' (' + resp.message + ')' : '';
                 resultsDiv.innerHTML = '<div style="padding:0.75rem; color:var(--text-muted); font-size:0.85rem;">Sin resultados' + msg + '</div>';
                 return;
             }
-            resultsDiv.innerHTML = data.map(loc => `
+            resultsDiv.innerHTML = options.map(loc => `
                 <div style="padding:0.6rem 0.75rem; cursor:pointer; border-bottom:1px solid var(--border); font-size:0.85rem;"
                     onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"
-                    onclick="ebSelectLocation(${JSON.stringify(loc)})">
-                    <span style="font-weight:500;">${loc.name ?? loc.long_name ?? loc.title ?? ''}</span>
+                    onclick="ebSelectLocation(this.dataset.fullName)" data-full-name="${(loc.full_name ?? '').replace(/"/g, '&quot;')}">
+                    <span style="font-weight:500;">${loc.name ?? ''}</span>
                     <span style="color:var(--text-muted); margin-left:0.5rem; font-size:0.78rem;">
-                        ID: ${loc.id ?? '?'} &bull; Tipo: ${loc.type ?? '?'}
+                        ${loc.full_name ?? ''} &bull; ${loc.type ?? ''}
                     </span>
                 </div>
             `).join('');
@@ -220,6 +224,12 @@ function ebSearchLocations() {
         .catch((e) => {
             resultsDiv.innerHTML = '<div style="padding:0.75rem; color:#dc2626; font-size:0.85rem;">Error al buscar: ' + e.message + '</div>';
         });
+}
+
+function ebSelectLocation(fullName) {
+    if (!fullName) return;
+    document.getElementById('eb-location-name').value = fullName;
+    document.getElementById('eb-location-results').style.display = 'none';
 }
 
 function ebDetectLocation() {
@@ -232,9 +242,8 @@ function ebDetectLocation() {
         .then(resp => {
             if (resp.success && resp.data) {
                 const d = resp.data;
-                if (d.city_id)  document.getElementById('eb-city-id').value = d.city_id;
-                if (d.admin_id) document.getElementById('eb-admin-div-id').value = d.admin_id;
-                btn.textContent = '✓ Detectado desde: ' + (d.source ?? 'EasyBroker');
+                if (d.location_name) document.getElementById('eb-location-name').value = d.location_name;
+                btn.textContent = '✓ Detectado: ' + (d.location_name ?? '') + ' (desde: ' + (d.source ?? 'EasyBroker') + ')';
                 btn.style.color = 'var(--success)';
                 btn.style.borderColor = 'var(--success)';
             } else {
@@ -250,20 +259,6 @@ function ebDetectLocation() {
             btn.style.color = 'var(--danger)';
             setTimeout(() => { btn.textContent = 'Detectar desde mis propiedades'; btn.disabled = false; btn.style.color=''; btn.style.borderColor=''; }, 3000);
         });
-}
-
-function ebSelectLocation(loc) {
-    var cityTypes = ['city','municipality','neighborhood','suburb','delegation'];
-    if (loc.id && (!loc.type || cityTypes.includes(loc.type))) {
-        document.getElementById('eb-city-id').value = loc.id;
-    }
-    if (loc.administrative_division_id) {
-        document.getElementById('eb-admin-div-id').value = loc.administrative_division_id;
-    } else if (loc.type === 'state' || loc.type === 'region') {
-        document.getElementById('eb-admin-div-id').value = loc.id;
-    }
-    document.getElementById('eb-location-results').style.display = 'none';
-    document.getElementById('eb-location-search').value = loc.name ?? loc.title ?? '';
 }
 
 document.getElementById('eb-location-search')?.addEventListener('keydown', function(e) {
