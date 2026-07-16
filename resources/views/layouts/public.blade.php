@@ -29,9 +29,10 @@
         'url'         => url('/'),
         'telephone'   => $siteSettings?->contact_phone ?? '+5215513450978',
         'email'       => $siteSettings?->contact_email ?? 'contacto@homedelvalle.mx',
+        'slogan'      => 'Pocos inmuebles. Más control. Mejores resultados.',
         'address'     => [
             '@type'           => 'PostalAddress',
-            'streetAddress'   => $siteSettings?->address ?? 'Heriberto Frías 903-A',
+            'streetAddress'   => $siteSettings?->address ?? 'Heriberto Frías 903-C',
             'addressLocality' => 'Colonia del Valle',
             'addressRegion'   => 'Ciudad de México',
             'postalCode'      => '03100',
@@ -46,11 +47,19 @@
             ['@type'=>'OpeningHoursSpecification','dayOfWeek'=>['Monday','Tuesday','Wednesday','Thursday','Friday'],'opens'=>'09:00','closes'=>'18:00'],
             ['@type'=>'OpeningHoursSpecification','dayOfWeek'=>['Saturday'],'opens'=>'10:00','closes'=>'14:00'],
         ],
-        'areaServed' => ['@type'=>'AdministrativeArea','name'=>'Alcaldía Benito Juárez, Ciudad de México'],
+        'areaServed' => array_merge(
+            [['@type'=>'AdministrativeArea','name'=>'Alcaldía Benito Juárez, Ciudad de México']],
+            array_map(
+                fn ($colonia) => ['@type'=>'Place','name'=>"$colonia, Benito Juárez, CDMX"],
+                ['Del Valle', 'Narvarte', 'Narvarte Poniente', 'Nápoles', 'Portales', 'Xoco']
+            )
+        ),
+        'knowsAbout' => ['Venta de predios a desarrolladoras', 'Compra-venta residencial', 'Renta de inmuebles', 'Benito Juárez CDMX'],
         'memberOf'   => ['@type'=>'Organization','name'=>'AMPI - Asociación Mexicana de Profesionales Inmobiliarios'],
         'sameAs'     => array_values(array_filter([
-            $siteSettings?->facebook_url  ?? null,
-            $siteSettings?->instagram_url ?? null,
+            $siteSettings?->facebook_url  ?? 'https://www.facebook.com/homedelvalle',
+            $siteSettings?->instagram_url ?? 'https://www.instagram.com/homedelvalle',
+            'https://x.com/HomeDelValleMX',
         ])),
         'priceRange' => '$$',
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
@@ -98,35 +107,7 @@
     {!! $siteSettings->custom_head_scripts !!}
     @endif
 
-    {{-- Datos estructurados — NAP oficial de la ficha de marca (docs/posicionamiento-marca.md).
-         Generado desde PHP: "@context"/"@type" literales chocan con directivas Blade (@context existe en Laravel 12). --}}
-    @php
-        $hdvSchema = [
-            '@context'  => 'https://schema.org',
-            '@type'     => 'RealEstateAgent',
-            'name'      => 'Home del Valle Bienes Raíces',
-            'url'       => 'https://homedelvalle.mx',
-            'telephone' => '+52 55 1345 0978',
-            'email'     => 'contacto@homedelvalle.mx',
-            'slogan'    => 'Pocos inmuebles. Más control. Mejores resultados.',
-            'address'   => [
-                '@type'           => 'PostalAddress',
-                'streetAddress'   => 'Heriberto Frías 903-A, Colonia del Valle',
-                'addressLocality' => 'Alcaldía Benito Juárez',
-                'addressRegion'   => 'Ciudad de México',
-                'addressCountry'  => 'MX',
-            ],
-            'areaServed' => ['Del Valle', 'Narvarte', 'Narvarte Poniente', 'Nápoles', 'Portales', 'Xoco'],
-            'knowsAbout' => ['Venta de predios a desarrolladoras', 'Compra-venta residencial', 'Renta de inmuebles', 'Benito Juárez CDMX'],
-            'memberOf'   => ['@type' => 'Organization', 'name' => 'AMPI — Asociación Mexicana de Profesionales Inmobiliarios'],
-            'sameAs'     => [
-                'https://www.facebook.com/homedelvalle',
-                'https://www.instagram.com/homedelvalle',
-                'https://x.com/HomeDelValleMX',
-            ],
-        ];
-    @endphp
-    <script type="application/ld+json">{!! json_encode($hdvSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    {{-- El schema RealEstateAgent (NAP oficial) vive arriba, junto a @vite — un solo bloque por página. --}}
 
     {{-- Eventos de conversión → GA4 / GTM (clicks WhatsApp/tel/mailto + formularios Livewire) --}}
     @if(($siteSettings?->ga_enabled && $siteSettings?->google_analytics_id) || ($siteSettings?->gtm_enabled && $siteSettings?->gtm_id))

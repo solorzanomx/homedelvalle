@@ -7,21 +7,9 @@
         :canonical="url('/' . $colonia->slug)"
     />
 
-    {{-- LocalBusiness + specific area schema --}}
-    <x-public.json-ld type="RealEstateAgent" :data="array_filter([
-        'name'        => ($siteSettings?->site_name ?? 'Home del Valle') . ' — ' . $colonia->name,
-        'description' => $colonia->meta_description ?: 'Especialistas inmobiliarios en ' . $colonia->name . ', Benito Juárez, CDMX.',
-        'url'         => url('/' . $colonia->slug),
-        'telephone'   => $siteSettings?->contact_phone,
-        'address'     => [
-            '@type'           => 'PostalAddress',
-            'addressLocality' => $colonia->name,
-            'addressRegion'   => 'Alcaldía Benito Juárez',
-            'addressCountry'  => 'MX',
-        ],
-        'areaServed' => ['@type' => 'City', 'name' => $colonia->name . ', Benito Juárez'],
-        'priceRange' => '$$',
-    ])" />
+    {{-- El schema RealEstateAgent canónico vive en layouts/public — el que había
+         aquí creaba una entidad por colonia sin dirección real, duplicando y
+         contradiciendo al principal. --}}
 
     {{-- BreadcrumbList --}}
     <x-public.json-ld type="BreadcrumbList" :data="[
