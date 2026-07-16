@@ -103,9 +103,6 @@
                 {{-- Propietarios — destacado --}}
                 <a href="{{ route('landing.vende') }}"
                    class="group relative flex flex-col justify-between bg-brand-500/20 backdrop-blur-sm border border-brand-400/40 rounded-2xl p-6 hover:bg-brand-500/28 hover:border-brand-400/60 hover:shadow-2xl transition-all duration-300 text-left ring-1 ring-brand-400/20">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand-500 text-white text-[0.6rem] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
-                        ★ Más solicitado
-                    </div>
                     <div>
                         <div class="flex items-center justify-center w-11 h-11 rounded-xl bg-brand-400/20 group-hover:bg-brand-500 transition-all duration-300 mb-5">
                             <x-icon name="home" class="w-5 h-5 text-white" />
@@ -175,7 +172,10 @@
 
             {{-- ── Banner funnel principal: predio → desarrolladora ── --}}
             <a href="{{ route('landing.vende-desarrolladora') }}"
-               class="group mt-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 px-6 py-5 hover:bg-emerald-500/15 hover:border-emerald-400/50 transition-all duration-300">
+               class="group relative mt-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 rounded-2xl bg-emerald-500/10 border border-emerald-400/30 px-6 py-5 hover:bg-emerald-500/15 hover:border-emerald-400/50 transition-all duration-300">
+                <div class="absolute -top-3 left-6 bg-emerald-500 text-white text-[0.6rem] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                    ★ Especialidad de la firma
+                </div>
                 <div class="flex items-center gap-3 flex-1">
                     <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-400/20 shrink-0">
                         <x-icon name="trending-up" class="w-5 h-5 text-emerald-300" />
@@ -343,7 +343,7 @@
                 'features'    => ['Valuación gratuita en 24 h', 'Venta en 45 días promedio', 'Seguridad jurídica completa'],
                 'link_text'   => 'Solicitar valuación',
                 'link_url'    => '/vende-tu-propiedad',
-                'highlighted' => true,
+                'highlighted' => false,
                 'icon'        => 'home',
             ],
             [
@@ -384,10 +384,51 @@
             <div class="text-center max-w-2xl mx-auto" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Servicio integral</p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->services_heading ?? 'Líneas de negocio' }}</h2>
-                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->services_subheading ?? 'Cuatro funnels especializados para cada perfil del mercado inmobiliario.' }}</p>
+                <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->services_subheading ?? 'Nuestra especialidad — conectar predios con desarrolladoras — respaldada por cuatro líneas de soporte.' }}</p>
             </div>
 
-            <div class="mt-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {{-- Negocio principal: tarjeta protagonista de ancho completo (docs/posicionamiento-marca.md) --}}
+            <div class="mt-16" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+                <div class="relative" style="padding-top: 0.6rem;">
+                    <div class="absolute top-0 right-6 z-10">
+                        <span class="inline-flex items-center rounded-full bg-white px-3 py-1 text-[0.65rem] font-bold text-emerald-700 shadow-premium">
+                            ★ Especialidad de la firma
+                        </span>
+                    </div>
+                    <div class="relative rounded-2xl gradient-brand text-white shadow-brand-lg overflow-hidden">
+                        <div class="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+                        <div class="relative grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 sm:p-10">
+                            <div class="flex flex-col">
+                                <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-white/15 backdrop-blur-sm mb-6">
+                                    <x-icon name="landmark" class="w-6 h-6 text-white" />
+                                </div>
+                                <p class="text-[0.6rem] font-bold tracking-[0.12em] uppercase text-white/60 mb-1">Negocio principal · Propietarios de predios</p>
+                                <h3 class="text-xl sm:text-2xl font-bold leading-snug">Desarrollo Inmobiliario: vende tu predio a una desarrolladora</h3>
+                                <p class="mt-3 text-sm sm:text-base text-white/70 leading-relaxed flex-1">Captamos predios en exclusiva, calculamos su valor real como terreno para desarrollar y los presentamos a nuestra cartera de constructoras activas en Benito Juárez.</p>
+                                <a href="{{ route('landing.vende-desarrolladora') }}" class="group/link mt-7 inline-flex items-center gap-2 text-sm font-semibold text-white hover:underline underline-offset-4">
+                                    Evaluar mi predio sin compromiso
+                                    <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover/link:translate-x-1" />
+                                </a>
+                            </div>
+                            <ul class="space-y-3 lg:pt-16">
+                                @foreach([
+                                    'Análisis técnico de uso de suelo y potencial constructivo',
+                                    'Cartera activa de desarrolladoras y constructoras calificadas',
+                                    'Due diligence, título limpio y cierre notarial blindado',
+                                    'Honorarios solo al cierre — sin costos de captación ni anticipos',
+                                ] as $ventaja)
+                                <li class="flex items-start gap-2.5 text-sm sm:text-base text-white/80">
+                                    <x-icon name="check" class="w-4 h-4 mt-1 text-emerald-300 shrink-0" />
+                                    {{ $ventaja }}
+                                </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($services as $si => $service)
                 <div x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $si * 80 }}ms">
                 @if(!empty($service['highlighted']))

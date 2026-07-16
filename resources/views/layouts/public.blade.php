@@ -98,6 +98,36 @@
     {!! $siteSettings->custom_head_scripts !!}
     @endif
 
+    {{-- Datos estructurados — NAP oficial de la ficha de marca (docs/posicionamiento-marca.md).
+         Generado desde PHP: "@context"/"@type" literales chocan con directivas Blade (@context existe en Laravel 12). --}}
+    @php
+        $hdvSchema = [
+            '@context'  => 'https://schema.org',
+            '@type'     => 'RealEstateAgent',
+            'name'      => 'Home del Valle Bienes Raíces',
+            'url'       => 'https://homedelvalle.mx',
+            'telephone' => '+52 55 1345 0978',
+            'email'     => 'contacto@homedelvalle.mx',
+            'slogan'    => 'Pocos inmuebles. Más control. Mejores resultados.',
+            'address'   => [
+                '@type'           => 'PostalAddress',
+                'streetAddress'   => 'Heriberto Frías 903-A, Colonia del Valle',
+                'addressLocality' => 'Alcaldía Benito Juárez',
+                'addressRegion'   => 'Ciudad de México',
+                'addressCountry'  => 'MX',
+            ],
+            'areaServed' => ['Del Valle', 'Narvarte', 'Narvarte Poniente', 'Nápoles', 'Portales', 'Xoco'],
+            'knowsAbout' => ['Venta de predios a desarrolladoras', 'Compra-venta residencial', 'Renta de inmuebles', 'Benito Juárez CDMX'],
+            'memberOf'   => ['@type' => 'Organization', 'name' => 'AMPI — Asociación Mexicana de Profesionales Inmobiliarios'],
+            'sameAs'     => [
+                'https://www.facebook.com/homedelvalle',
+                'https://www.instagram.com/homedelvalle',
+                'https://x.com/HomeDelValleMX',
+            ],
+        ];
+    @endphp
+    <script type="application/ld+json">{!! json_encode($hdvSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+
     {{-- Eventos de conversión → GA4 / GTM (clicks WhatsApp/tel/mailto + formularios Livewire) --}}
     @if(($siteSettings?->ga_enabled && $siteSettings?->google_analytics_id) || ($siteSettings?->gtm_enabled && $siteSettings?->gtm_id))
     <script>

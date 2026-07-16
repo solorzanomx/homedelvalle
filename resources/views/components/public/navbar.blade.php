@@ -103,7 +103,7 @@
                                     <x-icon name="trending-up" class="w-4 h-4 text-emerald-600 group-hover:text-white transition-colors duration-300" />
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-gray-900">Vender a desarrolladora <span class="text-[0.6rem] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5 ml-1">★ Nuevo</span></p>
+                                    <p class="text-sm font-semibold text-gray-900">Vender a desarrolladora <span class="text-[0.6rem] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5 ml-1">★ Especialidad</span></p>
                                     <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Tu casa podría valer más como terreno — constructoras buscando predios.</p>
                                 </div>
                             </a>
@@ -205,7 +205,7 @@
                class="flex items-center gap-3 rounded-xl mx-2 px-3 py-3 text-sm font-medium text-gray-700 hover:bg-emerald-50 hover:text-gray-900 transition-all duration-200">
                 <x-icon name="trending-up" class="w-4 h-4 text-emerald-600 shrink-0" />
                 Vender a desarrolladora
-                <span class="text-[0.6rem] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">★ Nuevo</span>
+                <span class="text-[0.6rem] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">★ Especialidad</span>
             </a>
             <a href="{{ route('landing.vende') }}" @click="open = false"
                class="flex items-center gap-3 rounded-xl mx-2 px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200">

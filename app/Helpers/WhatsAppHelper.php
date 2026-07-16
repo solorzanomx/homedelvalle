@@ -13,6 +13,7 @@ class WhatsAppHelper
         $currentPath = request()->path();
 
         return match (true) {
+            str_contains($currentPath, 'vende-a-desarrolladora') => self::predioLandingOptions(),
             str_contains($currentPath, 'vende-tu-propiedad')   => self::sellerOptions(),
             str_contains($currentPath, 'renta-tu-propiedad')   => self::rentalOwnerOptions(),
             str_contains($currentPath, '/comprar')             => self::buyerOptions(),
@@ -64,6 +65,7 @@ class WhatsAppHelper
     private static function sellerOptions(): array
     {
         return [
+            self::predioOption(),
             [
                 'icon' => '🏠',
                 'label' => 'Valuación gratuita',
@@ -127,9 +129,57 @@ class WhatsAppHelper
     /**
      * Opciones generales (home, etc) — 4 funnels + consulta
      */
+    /**
+     * Entrada del negocio principal — se antepone en las páginas de mayor
+     * tráfico (jerarquía constructor-primero, docs/posicionamiento-marca.md).
+     */
+    private static function predioOption(): array
+    {
+        return [
+            'icon'     => '🏗️',
+            'label'    => 'Mi casa podría valer más como terreno',
+            'subtitle' => 'Constructoras buscan predios en tu zona',
+            'message'  => 'Hola! Tengo una propiedad en Benito Juárez y quiero saber si podría valer más como terreno para una desarrolladora.',
+        ];
+    }
+
+    /**
+     * Opciones para /vende-a-desarrolladora (landing del negocio principal)
+     */
+    private static function predioLandingOptions(): array
+    {
+        return [
+            [
+                'icon'     => '🏗️',
+                'label'    => 'Evaluar mi predio sin compromiso',
+                'subtitle' => 'Análisis de uso de suelo y potencial',
+                'message'  => 'Hola! Quiero saber si mi propiedad en Benito Juárez tiene potencial para venderse a una desarrolladora. ¿Pueden evaluarla?',
+            ],
+            [
+                'icon'     => '📐',
+                'label'    => '¿Cuánto pagaría una desarrolladora?',
+                'subtitle' => 'Cómo calculamos el valor de tu predio',
+                'message'  => 'Hola! Quisiera entender cómo calculan el valor de mi predio para una desarrolladora y qué precio podría esperar.',
+            ],
+            [
+                'icon'     => '⏱️',
+                'label'    => 'Tiempos y proceso',
+                'subtitle' => 'Del análisis técnico al cierre notarial',
+                'message'  => 'Hola! ¿Cómo es el proceso y cuánto tarda vender un predio a una desarrolladora con ustedes?',
+            ],
+            [
+                'icon'     => '🤝',
+                'label'    => 'Ya tengo una oferta de desarrolladora',
+                'subtitle' => 'Segunda opinión antes de firmar',
+                'message'  => 'Hola! Ya tengo una oferta de una desarrolladora por mi propiedad y quisiera una segunda opinión antes de decidir.',
+            ],
+        ];
+    }
+
     private static function homeOptions(): array
     {
         return [
+            self::predioOption(),
             [
                 'icon'     => '🏠',
                 'label'    => 'Quiero vender mi propiedad',
@@ -243,6 +293,7 @@ class WhatsAppHelper
     private static function marketOptions(): array
     {
         return [
+            self::predioOption(),
             [
                 'icon' => '📊',
                 'label' => 'Tendencias de precios',
