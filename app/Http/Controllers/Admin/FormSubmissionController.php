@@ -136,6 +136,48 @@ class FormSubmissionController extends Controller
         return back()->with('success', "Cliente «{$client->name}» creado exitosamente.");
     }
 
+    /**
+     * Un "lead" de portal que en realidad es otro broker pidiendo colaboración
+     * no se convierte en Client: se registra en Brokers Externos (el módulo de
+     * comisión compartida) para la red de colaboración — de ahí salen los
+     * envíos de inventario cuando hay que vender rápido.
+     */
+    public function convertToBroker(FormSubmission $formSubmission)
+    {
+        $existing = \App\Models\Broker::where(function ($q) use ($formSubmission) {
+            $q->where('email', $formSubmission->email);
+            if ($formSubmission->phone && $formSubmission->phone !== 'sin teléfono') {
+                $q->orWhere('phone', $formSubmission->phone);
+            }
+        })->first();
+
+        if ($existing) {
+            $formSubmission->update(['status' => 'qualified', 'notes' => trim(($formSubmission->notes ?? '') . "\nYa registrado en Brokers Externos (#{$existing->id}).")]);
+
+            return redirect()->route('brokers.show', $existing)
+                ->with('success', "Este contacto ya estaba en Brokers Externos: «{$existing->name}».");
+        }
+
+        // Especialidad inferida de la propiedad por la que preguntó
+        $propiedad   = $formSubmission->payload['propiedad_local'] ?? null;
+        $especialidad = $propiedad ? "Preguntó por: {$propiedad}" : null;
+
+        $broker = \App\Models\Broker::create([
+            'name'            => $formSubmission->full_name,
+            'email'           => str_contains($formSubmission->email, '@sin-correo.easybroker') ? null : $formSubmission->email,
+            'phone'           => $formSubmission->phone === 'sin teléfono' ? null : $formSubmission->phone,
+            'status'          => 'active',
+            'specialty'       => $especialidad,
+            'referral_source' => 'Lead de portal (' . ($formSubmission->payload['portal_origen'] ?? 'EasyBroker') . ')',
+            'bio'             => $formSubmission->payload['mensaje'] ?? null,
+        ]);
+
+        $formSubmission->update(['status' => 'qualified', 'lead_tag' => 'LEAD_BROKER']);
+
+        return redirect()->route('brokers.show', $broker)
+            ->with('success', "«{$broker->name}» registrado en Brokers Externos — completa su comisión y empresa.");
+    }
+
     public function destroy(FormSubmission $formSubmission)
     {
         try {

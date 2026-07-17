@@ -29,6 +29,7 @@
             ['label'=>'B2B',       'val'=>$counts['b2b'],       'color'=>'#8b5cf6'],
             ['label'=>'Contacto',  'val'=>$counts['contacto'],  'color'=>'#64748b'],
             ['label'=>'EasyBroker','val'=>$counts['easybroker'],'color'=>'#ec4899'],
+            ['label'=>'Brokers',   'val'=>$counts['brokers'],   'color'=>'#86198f'],
         ] as $s)
         <div class="card" style="margin:0;padding:0.85rem;text-align:center">
             <p style="font-size:1.5rem;font-weight:800;color:{{ $s['color'] }};margin:0">{{ $s['val'] }}</p>
@@ -49,6 +50,7 @@
             <option value="b2b">B2B</option>
             <option value="contacto">Contacto</option>
             <option value="easybroker">EasyBroker (portales)</option>
+            <option value="brokers">🤝 Brokers (colaboración)</option>
         </select>
         <select wire:model.live="status" class="form-select" style="width:auto">
             <option value="">Todos los estados</option>

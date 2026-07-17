@@ -24,9 +24,21 @@ Es una carrera de velocidad: quien contesta en los primeros 30 minutos se queda 
 2. Califica en los primeros dos mensajes: forma de pago (contado/crédito), tiempos, si ya visitó opciones.
 3. Y la pregunta de captación de siempre: *"¿Tienes alguna propiedad que estés pensando vender o rentar?"*
 
+## Cómo abordarlos desde la ficha del lead
+
+Al abrir un lead de portal, la ficha te da todo listo:
+
+- **Tarjeta "Propiedad de interés"** — la propiedad por la que preguntó, con precio, estado y link (o su ID de EasyBroker si no está en el sitio).
+- **Botón "Responder por WhatsApp"** — abre tu WhatsApp con el mensaje ya armado mencionando la propiedad y el precio. Puedes editarlo antes de enviar.
+- **Alerta automática** — si un lead de sitio o portal lleva más de **2 horas** en estado "nuevo", el sistema notifica al equipo. La alerta es el plan B; el plan A es responder en los primeros 30 minutos.
+
 ## Ojo: brokers disfrazados de leads
 
-Muchas "consultas" de portal son **otros brokers** preguntando si compartimos comisión ("¿colaboras?", "tengo cliente para…", "soy asesor"). No son compradores — pero **no son basura**: son la futura red de colaboración para mover propiedades rápido. Márcalos como tales (estado/nota) y regístralos en **Brokers Externos** con su especialidad y zona; cuando necesitemos vender rápido, a esa lista se le manda el inventario con esquema de comisión compartida.
+Muchas "consultas" de portal son **otros brokers** preguntando si compartimos comisión ("¿colaboras?", "tengo cliente para…", "soy asesor"). No son compradores — pero **no son basura**: son la red de colaboración para mover propiedades rápido.
+
+El sistema los **detecta solo** al importar (por el mensaje) y los marca con la etiqueta 🤝 Brokers — tienen tarjeta y filtro propios en Leads & Formularios, y **no disparan la alerta de urgencia** (no son compradores esperando).
+
+Al abrir uno, la ficha muestra el aviso morado "Posible broker" con el botón **"Guardar en Brokers Externos"**: lo registra en el módulo de colaboración (Configuración → Brokers Externos) con su mensaje, el portal de origen y la propiedad que le interesó como especialidad. Ahí le completas comisión pactada y empresa. Si el detector no lo marcó pero tú ves que es broker, el botón "Es un broker" está al fondo de la ficha. Cuando necesitemos vender rápido, a esa red se le manda el inventario con esquema de comisión compartida.
 
 ## Privacidad
 

@@ -108,7 +108,8 @@ class FormSubmissionsTable extends Component
                    ->orWhere('email',    'like', "%{$this->search}%")
                    ->orWhere('phone',    'like', "%{$this->search}%")
             ))
-            ->when($this->type,   fn($q) => $q->where('form_type', $this->type))
+            ->when($this->type === 'brokers', fn($q) => $q->where('lead_tag', 'LEAD_BROKER'))
+            ->when($this->type && $this->type !== 'brokers', fn($q) => $q->where('form_type', $this->type))
             ->when($this->status, fn($q) => $q->where('status',    $this->status))
             ->latest();
     }
@@ -126,6 +127,7 @@ class FormSubmissionsTable extends Component
             'b2b'       => FormSubmission::where('form_type', 'b2b')->count(),
             'contacto'  => FormSubmission::where('form_type', 'contacto')->count(),
             'easybroker' => FormSubmission::where('form_type', 'easybroker')->count(),
+            'brokers'    => FormSubmission::where('lead_tag', 'LEAD_BROKER')->count(),
         ];
 
         return view('livewire.admin.form-submissions-table', [

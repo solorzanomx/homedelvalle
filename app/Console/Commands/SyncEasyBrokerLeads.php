@@ -98,12 +98,41 @@ class SyncEasyBrokerLeads extends Command
             ->exists();
     }
 
+    /**
+     * Señales de que el "lead" es en realidad otro broker preguntando por
+     * colaboración/comisión compartida. No es basura: alimenta la red de
+     * Brokers Externos (Alejandro los quiere en listado aparte para enviarles
+     * inventario cuando haya que vender rápido).
+     */
+    private function looksLikeBroker(array $cr): bool
+    {
+        $texto = mb_strtolower(($cr['message'] ?? '') . ' ' . ($cr['name'] ?? ''));
+
+        $senales = [
+            'compart', 'comision', 'comisión', 'colabora', 'colega',
+            'soy asesor', 'soy asesora', 'soy broker', 'soy agente',
+            'tengo cliente', 'tengo un cliente', 'mi cliente',
+            'inmobiliaria', 'bienes raices', 'bienes raíces',
+            'remax', 're/max', 'century 21', 'century21', 'coldwell', 'keller williams',
+        ];
+
+        foreach ($senales as $senal) {
+            if (str_contains($texto, $senal)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function import(array $cr): void
     {
         // Si la propiedad de EB corresponde a una del sitio, se vincula.
         $localProperty = ! empty($cr['property_id'])
             ? Property::where('easybroker_id', $cr['property_id'])->first()
             : null;
+
+        $esBroker = $this->looksLikeBroker($cr);
 
         // withoutEvents: crear un FormSubmission dispara FormSubmitted →
         // SendAcuseMail (correo de acuse al lead). Estos leads ya fueron
@@ -116,14 +145,15 @@ class SyncEasyBrokerLeads extends Command
             'full_name'        => $cr['name'] ?: 'Sin nombre (EasyBroker)',
             'email'            => ($cr['email'] ?? null) ?: 'eb-' . $cr['id'] . '@sin-correo.easybroker',
             'phone'            => ($cr['phone'] ?? null) ?: 'sin teléfono',
-            'lead_tag'         => 'LEAD_EASYBROKER',
-            'client_type'      => 'buyer',
-            'lead_temperature' => 'warm',
+            'lead_tag'         => $esBroker ? 'LEAD_BROKER' : 'LEAD_EASYBROKER',
+            'client_type'      => $esBroker ? null : 'buyer',
+            'lead_temperature' => $esBroker ? 'cold' : 'warm',
             'status'           => 'new',
             'utm_source'       => 'easybroker',
             'utm_medium'       => $cr['source'] ?? null,
             'payload'          => [
                 'eb_request_id'      => $cr['id'],
+                'posible_broker'     => $esBroker,
                 'eb_contact_id'      => $cr['contact_id'] ?? null,
                 'eb_property_id'     => $cr['property_id'] ?? null,
                 'mensaje'            => $cr['message'] ?? null,

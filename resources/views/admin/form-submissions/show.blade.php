@@ -20,13 +20,76 @@
 
     {{-- Main --}}
     <div>
+        @php
+            // Mensaje de WhatsApp contextual: si el lead preguntó por una
+            // propiedad (portales), se menciona desde el primer mensaje —
+            // responder con contexto gana la conversación.
+            $propiedadLocal = null;
+            if (!empty($submission->payload['propiedad_local_id'])) {
+                $propiedadLocal = \App\Models\Property::find($submission->payload['propiedad_local_id']);
+            }
+            $nombreCorto = explode(' ', trim($submission->full_name))[0] ?: 'Hola';
+            if ($propiedadLocal) {
+                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$propiedadLocal->title}» (" . '$' . number_format((float) $propiedadLocal->price) . " {$propiedadLocal->currency}). Sigue disponible — ¿te gustaría agendar una visita esta semana?";
+            } elseif (!empty($submission->payload['eb_property_id'])) {
+                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en la propiedad {$submission->payload['eb_property_id']} — con gusto te comparto los detalles. ¿Qué estás buscando: comprar o rentar?";
+            } elseif (in_array($submission->form_type, ['vendedor', 'vendedor_predio'])) {
+                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Recibimos tu solicitud de valuación — ¿tienes 5 minutos para platicar de tu propiedad?";
+            } else {
+                $waMsg = "Hola {$nombreCorto}, te contactamos de Home del Valle sobre tu solicitud. ¿En qué horario te queda bien platicar?";
+            }
+            $esPosibleBroker = ($submission->lead_tag === 'LEAD_BROKER') || !empty($submission->payload['posible_broker']);
+        @endphp
+
+        @if($esPosibleBroker)
+        <div class="card" style="border-left:4px solid #86198f;background:#fdf4ff">
+            <div class="card-body" style="display:flex;align-items:center;gap:1rem;justify-content:space-between;flex-wrap:wrap">
+                <div>
+                    <p style="font-weight:700;color:#86198f;margin:0">🤝 Posible broker pidiendo colaboración</p>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0.25rem 0 0">El mensaje sugiere que es un asesor, no un comprador. Regístralo en la red de colaboración para envíos de inventario compartido.</p>
+                </div>
+                <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}">
+                    @csrf
+                    <button type="submit" class="btn btn-primary" style="background:#86198f;border-color:#86198f">Guardar en Brokers Externos</button>
+                </form>
+            </div>
+        </div>
+        @endif
+
+        @if($propiedadLocal || !empty($submission->payload['eb_property_id']))
+        <div class="card">
+            <div class="card-header"><h3>Propiedad de interés</h3></div>
+            <div class="card-body" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+                @if($propiedadLocal)
+                    @if($propiedadLocal->photo)
+                    <img src="{{ asset('storage/' . $propiedadLocal->photo) }}" alt="" style="width:88px;height:66px;object-fit:cover;border-radius:8px">
+                    @endif
+                    <div style="flex:1;min-width:200px">
+                        <p style="font-weight:700;margin:0">{{ $propiedadLocal->title }}</p>
+                        <p style="font-size:0.85rem;color:var(--text-muted);margin:0.2rem 0 0">
+                            ${{ number_format((float) $propiedadLocal->price) }} {{ $propiedadLocal->currency }}
+                            · {{ $propiedadLocal->colony ?: $propiedadLocal->city }}
+                            · {{ ucfirst($propiedadLocal->status) }}
+                        </p>
+                    </div>
+                    <a href="{{ route('properties.show', $propiedadLocal) }}" class="btn btn-outline">Ver propiedad</a>
+                @else
+                    <div style="flex:1">
+                        <p style="font-weight:600;margin:0">{{ $submission->payload['eb_property_id'] }} <span style="font-weight:400;color:var(--text-muted)">(solo en EasyBroker — no está en el sitio)</span></p>
+                    </div>
+                    <a href="https://www.easybroker.com/agent/properties?search={{ urlencode($submission->payload['eb_property_id']) }}" target="_blank" rel="noopener" class="btn btn-outline">Buscar en EasyBroker ↗</a>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Contact info --}}
         <div class="card">
             <div class="card-header"><h3>Datos de contacto</h3></div>
             <div class="card-body" style="padding:0">
                 @foreach([
                     ['Email',    $submission->email,   'mailto:'.$submission->email],
-                    ['Teléfono', $submission->phone,   'https://wa.me/'.preg_replace('/[^0-9]/','',$submission->phone).'?text='.urlencode('Hola '.$submission->full_name.', te contactamos de Home del Valle.')],
+                    ['Teléfono', $submission->phone,   'https://wa.me/'.preg_replace('/[^0-9]/','',$submission->phone).'?text='.urlencode($waMsg)],
                     ['Fuente',   $submission->source_page,  null],
                     ['IP',       $submission->ip,      null],
                     ['UTM',      collect(['utm_source'=>$submission->utm_source,'utm_medium'=>$submission->utm_medium,'utm_campaign'=>$submission->utm_campaign])->filter()->map(fn($v,$k)=>"{$k}={$v}")->implode(' · ') ?: '—', null],
@@ -140,11 +203,22 @@
                     @endforeach
                 </div>
 
-                @if($submission->phone)
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/','',$submission->phone) }}?text={{ urlencode('Hola '.$submission->full_name.', te contactamos de Home del Valle sobre tu solicitud.') }}"
+                @if($submission->phone && $submission->phone !== 'sin teléfono')
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/','',$submission->phone) }}?text={{ urlencode($waMsg) }}"
                    target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem;background:#25D366;border-color:#25D366">
-                    Abrir WhatsApp
+                    💬 Responder por WhatsApp
                 </a>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Mensaje pre-armado con la propiedad de interés — edítalo en WhatsApp antes de enviar si hace falta.</p>
+                @endif
+
+                @if(!$esPosibleBroker && $submission->form_type === 'easybroker')
+                <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}" style="margin-top:0.5rem">
+                    @csrf
+                    <button type="submit" class="btn btn-outline" style="width:100%;justify-content:center;font-size:0.8rem"
+                            onclick="return confirm('¿Registrar a {{ $submission->full_name }} como broker externo (red de colaboración)?')">
+                        🤝 Es un broker — guardar en red de colaboración
+                    </button>
+                </form>
                 @endif
             </div>
         </div>
