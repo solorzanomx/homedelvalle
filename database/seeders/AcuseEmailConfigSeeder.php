@@ -8,10 +8,10 @@ class AcuseEmailConfigSeeder extends Seeder {
         $configs = [
             [
                 'form_type'       => 'vendedor',
-                'subject'         => 'Recibimos tu solicitud de valuación · Home del Valle',
+                'subject'         => 'Recibimos tu solicitud de opinión de valor · Home del Valle',
                 'badge'           => 'Solicitud de venta recibida',
                 'titulo'          => '¡Listo {{nombre}}, comenzamos el análisis!',
-                'bajada'          => 'Vamos a preparar la valuación de tu {{tipo_propiedad}} en <strong style="color:#0E304B;">{{colonia}}</strong> y te contactamos en menos de 24 horas hábiles.',
+                'bajada'          => 'Vamos a preparar la opinión de valor de tu {{tipo_propiedad}} en <strong style="color:#0E304B;">{{colonia}}</strong> y te contactamos en menos de 24 horas hábiles.',
                 'nota'            => 'Sin compromiso y sin costos. Solo cobramos comisión al cerrar exitosamente.',
                 'cta1_label'      => 'Ver precio por m² en {{colonia}}',
                 'cta1_type'       => 'precios_colonia',
@@ -23,7 +23,7 @@ class AcuseEmailConfigSeeder extends Seeder {
                 'paso1_titulo'    => 'Analizamos tu propiedad',
                 'paso1_desc'      => 'Revisamos ubicación, metraje y comparables del mercado actual en Benito Juárez.',
                 'paso2_icon'      => 'icon-chart.png',
-                'paso2_titulo'    => 'Te enviamos la valuación',
+                'paso2_titulo'    => 'Te enviamos la opinión de valor',
                 'paso2_desc'      => 'Precio competitivo basado en datos reales, no estimados genéricos.',
                 'paso3_icon'      => 'icon-shield.png',
                 'paso3_titulo'    => 'Diseñamos tu estrategia',
