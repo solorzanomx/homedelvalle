@@ -28,6 +28,7 @@
             ['label'=>'Comprador', 'val'=>$counts['comprador'], 'color'=>'#10b981'],
             ['label'=>'B2B',       'val'=>$counts['b2b'],       'color'=>'#8b5cf6'],
             ['label'=>'Contacto',  'val'=>$counts['contacto'],  'color'=>'#64748b'],
+            ['label'=>'EasyBroker','val'=>$counts['easybroker'],'color'=>'#ec4899'],
         ] as $s)
         <div class="card" style="margin:0;padding:0.85rem;text-align:center">
             <p style="font-size:1.5rem;font-weight:800;color:{{ $s['color'] }};margin:0">{{ $s['val'] }}</p>
@@ -47,6 +48,7 @@
             <option value="comprador">Comprador</option>
             <option value="b2b">B2B</option>
             <option value="contacto">Contacto</option>
+            <option value="easybroker">EasyBroker (portales)</option>
         </select>
         <select wire:model.live="status" class="form-select" style="width:auto">
             <option value="">Todos los estados</option>
@@ -104,7 +106,7 @@
                 <tbody>
                     @foreach($submissions as $sub)
                     @php
-                        $typeColors   = ['vendedor'=>'badge-blue','comprador'=>'badge-green','b2b'=>'badge-yellow','contacto'=>''];
+                        $typeColors   = ['vendedor'=>'badge-blue','comprador'=>'badge-green','b2b'=>'badge-yellow','contacto'=>'','easybroker'=>'badge-purple'];
                         $statusColors = ['new'=>'badge-yellow','contacted'=>'badge-blue','qualified'=>'badge-green','won'=>'badge-green','lost'=>'badge-red'];
                         $statusLabels = ['new'=>'Nuevo','contacted'=>'Contactado','qualified'=>'Calificado','won'=>'Ganado','lost'=>'Perdido'];
                         $tempMeta = match($sub->lead_temperature) {

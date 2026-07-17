@@ -141,6 +141,69 @@ class EasyBrokerService
         }
     }
 
+    /**
+     * Propiedades PUBLICADAS de la cuenta (la lista completa incluye todo el
+     * histórico: vendidas, suspendidas, borradores…).
+     */
+    public function publishedProperties(int $page = 1, int $limit = 50): array
+    {
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'data' => [], 'pagination' => null, 'message' => 'API Key no configurada.'];
+        }
+
+        try {
+            $response = $this->http()->get($this->getBaseUrl() . '/properties', [
+                'page'  => $page,
+                'limit' => $limit,
+                'search[statuses][]' => 'published',
+            ]);
+
+            if ($response->successful()) {
+                return [
+                    'success'    => true,
+                    'data'       => $response->json('content') ?? [],
+                    'pagination' => $response->json('pagination'),
+                ];
+            }
+
+            return ['success' => false, 'data' => [], 'pagination' => null, 'message' => $this->parseApiError($response)];
+        } catch (\Exception $e) {
+            return ['success' => false, 'data' => [], 'pagination' => null, 'message' => $e->getMessage()];
+        }
+    }
+
+    /**
+     * Solicitudes de contacto (leads que preguntan por propiedades en
+     * EasyBroker y sus portales vinculados). Vienen de más reciente a más
+     * antigua. Shape: id, name, phone, email, contact_id, property_id,
+     * message, source, happened_at.
+     */
+    public function contactRequests(int $page = 1, int $limit = 50): array
+    {
+        if (! $this->isConfigured()) {
+            return ['success' => false, 'data' => [], 'pagination' => null, 'message' => 'API Key no configurada.'];
+        }
+
+        try {
+            $response = $this->http()->get($this->getBaseUrl() . '/contact_requests', [
+                'page'  => $page,
+                'limit' => $limit,
+            ]);
+
+            if ($response->successful()) {
+                return [
+                    'success'    => true,
+                    'data'       => $response->json('content') ?? [],
+                    'pagination' => $response->json('pagination'),
+                ];
+            }
+
+            return ['success' => false, 'data' => [], 'pagination' => null, 'message' => $this->parseApiError($response)];
+        } catch (\Exception $e) {
+            return ['success' => false, 'data' => [], 'pagination' => null, 'message' => $e->getMessage()];
+        }
+    }
+
     /** Nombres del catálogo /property_types (cache 1 h). */
     public function propertyTypes(): array
     {

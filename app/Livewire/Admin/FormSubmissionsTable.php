@@ -125,6 +125,7 @@ class FormSubmissionsTable extends Component
             'comprador' => FormSubmission::where('form_type', 'comprador')->count(),
             'b2b'       => FormSubmission::where('form_type', 'b2b')->count(),
             'contacto'  => FormSubmission::where('form_type', 'contacto')->count(),
+            'easybroker' => FormSubmission::where('form_type', 'easybroker')->count(),
         ];
 
         return view('livewire.admin.form-submissions-table', [

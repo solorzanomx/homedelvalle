@@ -87,4 +87,16 @@ class EasyBrokerSettingsController extends Controller
         $result = $ebService->detectLocationFromProperties();
         return response()->json($result);
     }
+
+    /** Solo las propiedades PUBLICADAS de la cuenta (el total incluye histórico). */
+    public function properties(Request $request, EasyBrokerService $ebService)
+    {
+        $page   = max(1, (int) $request->input('page', 1));
+        $result = $ebService->publishedProperties($page);
+
+        return view('admin.easybroker.properties', [
+            'result' => $result,
+            'page'   => $page,
+        ]);
+    }
 }

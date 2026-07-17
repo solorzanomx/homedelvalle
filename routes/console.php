@@ -26,6 +26,10 @@ Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00')->withoutOve
 Schedule::command('blog:publish-scheduled')->everyMinute()->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:publish-scheduled scheduled run failed'));
 
+// ── EasyBroker: leads de portales → CRM ──────────────
+Schedule::command('easybroker:sync-leads')->everyThirtyMinutes()->withoutOverlapping()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('easybroker:sync-leads scheduled run failed'));
+
 // ── Google eSignature Scheduler ──────────────────────
 Schedule::command('google:check-signatures')
     ->everyThirtyMinutes()

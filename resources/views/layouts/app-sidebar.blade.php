@@ -166,6 +166,7 @@
         .badge-red { background: #fef2f2; color: #991b1b; }
         .badge-blue { background: #eef2ff; color: #3730a3; }
         .badge-yellow { background: #fffbeb; color: #92400e; }
+        .badge-purple { background: #fdf4ff; color: #86198f; }
 
         /* ===== STATS ===== */
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 1.5rem; }
