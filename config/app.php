@@ -55,6 +55,13 @@ return [
     'url' => env('APP_URL', 'http://localhost'),
 
     /*
+    | Dominio del CRM/admin (ej. admin.homedelvalle.mx). Con esto definido,
+    | SeparateAdminHost manda el CRM al subdominio y el sitio público al
+    | dominio principal. Vacío = sin separación (local/dev).
+    */
+    'admin_domain' => env('ADMIN_DOMAIN'),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------

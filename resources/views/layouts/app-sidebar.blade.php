@@ -779,7 +779,7 @@
                     </div>
                 </a>
                 <div class="footer-actions">
-                    <a href="{{ url('/?preview') }}" target="_blank" class="footer-action-btn btn-view-site" title="Ver sitio web">
+                    <a href="{{ (config('app.admin_domain') ? rtrim(config('app.url'),'/') : '').'/?preview' }}" target="_blank" class="footer-action-btn btn-view-site" title="Ver sitio web">
                         <x-icon name="external-link" class="w-3 h-3" /> Ver sitio
                     </a>
                     <form action="{{ route('logout') }}" method="POST" style="margin:0;">

@@ -30,6 +30,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // leads) — necesita sesión ya iniciada, por eso va en el grupo
         // 'web' y no en el stack global (que corre antes de StartSession).
         $middleware->web(append: [\App\Http\Middleware\CaptureLandingAttribution::class]);
+        // CRM en admin.homedelvalle.mx, sitio público en el dominio principal
+        // (va en el grupo web: necesita la ruta ya resuelta para saber si es CRM)
+        $middleware->web(append: [\App\Http\Middleware\SeparateAdminHost::class]);
 
         $middleware->alias([
             'admin'        => \App\Http\Middleware\CheckAdminRole::class,

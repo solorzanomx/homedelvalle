@@ -162,7 +162,7 @@
                 </a>
                 @endif
                 @auth
-                <a href="{{ route('admin.dashboard') }}" class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200" title="Office">
+                <a href="{{ config('app.admin_domain') ? 'https://'.config('app.admin_domain').'/admin' : route('admin.dashboard') }}" class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200" title="Office">
                     <x-icon name="settings" class="w-4.5 h-4.5" />
                 </a>
                 @endauth
