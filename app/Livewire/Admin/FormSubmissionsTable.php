@@ -97,6 +97,13 @@ class FormSubmissionsTable extends Component
         $client = Client::create(array_merge($data, ['email' => $submission->email]));
         $submission->update(['client_id' => $client->id]);
 
+        // La conversión ES el nacimiento del cliente (política de seguimiento)
+        try {
+            app(\App\Services\AutomationEngine::class)->processNewClient($client);
+        } catch (\Throwable $e) {
+            \Log::warning('convertToClient: processNewClient falló', ['error' => $e->getMessage()]);
+        }
+
         session()->flash('success', "Cliente «{$client->name}» creado exitosamente.");
     }
 

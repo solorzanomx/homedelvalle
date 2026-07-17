@@ -128,6 +128,15 @@ class FormSubmissionController extends Controller
         $client = Client::create(array_merge($data, ['email' => $formSubmission->email]));
         $formSubmission->update(['client_id' => $client->id]);
 
+        // La conversión ES el nacimiento del cliente (política de
+        // seguimiento): aquí se disparan las automatizaciones de cliente
+        // nuevo que antes corrían al llegar el formulario.
+        try {
+            app(\App\Services\AutomationEngine::class)->processNewClient($client);
+        } catch (\Throwable $e) {
+            \Log::warning('convertToClient: processNewClient falló', ['error' => $e->getMessage()]);
+        }
+
         if ($goesToCaptacion) {
             return redirect()
                 ->route('admin.captaciones.create-from-call', ['client_id' => $client->id, 'form_submission_id' => $formSubmission->id])

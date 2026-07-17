@@ -153,13 +153,29 @@ class AutomationEngine
      * @param array  $data   Submission data (name, email, phone, message, etc.)
      * @param string $source Source identifier: 'contact', 'landing', 'form'
      */
-    public function processFormSubmitted(array $data, string $source = 'contact', bool $notifyAdmins = true): ?Client
+    public function processFormSubmitted(array $data, string $source = 'contact', bool $notifyAdmins = true, bool $createClient = false): ?Client
     {
         $email = $data['email'] ?? null;
         if (!$email) return null;
 
         // Find or create client from submission
         $client = Client::where('email', $email)->first();
+
+        // Política de seguimiento (manual, 2026-07-17): los leads de
+        // formulario NO se convierten en Client automáticamente — la
+        // conversión ocurre al calificar ("la visita es el bautizo").
+        // Crear aquí llenaba Clientes de curiosos desde el minuto cero.
+        // $createClient=true solo para flujos SIN FormSubmission propio
+        // (webhook de integraciones externas). Si el email ya es de un
+        // cliente existente, se procesa normal (re-engagement).
+        if (!$client && !$createClient) {
+            if ($notifyAdmins) {
+                $this->notifyAdminsNewLead($data, $source);
+            }
+            Log::info("AutomationEngine: lead de {$source} queda como FormSubmission (sin Client — política de conversión)");
+
+            return null;
+        }
 
         if (!$client) {
             // Assign to first admin user by default

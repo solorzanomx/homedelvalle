@@ -54,7 +54,9 @@ class WebhookController extends Controller
         $source = $validated['source'] ?? 'webhook';
 
         // Create/find client and enroll in automations
-        $client = $engine->processFormSubmitted($data, $source);
+        // Webhook: única vía que SÍ crea Client directo — las integraciones
+        // externas no generan FormSubmission propio donde trabajar el lead.
+        $client = $engine->processFormSubmitted($data, $source, createClient: true);
 
         if (!$client) {
             return response()->json(['error' => 'No se pudo crear el lead'], 422);
