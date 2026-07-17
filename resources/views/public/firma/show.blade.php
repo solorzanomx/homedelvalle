@@ -34,7 +34,7 @@
             <p class="text-gray-600 mb-6">
                 Te hemos enviado un correo a <strong>{{ $request->contacto->email ?? '' }}</strong> con
                 el enlace para firmar tu contrato de confidencialidad.<br><br>
-                Una vez que firmes, tu acceso al portal de valuación se activará automáticamente.
+                Una vez que firmes, tu acceso al portal de seguimiento se activará automáticamente.
             </p>
             <p class="text-sm text-gray-400">
                 ¿No recibiste el correo? Contacta a tu agente para que lo reenvíe.

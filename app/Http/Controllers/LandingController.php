@@ -34,7 +34,8 @@ class LandingController extends Controller
             ['q' => '¿Cuánto tiempo toma vender mi propiedad?', 'a' => 'En promedio, nuestras propiedades se venden en 45 a 60 días. Depende del precio, la ubicación y las condiciones del mercado, pero nuestra estrategia de comercialización dirigida acelera el proceso.'],
             ['q' => '¿Necesito firmar un contrato de exclusividad?', 'a' => 'Sí — trabajamos mediante un Acuerdo de Representación, y es tu mejor garantía: nos permite invertir de verdad en tu propiedad (fotografía profesional, marketing y compradores calificados) con un plan de venta dedicado y reportes de avance. Nuestro modelo boutique exige atención total a cada propiedad que representamos, y eso solo es posible con un compromiso mutuo.'],
             ['q' => '¿Qué documentos necesito para vender?', 'a' => 'Los documentos básicos son: escrituras, boleta predial, boleta de agua, identificación oficial y comprobante de domicilio. Te orientamos sobre cada documento durante el proceso.'],
-            ['q' => '¿Cómo determinan el precio de mi propiedad?', 'a' => 'Realizamos un análisis comparativo de mercado basado en ventas reales recientes en la zona, características de tu propiedad y condiciones actuales del mercado inmobiliario en CDMX.'],
+            ['q' => '¿Cómo determinan el precio de mi propiedad?', 'a' => 'Con nuestra opinión de valor, generada por el Observatorio de precios: un análisis comparativo con ventas reales recientes de tu zona, las características de tu propiedad y las condiciones actuales del mercado en CDMX. Es un valor muy acertado y es gratuita.'],
+            ['q' => '¿La opinión de valor es lo mismo que un avalúo?', 'a' => 'No. La opinión de valor es gratuita y la genera nuestro Observatorio de precios con datos reales de la zona — es la referencia con la que salimos al mercado. El avalúo formal lo realiza un valuador certificado externo, tiene costo, y solo se necesita cuando la operación lo exige (por ejemplo, crédito bancario o trámite notarial). Si tu venta lo requiere, lo coordinamos por ti.'],
             ['q' => '¿Qué zonas cubren?', 'a' => 'Nos especializamos en la Colonia del Valle (Centro, Norte y Sur), Narvarte, Benito Juárez y zonas aledañas en la Ciudad de México.'],
         ];
     }
@@ -70,7 +71,7 @@ class LandingController extends Controller
     private function defaultProcessSteps(): array
     {
         return [
-            ['num' => '01', 'title' => 'Valuación gratuita', 'desc' => 'Analizamos tu propiedad y te damos un precio competitivo basado en datos reales del mercado.'],
+            ['num' => '01', 'title' => 'Opinión de valor gratuita', 'desc' => 'La generamos con nuestro Observatorio de precios: un valor muy acertado basado en datos reales de la zona.'],
             ['num' => '02', 'title' => 'Estrategia personalizada', 'desc' => 'Diseñamos un plan de comercialización con fotografía profesional y marketing digital.'],
             ['num' => '03', 'title' => 'Cierre seguro', 'desc' => 'Negociamos, gestionamos la documentación y te acompañamos hasta la firma de escrituras.'],
         ];

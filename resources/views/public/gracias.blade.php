@@ -17,15 +17,15 @@
 
     $config = match($formType) {
         'vendedor' => [
-            'titulo'   => '¡Recibimos tu solicitud de valuación' . ($clientName ? ', ' . explode(' ', $clientName)[0] : '') . '!',
+            'titulo'   => '¡Recibimos tu solicitud de opinión de valor' . ($clientName ? ', ' . explode(' ', $clientName)[0] : '') . '!',
             'tiempo'   => '24 horas',
-            'mensaje'  => 'Un asesor especializado revisará tu propiedad y te contactará por WhatsApp con tu valuación gratuita.',
+            'mensaje'  => 'Un asesor especializado revisará tu propiedad y te contactará por WhatsApp con tu opinión de valor gratuita.',
             'pasos'    => [
                 ['num' => '01', 'title' => 'Revisamos tu propiedad',    'desc' => 'Analizamos ubicación, metraje y mercado actual en Benito Juárez.'],
-                ['num' => '02', 'title' => 'Te enviamos la valuación',   'desc' => 'Precio competitivo con base en datos reales, no estimados genéricos.'],
+                ['num' => '02', 'title' => 'Te enviamos la opinión de valor',   'desc' => 'Precio competitivo con base en datos reales, no estimados genéricos.'],
                 ['num' => '03', 'title' => 'Diseñamos tu estrategia',    'desc' => 'Fotografía, marketing digital y red de compradores calificados.'],
             ],
-            'wa_text'  => 'Hola, acabo de solicitar una valuación de mi propiedad en su sitio y quisiera hablar con un asesor.',
+            'wa_text'  => 'Hola, acabo de solicitar una opinión de valor de mi propiedad en su sitio y quisiera hablar con un asesor.',
             'link'     => ['url' => '/mercado', 'label' => 'Ver precios de mercado →'],
         ],
         'comprador' => [

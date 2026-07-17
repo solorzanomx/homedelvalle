@@ -174,7 +174,7 @@
     <section class="py-24 sm:py-32 gradient-brand-soft" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">¿Tienes una propiedad en la Benito Juárez?</h2>
-            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Conoce cuánto vale tu inmueble con una valuación profesional gratuita y sin compromiso.</p>
+            <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Conoce cuánto vale tu inmueble con una opinión de valor gratuita y sin compromiso.</p>
             <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a href="{{ route('landing.vende') }}" class="rounded-xl gradient-brand px-7 py-4 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
                     Valúa tu propiedad

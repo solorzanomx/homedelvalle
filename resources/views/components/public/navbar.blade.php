@@ -113,7 +113,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-900">Vender mi propiedad</p>
-                                    <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Valuación gratuita y venta en 45 días promedio.</p>
+                                    <p class="text-xs text-gray-400 mt-0.5 leading-relaxed">Opinión de valor gratuita y venta en 45–60 días.</p>
                                 </div>
                             </a>
                             <a href="{{ route('landing.renta-tu-propiedad') }}" class="group flex items-start gap-3.5 rounded-xl p-3.5 hover:bg-gray-50 transition-colors duration-200">

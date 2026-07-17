@@ -68,9 +68,9 @@ class WhatsAppHelper
             self::predioOption(),
             [
                 'icon' => '🏠',
-                'label' => 'Valuación gratuita',
+                'label' => 'Opinión de valor gratuita',
                 'subtitle' => 'Sé cuánto vale tu propiedad',
-                'message' => 'Hola! Me gustaría una valuación gratuita de mi propiedad en Benito Juárez.',
+                'message' => 'Hola! Me gustaría una opinión de valor gratuita de mi propiedad en Benito Juárez.',
             ],
             [
                 'icon' => '⚡',
@@ -183,8 +183,8 @@ class WhatsAppHelper
             [
                 'icon'     => '🏠',
                 'label'    => 'Quiero vender mi propiedad',
-                'subtitle' => 'Valuación gratuita y venta en 45 días',
-                'message'  => 'Hola! Tengo una propiedad en Benito Juárez y quisiera venderla. ¿Pueden hacer una valuación?',
+                'subtitle' => 'Opinión de valor gratuita y venta en 45–60 días',
+                'message'  => 'Hola! Tengo una propiedad en Benito Juárez y quisiera venderla. ¿Pueden darme su opinión de valor?',
             ],
             [
                 'icon'     => '🔍',

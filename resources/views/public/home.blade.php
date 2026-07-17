@@ -3,7 +3,7 @@
 @section('meta')
     <x-public.seo-meta
         title="Firma inmobiliaria boutique en Benito Juárez"
-        description="¿Quieres vender tu propiedad en la Benito Juárez? Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa. Firma inmobiliaria boutique en CDMX."
+        description="¿Quieres vender tu propiedad en la Benito Juárez? Opinión de valor gratuita, venta en 45–60 días y seguridad jurídica completa. Firma inmobiliaria boutique en CDMX."
         :canonical="url('/')"
     />
     {{-- Preload hero image for LCP --}}
@@ -61,10 +61,10 @@
                         </div>
                         <p class="text-[0.65rem] font-bold tracking-[0.12em] uppercase text-brand-300 mb-1">Propietarios</p>
                         <p class="text-white font-semibold text-base leading-snug">Quiero vender mi propiedad</p>
-                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Valuación gratuita, venta en 45 días promedio y seguridad jurídica completa.</p>
+                        <p class="mt-2 text-sm text-brand-300/70 leading-relaxed">Opinión de valor gratuita, venta en 45–60 días y seguridad jurídica completa.</p>
                     </div>
                     <div class="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-colors duration-300">
-                        Solicitar valuación
+                        Solicitar opinión de valor
                         <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                 </a>
@@ -170,7 +170,7 @@
         $defaultBenefits = [
             ['icon' => 'location', 'title' => 'Dominio Territorial', 'description' => 'Especialización profunda en la Alcaldía Benito Juárez. Conocemos cada calle, cada oportunidad y cada tendencia del mercado local.'],
             ['icon' => 'shield', 'title' => 'Estructura Boutique', 'description' => 'Pocos inmuebles, más control. Atención personalizada con enfoque en ejecución y calidad, no en catálogo masivo.'],
-            ['icon' => 'chart', 'title' => 'Inteligencia de Datos', 'description' => 'Herramientas tecnológicas para análisis de mercado, valuación precisa y automatización de flujos de trabajo.'],
+            ['icon' => 'chart', 'title' => 'Inteligencia de Datos', 'description' => 'Herramientas tecnológicas para análisis de mercado, opinión de valor precisa y automatización de flujos de trabajo.'],
             ['icon' => 'star', 'title' => 'Respaldo Senior', 'description' => 'Dirección con más de 30 años de experiencia técnica y legal en el sector inmobiliario de la Ciudad de México.'],
         ];
         $benefits = $siteSettings?->benefits_section ?? $defaultBenefits;
@@ -291,9 +291,9 @@
             [
                 'title'       => 'Vende tu propiedad',
                 'label'       => 'Propietarios',
-                'description' => 'Valuación profesional gratuita, compradores calificados y cierre seguro. Sin catálogo masivo, con atención personalizada.',
-                'features'    => ['Valuación gratuita en 24 h', 'Venta en 45 días promedio', 'Seguridad jurídica completa'],
-                'link_text'   => 'Solicitar valuación',
+                'description' => 'Opinión de valor gratuita, compradores calificados y cierre seguro. Sin catálogo masivo, con atención personalizada.',
+                'features'    => ['Opinión de valor gratuita en 24 h', 'Venta en 45–60 días', 'Seguridad jurídica completa'],
+                'link_text'   => 'Solicitar opinión de valor',
                 'link_url'    => '/vende-tu-propiedad',
                 'highlighted' => false,
                 'icon'        => 'home',
@@ -574,14 +574,14 @@
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,196,0.06)_0%,_transparent_70%)]"></div>
         <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $siteSettings?->cta_heading ?? '¿Listo para vender tu propiedad?' }}</h2>
-            <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->cta_subheading ?? 'Recibe una valuación profesional gratuita en menos de 24 horas. Sin compromiso, sin letra chica. Solo necesitamos los datos básicos de tu inmueble.' }}</p>
+            <p class="mt-5 text-lg text-gray-500 leading-relaxed">{{ $siteSettings?->cta_subheading ?? 'Recibe una opinión de valor gratuita en menos de 24 horas. Sin compromiso, sin letra chica. Solo necesitamos los datos básicos de tu inmueble.' }}</p>
             <div class="mt-10 flex flex-wrap justify-center gap-4">
                 <a href="{{ route('landing.vende') }}" class="group inline-flex items-center gap-2.5 rounded-xl gradient-brand px-8 py-4 text-sm font-semibold text-white shadow-brand-lg hover:shadow-brand hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300">
-                    Solicita tu valuación gratuita
+                    Solicita tu opinión de valor gratuita
                     <x-icon name="arrow-right" class="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </a>
                 @if($siteSettings?->whatsapp_number)
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaría una valuación.') }}" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-2.5 rounded-xl bg-white border border-gray-200 px-8 py-4 text-sm font-semibold text-gray-700 hover:border-brand-200 hover:text-brand-600 hover:shadow-premium transition-all duration-300">
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $siteSettings->whatsapp_number) }}?text={{ urlencode('Hola, quiero vender mi propiedad y me gustaría una opinión de valor.') }}" target="_blank" rel="noopener noreferrer" class="group inline-flex items-center gap-2.5 rounded-xl bg-white border border-gray-200 px-8 py-4 text-sm font-semibold text-gray-700 hover:border-brand-200 hover:text-brand-600 hover:shadow-premium transition-all duration-300">
                     <x-icon name="brands/whatsapp" class="w-4 h-4 text-[#25D366]" />
                     WhatsApp
                 </a>

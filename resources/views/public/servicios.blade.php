@@ -49,7 +49,7 @@
     $heading = $content['heading'] ?? 'Nuestros Servicios';
     $subheading = $content['subheading'] ?? 'Una firma inmobiliaria con servicio integral. Cada línea de negocio está diseñada para maximizar el valor de tu patrimonio con precisión y seguridad jurídica.';
     $ctaHeading = $content['cta_heading'] ?? '¿Tienes una propiedad?';
-    $ctaSubheading = $content['cta_subheading'] ?? 'Conoce cuánto vale tu inmueble con una valuación profesional sin compromiso.';
+    $ctaSubheading = $content['cta_subheading'] ?? 'Conoce cuánto vale tu inmueble con una opinión de valor sin compromiso.';
 
     $icons = [
         'building' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>',

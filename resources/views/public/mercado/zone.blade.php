@@ -513,7 +513,7 @@
         <div style="display:flex;flex-direction:column;gap:.6rem;flex-shrink:0;">
             <a href="{{ route('precios.opinion') }}"
                style="display:inline-block;background:#2563eb;color:#fff;padding:.65rem 1.5rem;border-radius:8px;font-weight:600;font-size:.88rem;text-decoration:none;text-align:center;white-space:nowrap;">
-                Solicitar valuación gratuita →
+                Solicitar opinión de valor gratuita →
             </a>
             <a href="{{ route('contacto') }}"
                style="display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);padding:.55rem 1.5rem;border-radius:8px;font-size:.84rem;text-decoration:none;text-align:center;white-space:nowrap;">

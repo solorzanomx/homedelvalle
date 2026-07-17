@@ -87,7 +87,7 @@
                 <div class="mt-8 flex flex-wrap gap-6 text-sm text-gray-400">
                     <div class="flex items-center gap-2">
                         <x-icon name="check" class="w-5 h-5 text-green-400" />
-                        Valuación gratuita
+                        Opinión de valor gratuita
                     </div>
                     <div class="flex items-center gap-2">
                         <x-icon name="check" class="w-5 h-5 text-green-400" />
@@ -203,8 +203,8 @@
                 $benefits = $campaign['benefits'] ?? [
                     ['icon' => 'rocket', 'title' => 'Vende más rápido', 'desc' => 'Nuestro promedio de venta es de 45 días gracias a nuestra cartera de compradores activos y estrategia de marketing digital.'],
                     ['icon' => 'users', 'title' => 'Compradores calificados', 'desc' => 'Filtramos a cada prospecto para que solo recibas visitas de personas con capacidad real de compra.'],
-                    ['icon' => 'shield', 'title' => 'Asesoría profesional', 'desc' => 'Te acompañamos en cada paso: valuación, negociación, aspectos legales y cierre ante notario.'],
-                    ['icon' => 'chart', 'title' => 'Precio justo de mercado', 'desc' => 'Valuación basada en datos reales de la zona para que no subvalores ni sobrevalores tu propiedad.'],
+                    ['icon' => 'shield', 'title' => 'Asesoría profesional', 'desc' => 'Te acompañamos en cada paso: opinión de valor, negociación, aspectos legales y cierre ante notario.'],
+                    ['icon' => 'chart', 'title' => 'Precio justo de mercado', 'desc' => 'Opinión de valor basada en datos reales de la zona para que no subvalores ni sobrevalores tu propiedad.'],
                     ['icon' => 'camera', 'title' => 'Marketing profesional', 'desc' => 'Fotografía profesional, tours virtuales y distribución en los principales portales inmobiliarios.'],
                     ['icon' => 'lock', 'title' => 'Sin exclusivas forzadas', 'desc' => 'Trabajamos por resultados. No te amarramos con contratos de exclusividad que no te convienen.'],
                 ];
@@ -302,7 +302,7 @@
             @php
                 $steps = $campaign['steps'] ?? [
                     ['num' => '01', 'title' => 'Solicita tu asesoría', 'desc' => 'Llena el formulario y un asesor te contactará en menos de 24 horas para agendar una visita a tu propiedad.'],
-                    ['num' => '02', 'title' => 'Valuación y estrategia', 'desc' => 'Realizamos una valuación profesional gratuita y diseñamos un plan de venta personalizado con marketing digital.'],
+                    ['num' => '02', 'title' => 'Opinión de valor y estrategia', 'desc' => 'Generamos tu opinión de valor gratuita con datos del Observatorio de precios y diseñamos un plan de venta personalizado con marketing digital.'],
                     ['num' => '03', 'title' => 'Vende al mejor precio', 'desc' => 'Gestionamos las visitas, negociación y cierre legal. Tú solo firmas ante notario y recibes tu pago.'],
                 ];
             @endphp

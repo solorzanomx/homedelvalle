@@ -171,7 +171,7 @@
         <div class="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
             <p class="text-sm font-semibold text-brand-400 uppercase tracking-widest mb-4">Especialistas en {{ $colonia->name }}</p>
             <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">¿Buscas o vendes en {{ $colonia->name }}?</h2>
-            <p class="mt-5 text-lg text-brand-200/70">Valuación gratuita, asesoría personalizada y respuesta en menos de 24 horas.</p>
+            <p class="mt-5 text-lg text-brand-200/70">Opinión de valor gratuita, asesoría personalizada y respuesta en menos de 24 horas.</p>
             <div class="mt-10 flex flex-wrap justify-center gap-4">
                 <a href="{{ route('landing.vende') }}"
                    class="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-bold text-brand-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
