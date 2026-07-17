@@ -11,7 +11,7 @@ Cómo se trabaja un lead desde que entra hasta que se convierte en cliente — o
 ## Día 0: el primer contacto
 
 1. Abre el lead y lee **todo el brief** antes de escribir (zonas, presupuesto, must-haves, timing). El mensaje que demuestra que leíste vale el doble.
-2. Usa **"Responder por WhatsApp"** — el mensaje pre-armado ya menciona la propiedad o solicitud; edítalo para: confirmar el brief, **cumplir la promesa pública** ("te mando 3-5 opciones curadas en máximo 72 horas") y hacer UNA pregunta calificadora (forma de pago en compra; garantía y fecha de mudanza en renta).
+2. Revisa la tarjeta **"💬 Respuesta sugerida"** — la IA redacta el primer mensaje con todo el contexto del lead (brief, propiedad, tono de la marca, la promesa de 72 horas y una pregunta calificadora). Ajústala si hace falta (o pulsa Regenerar) y usa **"Responder por WhatsApp"**: sale precargada. Si el lead no la tiene, el botón "🤖 Sugerir respuesta" la genera al momento. **La IA propone; tú decides** — nunca envíes sin leer.
 3. Marca el estado **Contactado** (apaga la alerta de 2 horas).
 4. Escribe la nota: qué enviaste + fecha del siguiente toque.
 

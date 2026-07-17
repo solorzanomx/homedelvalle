@@ -43,6 +43,11 @@
                 $waMsg = "Hola {$nombreCorto}, te contactamos de Home del Valle sobre tu solicitud. ¿En qué horario te queda bien platicar?";
             }
             $esPosibleBroker = ($submission->lead_tag === 'LEAD_BROKER') || !empty($submission->payload['posible_broker']);
+
+            // Si la IA ya redactó la respuesta, el WhatsApp sale con ella
+            if (!empty($submission->payload['ai_respuesta'])) {
+                $waMsg = $submission->payload['ai_respuesta'];
+            }
         @endphp
 
         @if(!empty($submission->payload['ai_resumen']))
@@ -56,6 +61,29 @@
             </div>
         </div>
         @endif
+
+        {{-- Respuesta sugerida por IA (tono de marca + pregunta calificadora) --}}
+        <div class="card" style="border-left:4px solid #10b981;background:#ecfdf5">
+            <div class="card-body" style="padding:0.95rem 1.2rem">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+                    <div style="flex:1;min-width:240px">
+                        <p style="margin:0 0 0.35rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#047857">💬 Respuesta sugerida</p>
+                        @if(!empty($submission->payload['ai_respuesta']))
+                        <p style="margin:0;font-size:0.88rem;color:#064e3b;line-height:1.55;white-space:pre-line">{{ $submission->payload['ai_respuesta'] }}</p>
+                        <p style="margin:0.5rem 0 0;font-size:0.72rem;color:#059669">Redactada por IA con el contexto del lead — revísala y ajústala antes de enviar. El botón de WhatsApp ya la lleva precargada.</p>
+                        @else
+                        <p style="margin:0;font-size:0.85rem;color:#065f46">Genera con IA el primer mensaje de WhatsApp: tono de la marca, datos del lead y una pregunta calificadora.</p>
+                        @endif
+                    </div>
+                    <form method="POST" action="{{ route('admin.form-submissions.ai-suggest', $submission) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline" style="border-color:#10b981;color:#047857;white-space:nowrap">
+                            🤖 {{ !empty($submission->payload['ai_respuesta']) ? 'Regenerar' : 'Sugerir respuesta' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
         @if($esPosibleBroker)
         <div class="card" style="border-left:4px solid #86198f;background:#fdf4ff">

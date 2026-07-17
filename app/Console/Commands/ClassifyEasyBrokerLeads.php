@@ -108,6 +108,7 @@ class ClassifyEasyBrokerLeads extends Command
 
             $payload['ai_rol']         = $ai['rol'];
             $payload['ai_resumen']     = $ai['resumen'];
+            $payload['ai_respuesta']   = $ai['respuesta'] ?? null;
             $payload['posible_broker'] = $esBroker || ! empty($payload['posible_broker']);
 
             $updates = ['payload' => $payload];

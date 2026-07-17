@@ -199,6 +199,7 @@ class SyncEasyBrokerLeads extends Command
                 'posible_broker'     => $esBroker,
                 'ai_rol'             => $ai['ok'] ? $ai['rol'] : null,
                 'ai_resumen'         => $ai['ok'] ? $ai['resumen'] : null,
+                'ai_respuesta'       => $ai['ok'] ? ($ai['respuesta'] ?? null) : null,
                 'eb_contact_id'      => $cr['contact_id'] ?? null,
                 'eb_property_id'     => $cr['property_id'] ?? null,
                 'mensaje'            => $cr['message'] ?? null,

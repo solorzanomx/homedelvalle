@@ -121,9 +121,12 @@ Reglas:
   - "warm": interés claro pero genérico ("¿sigue disponible?", "más información").
   - "cold": muy vago, solo curiosidad, o rol spam/broker_colaboracion.
 - resumen: máximo 15 palabras en español, qué quiere este contacto. Ej: "Quiere visitar el depto de Narvarte esta semana, pagaría de contado".
+- respuesta: el primer mensaje de WhatsApp listo para enviar a este contacto.
+{$this->reglasDeRespuesta()}
+  - Si rol es "spam", respuesta vacía "". Si es "broker_colaboracion", responde cordial preguntando qué busca su cliente (zona, presupuesto) y menciona que colaboramos con esquema de comisión compartida.
 
 Responde únicamente con este JSON:
-{"rol": "string", "temperatura": "string", "resumen": "string"}
+{"rol": "string", "temperatura": "string", "resumen": "string", "respuesta": "string"}
 PROMPT;
 
         try {
@@ -140,10 +143,85 @@ PROMPT;
                 'rol'         => $rol,
                 'temperatura' => $temp,
                 'resumen'     => mb_substr((string) ($result['resumen'] ?? ''), 0, 160),
+                'respuesta'   => trim((string) ($result['respuesta'] ?? '')),
             ];
         } catch (\Throwable $e) {
             Log::warning('AILeadClassifier: portal lead exception', ['error' => $e->getMessage()]);
             return $default;
+        }
+    }
+
+    /**
+     * Reglas de redacción compartidas (tono de la ficha de marca —
+     * docs/posicionamiento-marca.md — y política de seguimiento del manual).
+     */
+    private function reglasDeRespuesta(): string
+    {
+        return <<<'REGLAS'
+  - Tono Home del Valle: técnico pero cercano, boutique — nunca suena a portal masivo ni a vendedor insistente.
+  - 2 a 4 líneas de WhatsApp, español de México, saluda por su nombre de pila, sin emojis o máximo uno.
+  - Menciona la propiedad o lo que busca CON los datos reales dados (operación, precio, zona). NUNCA inventes datos, precios ni disponibilidad que no te dieron.
+  - Incluye UNA pregunta calificadora natural (compra: forma de pago o tiempos; renta: fecha de mudanza o garantía; vendedor: motivo o tiempos).
+  - Si el contacto busca opciones (brief de compra o renta), promete el proceso real: "te comparto 3-5 opciones curadas en máximo 72 horas".
+  - A propietarios que quieren vender: ofrece la "opinión de valor gratuita" (JAMÁS digas "valuación gratuita").
+  - Cierra invitando a la acción concreta (visita, llamada breve, o confirmar un dato).
+  - Sin placeholders tipo [nombre] ni corchetes: texto final listo para enviar.
+REGLAS;
+    }
+
+    /**
+     * Redacta la primera respuesta de WhatsApp para CUALQUIER lead del CRM
+     * (formularios del sitio o portales) usando todo su contexto. Devuelve
+     * null si la IA no responde.
+     */
+    public function suggestReply(\App\Models\FormSubmission $lead): ?string
+    {
+        $payload = $lead->payload ?? [];
+
+        // Contexto legible del brief (se omiten claves internas)
+        $brief = collect($payload)
+            ->except(['eb_request_id', 'eb_contact_id', 'ai_rol', 'ai_resumen', 'ai_respuesta', 'posible_broker', 'propiedad_local_id', 'eb_url', 'fecha_en_easybroker'])
+            ->filter(fn ($v) => is_scalar($v) && $v !== '' && $v !== null)
+            ->map(fn ($v, $k) => str_replace('_', ' ', $k) . ': ' . (is_array($v) ? implode(', ', $v) : $v))
+            ->implode("\n");
+
+        $tipos = [
+            'vendedor'          => 'propietario que quiere vender su propiedad (pidió opinión de valor)',
+            'vendedor_predio'   => 'propietario de predio interesado en vender a desarrolladora',
+            'comprador'         => 'persona buscando comprar (dejó su brief de búsqueda)',
+            'arrendatario'      => 'persona buscando rentar para vivir (dejó su brief)',
+            'propietario_renta' => 'propietario que quiere poner su inmueble en renta',
+            'easybroker'        => 'contacto de portal inmobiliario preguntando por una propiedad publicada',
+            'contacto'          => 'consulta general del sitio',
+            'b2b'               => 'desarrollador/inversionista con brief de inversión',
+        ];
+        $tipo = $tipos[$lead->form_type] ?? 'contacto del sitio';
+
+        $prompt = <<<PROMPT
+Eres el asistente comercial de Home del Valle, inmobiliaria boutique de Benito Juárez, CDMX.
+Redacta el PRIMER mensaje de WhatsApp para este lead. Responde SOLO con JSON válido.
+
+Tipo de lead: {$tipo}
+Nombre: {$lead->full_name}
+Datos que dejó:
+{$brief}
+
+Reglas:
+{$this->reglasDeRespuesta()}
+
+Responde únicamente con este JSON:
+{"respuesta": "string"}
+PROMPT;
+
+        try {
+            $result = $this->runJson($prompt);
+            $texto  = trim((string) ($result['respuesta'] ?? ''));
+
+            return $texto !== '' ? $texto : null;
+        } catch (\Throwable $e) {
+            Log::warning('AILeadClassifier: suggestReply exception', ['error' => $e->getMessage()]);
+
+            return null;
         }
     }
 

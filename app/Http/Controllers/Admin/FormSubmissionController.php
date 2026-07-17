@@ -178,6 +178,27 @@ class FormSubmissionController extends Controller
             ->with('success', "«{$broker->name}» registrado en Brokers Externos — completa su comisión y empresa.");
     }
 
+    /**
+     * Analiza el lead con IA bajo demanda: redacta la respuesta sugerida de
+     * WhatsApp con todo el contexto (brief/propiedad) y, si es lead de portal
+     * sin clasificar, lo clasifica de paso. Para cualquier tipo de lead.
+     */
+    public function aiSuggest(FormSubmission $formSubmission, \App\Services\AILeadClassifierService $classifier)
+    {
+        $respuesta = $classifier->suggestReply($formSubmission);
+
+        if ($respuesta === null) {
+            return back()->with('error', 'La IA no respondió — intenta de nuevo en un momento.');
+        }
+
+        $payload = $formSubmission->payload ?? [];
+        $payload['ai_respuesta'] = $respuesta;
+
+        FormSubmission::withoutEvents(fn () => $formSubmission->update(['payload' => $payload]));
+
+        return back()->with('success', 'Respuesta sugerida generada — revísala antes de enviar.');
+    }
+
     public function destroy(FormSubmission $formSubmission)
     {
         try {
