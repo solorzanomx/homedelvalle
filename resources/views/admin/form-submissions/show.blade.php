@@ -70,9 +70,9 @@
                         <p style="margin:0 0 0.35rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#047857">💬 Respuesta sugerida</p>
                         @if(!empty($submission->payload['ai_respuesta']))
                         <p style="margin:0;font-size:0.88rem;color:#064e3b;line-height:1.55;white-space:pre-line">{{ $submission->payload['ai_respuesta'] }}</p>
-                        <p style="margin:0.5rem 0 0;font-size:0.72rem;color:#059669">Redactada por IA con el contexto del lead — revísala y ajústala antes de enviar. El botón de WhatsApp ya la lleva precargada.</p>
+                        <p style="margin:0.5rem 0 0;font-size:0.72rem;color:#059669">Redactada por IA con el brief y tus notas internas — revísala antes de enviar; el WhatsApp ya la lleva precargada. Tip: escribe una observación en Notas internas y pulsa Regenerar para afinarla (y que salga firmada con tu nombre).</p>
                         @else
-                        <p style="margin:0;font-size:0.85rem;color:#065f46">Genera con IA el primer mensaje de WhatsApp: tono de la marca, datos del lead y una pregunta calificadora.</p>
+                        <p style="margin:0;font-size:0.85rem;color:#065f46">Genera con IA el primer mensaje: usa el brief del lead, tus <strong>Notas internas</strong> como contexto, y firma con tu nombre.</p>
                         @endif
                     </div>
                     <form method="POST" action="{{ route('admin.form-submissions.ai-suggest', $submission) }}">

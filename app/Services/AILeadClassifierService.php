@@ -159,6 +159,8 @@ PROMPT;
     {
         return <<<'REGLAS'
   - Tono Home del Valle: técnico pero cercano, boutique — nunca suena a portal masivo ni a vendedor insistente.
+  - Habla SIEMPRE en primera persona singular. Si se te da el nombre del asesor, preséntate: "soy {nombre} de Home del Valle". Si no se te da, di "te escribo de Home del Valle" — NUNCA "somos de Home del Valle" ni nombres inventados.
+  - Si hay OBSERVACIONES INTERNAS del asesor, úsalas para afinar la respuesta (son contexto privado, no las cites textual): si señalan que el requerimiento es difícil o ambiguo, pide con honestidad la precisión que falta para buscar bien, sin prometer de más.
   - 2 a 4 líneas de WhatsApp, español de México, saluda por su nombre de pila, sin emojis o máximo uno.
   - Menciona la propiedad o lo que busca CON los datos reales dados (operación, precio, zona). NUNCA inventes datos, precios ni disponibilidad que no te dieron.
   - Incluye UNA pregunta calificadora natural (compra: forma de pago o tiempos; renta: fecha de mudanza o garantía; vendedor: motivo o tiempos).
@@ -174,7 +176,7 @@ REGLAS;
      * (formularios del sitio o portales) usando todo su contexto. Devuelve
      * null si la IA no responde.
      */
-    public function suggestReply(\App\Models\FormSubmission $lead): ?string
+    public function suggestReply(\App\Models\FormSubmission $lead, ?string $asesor = null): ?string
     {
         $payload = $lead->payload ?? [];
 
@@ -197,14 +199,22 @@ REGLAS;
         ];
         $tipo = $tipos[$lead->form_type] ?? 'contacto del sitio';
 
+        $lineaAsesor = $asesor ? "Asesor que enviará el mensaje: {$asesor}" : 'Asesor que enviará el mensaje: (no especificado)';
+        $lineaNotas  = trim((string) $lead->notes) !== ''
+            ? "OBSERVACIONES INTERNAS del asesor sobre este lead:\n{$lead->notes}"
+            : 'OBSERVACIONES INTERNAS del asesor: (ninguna)';
+
         $prompt = <<<PROMPT
 Eres el asistente comercial de Home del Valle, inmobiliaria boutique de Benito Juárez, CDMX.
 Redacta el PRIMER mensaje de WhatsApp para este lead. Responde SOLO con JSON válido.
 
 Tipo de lead: {$tipo}
 Nombre: {$lead->full_name}
+{$lineaAsesor}
 Datos que dejó:
 {$brief}
+
+{$lineaNotas}
 
 Reglas:
 {$this->reglasDeRespuesta()}
