@@ -25,9 +25,20 @@ class ClassifyEasyBrokerLeads extends Command
 
     public function handle(AILeadClassifierService $classifier, \App\Services\EasyBrokerService $eb): int
     {
+        // Dos poblaciones: (a) sin clasificar, y (b) clasificados SIN el
+        // contexto de la propiedad (eb_titulo vacío con eb_property_id) — a
+        // estos se les reintenta el enriquecimiento y, si ahora sí llega la
+        // operación real, se RECLASIFICAN (caso real: lead de un depto en
+        // renta clasificado 'comprador' porque la API no respondió el detalle).
         $pendientes = FormSubmission::where('form_type', 'easybroker')
             ->where(function ($q) {
-                $q->whereNull('payload->ai_rol')->orWhere('payload->ai_rol', '');
+                $q->whereNull('payload->ai_rol')
+                  ->orWhere('payload->ai_rol', '')
+                  ->orWhere(function ($q2) {
+                      $q2->whereNull('payload->eb_titulo')
+                         ->whereNotNull('payload->eb_property_id')
+                         ->whereNull('payload->propiedad_local_id');
+                  });
             })
             ->orderByDesc('created_at')
             ->limit((int) $this->option('limit'))
@@ -44,6 +55,7 @@ class ClassifyEasyBrokerLeads extends Command
 
         foreach ($pendientes as $lead) {
             $payload = $lead->payload ?? [];
+            $yaClasificado = ! empty($payload['ai_rol']);
 
             $localProperty = ! empty($payload['propiedad_local_id'])
                 ? Property::find($payload['propiedad_local_id'])
@@ -52,6 +64,7 @@ class ClassifyEasyBrokerLeads extends Command
             // Enriquecer con los detalles de EasyBroker (operación venta/renta,
             // precio, título) si la propiedad no está en el CRM y el lead aún
             // no los tiene — el backlog viejo se importó sin ellos.
+            $enriquecido = false;
             if (! $localProperty && empty($payload['eb_titulo']) && ! empty($payload['eb_property_id'])) {
                 $raw = $eb->getProperty($payload['eb_property_id']);
                 if ($raw) {
@@ -61,7 +74,14 @@ class ClassifyEasyBrokerLeads extends Command
                     $payload['eb_precio']    = $resumenProp['precio'];
                     $payload['eb_ubicacion'] = $resumenProp['ubicacion'];
                     $payload['eb_url']       = $resumenProp['url'];
+                    $enriquecido = true;
                 }
+            }
+
+            // Ya clasificado y el enriquecimiento sigue sin llegar: no hay
+            // información nueva — se salta en silencio (reintenta la próxima).
+            if ($yaClasificado && ! $enriquecido) {
+                continue;
             }
 
             $contextoPropiedad = match (true) {

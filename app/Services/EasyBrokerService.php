@@ -196,7 +196,15 @@ class EasyBrokerService
         try {
             $response = $this->http()->get($this->getBaseUrl() . '/properties/' . $publicId);
             $data = $response->successful() ? $response->json() : null;
+            if (! $data) {
+                Log::warning('EasyBroker: getProperty sin datos', [
+                    'public_id' => $publicId,
+                    'status'    => $response->status(),
+                    'body'      => substr($response->body(), 0, 200),
+                ]);
+            }
         } catch (\Exception $e) {
+            Log::warning('EasyBroker: getProperty excepción', ['public_id' => $publicId, 'error' => $e->getMessage()]);
             $data = null;
         }
 
