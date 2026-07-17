@@ -87,8 +87,9 @@
                             </a>
                             @endif
                             @if($siteSettings?->tiktok_url)
-                            <a href="{{ $siteSettings->tiktok_url }}" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center w-11 h-11 rounded-xl border border-gray-200/60 text-gray-400 hover:text-gray-900 hover:border-gray-300 hover:bg-gray-50 transition-all duration-300">
-                                <x-icon name="brands/tiktok" class="w-5 h-5" />
+                            {{-- Columna tiktok_url reutilizada para X (Twitter) — misma convención que el footer --}}
+                            <a href="{{ $siteSettings->tiktok_url }}" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)" class="flex items-center justify-center w-11 h-11 rounded-xl border border-gray-200/60 text-gray-400 hover:text-gray-900 hover:border-gray-300 hover:bg-gray-50 transition-all duration-300">
+                                <x-icon name="brands/x" class="w-5 h-5" />
                             </a>
                             @endif
                         </div>
