@@ -54,6 +54,14 @@ class SeparateAdminHost
             return $this->tagAdmin($next($request), $host === $adminHost);
         }
 
+        // La raíz del subdominio es la puerta del CRM: a /admin (que a su vez
+        // manda al login si no hay sesión). Sin esto, escribir
+        // admin.homedelvalle.mx a secas rebotaba al sitio público y nunca
+        // veías el login (bug real reportado 2026-07-17).
+        if ($host === $adminHost && $request->path() === '/') {
+            return redirect()->to('https://' . $adminHost . '/admin', 302);
+        }
+
         $route = $request->route();
         $esCrm = $route && (
             in_array('auth', $route->gatherMiddleware(), true)
