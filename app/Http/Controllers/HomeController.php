@@ -14,9 +14,12 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        if (Auth::check() && !$request->has('preview')) {
-            return redirect()->route('admin.dashboard');
-        }
+        // Nota histórica: aquí vivía un redirect que expulsaba a los usuarios
+        // logueados hacia /admin (parche de cuando sitio y CRM compartían
+        // dominio; el hack '?preview' lo esquivaba). Con el CRM separado en
+        // admin.homedelvalle.mx quedó obsoleto — y con cookie de sesión
+        // compartida entre subdominios impedía ver el sitio público estando
+        // logueado en el admin (bug real reportado 2026-07-17).
 
         // publiclyVisible (no available): una destacada que se reservó o
         // vendió sigue en el home CON su letrero — pedido explícito; se
