@@ -2,21 +2,36 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\AI\AIManager;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Clasificador de leads (formulario de contacto + portales).
+ *
+ * Historia (2026-07-17): usaba Gemini con key propia (GEMINI_API_KEY) que
+ * nunca existió en producción, y encima Google retiró el modelo — el
+ * fallback silencioso ocultó AMBAS fallas durante meses. Migrado al sistema
+ * de Agentes IA del CRM (agente 'leads.classification', Admin → Agentes IA):
+ * mismas keys de Anthropic que ya operan el Observatorio, y modelo editable
+ * desde el panel sin tocar código.
+ */
 class AILeadClassifierService
 {
-    private string $apiKey;
-    private string $model;
+    private const AGENT_KEY = 'leads.classification';
 
-    public function __construct()
+    public function __construct(private readonly AIManager $ai)
     {
-        $this->apiKey = config('services.gemini.api_key') ?? '';
-        // Configurable: Google retira modelos sin aviso (gemini-2.0-flash
-        // murió con 404 en 2026-07 y este servicio falló EN SILENCIO meses
-        // por su propio fallback). Ante el próximo retiro: GEMINI_MODEL en .env.
-        $this->model = config('services.gemini.model') ?? 'gemini-flash-lite-latest';
+    }
+
+    /** Corre el agente y decodifica su respuesta JSON (tolerando fences ```). */
+    private function runJson(string $prompt): ?array
+    {
+        $raw = $this->ai->agent(self::AGENT_KEY, $prompt);
+        $raw = trim(preg_replace('/^```(?:json)?|```$/m', '', trim($raw)));
+
+        $result = json_decode($raw, true);
+
+        return is_array($result) ? $result : null;
     }
 
     /**
@@ -39,32 +54,10 @@ class AILeadClassifierService
             'spam_reason' => null,
         ];
 
-        if (empty($this->apiKey)) {
-            return $default;
-        }
-
         $prompt = $this->buildPrompt($data);
 
         try {
-            $response = Http::timeout(8)
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key={$this->apiKey}", [
-                    'contents' => [[
-                        'parts' => [['text' => $prompt]],
-                    ]],
-                    'generationConfig' => [
-                        'responseMimeType' => 'application/json',
-                        'temperature'      => 0,
-                        'maxOutputTokens'  => 200,
-                    ],
-                ]);
-
-            if (! $response->successful()) {
-                Log::warning('AILeadClassifier: API error', ['status' => $response->status()]);
-                return $default;
-            }
-
-            $text = $response->json('candidates.0.content.parts.0.text', '{}');
-            $result = json_decode($text, true);
+            $result = $this->runJson($prompt);
 
             if (! is_array($result)) {
                 return $default;
@@ -97,10 +90,6 @@ class AILeadClassifierService
     public function classifyPortalLead(array $data): array
     {
         $default = ['ok' => false, 'rol' => 'otro', 'temperatura' => 'warm', 'resumen' => ''];
-
-        if (empty($this->apiKey)) {
-            return $default;
-        }
 
         $nombre    = $data['nombre'] ?? '';
         $email     = $data['email'] ?? '';
@@ -138,24 +127,7 @@ Responde únicamente con este JSON:
 PROMPT;
 
         try {
-            $response = Http::timeout(8)
-                ->post("https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key={$this->apiKey}", [
-                    'contents' => [[
-                        'parts' => [['text' => $prompt]],
-                    ]],
-                    'generationConfig' => [
-                        'responseMimeType' => 'application/json',
-                        'temperature'      => 0,
-                        'maxOutputTokens'  => 150,
-                    ],
-                ]);
-
-            if (! $response->successful()) {
-                Log::warning('AILeadClassifier: portal lead API error', ['status' => $response->status()]);
-                return $default;
-            }
-
-            $result = json_decode($response->json('candidates.0.content.parts.0.text', '{}'), true);
+            $result = $this->runJson($prompt);
             if (! is_array($result) || empty($result['rol'])) {
                 return $default;
             }
