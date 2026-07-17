@@ -24,6 +24,16 @@ Es una carrera de velocidad: quien contesta en los primeros 30 minutos se queda 
 2. Califica en los primeros dos mensajes: forma de pago (contado/crédito), tiempos, si ya visitó opciones.
 3. Y la pregunta de captación de siempre: *"¿Tienes alguna propiedad que estés pensando vender o rentar?"*
 
+## Clasificación automática con IA
+
+Cada lead de portal se clasifica solo al importarse: la IA lee su mensaje (con el contexto de la propiedad por la que preguntó) y le asigna:
+
+- **Rol** — comprador, inquilino, broker de colaboración, spam u otro.
+- **Temperatura** — hot ("quiero visitarlo mañana, pago de contado"), warm ("¿sigue disponible?") o cold.
+- **Resumen de una línea** — visible en la parte superior de la ficha (recuadro "🤖 IA").
+
+La IA nunca borra nada: un lead marcado spam solo queda etiquetado y frío — tú siempre lo puedes revisar. Si la IA no responde al importar, el lead entra igual con las reglas básicas. Para clasificar leads importados antes de esta función, usa el botón **"Clasificar con IA los leads importados"** en Configuración → EasyBroker.
+
 ## Cómo abordarlos desde la ficha del lead
 
 Al abrir un lead de portal, la ficha te da todo listo:

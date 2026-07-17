@@ -99,6 +99,17 @@ class EasyBrokerSettingsController extends Controller
         return back()->with('success', $output ?: 'Sincronización ejecutada.');
     }
 
+    /** Clasifica con IA los leads de EasyBroker ya importados sin clasificación. */
+    public function classifyLeads()
+    {
+        set_time_limit(120);
+        \Illuminate\Support\Facades\Artisan::call('easybroker:classify-leads', ['--limit' => 100]);
+        $output = trim(\Illuminate\Support\Facades\Artisan::output());
+        $resumen = collect(explode("\n", $output))->last();
+
+        return back()->with('success', $resumen ?: 'Clasificación ejecutada.');
+    }
+
     /** Solo las propiedades PUBLICADAS de la cuenta (el total incluye histórico). */
     public function properties(Request $request, EasyBrokerService $ebService)
     {

@@ -70,6 +70,11 @@ return [
 
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
+        // flash-lite-latest: alias que Google mantiene apuntando al lite
+        // vigente — sobrevive retiros de versión (gemini-2.0-flash murió con
+        // 404 y el clasificador falló en silencio meses). Lite no razona:
+        // JSON limpio y barato, ideal para clasificación.
+        'model'   => env('GEMINI_MODEL', 'gemini-flash-lite-latest'),
     ],
 
     'n8n' => [

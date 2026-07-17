@@ -458,6 +458,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::get('/easybroker/detect-location', [EasyBrokerSettingsController::class, 'detectLocation'])->name('easybroker.detect-location');
         Route::get('/easybroker/properties', [EasyBrokerSettingsController::class, 'properties'])->name('easybroker.properties');
         Route::post('/easybroker/sync-leads', [EasyBrokerSettingsController::class, 'syncLeads'])->name('easybroker.sync-leads');
+        Route::post('/easybroker/classify-leads', [EasyBrokerSettingsController::class, 'classifyLeads'])->name('easybroker.classify-leads');
 
         // Integraciones (tracking codes, APIs)
         Route::get('/integrations', [IntegrationSettingsController::class, 'index'])->name('integrations.index');

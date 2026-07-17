@@ -41,6 +41,18 @@
             $esPosibleBroker = ($submission->lead_tag === 'LEAD_BROKER') || !empty($submission->payload['posible_broker']);
         @endphp
 
+        @if(!empty($submission->payload['ai_resumen']))
+        <div class="card" style="border-left:4px solid #6366f1;background:#eef2ff">
+            <div class="card-body" style="padding:0.85rem 1.2rem">
+                <p style="margin:0;font-size:0.88rem;color:#3730a3"><strong>🤖 IA:</strong> {{ $submission->payload['ai_resumen'] }}
+                    @if(!empty($submission->payload['ai_rol']))
+                    <span class="badge" style="margin-left:0.5rem;background:#e0e7ff;color:#3730a3">{{ str_replace('_', ' ', $submission->payload['ai_rol']) }}</span>
+                    @endif
+                </p>
+            </div>
+        </div>
+        @endif
+
         @if($esPosibleBroker)
         <div class="card" style="border-left:4px solid #86198f;background:#fdf4ff">
             <div class="card-body" style="display:flex;align-items:center;gap:1rem;justify-content:space-between;flex-wrap:wrap">

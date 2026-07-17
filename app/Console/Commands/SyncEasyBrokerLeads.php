@@ -27,8 +27,12 @@ class SyncEasyBrokerLeads extends Command
 
     protected $description = 'Registra en el CRM las solicitudes de contacto de EasyBroker';
 
-    public function handle(EasyBrokerService $eb): int
+    private \App\Services\AILeadClassifierService $classifier;
+
+    public function handle(EasyBrokerService $eb, \App\Services\AILeadClassifierService $classifier): int
     {
+        $this->classifier = $classifier;
+
         if (! $eb->isConfigured()) {
             $this->warn('EasyBroker no está configurado — nada que sincronizar.');
 
@@ -132,7 +136,31 @@ class SyncEasyBrokerLeads extends Command
             ? Property::where('easybroker_id', $cr['property_id'])->first()
             : null;
 
-        $esBroker = $this->looksLikeBroker($cr);
+        // Clasificación con IA (Gemini): rol, temperatura y resumen. Si la IA
+        // no responde, cae a la heurística de palabras clave — la IA es
+        // mejora, nunca dependencia. Nada se descarta: 'spam' solo etiqueta.
+        $ai = $this->classifier->classifyPortalLead([
+            'nombre'    => $cr['name'] ?? '',
+            'email'     => $cr['email'] ?? '',
+            'mensaje'   => $cr['message'] ?? '',
+            'portal'    => $cr['source'] ?? 'EasyBroker',
+            'propiedad' => $localProperty
+                ? sprintf('%s (%s, %s $%s %s)', $localProperty->title, $localProperty->operation_type === 'rental' ? 'renta' : 'venta', $localProperty->colony ?: $localProperty->city, number_format((float) $localProperty->price), $localProperty->currency)
+                : ($cr['property_id'] ?? 'desconocida'),
+        ]);
+
+        $esBroker = $ai['ok'] ? ($ai['rol'] === 'broker_colaboracion') : $this->looksLikeBroker($cr);
+
+        $temperatura = $esBroker || ($ai['ok'] && $ai['rol'] === 'spam')
+            ? 'cold'
+            : ($ai['ok'] ? $ai['temperatura'] : 'warm');
+
+        $clientType = match (true) {
+            $esBroker                              => null,
+            $ai['ok'] && $ai['rol'] === 'inquilino' => 'renter',
+            $ai['ok'] && $ai['rol'] === 'spam'      => null,
+            default                                 => 'buyer',
+        };
 
         // withoutEvents: crear un FormSubmission dispara FormSubmitted →
         // SendAcuseMail (correo de acuse al lead). Estos leads ya fueron
@@ -146,14 +174,16 @@ class SyncEasyBrokerLeads extends Command
             'email'            => ($cr['email'] ?? null) ?: 'eb-' . $cr['id'] . '@sin-correo.easybroker',
             'phone'            => ($cr['phone'] ?? null) ?: 'sin teléfono',
             'lead_tag'         => $esBroker ? 'LEAD_BROKER' : 'LEAD_EASYBROKER',
-            'client_type'      => $esBroker ? null : 'buyer',
-            'lead_temperature' => $esBroker ? 'cold' : 'warm',
+            'client_type'      => $clientType,
+            'lead_temperature' => $temperatura,
             'status'           => 'new',
             'utm_source'       => 'easybroker',
             'utm_medium'       => $cr['source'] ?? null,
             'payload'          => [
                 'eb_request_id'      => $cr['id'],
                 'posible_broker'     => $esBroker,
+                'ai_rol'             => $ai['ok'] ? $ai['rol'] : null,
+                'ai_resumen'         => $ai['ok'] ? $ai['resumen'] : null,
                 'eb_contact_id'      => $cr['contact_id'] ?? null,
                 'eb_property_id'     => $cr['property_id'] ?? null,
                 'mensaje'            => $cr['message'] ?? null,

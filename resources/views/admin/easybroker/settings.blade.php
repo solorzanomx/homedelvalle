@@ -194,6 +194,18 @@
                     (tipo "EasyBroker"). No envía ningún correo a los leads y nunca duplica.
                     Cuando estés conforme, enciende la sincronización automática (panel izquierdo).
                 </p>
+
+                <form method="POST" action="{{ route('admin.easybroker.classify-leads') }}" style="margin-top:1rem;">
+                    @csrf
+                    <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center;">
+                        &#129302; Clasificar con IA los leads importados
+                    </button>
+                </form>
+                <p class="form-hint" style="margin-top:0.75rem;">
+                    Analiza el mensaje de cada lead importado y le asigna rol (comprador, inquilino,
+                    broker de colaboración, spam), temperatura y un resumen de una línea. Los leads
+                    nuevos se clasifican solos al importar — este botón es para el histórico pendiente.
+                </p>
             </div>
         </div>
 
