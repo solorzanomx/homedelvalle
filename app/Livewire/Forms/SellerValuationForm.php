@@ -35,6 +35,39 @@ class SellerValuationForm extends Component
     public string $folio = '';
     public string $clientName = '';
 
+    /**
+     * Piloto multi-paso (2026-07-17): 1 Propiedad → 2 Situación → 3 Contacto.
+     * Datos personales al final — el visitante invierte antes de exponerse.
+     * Cada avance valida solo sus campos y emite 'form-step' para medir el
+     * embudo en GA4 (form_start → form_step 2 → 3 → generate_lead).
+     * Si el piloto no mejora la tasa de finalización, se revierte el commit.
+     */
+    public int $step = 1;
+
+    private const STEP_FIELDS = [
+        1 => ['tipo_propiedad', 'colonia', 'superficie_m2', 'recamaras'],
+        2 => ['precio_esperado', 'motivo', 'estado_doc', 'timing'],
+    ];
+
+    public function nextStep(): void
+    {
+        $this->validate(
+            collect($this->rules())->only(self::STEP_FIELDS[$this->step] ?? [])->all()
+        );
+
+        if ($this->step < 3) {
+            $this->step++;
+            $this->dispatch('form-step', formType: 'vendedor', step: $this->step);
+        }
+    }
+
+    public function prevStep(): void
+    {
+        if ($this->step > 1) {
+            $this->step--;
+        }
+    }
+
     protected function rules(): array
     {
         return [
@@ -67,6 +100,22 @@ class SellerValuationForm extends Component
         'timing' => 'timing',
         'aviso' => 'aviso de privacidad',
     ];
+
+    /**
+     * Punto de entrada del <form>: Enter en pasos 1-2 avanza (validando solo
+     * ese paso) en vez de disparar la validación completa con errores de
+     * campos que el usuario aún no ve.
+     */
+    public function submitOrNext(SpamProtectionService $spam, AutomationEngine $engine): void
+    {
+        if ($this->step < 3) {
+            $this->nextStep();
+
+            return;
+        }
+
+        $this->submit($spam, $engine);
+    }
 
     public function submit(SpamProtectionService $spam, AutomationEngine $engine): void
     {

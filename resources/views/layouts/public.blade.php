@@ -146,6 +146,22 @@
             }
         }, true);
 
+        // form_start: primer campo tocado de cada formulario (una vez por
+        // form por carga). Con generate_lead da la tasa de finalización
+        // real por formulario y dispositivo — la base para decidir si los
+        // formularios largos necesitan partirse en pasos.
+        document.addEventListener('focusin', function (e) {
+            var field = e.target;
+            if (!field.matches || !field.matches('input, select, textarea')) return;
+            var form = field.closest('form');
+            if (!form || form.dataset.hdvStarted) return;
+            form.dataset.hdvStarted = '1';
+            window.hdvTrack('form_start', {
+                form_id: form.getAttribute('id') || form.dataset.formName || 'form',
+                page_path: window.location.pathname
+            });
+        }, true);
+
         // Formularios Livewire: cada form dispara 'lead-conversion' SOLO en el
         // camino de éxito real (honeypot y spam muestran éxito pero no disparan).
         document.addEventListener('livewire:init', function () {
@@ -153,6 +169,16 @@
                 var p = Array.isArray(payload) ? payload[0] : (payload || {});
                 window.hdvTrack('generate_lead', {
                     form_type: p.formType || 'desconocido',
+                    page_path: window.location.pathname
+                });
+            });
+            // Avance de paso en formularios multi-paso (piloto): funnel
+            // form_start → form_step 2 → form_step 3 → generate_lead.
+            Livewire.on('form-step', function (payload) {
+                var p = Array.isArray(payload) ? payload[0] : (payload || {});
+                window.hdvTrack('form_step', {
+                    form_type: p.formType || 'desconocido',
+                    step: p.step || 0,
                     page_path: window.location.pathname
                 });
             });

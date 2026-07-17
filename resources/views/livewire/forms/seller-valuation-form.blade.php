@@ -19,63 +19,29 @@
         </div>
     @else
         <h2 class="text-xl font-bold text-gray-900">Solicita tu opinión de valor gratuita</h2>
-        <p class="text-sm text-gray-500 mt-1.5 mb-6">Responderemos en menos de 24 horas.</p>
+        <p class="text-sm text-gray-500 mt-1.5 mb-4">Responderemos en menos de 24 horas.</p>
 
-        <form wire:submit="submit" class="space-y-4">
+        {{-- Barra de progreso (piloto multi-paso) --}}
+        <div class="mb-6">
+            <div class="flex items-center justify-between text-[0.7rem] font-semibold uppercase tracking-wider mb-2">
+                <span class="{{ $step >= 1 ? 'text-brand-600' : 'text-gray-400' }}">1 · Tu propiedad</span>
+                <span class="{{ $step >= 2 ? 'text-brand-600' : 'text-gray-400' }}">2 · Tu situación</span>
+                <span class="{{ $step >= 3 ? 'text-brand-600' : 'text-gray-400' }}">3 · Contacto</span>
+            </div>
+            <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div class="h-full rounded-full gradient-brand transition-all duration-500" style="width: {{ ($step / 3) * 100 }}%"></div>
+            </div>
+        </div>
+
+        <form wire:submit="submitOrNext" class="space-y-4">
             {{-- Honeypot anti-spam: invisible para un humano, un bot que recorre el DOM sí lo llena --}}
             <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
                 <label for="website_url">Sitio web</label>
                 <input type="text" id="website_url" wire:model="website_url" tabindex="-1" autocomplete="off">
             </div>
-            {{-- Row 1: Nombre completo --}}
-            <div>
-                <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1.5">Nombre completo</label>
-                <input
-                    type="text"
-                    wire:model="nombre"
-                    id="nombre"
-                    placeholder="Tu nombre completo"
-                    class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
-                    required
-                />
-                @error('nombre')
-                    <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
-                @enderror
-            </div>
 
-            {{-- Row 2: Email & WhatsApp --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-                    <input
-                        type="email"
-                        wire:model="email"
-                        id="email"
-                        placeholder="tu@email.com"
-                        class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
-                        required
-                    />
-                    @error('email')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp</label>
-                    <input
-                        type="tel"
-                        wire:model="whatsapp"
-                        id="whatsapp"
-                        placeholder="+52 55 1234 5678"
-                        class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
-                        required
-                    />
-                    @error('whatsapp')
-                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-            </div>
-
-            {{-- Row 3: Tipo de propiedad & Colonia --}}
+            @if($step === 1)
+            {{-- ── PASO 1: La propiedad (sin datos personales — fricción mínima) ── --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="tipo_propiedad" class="block text-sm font-medium text-gray-700 mb-1.5">Tipo de propiedad</label>
@@ -118,7 +84,6 @@
                 </div>
             </div>
 
-            {{-- Row 4: Superficie & Recámaras --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="superficie_m2" class="block text-sm font-medium text-gray-700 mb-1.5">Superficie aproximada (m²)</label>
@@ -152,8 +117,10 @@
                     @enderror
                 </div>
             </div>
+            @endif
 
-            {{-- Row 5: Precio esperado --}}
+            @if($step === 2)
+            {{-- ── PASO 2: La situación ── --}}
             <div>
                 <label for="precio_esperado" class="block text-sm font-medium text-gray-700 mb-1.5">Precio que te gustaría obtener</label>
                 <select
@@ -175,7 +142,6 @@
                 @enderror
             </div>
 
-            {{-- Row 6: Motivo & Estado documental --}}
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="motivo" class="block text-sm font-medium text-gray-700 mb-1.5">Motivo de la venta</label>
@@ -216,7 +182,6 @@
                 </div>
             </div>
 
-            {{-- Row 7: Timing --}}
             <div>
                 <label for="timing" class="block text-sm font-medium text-gray-700 mb-1.5">Timing deseado de cierre</label>
                 <select
@@ -235,8 +200,56 @@
                     <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
                 @enderror
             </div>
+            @endif
 
-            {{-- Row 8: Privacy checkbox --}}
+            @if($step === 3)
+            {{-- ── PASO 3: Contacto (los datos personales al final) ── --}}
+            <div>
+                <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1.5">Nombre completo</label>
+                <input
+                    type="text"
+                    wire:model="nombre"
+                    id="nombre"
+                    placeholder="Tu nombre completo"
+                    class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
+                    required
+                />
+                @error('nombre')
+                    <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                    <input
+                        type="email"
+                        wire:model="email"
+                        id="email"
+                        placeholder="tu@email.com"
+                        class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
+                        required
+                    />
+                    @error('email')
+                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label for="whatsapp" class="block text-sm font-medium text-gray-700 mb-1.5">WhatsApp</label>
+                    <input
+                        type="tel"
+                        wire:model="whatsapp"
+                        id="whatsapp"
+                        placeholder="+52 55 1234 5678"
+                        class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
+                        required
+                    />
+                    @error('whatsapp')
+                        <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
             <div class="flex items-start gap-2 pt-2">
                 <input
                     type="checkbox"
@@ -252,25 +265,52 @@
             @error('aviso')
                 <p class="text-xs text-red-600">{{ $message }}</p>
             @enderror
+            @endif
 
-            {{-- Submit button --}}
-            <button
-                type="submit"
-                wire:loading.attr="disabled"
-                class="w-full rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-                <span wire:loading.remove>Quiero mi opinión de valor gratuita</span>
-                <span wire:loading class="flex items-center gap-2">
-                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    Enviando...
-                </span>
-            </button>
+            {{-- Botones por paso --}}
+            <div class="flex items-center gap-3 pt-1">
+                @if($step > 1)
+                <button
+                    type="button"
+                    wire:click="prevStep"
+                    class="rounded-xl border border-gray-200 px-5 py-3.5 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-all"
+                >
+                    ← Atrás
+                </button>
+                @endif
+
+                @if($step < 3)
+                <button
+                    type="submit"
+                    wire:loading.attr="disabled"
+                    class="flex-1 rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50"
+                >
+                    Continuar →
+                </button>
+                @else
+                <button
+                    type="submit"
+                    wire:loading.attr="disabled"
+                    class="flex-1 rounded-xl gradient-brand px-6 py-3.5 text-sm font-semibold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                    <span wire:loading.remove>Quiero mi opinión de valor gratuita</span>
+                    <span wire:loading class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        Enviando...
+                    </span>
+                </button>
+                @endif
+            </div>
 
             <p class="text-xs text-gray-400 text-center mt-3">
-                Respuesta en menos de 24 horas hábiles · Sin compromiso · Sin spam
+                @if($step < 3)
+                    Sin datos personales todavía · 3 pasos, menos de 2 minutos
+                @else
+                    Respuesta en menos de 24 horas hábiles · Sin compromiso · Sin spam
+                @endif
             </p>
         </form>
     @endif
