@@ -1,6 +1,18 @@
 @extends('layouts.app-sidebar')
 @section('title', 'Lead: ' . $submission->full_name)
 
+{{-- CSS crudo: @yield('styles') vive DENTRO de un <style> del layout — no anidar etiquetas <style> aquí --}}
+@section('styles')
+.lead-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start; }
+@media (max-width: 768px) {
+    /* En el teléfono: una columna y las ACCIONES primero (WhatsApp, estado,
+       convertir) — el broker responde desde la calle; los datos van después. */
+    .lead-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .lead-actions { order: -1; }
+    .lead-actions .card { margin-bottom: 0.75rem; }
+}
+@endsection
+
 @section('content')
 <div class="page-header">
     <div>
@@ -16,7 +28,7 @@
 <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#065f46;font-size:0.85rem">{{ session('success') }}</div>
 @endif
 
-<div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start">
+<div class="lead-grid">
 
     {{-- Main --}}
     <div>
@@ -197,8 +209,8 @@
         </div>
     </div>
 
-    {{-- Sidebar --}}
-    <div>
+    {{-- Sidebar (en móvil sube al inicio: .lead-actions con order:-1) --}}
+    <div class="lead-actions">
         {{-- Temperatura --}}
         @php
             $tempMeta = match($submission->lead_temperature) {

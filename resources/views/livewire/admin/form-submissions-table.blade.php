@@ -1,4 +1,17 @@
 <div wire:poll.10s>
+    <style>
+        /* Móvil: la tabla muestra solo lo esencial (nombre, tipo, temperatura,
+           estado, acciones) — email y fecha viven en la ficha. Las tarjetas de
+           conteo se compactan para no empujar la tabla fuera de pantalla. */
+        @media (max-width: 768px) {
+            .fs-table th:nth-child(6), .fs-table td:nth-child(6),
+            .fs-table th:nth-child(7), .fs-table td:nth-child(7) { display: none; }
+            .fs-table th, .fs-table td { padding: 0.6rem 0.6rem; font-size: 0.8rem; }
+            .fs-stats { grid-template-columns: repeat(3, 1fr) !important; gap: 0.5rem !important; }
+            .fs-stats .card { padding: 0.5rem !important; }
+            .fs-stats .card p:first-child { font-size: 1.1rem !important; }
+        }
+    </style>
 
     {{-- Toast flotante --}}
     @if(session('success'))
@@ -19,7 +32,7 @@
     @endif
 
     {{-- Stats --}}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1.5rem">
+    <div class="fs-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.75rem;margin-bottom:1.5rem">
         @foreach([
             ['label'=>'Total',        'val'=>$counts['total'],    'color'=>'#6366f1'],
             ['label'=>'Sin revisar',  'val'=>$counts['unseen'],   'color'=>'#f59e0b'],
@@ -90,7 +103,7 @@
     <div class="card">
         @if($submissions->count() > 0)
         <div class="table-wrap">
-            <table class="data-table">
+            <table class="data-table fs-table">
                 <thead>
                     <tr>
                         <th style="width:36px">
