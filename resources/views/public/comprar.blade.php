@@ -10,7 +10,7 @@
     <x-public.json-ld type="FAQPage" :data="[
         'mainEntity' => [
             ['@type'=>'Question','name'=>'¿Cuál es el proceso de búsqueda?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Completas el formulario con tus preferencias, nuestro equipo analiza tu perfil y te presenta opciones de propiedades verificadas en menos de 24 horas.']],
-            ['@type'=>'Question','name'=>'¿Hay costo por la asesoría?','acceptedAnswer'=>['@type'=>'Answer','text'=>'No. La asesoría y búsqueda son completamente gratuitas. Solo si decides comprar a través de nosotros, aplicamos una comisión estándar del mercado.']],
+            ['@type'=>'Question','name'=>'¿Hay costo por la asesoría?','acceptedAnswer'=>['@type'=>'Answer','text'=>'No. No cobramos comisión a compradores: la asesoría, la búsqueda y el acompañamiento hasta la escritura son gratuitos para ti. Nuestra comisión la cubre el vendedor al cierre.']],
             ['@type'=>'Question','name'=>'¿Qué sucede después de enviar el formulario?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Uno de nuestros asesores especializados en Benito Juárez se pondrá en contacto contigo vía WhatsApp o teléfono en menos de 24 horas para validar tus requerimientos y comenzar la búsqueda.']],
             ['@type'=>'Question','name'=>'¿Están todas las propiedades verificadas?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Sí. Todas nuestras propiedades son verificadas legalmente y cuentan con blindaje jurídico completo. Garantizamos la seguridad en cada operación.']],
         ],
@@ -163,7 +163,7 @@
                         <x-icon name="chevron-down" class="w-5 h-5 text-gray-500" />
                     </span>
                 </summary>
-                <p class="mt-4 text-sm text-gray-500 leading-relaxed">No. La asesoría y búsqueda son completamente gratuitas. Solo si decides comprar a través de nosotros, aplicamos una comisión estándar del mercado.</p>
+                <p class="mt-4 text-sm text-gray-500 leading-relaxed">No. No cobramos comisión a compradores: la asesoría, la búsqueda y el acompañamiento hasta la escritura son gratuitos para ti. Nuestra comisión la cubre el vendedor al cierre.</p>
             </details>
 
             <details class="group rounded-2xl border border-gray-200/80 p-6 hover:border-brand-200 transition-all duration-300 [&_summary::-webkit-details-marker]:hidden">

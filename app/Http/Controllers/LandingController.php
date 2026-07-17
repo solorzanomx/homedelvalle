@@ -20,7 +20,7 @@ class LandingController extends Controller
             'slug' => 'vende-del-valle',
             'badge' => 'Asesoría gratuita — Cupo limitado',
             'heading' => 'Vende tu inmueble en Benito Juárez rápido y al mejor precio',
-            'subheading' => 'Conectamos tu propiedad con compradores calificados. Sin exclusivas forzadas, sin comisiones ocultas.',
+            'subheading' => 'Trabajamos tu propiedad en exclusiva, con un plan de venta dedicado y compradores calificados. Sin comisiones ocultas.',
             'cta_heading' => '¿Listo para vender tu propiedad?',
             'cta_subheading' => 'Solicita tu asesoría gratuita hoy y descubre cuánto vale realmente tu propiedad en el mercado actual.',
             'wa_message' => 'Hola, me interesa vender mi propiedad en Benito Juárez',
@@ -30,9 +30,9 @@ class LandingController extends Controller
     private function defaultFaqs(): array
     {
         return [
-            ['q' => '¿Cuánto cuesta la asesoría?', 'a' => 'La asesoría y valuación inicial son completamente gratuitas y sin compromiso. Solo cobramos una comisión al momento de cerrar exitosamente la venta de tu propiedad.'],
-            ['q' => '¿Cuánto tiempo toma vender mi propiedad?', 'a' => 'En promedio, nuestras propiedades se venden en 45 días. Esto depende del precio, ubicación y condiciones del mercado, pero nuestra estrategia de marketing digital acelera el proceso.'],
-            ['q' => '¿Necesito firmar un contrato de exclusividad?', 'a' => 'No. Trabajamos sin exclusivas forzadas. Creemos que los resultados hablan por sí solos y preferimos ganarnos tu confianza con nuestro trabajo.'],
+            ['q' => '¿Cuánto cuesta la asesoría?', 'a' => 'La asesoría y la opinión de valor inicial son completamente gratuitas y sin compromiso. Nuestra comisión es del 5% y se cobra únicamente al cerrar exitosamente la venta — nunca por adelantado.'],
+            ['q' => '¿Cuánto tiempo toma vender mi propiedad?', 'a' => 'En promedio, nuestras propiedades se venden en 45 a 60 días. Depende del precio, la ubicación y las condiciones del mercado, pero nuestra estrategia de comercialización dirigida acelera el proceso.'],
+            ['q' => '¿Necesito firmar un contrato de exclusividad?', 'a' => 'Sí — trabajamos mediante un Acuerdo de Representación, y es tu mejor garantía: nos permite invertir de verdad en tu propiedad (fotografía profesional, marketing y compradores calificados) con un plan de venta dedicado y reportes de avance. Nuestro modelo boutique exige atención total a cada propiedad que representamos, y eso solo es posible con un compromiso mutuo.'],
             ['q' => '¿Qué documentos necesito para vender?', 'a' => 'Los documentos básicos son: escrituras, boleta predial, boleta de agua, identificación oficial y comprobante de domicilio. Te orientamos sobre cada documento durante el proceso.'],
             ['q' => '¿Cómo determinan el precio de mi propiedad?', 'a' => 'Realizamos un análisis comparativo de mercado basado en ventas reales recientes en la zona, características de tu propiedad y condiciones actuales del mercado inmobiliario en CDMX.'],
             ['q' => '¿Qué zonas cubren?', 'a' => 'Nos especializamos en la Colonia del Valle (Centro, Norte y Sur), Narvarte, Benito Juárez y zonas aledañas en la Ciudad de México.'],
