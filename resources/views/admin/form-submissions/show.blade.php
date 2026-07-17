@@ -31,6 +31,10 @@
             $nombreCorto = explode(' ', trim($submission->full_name))[0] ?: 'Hola';
             if ($propiedadLocal) {
                 $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$propiedadLocal->title}» (" . '$' . number_format((float) $propiedadLocal->price) . " {$propiedadLocal->currency}). Sigue disponible — ¿te gustaría agendar una visita esta semana?";
+            } elseif (!empty($submission->payload['eb_titulo'])) {
+                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$submission->payload['eb_titulo']}»"
+                    . (!empty($submission->payload['eb_precio']) ? " ({$submission->payload['eb_precio']}" . (($submission->payload['eb_operacion'] ?? null) === 'renta' ? ' de renta' : '') . ')' : '')
+                    . ". ¿Te gustaría agendar una visita esta semana?";
             } elseif (!empty($submission->payload['eb_property_id'])) {
                 $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en la propiedad {$submission->payload['eb_property_id']} — con gusto te comparto los detalles. ¿Qué estás buscando: comprar o rentar?";
             } elseif (in_array($submission->form_type, ['vendedor', 'vendedor_predio'])) {
@@ -85,6 +89,19 @@
                         </p>
                     </div>
                     <a href="{{ route('properties.show', $propiedadLocal) }}" class="btn btn-outline">Ver propiedad</a>
+                @elseif(!empty($submission->payload['eb_titulo']))
+                    <div style="flex:1;min-width:200px">
+                        <p style="font-weight:700;margin:0">{{ $submission->payload['eb_titulo'] }}</p>
+                        <p style="font-size:0.85rem;color:var(--text-muted);margin:0.2rem 0 0">
+                            @if(!empty($submission->payload['eb_operacion']))
+                            <span class="badge {{ $submission->payload['eb_operacion'] === 'venta' ? 'badge-blue' : 'badge-green' }}">{{ ucfirst($submission->payload['eb_operacion']) }}</span>
+                            @endif
+                            {{ $submission->payload['eb_precio'] ?? '' }}
+                            @if(!empty($submission->payload['eb_ubicacion'])) · {{ $submission->payload['eb_ubicacion'] }} @endif
+                            <span style="color:var(--text-muted)">· solo en EasyBroker</span>
+                        </p>
+                    </div>
+                    <a href="{{ $submission->payload['eb_url'] ?? 'https://www.easybroker.com/agent/properties?search=' . urlencode($submission->payload['eb_property_id'] ?? '') }}" target="_blank" rel="noopener" class="btn btn-outline">Ver en EasyBroker ↗</a>
                 @else
                     <div style="flex:1">
                         <p style="font-weight:600;margin:0">{{ $submission->payload['eb_property_id'] }} <span style="font-weight:400;color:var(--text-muted)">(solo en EasyBroker — no está en el sitio)</span></p>

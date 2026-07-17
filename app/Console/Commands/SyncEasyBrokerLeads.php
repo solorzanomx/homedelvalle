@@ -28,10 +28,12 @@ class SyncEasyBrokerLeads extends Command
     protected $description = 'Registra en el CRM las solicitudes de contacto de EasyBroker';
 
     private \App\Services\AILeadClassifierService $classifier;
+    private EasyBrokerService $eb;
 
     public function handle(EasyBrokerService $eb, \App\Services\AILeadClassifierService $classifier): int
     {
         $this->classifier = $classifier;
+        $this->eb = $eb;
 
         if (! $eb->isConfigured()) {
             $this->warn('EasyBroker no está configurado — nada que sincronizar.');
@@ -136,6 +138,21 @@ class SyncEasyBrokerLeads extends Command
             ? Property::where('easybroker_id', $cr['property_id'])->first()
             : null;
 
+        // Si la propiedad no está en el CRM, se piden sus detalles a la API
+        // de EasyBroker (con caché): operación venta/renta, precio, título —
+        // se ven en la ficha y afinan la clasificación de la IA.
+        $ebProp = null;
+        if (! $localProperty && ! empty($cr['property_id'])) {
+            $raw = $this->eb->getProperty($cr['property_id']);
+            $ebProp = $raw ? EasyBrokerService::summarizeProperty($raw) : null;
+        }
+
+        $contextoPropiedad = match (true) {
+            (bool) $localProperty => sprintf('%s (%s, %s $%s %s)', $localProperty->title, $localProperty->operation_type === 'rental' ? 'renta' : 'venta', $localProperty->colony ?: $localProperty->city, number_format((float) $localProperty->price), $localProperty->currency),
+            (bool) $ebProp        => sprintf('%s (%s, %s, %s)', $ebProp['titulo'] ?? $cr['property_id'], $ebProp['operacion'] ?? 'operación desconocida', $ebProp['ubicacion'] ?? '', $ebProp['precio'] ?? ''),
+            default               => $cr['property_id'] ?? 'desconocida',
+        };
+
         // Clasificación con IA (Gemini): rol, temperatura y resumen. Si la IA
         // no responde, cae a la heurística de palabras clave — la IA es
         // mejora, nunca dependencia. Nada se descarta: 'spam' solo etiqueta.
@@ -144,9 +161,7 @@ class SyncEasyBrokerLeads extends Command
             'email'     => $cr['email'] ?? '',
             'mensaje'   => $cr['message'] ?? '',
             'portal'    => $cr['source'] ?? 'EasyBroker',
-            'propiedad' => $localProperty
-                ? sprintf('%s (%s, %s $%s %s)', $localProperty->title, $localProperty->operation_type === 'rental' ? 'renta' : 'venta', $localProperty->colony ?: $localProperty->city, number_format((float) $localProperty->price), $localProperty->currency)
-                : ($cr['property_id'] ?? 'desconocida'),
+            'propiedad' => $contextoPropiedad,
         ]);
 
         $esBroker = $ai['ok'] ? ($ai['rol'] === 'broker_colaboracion') : $this->looksLikeBroker($cr);
@@ -191,6 +206,11 @@ class SyncEasyBrokerLeads extends Command
                 'fecha_en_easybroker' => $cr['happened_at'] ?? null,
                 'propiedad_local_id' => $localProperty?->id,
                 'propiedad_local'    => $localProperty?->title,
+                'eb_titulo'          => $ebProp['titulo'] ?? null,
+                'eb_operacion'       => $ebProp['operacion'] ?? null,
+                'eb_precio'          => $ebProp['precio'] ?? null,
+                'eb_ubicacion'       => $ebProp['ubicacion'] ?? null,
+                'eb_url'             => $ebProp['url'] ?? null,
             ],
         ]));
     }

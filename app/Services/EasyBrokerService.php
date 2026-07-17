@@ -173,6 +173,62 @@ class EasyBrokerService
     }
 
     /**
+     * Detalles de UNA propiedad de EasyBroker (para enriquecer leads cuya
+     * propiedad no existe en el CRM local). Cache 6 h — varios leads suelen
+     * preguntar por la misma propiedad. Devuelve null si no existe o falla
+     * (el null también se cachea 1 h para no martillar un ID muerto).
+     *
+     * Shape útil: title, operations[{type, amount, currency, formatted_amount}],
+     * location (string o array con name), public_url, property_type.
+     */
+    public function getProperty(string $publicId): ?array
+    {
+        if (! $this->isConfigured() || $publicId === '') {
+            return null;
+        }
+
+        $cacheKey = 'easybroker.property.' . $publicId;
+        $cached = Cache::get($cacheKey, '__miss__');
+        if ($cached !== '__miss__') {
+            return $cached;
+        }
+
+        try {
+            $response = $this->http()->get($this->getBaseUrl() . '/properties/' . $publicId);
+            $data = $response->successful() ? $response->json() : null;
+        } catch (\Exception $e) {
+            $data = null;
+        }
+
+        Cache::put($cacheKey, $data, $data ? 21600 : 3600);
+
+        return $data;
+    }
+
+    /**
+     * Resume el JSON crudo de getProperty() a lo que los leads necesitan:
+     * titulo, operacion ('venta'|'renta'|null), precio (formateado),
+     * ubicacion y url pública.
+     */
+    public static function summarizeProperty(array $prop): array
+    {
+        $op = collect($prop['operations'] ?? [])->first();
+        $loc = $prop['location'] ?? null;
+
+        return [
+            'titulo'    => $prop['title'] ?? null,
+            'operacion' => match ($op['type'] ?? null) {
+                'sale'                        => 'venta',
+                'rental', 'temporary_rental'  => 'renta',
+                default                       => null,
+            },
+            'precio'    => $op['formatted_amount'] ?? ($op ? '$' . number_format((float) ($op['amount'] ?? 0)) . ' ' . ($op['currency'] ?? '') : null),
+            'ubicacion' => is_array($loc) ? ($loc['name'] ?? null) : $loc,
+            'url'       => $prop['public_url'] ?? null,
+        ];
+    }
+
+    /**
      * Solicitudes de contacto (leads que preguntan por propiedades en
      * EasyBroker y sus portales vinculados). Vienen de más reciente a más
      * antigua. Shape: id, name, phone, email, contact_id, property_id,

@@ -23,7 +23,7 @@ class ClassifyEasyBrokerLeads extends Command
 
     protected $description = 'Clasifica con IA los leads de EasyBroker importados sin clasificación';
 
-    public function handle(AILeadClassifierService $classifier): int
+    public function handle(AILeadClassifierService $classifier, \App\Services\EasyBrokerService $eb): int
     {
         $pendientes = FormSubmission::where('form_type', 'easybroker')
             ->where(function ($q) {
@@ -49,14 +49,33 @@ class ClassifyEasyBrokerLeads extends Command
                 ? Property::find($payload['propiedad_local_id'])
                 : null;
 
+            // Enriquecer con los detalles de EasyBroker (operación venta/renta,
+            // precio, título) si la propiedad no está en el CRM y el lead aún
+            // no los tiene — el backlog viejo se importó sin ellos.
+            if (! $localProperty && empty($payload['eb_titulo']) && ! empty($payload['eb_property_id'])) {
+                $raw = $eb->getProperty($payload['eb_property_id']);
+                if ($raw) {
+                    $resumenProp = \App\Services\EasyBrokerService::summarizeProperty($raw);
+                    $payload['eb_titulo']    = $resumenProp['titulo'];
+                    $payload['eb_operacion'] = $resumenProp['operacion'];
+                    $payload['eb_precio']    = $resumenProp['precio'];
+                    $payload['eb_ubicacion'] = $resumenProp['ubicacion'];
+                    $payload['eb_url']       = $resumenProp['url'];
+                }
+            }
+
+            $contextoPropiedad = match (true) {
+                (bool) $localProperty            => sprintf('%s (%s, %s $%s %s)', $localProperty->title, $localProperty->operation_type === 'rental' ? 'renta' : 'venta', $localProperty->colony ?: $localProperty->city, number_format((float) $localProperty->price), $localProperty->currency),
+                ! empty($payload['eb_titulo'])   => sprintf('%s (%s, %s, %s)', $payload['eb_titulo'], $payload['eb_operacion'] ?? 'operación desconocida', $payload['eb_ubicacion'] ?? '', $payload['eb_precio'] ?? ''),
+                default                          => $payload['eb_property_id'] ?? 'desconocida',
+            };
+
             $ai = $classifier->classifyPortalLead([
                 'nombre'    => $lead->full_name,
                 'email'     => $lead->email,
                 'mensaje'   => $payload['mensaje'] ?? '',
                 'portal'    => $payload['portal_origen'] ?? 'EasyBroker',
-                'propiedad' => $localProperty
-                    ? sprintf('%s (%s, %s $%s %s)', $localProperty->title, $localProperty->operation_type === 'rental' ? 'renta' : 'venta', $localProperty->colony ?: $localProperty->city, number_format((float) $localProperty->price), $localProperty->currency)
-                    : ($payload['eb_property_id'] ?? 'desconocida'),
+                'propiedad' => $contextoPropiedad,
             ]);
 
             if (! $ai['ok']) {
