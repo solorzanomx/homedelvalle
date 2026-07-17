@@ -33,6 +33,7 @@ class EasyBrokerSettingsController extends Controller
             'api_key'                  => 'nullable|string|max:500',
             'base_url'                 => 'required|url|max:255',
             'auto_publish'             => 'boolean',
+            'auto_sync_leads'          => 'boolean',
             'default_property_type'    => 'required|string|in:House,Apartment,Land,Office,Commercial,Warehouse,Building',
             'default_operation_type'   => 'required|string|in:sale,rental,temporary_rental',
             'default_currency'         => 'required|string|in:MXN,USD',
@@ -41,7 +42,8 @@ class EasyBrokerSettingsController extends Controller
             'default_longitude'        => 'nullable|numeric|between:-180,180',
         ]);
 
-        $validated['auto_publish'] = $request->boolean('auto_publish');
+        $validated['auto_publish']    = $request->boolean('auto_publish');
+        $validated['auto_sync_leads'] = $request->boolean('auto_sync_leads');
 
         $settings = EasyBrokerSetting::first();
 
@@ -86,6 +88,15 @@ class EasyBrokerSettingsController extends Controller
     {
         $result = $ebService->detectLocationFromProperties();
         return response()->json($result);
+    }
+
+    /** Trae leads de EasyBroker bajo demanda (prueba manual, última semana). */
+    public function syncLeads()
+    {
+        \Illuminate\Support\Facades\Artisan::call('easybroker:sync-leads', ['--pages' => 2, '--dias' => 7]);
+        $output = trim(\Illuminate\Support\Facades\Artisan::output());
+
+        return back()->with('success', $output ?: 'Sincronización ejecutada.');
     }
 
     /** Solo las propiedades PUBLICADAS de la cuenta (el total incluye histórico). */

@@ -27,7 +27,11 @@ Schedule::command('blog:publish-scheduled')->everyMinute()->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:publish-scheduled scheduled run failed'));
 
 // ── EasyBroker: leads de portales → CRM ──────────────
+// Solo corre si el interruptor 'Sincronización automática' está encendido en
+// Admin → EasyBroker (default apagado — Alejandro prefiere manual mientras
+// prueba: los portales generan mucho volumen de consultas de compra/renta).
 Schedule::command('easybroker:sync-leads')->everyThirtyMinutes()->withoutOverlapping()
+    ->when(fn () => (bool) \App\Models\EasyBrokerSetting::first()?->auto_sync_leads)
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('easybroker:sync-leads scheduled run failed'));
 
 // ── Google eSignature Scheduler ──────────────────────

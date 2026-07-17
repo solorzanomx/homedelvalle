@@ -121,6 +121,17 @@
                             <span class="form-label" style="margin:0;">Auto-publicar al crear</span>
                         </label>
                     </div>
+
+                    <div class="form-group">
+                        <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                            <input type="hidden" name="auto_sync_leads" value="0">
+                            <input type="checkbox" name="auto_sync_leads" value="1"
+                                   {{ old('auto_sync_leads', $ebSettings->auto_sync_leads ?? false) ? 'checked' : '' }}
+                                   style="width:16px; height:16px; accent-color:var(--primary);">
+                            <span class="form-label" style="margin:0;">Sincronización automática de leads (cada 30 min)</span>
+                        </label>
+                        <p class="form-hint" style="margin-top:0.35rem;">Apagado por defecto: los portales generan mucho volumen de consultas. Usa primero el botón de prueba manual (panel derecho) para ver cuántos llegan.</p>
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar Configuracion</button>
@@ -165,6 +176,24 @@
                     </button>
                 </form>
                 <p class="form-hint" style="margin-top:0.75rem;">Envia una solicitud de prueba al API para verificar que la API Key es valida.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>Leads de portales (prueba manual)</h3></div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('admin.easybroker.sync-leads') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center;">
+                        &#128229; Traer leads de los últimos 7 días
+                    </button>
+                </form>
+                <p class="form-hint" style="margin-top:0.75rem;">
+                    Importa las solicitudes de contacto recientes de EasyBroker a
+                    <a href="{{ route('admin.form-submissions.index') }}">Leads &amp; Formularios</a>
+                    (tipo "EasyBroker"). No envía ningún correo a los leads y nunca duplica.
+                    Cuando estés conforme, enciende la sincronización automática (panel izquierdo).
+                </p>
             </div>
         </div>
 
