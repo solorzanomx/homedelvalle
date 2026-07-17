@@ -122,7 +122,7 @@
             <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Resolvemos tus dudas</h2>
         </div>
 
-        <div class="space-y-4" x-data="{ open: null }">
+        <div class="space-y-4">
             @foreach([
                 ['¿Cuánto cobran al inquilino?','Cero. La búsqueda y asesoría son gratuitas para ti. Nuestra comisión la paga el propietario al firmar contrato.'],
                 ['¿Qué necesito para rentar?','Generalmente: identificación oficial, comprobante de ingresos (3 últimos meses) o aval con propiedad, comprobante de domicilio actual y RFC. Si vas con póliza jurídica, los requisitos los marca la afianzadora.'],
@@ -131,15 +131,17 @@
                 ['¿Puedo cambiar mi brief después?','Sí, en cualquier momento. Si después de la primera curaduría quieres ajustar zona, presupuesto o plazo, lo actualizamos y volvemos a buscar.'],
                 ['¿Cuánto suele tardar todo el proceso?','Desde la primera curaduría hasta firmar contrato, entre 7 y 21 días si el inquilino tiene documentación lista y elige una opción que ya tiene póliza pre-aprobada.'],
             ] as $i => [$q,$a])
-            <div class="rounded-2xl border border-gray-200/80 overflow-hidden" x-data>
-                <button @click="$data.open === {{ $i }} ? $data.open = null : $data.open = {{ $i }}"
-                        class="w-full text-left flex items-center justify-between gap-4 px-6 py-5 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-colors"
-                        x-data="{ open: null }"
-                        @click="open = open === {{ $i }} ? null : {{ $i }}">
+            {{-- Un solo ámbito Alpine por ítem (patrón de vende-tu-propiedad).
+                 La versión anterior anidaba TRES x-data con 'open' distintos:
+                 la respuesta leía su propio open (siempre null) y jamás se
+                 mostraba — las FAQs se veían vacías al hacer clic. --}}
+            <div class="rounded-2xl border border-gray-200/80 overflow-hidden" x-data="{ open: false }">
+                <button @click="open = !open"
+                        class="w-full text-left flex items-center justify-between gap-4 px-6 py-5 text-sm font-semibold text-gray-900 hover:bg-gray-50 transition-colors">
                     {{ $q }}
-                    <x-icon name="chevron-down" class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200" ::class="open === {{ $i }} ? 'rotate-180' : ''" />
+                    <span class="shrink-0 transition-transform duration-200" :class="{ 'rotate-180': open }"><x-icon name="chevron-down" class="w-4 h-4 text-gray-400" /></span>
                 </button>
-                <div x-data="{ open: null }" x-show="open === {{ $i }}" x-collapse class="px-6 pb-5 text-sm text-gray-500 leading-relaxed">
+                <div x-show="open" x-collapse class="px-6 pb-5 text-sm text-gray-500 leading-relaxed">
                     {{ $a }}
                 </div>
             </div>
