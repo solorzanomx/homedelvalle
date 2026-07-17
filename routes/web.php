@@ -168,8 +168,11 @@ Route::get('/legal/{slug}', [LegalPageController::class, 'show'])->name('legal.p
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:login');
-    Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register', [RegisterController::class, 'store']);
+    // Registro público DESHABILITADO (incidente 2026-07-17: cualquiera podía
+    // crear cuenta con acceso al CRM). Los usuarios del sistema los da de
+    // alta un admin en Gestión de usuarios; los clientes usan el Portal.
+    // Route::get('/register', [RegisterController::class, 'create'])->name('register');
+    // Route::post('/register', [RegisterController::class, 'store']);
 
     // Recuperacion de contrasena
     Route::get('/forgot-password', [ForgotPasswordController::class, 'show'])->name('password.forgot');
