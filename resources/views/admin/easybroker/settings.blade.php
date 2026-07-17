@@ -185,7 +185,7 @@
                 <form method="POST" action="{{ route('admin.easybroker.sync-leads') }}">
                     @csrf
                     <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center;">
-                        &#128229; Traer leads de los últimos 7 días
+                        &#128229; Traer leads de los últimos 15 días
                     </button>
                 </form>
                 <p class="form-hint" style="margin-top:0.75rem;">

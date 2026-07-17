@@ -90,10 +90,10 @@ class EasyBrokerSettingsController extends Controller
         return response()->json($result);
     }
 
-    /** Trae leads de EasyBroker bajo demanda (prueba manual, última semana). */
+    /** Trae leads de EasyBroker bajo demanda (prueba manual, últimos 15 días). */
     public function syncLeads()
     {
-        \Illuminate\Support\Facades\Artisan::call('easybroker:sync-leads', ['--pages' => 2, '--dias' => 7]);
+        \Illuminate\Support\Facades\Artisan::call('easybroker:sync-leads', ['--pages' => 3, '--dias' => 15]);
         $output = trim(\Illuminate\Support\Facades\Artisan::output());
 
         return back()->with('success', $output ?: 'Sincronización ejecutada.');
