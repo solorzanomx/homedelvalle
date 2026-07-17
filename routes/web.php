@@ -309,6 +309,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/help/article/{article:slug}', [HelpCenterController::class, 'show'])->name('help.article');
     Route::get('/help/tips/{context}', [HelpCenterController::class, 'tips'])->name('help.tips');
     Route::post('/help/onboarding/complete-step', [HelpCenterController::class, 'completeStep'])->name('help.onboarding.complete');
+    Route::get('/help/manual-pdf', [HelpCenterController::class, 'manualPdf'])->name('help.manual-pdf');
     Route::get('/api/users/search', [NotificationController::class, 'searchUsers'])->name('api.users.search');
     Route::get('/api/clients/search', [ClientController::class, 'search'])->name('api.clients.search');
 });

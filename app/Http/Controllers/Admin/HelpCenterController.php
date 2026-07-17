@@ -7,6 +7,7 @@ use App\Models\HelpArticle;
 use App\Models\HelpCategory;
 use App\Models\HelpTip;
 use App\Models\HelpOnboardingProgress;
+use App\Services\ManualOperacionGeneratorService;
 use Illuminate\Http\Request;
 
 class HelpCenterController extends Controller
@@ -133,5 +134,16 @@ class HelpCenterController extends Controller
     {
         $tip->delete();
         return back()->with('success', 'Tip eliminado');
+    }
+
+    /** Manual de Operación: el centro de ayuda completo como PDF descargable. */
+    public function manualPdf(ManualOperacionGeneratorService $generator)
+    {
+        set_time_limit(180);
+        $path = $generator->generatePdf();
+
+        return response()->download($path, 'HDV-Manual-de-Operacion.pdf', [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 }

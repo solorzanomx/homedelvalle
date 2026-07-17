@@ -60,6 +60,9 @@
 <div class="help-header">
     <h2>Centro de Ayuda</h2>
     <p>Aprende a usar el CRM para captar mas propiedades y cerrar mas operaciones.</p>
+    <a href="{{ route('help.manual-pdf') }}" class="btn btn-outline" style="margin-top:0.75rem;">
+        &#128196; Descargar Manual de Operación (PDF)
+    </a>
 </div>
 
 <div class="help-search">
