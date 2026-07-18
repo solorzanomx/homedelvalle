@@ -71,7 +71,7 @@ class GenerateBlogImagesAction
             }
 
             try {
-                $path = $this->callDalle($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
+                $path = $this->callGemini($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
                 $this->storePath($post, $key, $path);
 
                 if ($key === 'featured') {
@@ -111,7 +111,7 @@ class GenerateBlogImagesAction
         // Reuse the post's stored seed for visual consistency across all images
         $seed = $prompts['seed'] ?? null;
 
-        $path = $this->callDalle($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
+        $path = $this->callGemini($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
         $this->storePath($post, $key, $path);
 
         if ($key === 'featured') {
@@ -168,7 +168,7 @@ class GenerateBlogImagesAction
         }
     }
 
-    private function callDalle(int $postId, string $prompt, string $storagePath, ?int $seed = null): string
+    private function callGemini(int $postId, string $prompt, string $storagePath, ?int $seed = null): string
     {
         $prompt = self::PROMPT_PREFIX . rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
 

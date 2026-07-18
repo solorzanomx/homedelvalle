@@ -223,7 +223,7 @@
                             <div>&#10003; Links internos en texto</div>
                             <div>&#10003; Schema markup (Article/HowTo/FAQ)</div>
                             <div>&#10003; Score SEO estimado</div>
-                            <div>&#10003; Prompts DALL-E (se usan en paso 2)</div>
+                            <div>&#10003; Prompts de imagen (se usan en paso 2)</div>
                             <div>&#10003; ~1200-1800 palabras</div>
                         </div>
                     </div>
@@ -323,7 +323,7 @@
                     <li><strong>Interlinking</strong> a valuación, propiedades, contacto</li>
                     <li><strong>3 CTAs</strong> integrados en el cuerpo</li>
                     <li><strong>Schema</strong> Article / HowTo / FAQPage</li>
-                    <li><strong>4 prompts DALL-E</strong> para imágenes originales</li>
+                    <li><strong>4 prompts de imagen (Gemini)</strong> para imágenes originales</li>
                     <li><strong>Longitud</strong> mínimo 1200 palabras</li>
                 </ul>
             </div>

@@ -146,7 +146,7 @@ $keys = ['featured', 'interior_1', 'interior_2', 'interior_3'];
             @endif
             <div class="img-loading-overlay" id="loading-{{ $key }}">
                 <div class="spinner"></div>
-                <span>Generando con DALL-E…</span>
+                <span>Generando con IA (Gemini)…</span>
             </div>
         </div>
 
@@ -155,7 +155,7 @@ $keys = ['featured', 'interior_1', 'interior_2', 'interior_3'];
 
         {{-- Prompt editable --}}
         <div>
-            <div style="font-size:.67rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Prompt DALL-E <span style="font-weight:400;text-transform:none;">(editable)</span></div>
+            <div style="font-size:.67rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.25rem;">Prompt de imagen <span style="font-weight:400;text-transform:none;">(editable)</span></div>
             <textarea class="prompt-ta" id="prompt-{{ $key }}" rows="3">{{ $img['prompt'] ?? '' }}</textarea>
         </div>
 
