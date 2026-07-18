@@ -123,14 +123,10 @@ Devuelve SOLO un array JSON válido con exactamente {$count} objetos:
 ]
 PROMPT;
 
-        try {
-            $raw    = $this->ai->agent('blog.topics', $prompt);
-            $topics = $this->parseTopicsArray($raw);
-            return array_map(fn($t) => array_merge($t, ['_market_data' => $marketData]), $topics);
-        } catch (\Throwable $e) {
-            Log::warning('BlogAIService: topic synthesis failed', ['error' => $e->getMessage()]);
-            return [];
-        }
+        $raw    = $this->ai->agent('blog.topics', $prompt);
+        $topics = $this->parseTopicsArray($raw);
+
+        return array_map(fn($t) => array_merge($t, ['_market_data' => $marketData]), $topics);
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -328,12 +324,27 @@ PROMPT;
         $clean = preg_replace('/^```(?:json)?\s*/m', '', $raw);
         $clean = preg_replace('/\s*```$/m', '', $clean);
         $clean = trim($clean);
+        // Quitar prosa antes del array; el cierre se busca desde el final (los
+        // objetos traen arrays internos, así que un ']' intermedio no sirve de ancla
+        // si la respuesta llegó cortada por max_tokens).
         $start = strpos($clean, '[');
-        $end   = strrpos($clean, ']');
-        if ($start !== false && $end !== false) {
-            $clean = substr($clean, $start, $end - $start + 1);
+        if ($start !== false) {
+            $clean = substr($clean, $start);
         }
-        $decoded = json_decode($clean, true);
+        $end     = strrpos($clean, ']');
+        $decoded = $end !== false ? json_decode(substr($clean, 0, $end + 1), true) : null;
+
+        // Respuesta truncada: rescatar los objetos que sí llegaron completos.
+        if (!is_array($decoded)) {
+            $lastComplete = strrpos($clean, '}');
+            if ($lastComplete !== false) {
+                $decoded = json_decode(substr($clean, 0, $lastComplete + 1) . ']', true);
+                if (is_array($decoded)) {
+                    Log::warning('BlogAIService: respuesta de temas truncada, rescatados ' . count($decoded) . ' temas completos');
+                }
+            }
+        }
+
         if (!is_array($decoded)) {
             Log::warning('BlogAIService: parseTopicsArray failed', ['raw' => substr($raw, 0, 400)]);
             return [];

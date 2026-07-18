@@ -7,6 +7,7 @@ use App\Models\BlogCampaign;
 use App\Models\Post;
 use App\Services\BlogAIService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class BlogCampaignController extends Controller
 {
@@ -72,15 +73,21 @@ class BlogCampaignController extends Controller
         set_time_limit(180);
         $count = min(40, max(5, (int) $request->input('count', 30)));
 
-        $topics = $blogAI->discoverTopics('', [
-            'count'     => $count,
-            'objetivo'  => $blogCampaign->objetivo,
-            'mezcla'    => $blogCampaign->mezcla ?: null,
-            'lecciones' => $blogCampaign->lecciones ?: null,
-        ]);
+        try {
+            $topics = $blogAI->discoverTopics('', [
+                'count'     => $count,
+                'objetivo'  => $blogCampaign->objetivo,
+                'mezcla'    => $blogCampaign->mezcla ?: null,
+                'lecciones' => $blogCampaign->lecciones ?: null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('BlogCampaign: generateMap failed', ['error' => $e->getMessage()]);
+
+            return back()->with('error', 'Error al generar el mapa: ' . $e->getMessage());
+        }
 
         if (empty($topics)) {
-            return back()->with('error', 'La IA no devolvió temas — intenta de nuevo.');
+            return back()->with('error', 'La IA respondió pero no se pudo leer ningún tema — intenta de nuevo.');
         }
 
         // Conservar temas ya trabajados (generados/descartados); agregar nuevos como pending
