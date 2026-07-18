@@ -71,7 +71,7 @@ class GenerateBlogImagesAction
             }
 
             try {
-                $path = $this->callGemini($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
+                $path = $this->callGemini($post->id, $prompts[$key], $this->newPath($post->id, $key), $seed);
                 $this->storePath($post, $key, $path);
 
                 if ($key === 'featured') {
@@ -113,7 +113,7 @@ class GenerateBlogImagesAction
         // (La seed compartida solo aplica a la tanda inicial de generateAll.)
         $seed = random_int(1, 2_147_483_647);
 
-        $path = $this->callGemini($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
+        $path = $this->callGemini($post->id, $prompts[$key], $this->newPath($post->id, $key), $seed);
         $this->storePath($post, $key, $path);
 
         if ($key === 'featured') {
@@ -230,10 +230,33 @@ class GenerateBlogImagesAction
         return $storagePath;
     }
 
+    /**
+     * Nombre versionado por generación: reutilizar el mismo nombre dejaba la
+     * imagen vieja cacheada en navegador/Cloudflare y "no se veía" el cambio.
+     */
+    private function newPath(int $postId, string $key): string
+    {
+        return "blog/{$postId}/{$key}-" . \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(8)) . '.png';
+    }
+
     private function storePath(Post $post, string $key, string $path): void
     {
+        $post->refresh();
         $prompts = $post->image_prompts ?? [];
+        $old     = $prompts["path_{$key}"] ?? null;
+
         $prompts["path_{$key}"] = $path;
         $post->update(['image_prompts' => $prompts]);
+
+        if ($old && $old !== $path) {
+            // Si la imagen vieja ya estaba insertada en el body, apuntar a la nueva
+            $oldUrl = Storage::disk('public')->url($old);
+            $newUrl = Storage::disk('public')->url($path);
+            if (str_contains($post->body ?? '', $oldUrl)) {
+                $post->update(['body' => str_replace($oldUrl, $newUrl, $post->body)]);
+            }
+
+            Storage::disk('public')->delete($old);
+        }
     }
 }
