@@ -20,11 +20,14 @@ class PropertyPortalReportImportService
     }
 
     /**
-     * Formato del export "Rendimiento" de Inmuebles24 (sin API, descarga
-     * manual): hoja unica, columna A = "DD-MM-YYYY / DD-MM-YYYY" (semana),
-     * B-G = metricas. Cada descarga trae el historial completo hasta la
-     * fecha, no solo la semana nueva — updateOrCreate por semana para que
-     * volver a subir el archivo actualice en vez de duplicar.
+     * Export "Rendimiento" de Inmuebles24 (sin API, descarga manual), hoja
+     * unica, columna A = Período, B-G = metricas. Inmuebles24 ha usado dos
+     * formatos de columna A: uno por semana ("DD-MM-YYYY / DD-MM-YYYY",
+     * como en la sesion original de este importador) y otro por dia
+     * ("DD/MM/YYYY", vigente desde 2026-07-18 tras un rediseño de su SPA
+     * frágil — ver memoria de esta sesión). Detectamos el formato fila por
+     * fila y, si es diario, agregamos sumando por semana ISO (lunes a
+     * domingo) antes de guardar — la tabla siempre almacena por semana.
      */
     private function importInmuebles24(Property $property, UploadedFile $file, ?User $uploader): array
     {
@@ -36,23 +39,58 @@ class PropertyPortalReportImportService
         $spreadsheet = IOFactory::load($file->getRealPath());
         $rows = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
 
-        $created = 0;
-        $updated = 0;
+        $metricKeys = ['exposicion', 'visualizaciones', 'consultas_recibidas', 'completaron_formulario', 'contactaron_whatsapp', 'vieron_datos'];
+
+        // Acumulador por semana: se llena tanto con filas ya semanales como
+        // con filas diarias agregadas, para que ambos formatos convivan si
+        // aparecieran en el mismo archivo.
+        $weeks = [];
 
         foreach (array_slice($rows, 1) as $row) {
             $periodo = trim((string) ($row[0] ?? ''));
-            if ($periodo === '' || !str_contains($periodo, '/')) {
+            if ($periodo === '') {
                 continue;
             }
 
-            [$startRaw, $endRaw] = array_map('trim', explode('/', $periodo, 2));
-            try {
-                $weekStart = Carbon::createFromFormat('d-m-Y', $startRaw)->startOfDay();
-                $weekEnd = Carbon::createFromFormat('d-m-Y', $endRaw)->startOfDay();
-            } catch (\Throwable) {
+            $days = 1;
+            if (str_contains($periodo, ' / ')) {
+                // Formato semanal: "DD-MM-YYYY / DD-MM-YYYY"
+                [$startRaw, $endRaw] = array_map('trim', explode('/', $periodo, 2));
+                try {
+                    $weekStart = Carbon::createFromFormat('d-m-Y', $startRaw)->startOfDay();
+                    $weekEnd = Carbon::createFromFormat('d-m-Y', $endRaw)->startOfDay();
+                } catch (\Throwable) {
+                    continue;
+                }
+                $days = 7;
+            } elseif (str_contains($periodo, '/')) {
+                // Formato diario: "DD/MM/YYYY" — se agrega a su semana ISO
+                try {
+                    $day = Carbon::createFromFormat('d/m/Y', $periodo)->startOfDay();
+                } catch (\Throwable) {
+                    continue;
+                }
+                $weekStart = $day->copy()->startOfWeek(Carbon::MONDAY);
+                $weekEnd = $weekStart->copy()->addDays(6);
+            } else {
                 continue;
             }
 
+            $key = $weekStart->toDateString();
+            if (!isset($weeks[$key])) {
+                $weeks[$key] = ['week_end' => $weekEnd->toDateString(), 'days' => 0, ...array_fill_keys($metricKeys, 0)];
+            }
+            $weeks[$key]['days'] += $days;
+            $weeks[$key]['week_end'] = max($weeks[$key]['week_end'], $weekEnd->toDateString());
+            foreach ($metricKeys as $i => $metricKey) {
+                $weeks[$key][$metricKey] += (int) ($row[$i + 1] ?? 0);
+            }
+        }
+
+        $created = 0;
+        $updated = 0;
+
+        foreach ($weeks as $weekStartStr => $data) {
             // No usar updateOrCreate([...cast 'date'...]) directo: Eloquent
             // guarda el cast 'date' con formato datetime completo
             // ('Y-m-d H:i:s'), pero el array de busqueda de updateOrCreate
@@ -62,19 +100,23 @@ class PropertyPortalReportImportService
             // formato exacto almacenado.
             $existing = PropertyPortalReport::where('property_id', $property->id)
                 ->where('portal', 'inmuebles24')
-                ->whereDate('week_start', $weekStart->toDateString())
+                ->whereDate('week_start', $weekStartStr)
                 ->first();
 
+            // Una semana armada con menos de 7 dias sueltos es parcial
+            // (semana en curso, o el archivo diario no alcanzo a cubrirla
+            // completa). Si ya existe una semana completa guardada, no la
+            // pisamos con un total parcial menor — se actualizara sola
+            // cuando una descarga futura traiga los dias que faltan.
+            if ($existing && $data['days'] < 7) {
+                continue;
+            }
+
             $attributes = [
-                'week_end' => $weekEnd->toDateString(),
+                'week_end' => $data['week_end'],
                 'external_listing_id' => $externalListingId,
-                'exposicion' => (int) ($row[1] ?? 0),
-                'visualizaciones' => (int) ($row[2] ?? 0),
-                'consultas_recibidas' => (int) ($row[3] ?? 0),
-                'completaron_formulario' => (int) ($row[4] ?? 0),
-                'contactaron_whatsapp' => (int) ($row[5] ?? 0),
-                'vieron_datos' => (int) ($row[6] ?? 0),
                 'uploaded_by' => $uploader?->id,
+                ...array_intersect_key($data, array_flip($metricKeys)),
             ];
 
             if ($existing) {
@@ -84,7 +126,7 @@ class PropertyPortalReportImportService
                 PropertyPortalReport::create($attributes + [
                     'property_id' => $property->id,
                     'portal' => 'inmuebles24',
-                    'week_start' => $weekStart->toDateString(),
+                    'week_start' => $weekStartStr,
                 ]);
                 $created++;
             }
