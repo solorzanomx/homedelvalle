@@ -48,6 +48,21 @@ class GenerateBlogPostAction
                 'user_id'              => $post->user_id ?? Auth::id() ?? 1,
             ]);
 
+            // Categoría (= ruteo de conversión del CTA final) y tags del set
+            // canónico — la IA los elige, aquí se resuelven a registros reales.
+            if (!empty($generated['categoria'])) {
+                $catId = \App\Models\PostCategory::where('slug', $generated['categoria'])->value('id');
+                if ($catId) {
+                    $post->update(['category_id' => $catId]);
+                }
+            }
+            if (!empty($generated['tags'])) {
+                $tagIds = \App\Models\Tag::whereIn('name', $generated['tags'])->pluck('id');
+                if ($tagIds->isNotEmpty()) {
+                    $post->tags()->syncWithoutDetaching($tagIds);
+                }
+            }
+
             return $post->fresh();
 
         } catch (\Throwable $e) {

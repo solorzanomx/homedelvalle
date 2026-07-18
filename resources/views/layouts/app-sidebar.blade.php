@@ -524,6 +524,11 @@
                         <a href="{{ route('admin.posts.index') }}" class="nav-item {{ request()->routeIs('admin.posts.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="pen-line" class="w-4 h-4" /></span> Blog
                         </a>
+                        @if(Route::has('admin.blog-campaigns.index'))
+                        <a href="{{ route('admin.blog-campaigns.index') }}" class="nav-item {{ request()->routeIs('admin.blog-campaigns.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="megaphone" class="w-4 h-4" /></span> Campañas IA
+                        </a>
+                        @endif
                         @if(Route::has('admin.content-calendar'))
                         <a href="{{ route('admin.content-calendar') }}" class="nav-item {{ request()->routeIs('admin.content-calendar*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="calendar" class="w-4 h-4" /></span> Calendario

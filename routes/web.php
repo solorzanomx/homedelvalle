@@ -517,6 +517,20 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::post('/{post}/re-imagen',          [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'regenerateImage'])->name('regenerate-image');
             Route::post('/{post}/finalizar-imagenes', [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'finalizeImages'])->name('finalize-images');
         });
+        // Campañas de blog (mapa de temas + producción + cola de revisión)
+        Route::prefix('blog-campaigns')->name('blog-campaigns.')->group(function () {
+            Route::get('/',                        [\App\Http\Controllers\Admin\BlogCampaignController::class, 'index'])->name('index');
+            Route::get('/crear',                   [\App\Http\Controllers\Admin\BlogCampaignController::class, 'create'])->name('create');
+            Route::post('/',                       [\App\Http\Controllers\Admin\BlogCampaignController::class, 'store'])->name('store');
+            Route::get('/{blogCampaign}',          [\App\Http\Controllers\Admin\BlogCampaignController::class, 'show'])->name('show');
+            Route::post('/{blogCampaign}/mapa',    [\App\Http\Controllers\Admin\BlogCampaignController::class, 'generateMap'])->name('generate-map');
+            Route::post('/{blogCampaign}/activar', [\App\Http\Controllers\Admin\BlogCampaignController::class, 'activate'])->name('activate');
+            Route::post('/{blogCampaign}/pausar',  [\App\Http\Controllers\Admin\BlogCampaignController::class, 'pause'])->name('pause');
+            Route::post('/{blogCampaign}/descartar-tema', [\App\Http\Controllers\Admin\BlogCampaignController::class, 'discardTopic'])->name('discard-topic');
+            Route::post('/{blogCampaign}/producir', [\App\Http\Controllers\Admin\BlogCampaignController::class, 'produceNext'])->name('produce');
+            Route::post('/{blogCampaign}/aprobar/{post}',   [\App\Http\Controllers\Admin\BlogCampaignController::class, 'approvePost'])->name('approve-post');
+            Route::post('/{blogCampaign}/descartar/{post}', [\App\Http\Controllers\Admin\BlogCampaignController::class, 'discardPost'])->name('discard-post');
+        });
         Route::get('content-calendar', [ContentCalendarController::class, 'index'])->name('content-calendar');
         Route::get('content-calendar/events', [ContentCalendarController::class, 'events'])->name('content-calendar.events');
         Route::patch('content-calendar/{post}/date', [ContentCalendarController::class, 'updateDate'])->name('content-calendar.update-date');

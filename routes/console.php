@@ -26,6 +26,12 @@ Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00')->withoutOve
 Schedule::command('blog:publish-scheduled')->everyMinute()->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:publish-scheduled scheduled run failed'));
 
+// ── Campañas de blog: productor de borradores ────────
+// Una generación por corrida (post completo + 4 imágenes ≈ 2-4 min);
+// cada hora mantiene el colchón sin corridas largas.
+Schedule::command('blog:campaign-produce')->hourly()->withoutOverlapping(30)
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:campaign-produce scheduled run failed'));
+
 // ── EasyBroker: leads de portales → CRM ──────────────
 // Solo corre si el interruptor 'Sincronización automática' está encendido en
 // Admin → EasyBroker (default apagado — Alejandro prefiere manual mientras

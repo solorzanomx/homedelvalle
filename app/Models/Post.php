@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
-    protected $fillable = ['user_id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'featured_image_data', 'category_id', 'status', 'published_at', 'meta_title', 'meta_description', 'views_count', 'ctas', 'focus_keyword', 'zona_mercado_slug', 'secondary_keywords', 'seo_score', 'reading_time', 'schema_type', 'faq_schema', 'image_prompts', 'internal_links', 'ai_generated', 'ai_generation_status'];
+    protected $fillable = ['user_id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'featured_image_data', 'category_id', 'status', 'published_at', 'meta_title', 'meta_description', 'views_count', 'ctas', 'focus_keyword', 'zona_mercado_slug', 'secondary_keywords', 'seo_score', 'reading_time', 'schema_type', 'faq_schema', 'image_prompts', 'internal_links', 'ai_generated', 'ai_generation_status', 'blog_campaign_id'];
 
     protected function casts(): array
     {

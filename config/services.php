@@ -65,7 +65,9 @@ return [
     ],
 
     'google_ai' => [
-        'api_key' => env('GOOGLE_AI_STUDIO_KEY'),
+        // Fallback a GEMINI_API_KEY: es la misma key de Google AI Studio —
+        // una sola variable alimenta clasificación e imágenes.
+        'api_key' => env('GOOGLE_AI_STUDIO_KEY', env('GEMINI_API_KEY')),
     ],
 
     'gemini' => [
