@@ -10,11 +10,14 @@ class BlogCampaign extends Model
     protected $fillable = [
         'name', 'objetivo', 'status', 'posts_per_week', 'buffer',
         'publish_hour', 'mezcla', 'lecciones', 'topics', 'started_at',
+        'map_requested_at', 'map_requested_count', 'produce_requested_at',
     ];
 
     protected $casts = [
-        'topics'     => 'array',
-        'started_at' => 'date',
+        'topics'               => 'array',
+        'started_at'           => 'date',
+        'map_requested_at'     => 'datetime',
+        'produce_requested_at' => 'datetime',
     ];
 
     public function posts(): HasMany

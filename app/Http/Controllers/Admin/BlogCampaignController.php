@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BlogCampaign;
 use App\Models\Post;
-use App\Services\BlogAIService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class BlogCampaignController extends Controller
 {
@@ -67,44 +65,19 @@ class BlogCampaignController extends Controller
         ]);
     }
 
-    /** Genera (o re-genera) el mapa de temas de la campaña con IA. */
-    public function generateMap(Request $request, BlogCampaign $blogCampaign, BlogAIService $blogAI)
+    /**
+     * Deja la orden de generar el mapa; blog:campaign-work la ejecuta por
+     * cron (~2 min con 30 temas — un request web no la aguanta, Cloudflare
+     * corta a los 100s) y notifica al terminar.
+     */
+    public function generateMap(Request $request, BlogCampaign $blogCampaign)
     {
-        set_time_limit(180);
-        $count = min(40, max(5, (int) $request->input('count', 30)));
-
-        try {
-            $topics = $blogAI->discoverTopics('', [
-                'count'     => $count,
-                'objetivo'  => $blogCampaign->objetivo,
-                'mezcla'    => $blogCampaign->mezcla ?: null,
-                'lecciones' => $blogCampaign->lecciones ?: null,
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('BlogCampaign: generateMap failed', ['error' => $e->getMessage()]);
-
-            return back()->with('error', 'Error al generar el mapa: ' . $e->getMessage());
-        }
-
-        if (empty($topics)) {
-            return back()->with('error', 'La IA respondió pero no se pudo leer ningún tema — intenta de nuevo.');
-        }
-
-        // Conservar temas ya trabajados (generados/descartados); agregar nuevos como pending
-        $existentes = collect($blogCampaign->topics ?? [])->where('status', '!=', 'pending')->values();
-        $nuevos = collect($topics)->map(fn ($t) => [
-            'title'       => $t['title'] ?? '',
-            'description' => $t['description'] ?? '',
-            'keywords'    => $t['suggested_keywords'] ?? [],
-            'categoria'   => $t['categoria'] ?? null,
-            'score'       => $t['relevance_score'] ?? null,
-            'status'      => 'pending',
-            'post_id'     => null,
+        $blogCampaign->update([
+            'map_requested_at'    => now(),
+            'map_requested_count' => min(40, max(5, (int) $request->input('count', 30))),
         ]);
 
-        $blogCampaign->update(['topics' => $existentes->concat($nuevos)->values()->all()]);
-
-        return back()->with('success', count($topics) . ' temas generados. Revisa el mapa, descarta los que no y activa la campaña.');
+        return back()->with('success', 'Generando el mapa de temas en segundo plano (~2-3 min). Te llegará una notificación 🔔 cuando esté listo — esta página se recarga sola.');
     }
 
     public function activate(BlogCampaign $blogCampaign)
@@ -146,16 +119,16 @@ class BlogCampaignController extends Controller
         return back()->with('success', 'Tema descartado' . ($motivo ? ' (motivo guardado para futuras generaciones)' : '') . '.');
     }
 
-    /** Produce el siguiente borrador de la campaña ahora mismo (sin esperar al productor). */
+    /** Deja la orden de producir el siguiente borrador; el worker por cron la ejecuta (~3-5 min). */
     public function produceNext(BlogCampaign $blogCampaign)
     {
-        set_time_limit(600);
+        if (empty($blogCampaign->pendingTopics())) {
+            return back()->with('error', 'No hay temas pendientes en el mapa.');
+        }
 
-        $result = app(\App\Services\BlogCampaignProducer::class)->produceNext($blogCampaign);
+        $blogCampaign->update(['produce_requested_at' => now()]);
 
-        return $result
-            ? back()->with('success', "Borrador generado: «{$result->title}» — revísalo y aprueba.")
-            : back()->with('error', 'No hay temas pendientes o la generación falló (revisa el log).');
+        return back()->with('success', 'Produciendo el siguiente borrador en segundo plano (~3-5 min, texto + imágenes). Te llegará una notificación 🔔 cuando espere tu OK.');
     }
 
     /** OK del editor: programa el post en el siguiente slot del calendario. */

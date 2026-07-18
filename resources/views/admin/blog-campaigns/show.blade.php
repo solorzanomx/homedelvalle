@@ -23,12 +23,27 @@
         @else
         <form method="POST" action="{{ route('admin.blog-campaigns.pause', $campaign) }}">@csrf<button class="btn btn-outline">{{ $campaign->status === 'paused' ? '▶ Reanudar' : '⏸ Pausar' }}</button></form>
         @endif
-        <form method="POST" action="{{ route('admin.blog-campaigns.produce', $campaign) }}">@csrf<button class="btn btn-outline" onclick="this.innerHTML='Generando (2-4 min)…';this.disabled=true;this.form.submit()">⚡ Producir siguiente</button></form>
+        @if(!$campaign->produce_requested_at)
+        <form method="POST" action="{{ route('admin.blog-campaigns.produce', $campaign) }}">@csrf<button class="btn btn-outline">⚡ Producir siguiente</button></form>
+        @endif
     </div>
 </div>
 
 @if(session('success'))<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#065f46;font-size:0.85rem">{{ session('success') }}</div>@endif
 @if(session('error'))<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#991b1b;font-size:0.85rem">{{ session('error') }}</div>@endif
+
+{{-- Órdenes en curso: el worker por cron las ejecuta; la página se recarga sola --}}
+@if($campaign->map_requested_at || $campaign->produce_requested_at)
+<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:1rem;color:#1e40af;font-size:0.85rem;display:flex;align-items:center;gap:0.6rem">
+    <span style="display:inline-block;width:14px;height:14px;border:2px solid #1e40af;border-top-color:transparent;border-radius:50%;animation:hdv-spin 0.8s linear infinite"></span>
+    <span>
+        @if($campaign->map_requested_at)🗺 Generando el mapa de temas (~2-3 min)… @endif
+        @if($campaign->produce_requested_at)⚡ Produciendo el siguiente borrador (~3-5 min, texto + imágenes)… @endif
+        La página se recarga sola; también te llegará una notificación 🔔.
+    </span>
+</div>
+<script>setTimeout(function () { window.location.reload(); }, 30000);</script>
+@endif
 
 {{-- ═══ COLA DE REVISIÓN — borradores esperando tu OK ═══ --}}
 @if($drafts->count())
@@ -95,12 +110,14 @@
 <div class="card">
     <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
         <h3>🗺 Mapa de temas ({{ $topics->count() }})</h3>
+        @if(!$campaign->map_requested_at)
         <form method="POST" action="{{ route('admin.blog-campaigns.generate-map', $campaign) }}">@csrf
             <input type="hidden" name="count" value="{{ session('generate_map_count', 30) }}">
-            <button class="btn btn-outline" style="font-size:0.8rem" onclick="this.innerHTML='Generando mapa (1-2 min)…';this.disabled=true;this.form.submit()">
+            <button class="btn btn-outline" style="font-size:0.8rem">
                 {{ $topics->count() ? '➕ Generar más temas' : '🤖 Generar mapa de temas' }}
             </button>
         </form>
+        @endif
     </div>
     <div class="card-body" style="padding:0">
         @forelse($topics as $i => $topic)
@@ -138,4 +155,8 @@
     </div>
 </div>
 @endif
+@endsection
+
+@section('styles')
+@keyframes hdv-spin { to { transform: rotate(360deg); } }
 @endsection

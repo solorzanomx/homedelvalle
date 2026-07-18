@@ -32,6 +32,11 @@ Schedule::command('blog:publish-scheduled')->everyMinute()->withoutOverlapping()
 Schedule::command('blog:campaign-produce')->hourly()->withoutOverlapping(30)
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:campaign-produce scheduled run failed'));
 
+// Órdenes de los botones del hub (mapa/producir): corren aquí porque el
+// request web no aguanta los 2-5 min de generación (Cloudflare corta a 100s).
+Schedule::command('blog:campaign-work')->everyMinute()->withoutOverlapping(30)->runInBackground()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:campaign-work scheduled run failed'));
+
 // ── EasyBroker: leads de portales → CRM ──────────────
 // Solo corre si el interruptor 'Sincronización automática' está encendido en
 // Admin → EasyBroker (default apagado — Alejandro prefiere manual mientras
