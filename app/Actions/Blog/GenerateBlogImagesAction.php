@@ -108,8 +108,10 @@ class GenerateBlogImagesAction
         $dir  = "blog/{$post->id}";
         Storage::disk('public')->makeDirectory($dir);
 
-        // Reuse the post's stored seed for visual consistency across all images
-        $seed = $prompts['seed'] ?? null;
+        // Seed NUEVA en cada regeneración: con la seed guardada el resultado es
+        // determinístico y "Re-generar" devolvía exactamente la misma imagen.
+        // (La seed compartida solo aplica a la tanda inicial de generateAll.)
+        $seed = random_int(1, 2_147_483_647);
 
         $path = $this->callGemini($post->id, $prompts[$key], "{$dir}/{$key}.png", $seed);
         $this->storePath($post, $key, $path);
