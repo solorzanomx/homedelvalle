@@ -26,8 +26,13 @@ class PropertyPortalReportImportService
      * como en la sesion original de este importador) y otro por dia
      * ("DD/MM/YYYY", vigente desde 2026-07-18 tras un rediseño de su SPA
      * frágil — ver memoria de esta sesión). Detectamos el formato fila por
-     * fila y, si es diario, agregamos sumando por semana ISO (lunes a
-     * domingo) antes de guardar — la tabla siempre almacena por semana.
+     * fila y, si es diario, agregamos sumando por semana antes de guardar —
+     * la tabla siempre almacena por semana. Las semanas de Inmuebles24 NO
+     * son semanas ISO lunes-domingo: anclan al día en que arrancó el
+     * tracking del anuncio (en un caso real, martes-lunes). Para no crear
+     * una grilla de semanas paralela que nunca haga match con el
+     * historial ya guardado, el ancla se deriva del week_start más
+     * reciente que ya exista para esta propiedad/portal.
      */
     private function importInmuebles24(Property $property, UploadedFile $file, ?User $uploader): array
     {
@@ -35,6 +40,11 @@ class PropertyPortalReportImportService
         if (preg_match('/_(\d+)\.xlsx$/i', $file->getClientOriginalName(), $m)) {
             $externalListingId = $m[1];
         }
+
+        $lastWeekStart = PropertyPortalReport::where('property_id', $property->id)
+            ->where('portal', 'inmuebles24')
+            ->max('week_start');
+        $anchorDow = $lastWeekStart ? Carbon::parse($lastWeekStart)->dayOfWeek : Carbon::MONDAY;
 
         $spreadsheet = IOFactory::load($file->getRealPath());
         $rows = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
@@ -70,7 +80,7 @@ class PropertyPortalReportImportService
                 } catch (\Throwable) {
                     continue;
                 }
-                $weekStart = $day->copy()->startOfWeek(Carbon::MONDAY);
+                $weekStart = $day->copy()->startOfWeek($anchorDow);
                 $weekEnd = $weekStart->copy()->addDays(6);
             } else {
                 continue;
