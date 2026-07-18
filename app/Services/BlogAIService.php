@@ -274,6 +274,7 @@ Instrucciones para el body HTML:
 - Incluye los internal_links como <a href="url">anchor</a> en el texto
 - Menciona colonias de Benito Juárez cuando sea natural hacerlo
 - En image_prompts, reemplaza los corchetes [describe...] con descripciones específicas al tema del artículo
+- REGLA DURA en image_prompts: NUNCA pidas personas con rostro visible (el generador difumina las caras y se ve falso). Si la escena necesita gente, especifica "seen from behind", "over-the-shoulder view", "hands only" o "people small in the distance". Prefiere escenas sin personas: arquitectura, calles, interiores, documentos, detalles.
 PROMPT;
     }
 

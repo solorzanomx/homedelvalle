@@ -15,6 +15,12 @@ class GenerateBlogImagesAction
     private const OUTPUT_WIDTH  = 720;
     private const PROMPT_SUFFIX = 'Ultra photorealistic, shot on full-frame DSLR, natural lighting, sharp focus, high detail, 4K resolution, aspect ratio 16:9, no text, no logos, no watermarks, no overlays, no UI elements, no borders, no artificial filters — if any signage, street signs, real estate signs or commercial text appears in the scene, render it exclusively in Spanish, Mexico City context.';
 
+    /**
+     * Va AL INICIO del prompt (ahí pesa más): los rostros generados salen
+     * difuminados o falsos y dan desconfianza — se compone sin caras.
+     */
+    private const PROMPT_PREFIX = 'HARD CONSTRAINT — NO HUMAN FACES ANYWHERE IN THE IMAGE: every person, if any, must be photographed strictly from behind or as hands/arms only in close-up; no profiles, no partial faces, no reflections of faces. Prefer composing the scene entirely without people. Scene: ';
+
     public const KEYS = ['featured', 'interior_1', 'interior_2', 'interior_3'];
 
     public const LABELS = [
@@ -164,7 +170,7 @@ class GenerateBlogImagesAction
 
     private function callDalle(int $postId, string $prompt, string $storagePath, ?int $seed = null): string
     {
-        $prompt = rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
+        $prompt = self::PROMPT_PREFIX . rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
 
         Log::info('GenerateBlogImagesAction: calling ' . self::IMAGE_MODEL, [
             'post_id' => $postId,

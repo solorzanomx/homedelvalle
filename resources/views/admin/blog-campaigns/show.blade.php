@@ -61,6 +61,7 @@
             </div>
             <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
                 <a href="{{ route('admin.posts.edit', $post) }}" class="btn btn-outline" style="padding:0.35rem 0.8rem;font-size:0.8rem" target="_blank">👁 Revisar</a>
+                <a href="{{ route('admin.blog.images', $post) }}" class="btn btn-outline" style="padding:0.35rem 0.8rem;font-size:0.8rem" target="_blank">🖼 Imágenes</a>
                 <form method="POST" action="{{ route('admin.blog-campaigns.approve-post', [$campaign, $post]) }}">@csrf
                     <button class="btn btn-primary" style="padding:0.35rem 0.8rem;font-size:0.8rem">✓ Aprobar y programar</button>
                 </form>
