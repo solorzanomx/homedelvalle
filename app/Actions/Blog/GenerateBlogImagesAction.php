@@ -185,6 +185,11 @@ class GenerateBlogImagesAction
 
         $generationConfig = [
             'responseModalities' => ['image', 'text'],
+            // Sin esto el modelo genera a 1K ($0.067/imagen) por default.
+            // El body del blog se muestra a 720px de ancho — 512px de
+            // salida (0.5K, $0.045/imagen, ~33% más barato) es suficiente
+            // y de todas formas scaleDown() de abajo nunca agranda.
+            'imageConfig' => ['imageSize' => '512'],
         ];
 
         if ($seed !== null) {
