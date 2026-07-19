@@ -150,8 +150,28 @@ PROMPT;
         $system = $this->buildSystemPrompt();
         $prompt = $this->buildGenerationPrompt($title, $keywords, $marketData, $brief);
 
-        $raw    = $this->ai->agent('blog.generation', $prompt, $system);
-        $parsed = $this->parseJsonBlock($raw);
+        // El JSON malo es intermitente (la IA a veces deja una comilla sin
+        // escapar dentro del HTML del body) — el mismo prompt reintentado
+        // suele salir bien. BlogCampaignProducer NO reintenta un tema ya
+        // consumido, así que sin esto un glitch de una sola vez deja el
+        // post huérfano con solo título para siempre.
+        $raw = null;
+        $parsed = null;
+        $lastError = null;
+        for ($attempt = 1; $attempt <= 2; $attempt++) {
+            $raw = $this->ai->agent('blog.generation', $prompt, $system);
+            try {
+                $parsed = $this->parseJsonBlock($raw);
+                break;
+            } catch (RuntimeException $e) {
+                $lastError = $e;
+                Log::warning("BlogAIService: intento {$attempt} de generación con JSON inválido, " . (2 - $attempt) . ' reintento(s) restante(s)');
+            }
+        }
+
+        if ($parsed === null) {
+            throw $lastError;
+        }
 
         if (empty($parsed['body'])) {
             throw new RuntimeException('La IA no devolvió contenido de blog. Respuesta: ' . substr($raw, 0, 500));
@@ -264,7 +284,8 @@ Devuelve exactamente este JSON (sin texto fuera del JSON):
 }
 
 Instrucciones para el body HTML:
-- Tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a href="...">
+- Tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a href='...'>
+- REGLA DURA: dentro del HTML de "body", usa SIEMPRE comillas simples en los atributos (href='...', no href="..."). El body va dentro de un string JSON delimitado por comillas dobles — una comilla doble sin escapar dentro del HTML rompe el JSON completo.
 - Coloca {{CTA1}} después del primer H2
 - Coloca {{IMG1}} después del segundo H2 (imagen de sección)
 - Coloca {{CTA2}} a mitad del artículo
