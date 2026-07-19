@@ -3,6 +3,7 @@
 namespace App\Services\AI\Providers;
 
 use App\Contracts\AIProviderContract;
+use App\Services\AI\AiUsageLogger;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -44,6 +45,14 @@ class PerplexityProvider implements AIProviderContract
         if ($response->failed()) {
             throw new RuntimeException('Perplexity API error: ' . $response->body());
         }
+
+        AiUsageLogger::record(
+            $options['_service'] ?? 'unknown',
+            'perplexity',
+            $payload['model'],
+            (int) $response->json('usage.prompt_tokens', 0),
+            (int) $response->json('usage.completion_tokens', 0),
+        );
 
         return $response->json('choices.0.message.content') ?? '';
     }

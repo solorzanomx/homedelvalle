@@ -80,3 +80,6 @@ Schedule::command('market:update-prices')
     ->onFailure(function () {
         \Illuminate\Support\Facades\Log::error('market:update-prices scheduled run failed');
     });
+
+Schedule::command('ai:rollup-usage')->dailyAt('00:10')->withoutOverlapping()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('ai:rollup-usage scheduled run failed'));

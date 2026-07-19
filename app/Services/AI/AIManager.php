@@ -37,6 +37,8 @@ class AIManager
      */
     public function complete(string $prompt, ?string $system = null, array $options = []): string
     {
+        $options['_service'] ??= 'adhoc.complete';
+
         return $this->provider()->complete($prompt, $system, $options);
     }
 
@@ -45,6 +47,7 @@ class AIManager
      */
     public function search(string $prompt, ?string $system = null, array $options = []): string
     {
+        $options['_service'] ??= 'adhoc.search';
         return $this->webSearch()->complete($prompt, $system, $options);
     }
 
@@ -61,6 +64,7 @@ class AIManager
         $provider = $this->resolve($cfg['provider'] ?? config('ai.default_provider', 'anthropic'));
         $options  = array_merge($cfg, $override);
         unset($options['provider']); // provider key not needed in $options
+        $options['_service'] ??= $agentKey;
 
         return $provider->complete($prompt, $system, $options);
     }

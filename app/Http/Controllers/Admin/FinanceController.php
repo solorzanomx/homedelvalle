@@ -8,6 +8,7 @@ use App\Models\Commission;
 use App\Models\Deal;
 use App\Models\Property;
 use App\Models\Broker;
+use App\Models\AiUsageLog;
 use Illuminate\Http\Request;
 
 class FinanceController extends Controller
@@ -40,7 +41,14 @@ class FinanceController extends Controller
         $recentTransactions = Transaction::with(['deal', 'operation.property', 'property', 'broker'])->latest('date')->limit(10)->get();
         $pendingCommissions = Commission::with(['deal.property', 'operation.property', 'broker'])->where('status', 'pending')->latest()->limit(10)->get();
 
-        return view('admin.finance.dashboard', compact('stats', 'monthlyData', 'recentTransactions', 'pendingCommissions'));
+        $aiUsageMonth = AiUsageLog::whereMonth('created_at', $currentMonth)->whereYear('created_at', $currentYear)->get();
+        $aiUsageBreakdown = $aiUsageMonth->groupBy('service')
+            ->map(fn ($g) => (float) $g->sum('cost_usd'))
+            ->sortDesc();
+        $aiUsageTotalUsd = (float) $aiUsageMonth->sum('cost_usd');
+        $aiUsageTotalMxn = round($aiUsageTotalUsd * (float) config('ai_pricing.usd_mxn_rate', 18.5), 2);
+
+        return view('admin.finance.dashboard', compact('stats', 'monthlyData', 'recentTransactions', 'pendingCommissions', 'aiUsageBreakdown', 'aiUsageTotalUsd', 'aiUsageTotalMxn'));
     }
 
     public function transactions(Request $request)
@@ -53,7 +61,7 @@ class FinanceController extends Controller
         if ($request->to) $query->whereDate('date', '<=', $request->to);
 
         $transactions = $query->paginate(20)->appends($request->query());
-        $categories = ['commission', 'rent', 'maintenance', 'marketing', 'salary', 'office', 'tax', 'other'];
+        $categories = ['commission', 'rent', 'maintenance', 'marketing', 'salary', 'office', 'tax', 'ai_tools', 'other'];
 
         return view('admin.finance.transactions', compact('transactions', 'categories'));
     }
@@ -63,7 +71,7 @@ class FinanceController extends Controller
         $deals = Deal::all();
         $properties = Property::all();
         $brokers = Broker::all();
-        $categories = ['commission' => 'Comision', 'rent' => 'Renta', 'maintenance' => 'Mantenimiento', 'marketing' => 'Marketing', 'salary' => 'Salario', 'office' => 'Oficina', 'tax' => 'Impuesto', 'other' => 'Otro'];
+        $categories = ['commission' => 'Comision', 'rent' => 'Renta', 'maintenance' => 'Mantenimiento', 'marketing' => 'Marketing', 'salary' => 'Salario', 'office' => 'Oficina', 'tax' => 'Impuesto', 'ai_tools' => 'Herramientas IA', 'other' => 'Otro'];
         return view('admin.finance.transaction-form', compact('deals', 'properties', 'brokers', 'categories'));
     }
 
@@ -95,7 +103,7 @@ class FinanceController extends Controller
         $deals = Deal::all();
         $properties = Property::all();
         $brokers = Broker::all();
-        $categories = ['commission' => 'Comision', 'rent' => 'Renta', 'maintenance' => 'Mantenimiento', 'marketing' => 'Marketing', 'salary' => 'Salario', 'office' => 'Oficina', 'tax' => 'Impuesto', 'other' => 'Otro'];
+        $categories = ['commission' => 'Comision', 'rent' => 'Renta', 'maintenance' => 'Mantenimiento', 'marketing' => 'Marketing', 'salary' => 'Salario', 'office' => 'Oficina', 'tax' => 'Impuesto', 'ai_tools' => 'Herramientas IA', 'other' => 'Otro'];
         return view('admin.finance.transaction-form', compact('transaction', 'deals', 'properties', 'brokers', 'categories'));
     }
 

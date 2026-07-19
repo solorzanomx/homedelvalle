@@ -146,6 +146,28 @@
     </div>
 </div>
 
+{{-- AI usage --}}
+<div class="fin-card" style="margin-bottom:1.25rem;">
+    <div class="fin-card-header">
+        <span>Gasto de IA (mes)</span>
+        <span style="font-weight:600;font-size:0.85rem;">${{ number_format($aiUsageTotalMxn, 2) }} MXN <span style="color:var(--text-muted);font-weight:400;">(${{ number_format($aiUsageTotalUsd, 2) }} USD)</span></span>
+    </div>
+    @forelse($aiUsageBreakdown as $service => $usd)
+        @php $pct = $aiUsageTotalUsd > 0 ? ($usd / $aiUsageTotalUsd) * 100 : 0; @endphp
+        <div class="tx-item">
+            <div class="tx-info">
+                <div class="tx-desc">{{ $service }}</div>
+                <div style="background:var(--border);border-radius:4px;height:5px;margin-top:4px;overflow:hidden;">
+                    <div style="background:var(--primary);height:100%;width:{{ $pct }}%;"></div>
+                </div>
+            </div>
+            <div class="tx-amount">${{ number_format($usd, 3) }}</div>
+        </div>
+    @empty
+        <div class="fin-empty">Sin uso de IA registrado este mes</div>
+    @endforelse
+</div>
+
 {{-- Two columns --}}
 <div class="fin-columns">
     {{-- Recent Transactions --}}

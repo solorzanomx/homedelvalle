@@ -3,6 +3,7 @@
 namespace App\Services\AI\Providers;
 
 use App\Contracts\AIProviderContract;
+use App\Services\AI\AiUsageLogger;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -55,6 +56,14 @@ class AnthropicProvider implements AIProviderContract
         if ($response->failed()) {
             throw new RuntimeException('Anthropic API error: ' . $response->body());
         }
+
+        AiUsageLogger::record(
+            $options['_service'] ?? 'unknown',
+            'anthropic',
+            $payload['model'],
+            (int) $response->json('usage.input_tokens', 0),
+            (int) $response->json('usage.output_tokens', 0),
+        );
 
         return $response->json('content.0.text') ?? '';
     }

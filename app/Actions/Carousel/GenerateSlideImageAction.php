@@ -74,6 +74,14 @@ class GenerateSlideImageAction
             throw new \RuntimeException(self::IMAGE_MODEL . ' did not return image data. Body: ' . substr($response->body(), 0, 400));
         }
 
+        \App\Services\AI\AiUsageLogger::record(
+            'carousel.images',
+            'gemini',
+            self::IMAGE_MODEL,
+            (int) $response->json('usageMetadata.promptTokenCount', 0),
+            (int) $response->json('usageMetadata.candidatesTokenCount', 0),
+        );
+
         $manager = new ImageManager(new Driver());
         $resized  = $manager->read(base64_decode($b64))
             ->scaleDown(width: self::OUTPUT_WIDTH)

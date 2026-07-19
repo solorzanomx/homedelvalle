@@ -223,6 +223,14 @@ class GenerateBlogImagesAction
             throw new \RuntimeException(self::IMAGE_MODEL . ' did not return image data. Body: ' . substr($response->body(), 0, 400));
         }
 
+        \App\Services\AI\AiUsageLogger::record(
+            'blog.images',
+            'gemini',
+            self::IMAGE_MODEL,
+            (int) $response->json('usageMetadata.promptTokenCount', 0),
+            (int) $response->json('usageMetadata.candidatesTokenCount', 0),
+        );
+
         $imageData = base64_decode($b64);
 
         $manager = new ImageManager(new Driver());
