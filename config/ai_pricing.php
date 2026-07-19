@@ -22,9 +22,12 @@ return [
         'sonar'     => ['input' => 1.00, 'output' => 1.00, 'request_fee' => 0.008],
         'sonar-pro' => ['input' => 3.00, 'output' => 15.00, 'request_fee' => 0.010],
 
-        // Gemini — imágenes de blog y carrusel (se facturan como tokens de salida a la misma tarifa que texto)
+        // Gemini — imágenes de carrusel (blog ya migró a OpenAI, ver abajo)
         'gemini-3.1-flash-image'         => ['input' => 0.50, 'output' => 60.00],
         'gemini-3.1-flash-image-preview' => ['input' => 0.50, 'output' => 60.00],
+
+        // OpenAI — imágenes de blog (migrado 2026-07-18, ~9x más barato que Gemini)
+        'gpt-image-1-mini' => ['input' => 2.00, 'output' => 8.00],
     ],
 
 ];

@@ -11,7 +11,11 @@ use Intervention\Image\Drivers\Gd\Driver;
 
 class GenerateBlogImagesAction
 {
-    private const IMAGE_MODEL   = 'gemini-3.1-flash-image';
+    // Antes gemini-3.1-flash-image ($0.045/imagen a 512px). Cambiado a
+    // GPT Image 1 Mini calidad "low" ($0.005/imagen a 1024px, ~9x más
+    // barato Y a mayor resolución) — probado en vivo el 2026-07-18,
+    // calidad visual comparable.
+    private const IMAGE_MODEL   = 'gpt-image-1-mini';
     private const OUTPUT_WIDTH  = 720;
     private const PROMPT_SUFFIX = 'Ultra photorealistic, shot on full-frame DSLR, natural lighting, sharp focus, high detail, 4K resolution, aspect ratio 16:9, no text, no logos, no watermarks, no overlays, no UI elements, no borders, no artificial filters — if any signage, street signs, real estate signs or commercial text appears in the scene, render it exclusively in Spanish, Mexico City context.';
 
@@ -56,29 +60,20 @@ class GenerateBlogImagesAction
         $dir     = "blog/{$post->id}";
         Storage::disk('public')->makeDirectory($dir);
 
-        // Generate a single seed for all 4 images so they share the same palette/feel
-        $seed = $prompts['seed'] ?? random_int(1, 2_147_483_647);
-
-        // Persist seed immediately so single-image regenerations can reuse it
-        $prompts['seed'] = $seed;
-        $post->update(['image_prompts' => $prompts]);
-        $post->refresh();
-        $prompts = $post->image_prompts;
-
         foreach (self::KEYS as $key) {
             if (empty($prompts[$key])) {
                 continue;
             }
 
             try {
-                $path = $this->callGemini($post->id, $prompts[$key], $this->newPath($post->id, $key), $seed);
+                $path = $this->callImageApi($post->id, $prompts[$key], $this->newPath($post->id, $key));
                 $this->storePath($post, $key, $path);
 
                 if ($key === 'featured') {
                     $post->update(['featured_image' => $path]);
                 }
 
-                Log::info("GenerateBlogImagesAction: {$key} stored", ['path' => $path, 'seed' => $seed]);
+                Log::info("GenerateBlogImagesAction: {$key} stored", ['path' => $path]);
             } catch (\Throwable $e) {
                 Log::error("GenerateBlogImagesAction: {$key} failed", [
                     'post_id' => $post->id,
@@ -108,19 +103,14 @@ class GenerateBlogImagesAction
         $dir  = "blog/{$post->id}";
         Storage::disk('public')->makeDirectory($dir);
 
-        // Seed NUEVA en cada regeneración: con la seed guardada el resultado es
-        // determinístico y "Re-generar" devolvía exactamente la misma imagen.
-        // (La seed compartida solo aplica a la tanda inicial de generateAll.)
-        $seed = random_int(1, 2_147_483_647);
-
-        $path = $this->callGemini($post->id, $prompts[$key], $this->newPath($post->id, $key), $seed);
+        $path = $this->callImageApi($post->id, $prompts[$key], $this->newPath($post->id, $key));
         $this->storePath($post, $key, $path);
 
         if ($key === 'featured') {
             $post->update(['featured_image' => $path]);
         }
 
-        Log::info("GenerateBlogImagesAction: single {$key} stored", ['path' => $path, 'seed' => $seed]);
+        Log::info("GenerateBlogImagesAction: single {$key} stored", ['path' => $path]);
 
         return Storage::disk('public')->url($path) . '?t=' . time();
     }
@@ -165,12 +155,12 @@ class GenerateBlogImagesAction
 
     private function ensureApiKey(): void
     {
-        if (!config('services.google_ai.api_key')) {
-            throw new \RuntimeException('GOOGLE_AI_STUDIO_KEY no configurada en .env');
+        if (!config('services.openai.api_key')) {
+            throw new \RuntimeException('OPENAI_API_KEY no configurada en .env');
         }
     }
 
-    private function callGemini(int $postId, string $prompt, string $storagePath, ?int $seed = null): string
+    private function callImageApi(int $postId, string $prompt, string $storagePath): string
     {
         $prompt = self::PROMPT_PREFIX . rtrim($prompt, '. ') . '. ' . self::PROMPT_SUFFIX;
 
@@ -178,32 +168,17 @@ class GenerateBlogImagesAction
             'post_id' => $postId,
             'path'    => $storagePath,
             'prompt'  => substr($prompt, 0, 150),
-            'seed'    => $seed,
         ]);
 
-        $apiKey = config('services.google_ai.api_key');
+        $apiKey = config('services.openai.api_key');
 
-        $generationConfig = [
-            'responseModalities' => ['image', 'text'],
-            // Sin esto el modelo genera a 1K ($0.067/imagen) por default.
-            // El body del blog se muestra a 720px de ancho — 512px de
-            // salida (0.5K, $0.045/imagen, ~33% más barato) es suficiente
-            // y de todas formas scaleDown() de abajo nunca agranda.
-            'imageConfig' => ['imageSize' => '512'],
-        ];
-
-        if ($seed !== null) {
-            $generationConfig['seed'] = $seed;
-        }
-
-        $response = Http::withHeaders(['x-goog-api-key' => $apiKey])
+        $response = Http::withToken($apiKey)
             ->timeout(120)
-            ->post("https://generativelanguage.googleapis.com/v1beta/models/" . self::IMAGE_MODEL . ":generateContent", [
-                'contents' => [[
-                    'role'  => 'user',
-                    'parts' => [['text' => $prompt]],
-                ]],
-                'generationConfig' => $generationConfig,
+            ->post('https://api.openai.com/v1/images/generations', [
+                'model'   => self::IMAGE_MODEL,
+                'prompt'  => $prompt,
+                'size'    => '1024x1024',
+                'quality' => 'low',
             ]);
 
         if (!$response->successful()) {
@@ -211,13 +186,7 @@ class GenerateBlogImagesAction
             throw new \RuntimeException(self::IMAGE_MODEL . " error ({$response->status()}): {$error}");
         }
 
-        $b64 = null;
-        foreach ($response->json('candidates.0.content.parts', []) as $part) {
-            if (!empty($part['inlineData']['data'])) {
-                $b64 = $part['inlineData']['data'];
-                break;
-            }
-        }
+        $b64 = $response->json('data.0.b64_json');
 
         if (!$b64) {
             throw new \RuntimeException(self::IMAGE_MODEL . ' did not return image data. Body: ' . substr($response->body(), 0, 400));
@@ -225,10 +194,10 @@ class GenerateBlogImagesAction
 
         \App\Services\AI\AiUsageLogger::record(
             'blog.images',
-            'gemini',
+            'openai',
             self::IMAGE_MODEL,
-            (int) $response->json('usageMetadata.promptTokenCount', 0),
-            (int) $response->json('usageMetadata.candidatesTokenCount', 0),
+            (int) $response->json('usage.input_tokens', 0),
+            (int) $response->json('usage.output_tokens', 0),
         );
 
         $imageData = base64_decode($b64);
