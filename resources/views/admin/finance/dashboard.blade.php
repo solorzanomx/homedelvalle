@@ -178,7 +178,7 @@
         </div>
         @forelse($recentTransactions as $tx)
             <div class="tx-item">
-                <div class="tx-icon {{ $tx->type }}">{{ $tx->type === 'income' ? '&#9650;' : '&#9660;' }}</div>
+                <div class="tx-icon {{ $tx->type }}">{!! $tx->type === 'income' ? '&#9650;' : '&#9660;' !!}</div>
                 <div class="tx-info">
                     <div class="tx-desc">{{ Str::limit($tx->description, 30) }}</div>
                     <div class="tx-date">{{ \Carbon\Carbon::parse($tx->date)->format('d/m/Y') }}</div>
