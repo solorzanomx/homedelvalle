@@ -11,6 +11,18 @@ class FormSubmissionsTable extends Component
 {
     use WithPagination;
 
+    /**
+     * Sin esto, Livewire usa su propia vista 'livewire::tailwind' (con SVGs
+     * y clases de Tailwind que este proyecto no compila desde el paquete
+     * vendor) — el ícono de flecha se ve gigante sin estilo. Usamos la vista
+     * de paginación ya publicada del proyecto (estilos inline, no depende
+     * de clases Tailwind compiladas).
+     */
+    public function paginationView(): string
+    {
+        return 'pagination::tailwind';
+    }
+
     public string $search   = '';
     public string $type     = '';
     public string $status   = '';
