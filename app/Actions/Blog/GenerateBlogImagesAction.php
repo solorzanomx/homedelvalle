@@ -12,10 +12,10 @@ use Intervention\Image\Drivers\Gd\Driver;
 class GenerateBlogImagesAction
 {
     // Antes gemini-3.1-flash-image ($0.045/imagen a 512px). Cambiado a
-    // GPT Image 1 Mini calidad "low" ($0.005/imagen a 1024px, ~9x más
-    // barato Y a mayor resolución) — probado en vivo el 2026-07-18,
-    // calidad visual comparable.
+    // GPT Image 1 Mini a 1024px (~4-9x más barato que Gemini según
+    // calidad) — probado en vivo el 2026-07-18.
     private const IMAGE_MODEL   = 'gpt-image-1-mini';
+    private const IMAGE_QUALITY = 'medium'; // low ~$0.005/img · medium ~$0.011/img · high ~$0.036/img
     private const OUTPUT_WIDTH  = 720;
     private const PROMPT_SUFFIX = 'Ultra photorealistic, shot on full-frame DSLR, natural lighting, sharp focus, high detail, 4K resolution, aspect ratio 16:9, no text, no logos, no watermarks, no overlays, no UI elements, no borders, no artificial filters — if any signage, street signs, real estate signs or commercial text appears in the scene, render it exclusively in Spanish, Mexico City context.';
 
@@ -178,7 +178,7 @@ class GenerateBlogImagesAction
                 'model'   => self::IMAGE_MODEL,
                 'prompt'  => $prompt,
                 'size'    => '1024x1024',
-                'quality' => 'low',
+                'quality' => self::IMAGE_QUALITY,
             ]);
 
         if (!$response->successful()) {
