@@ -146,7 +146,7 @@ $keys = ['featured', 'interior_1', 'interior_2', 'interior_3'];
             @endif
             <div class="img-loading-overlay" id="loading-{{ $key }}">
                 <div class="spinner"></div>
-                <span>Generando con IA (Gemini)…</span>
+                <span>Generando con IA…</span>
             </div>
         </div>
 
