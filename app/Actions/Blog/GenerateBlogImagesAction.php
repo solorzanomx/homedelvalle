@@ -17,6 +17,7 @@ class GenerateBlogImagesAction
     private const IMAGE_MODEL   = 'gpt-image-1-mini';
     private const IMAGE_QUALITY = 'medium'; // low ~$0.005/img · medium ~$0.011/img · high ~$0.036/img
     private const OUTPUT_WIDTH  = 720;
+    private const OUTPUT_HEIGHT = 405; // 720 * 9/16 — 16:9 exacto, incluye la destacada
     private const PROMPT_SUFFIX = 'Ultra photorealistic, shot on full-frame DSLR, natural lighting, sharp focus, high detail, 4K resolution, aspect ratio 16:9, no text, no logos, no watermarks, no overlays, no UI elements, no borders, no artificial filters — if any signage, street signs, real estate signs or commercial text appears in the scene, render it exclusively in Spanish, Mexico City context.';
 
     /**
@@ -139,7 +140,7 @@ class GenerateBlogImagesAction
             }
 
             $imgUrl  = Storage::disk('public')->url($storedPath);
-            $imgHtml = "<figure class=\"blog-img\"><img src=\"{$imgUrl}\" alt=\"\" width=\"720\" loading=\"lazy\" style=\"width:720px;max-width:100%;height:auto;\"></figure>";
+            $imgHtml = "<figure class=\"blog-img\"><img src=\"{$imgUrl}\" alt=\"\" width=\"720\" height=\"405\" loading=\"lazy\" style=\"width:720px;max-width:100%;height:auto;\"></figure>";
             $body    = str_replace($placeholder, $imgHtml, $body);
         }
 
@@ -177,7 +178,10 @@ class GenerateBlogImagesAction
             ->post('https://api.openai.com/v1/images/generations', [
                 'model'   => self::IMAGE_MODEL,
                 'prompt'  => $prompt,
-                'size'    => '1024x1024',
+                // gpt-image-1-mini no genera 16:9 nativo (solo 1024x1024,
+                // 1024x1536, 1536x1024) — pedimos el landscape más cercano
+                // y recortamos exacto a 16:9 abajo con cover().
+                'size'    => '1536x1024',
                 'quality' => self::IMAGE_QUALITY,
             ]);
 
@@ -204,7 +208,7 @@ class GenerateBlogImagesAction
 
         $manager = new ImageManager(new Driver());
         $resized  = $manager->read($imageData)
-            ->scaleDown(width: self::OUTPUT_WIDTH)
+            ->cover(self::OUTPUT_WIDTH, self::OUTPUT_HEIGHT)
             ->toPng();
 
         Storage::disk('public')->put($storagePath, (string) $resized);
