@@ -1,4 +1,4 @@
-<div class="not-prose my-10">
+<div class="not-prose my-10" data-variant="{{ $isHerencia ? 'isr' : 'default' }}">
     <div class="rounded-2xl overflow-hidden border border-brand-100 bg-gradient-to-br from-brand-50/80 to-white">
         <div class="p-7 sm:p-9">
             @if($submitted)
@@ -18,7 +18,7 @@
             @else
                 @if($isHerencia)
                 <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">¿Cuánto ISR pagarías por tu herencia?</h3>
-                <p class="mt-1.5 text-sm text-gray-500 leading-relaxed">Cada caso depende de tu situación. Déjanos 4 datos y te mandamos tu estimado gratis por WhatsApp en menos de 24 horas.</p>
+                <p class="mt-1.5 text-sm text-gray-500 leading-relaxed">Cada herencia es distinta. Déjanos 4 datos y te mandamos tu ISR estimado y el valor de tu propiedad gratis por WhatsApp en menos de 24 horas.</p>
                 @else
                 <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">¿Cuánto vale TU propiedad exactamente?</h3>
                 <p class="mt-1.5 text-sm text-gray-500 leading-relaxed">Los promedios orientan; tu número real depende de tu inmueble. Déjanos 4 datos y te lo mandamos gratis por WhatsApp en menos de 24 horas.</p>

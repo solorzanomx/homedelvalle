@@ -169,6 +169,7 @@
                 var p = Array.isArray(payload) ? payload[0] : (payload || {});
                 window.hdvTrack('generate_lead', {
                     form_type: p.formType || 'desconocido',
+                    lead_variant: p.variant || 'default',
                     page_path: window.location.pathname
                 });
             });

@@ -86,7 +86,7 @@ class BlogQuickValuationForm extends Component
             'full_name'   => $data['nombre'],
             'email'       => $data['email'],
             'phone'       => $data['whatsapp'],
-            'payload'     => ['colonia' => $data['colonia'], 'origen' => 'blog_quick_form'],
+            'payload'     => ['colonia' => $data['colonia'], 'origen' => 'blog_quick_form', 'lead_variant' => $this->isHerencia ? 'isr' : 'default'],
             'lead_tag'    => 'LEAD_VENDEDOR',
             'client_type' => 'owner',
             'lead_temperature' => 'warm',
@@ -117,7 +117,7 @@ class BlogQuickValuationForm extends Component
         $savedName = $data['nombre'];
         $this->resetForm();
         $this->clientName = $savedName;
-        $this->dispatch('lead-conversion', formType: 'vendedor');
+        $this->dispatch('lead-conversion', formType: 'vendedor', variant: $this->isHerencia ? 'isr' : 'default');
     }
 
     /** reset() sin tocar sourcePage — se pasa al montar y debe sobrevivir. */
