@@ -162,11 +162,19 @@
                     ? ''
                     : view('blog._cta-valuacion')->render();
 
+                $isHerencia = $post->category?->slug === 'herencias-y-sucesiones';
+
+                // Solo en herencias: el bloque predio→desarrolladora se mueve
+                // justo después de "Ejemplo práctico" (el heredero de casa
+                // vieja es el prospecto exacto de ese funnel) en vez de ir al
+                // final del post — decisión confirmada, resto de categorías
+                // sin cambio.
                 $enhanced = \App\Support\BlogBodyEnhancer::enhance(
                     $post->rendered_body,
                     $valuationCtaHtml,
                     view('blog._cta-predio', ['post' => $post])->render(),
                     $post->title,
+                    $isHerencia ? 'Ejemplo pr' : null,
                 );
             @endphp
             <article class="{{ $proseClasses }}"
@@ -174,7 +182,7 @@
                 {!! $enhanced['first'] !!}
             </article>
 
-            <livewire:forms.blog-quick-valuation-form :source-page="'/blog/' . $post->slug" />
+            <livewire:forms.blog-quick-valuation-form :source-page="'/blog/' . $post->slug" :is-herencia="$isHerencia" />
 
             @if($enhanced['second'] !== '')
             <article class="{{ $proseClasses }}">

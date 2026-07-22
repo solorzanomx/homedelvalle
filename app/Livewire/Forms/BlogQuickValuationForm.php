@@ -26,6 +26,11 @@ class BlogQuickValuationForm extends Component
     /** URL del post donde vive el form — la pasa blog/show al montar. */
     public string $sourcePage = '/blog';
 
+    /** Copy alterna para posts de herencias — mismo backend, solo cambia
+     *  el texto del form para alinear con la intención real del lector
+     *  (quiere saber su ISR, no "el precio real de su propiedad"). */
+    public bool $isHerencia = false;
+
     public string $nombre = '';
     public string $email = '';
     public string $whatsapp = '';

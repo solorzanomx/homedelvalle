@@ -8,12 +8,21 @@
                     </div>
                     <h3 class="text-lg font-extrabold text-gray-900">¡Listo{{ $clientName ? ', ' . $clientName : '' }}!</h3>
                     <p class="mt-2 text-sm text-gray-500 leading-relaxed max-w-sm mx-auto">
+                        @if($isHerencia)
+                        Un asesor te contacta por WhatsApp en <strong>menos de 24 horas</strong> con tu estimado de ISR. Mientras tanto, sigue leyendo.
+                        @else
                         Un asesor te contacta por WhatsApp en <strong>menos de 24 horas</strong> con el precio real de tu propiedad. Mientras tanto, sigue leyendo.
+                        @endif
                     </p>
                 </div>
             @else
+                @if($isHerencia)
+                <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">¿Cuánto ISR pagarías por tu herencia?</h3>
+                <p class="mt-1.5 text-sm text-gray-500 leading-relaxed">Cada caso depende de tu situación. Déjanos 4 datos y te mandamos tu estimado gratis por WhatsApp en menos de 24 horas.</p>
+                @else
                 <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">¿Cuánto vale TU propiedad exactamente?</h3>
                 <p class="mt-1.5 text-sm text-gray-500 leading-relaxed">Los promedios orientan; tu número real depende de tu inmueble. Déjanos 4 datos y te lo mandamos gratis por WhatsApp en menos de 24 horas.</p>
+                @endif
 
                 <form wire:submit="submit" class="mt-5 space-y-3">
                     {{-- Honeypot anti-spam: invisible para un humano --}}
@@ -56,7 +65,7 @@
 
                     <button type="submit" wire:loading.attr="disabled"
                             class="w-full sm:w-auto rounded-xl gradient-brand px-8 py-3 text-sm font-bold text-white shadow-brand hover:shadow-brand-lg hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50">
-                        <span wire:loading.remove>Recibir mi precio real gratis</span>
+                        <span wire:loading.remove>{{ $isHerencia ? 'Recibir mi estimado de ISR gratis' : 'Recibir mi precio real gratis' }}</span>
                         <span wire:loading>Enviando...</span>
                     </button>
                     <p class="text-xs text-gray-400">Sin compromiso · Sin spam · Respuesta en menos de 24 horas hábiles</p>

@@ -29,7 +29,7 @@ class BlogBodyEnhancer
      * @return array{first: string, second: string} — 'second' vacío si no
      *         hubo dónde partir (el form se muestra al final igualmente).
      */
-    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = ''): array
+    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = '', ?string $predioCtaAfterHeading = null): array
     {
         $html = self::stripImageSlots($html);
         $html = self::fixImages($html, $postTitle);
@@ -42,10 +42,27 @@ class BlogBodyEnhancer
         [$first, $second] = self::splitAtMidHeading($html);
 
         if ($predioCta !== '') {
-            if ($second !== '') {
-                $second = self::injectBeforeLastHeading($second, $predioCta);
-            } else {
-                $first .= $predioCta;
+            $injected = false;
+
+            // Posición dirigida (p.ej. "justo después de Ejemplo práctico"):
+            // si el encabezado no existe en este post en particular, cae al
+            // comportamiento de siempre — nunca debe quedar sin CTA.
+            if ($predioCtaAfterHeading !== null) {
+                if (self::hasHeading($second, $predioCtaAfterHeading)) {
+                    $second = self::injectAfterHeadingSection($second, $predioCtaAfterHeading, $predioCta);
+                    $injected = true;
+                } elseif (self::hasHeading($first, $predioCtaAfterHeading)) {
+                    $first = self::injectAfterHeadingSection($first, $predioCtaAfterHeading, $predioCta);
+                    $injected = true;
+                }
+            }
+
+            if (!$injected) {
+                if ($second !== '') {
+                    $second = self::injectBeforeLastHeading($second, $predioCta);
+                } else {
+                    $first .= $predioCta;
+                }
             }
         }
 
@@ -148,6 +165,32 @@ class BlogBodyEnhancer
             }
             return $table;
         }, $html) ?? $html;
+    }
+
+    /** ¿El encabezado (h2/h3, match parcial insensible a mayúsculas) existe en este HTML? */
+    public static function hasHeading(string $html, string $headingText): bool
+    {
+        return (bool) preg_match('/<h[23]\b[^>]*>[^<]*' . preg_quote($headingText, '/') . '/iu', $html);
+    }
+
+    /**
+     * Inyecta $block justo al terminar la sección de $headingText (antes del
+     * siguiente h2/h3, o al final del HTML si esa sección era la última).
+     */
+    public static function injectAfterHeadingSection(string $html, string $headingText, string $block): string
+    {
+        if (!preg_match('/<h[23]\b[^>]*>[^<]*' . preg_quote($headingText, '/') . '[^<]*<\/h[23]>/iu', $html, $m, PREG_OFFSET_CAPTURE)) {
+            return $html . $block;
+        }
+
+        $headingEnd = $m[0][1] + strlen($m[0][0]);
+
+        if (preg_match('/<h[23]\b/i', $html, $next, PREG_OFFSET_CAPTURE, $headingEnd)) {
+            $cut = $next[0][1];
+            return substr($html, 0, $cut) . $block . substr($html, $cut);
+        }
+
+        return $html . $block;
     }
 
     public static function injectAfterFirstTable(string $html, string $block): string
