@@ -167,25 +167,32 @@ class BlogBodyEnhancer
         }, $html) ?? $html;
     }
 
-    /** ¿El encabezado (h2/h3, match parcial insensible a mayúsculas) existe en este HTML? */
+    /**
+     * ¿El h2 de sección (match parcial insensible a mayúsculas) existe en
+     * este HTML? Solo h2 — h3 lo usan los propios CTAs ({{CTA1}}/{{CTA2}}
+     * renderizados por _cta.blade.php traen su propio h3, no son secciones
+     * reales; incluirlos aquí hacía que "el siguiente encabezado" cayera
+     * justo en el título de un CTA ya existente, apilando dos CTAs
+     * pegados (bug real reportado con captura).
+     */
     public static function hasHeading(string $html, string $headingText): bool
     {
-        return (bool) preg_match('/<h[23]\b[^>]*>[^<]*' . preg_quote($headingText, '/') . '/iu', $html);
+        return (bool) preg_match('/<h2\b[^>]*>[^<]*' . preg_quote($headingText, '/') . '/iu', $html);
     }
 
     /**
      * Inyecta $block justo al terminar la sección de $headingText (antes del
-     * siguiente h2/h3, o al final del HTML si esa sección era la última).
+     * siguiente h2, o al final del HTML si esa sección era la última).
      */
     public static function injectAfterHeadingSection(string $html, string $headingText, string $block): string
     {
-        if (!preg_match('/<h[23]\b[^>]*>[^<]*' . preg_quote($headingText, '/') . '[^<]*<\/h[23]>/iu', $html, $m, PREG_OFFSET_CAPTURE)) {
+        if (!preg_match('/<h2\b[^>]*>[^<]*' . preg_quote($headingText, '/') . '[^<]*<\/h2>/iu', $html, $m, PREG_OFFSET_CAPTURE)) {
             return $html . $block;
         }
 
         $headingEnd = $m[0][1] + strlen($m[0][0]);
 
-        if (preg_match('/<h[23]\b/i', $html, $next, PREG_OFFSET_CAPTURE, $headingEnd)) {
+        if (preg_match('/<h2\b/i', $html, $next, PREG_OFFSET_CAPTURE, $headingEnd)) {
             $cut = $next[0][1];
             return substr($html, 0, $cut) . $block . substr($html, $cut);
         }
