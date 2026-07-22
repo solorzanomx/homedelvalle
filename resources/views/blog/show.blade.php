@@ -152,9 +152,19 @@
                 prose-th:bg-brand-50 prose-th:text-brand-700 prose-th:font-bold prose-th:text-sm prose-th:uppercase prose-th:tracking-wider
                 prose-td:text-gray-600 prose-td:text-sm';
 
+                // El CTA "promedios de zona" tras la primera tabla asume que
+                // esa tabla es de precios — falso en categorías fiscales/
+                // legales, donde la primera tabla suele ser de tasas de ISR
+                // o requisitos (bug real reportado: CTA de precios inyectado
+                // justo después de una tabla de ISR, fuera de contexto).
+                $categoriasSinCtaValuacion = ['herencias-y-sucesiones', 'expertos-insights'];
+                $valuationCtaHtml = in_array($post->category?->slug, $categoriasSinCtaValuacion, true)
+                    ? ''
+                    : view('blog._cta-valuacion')->render();
+
                 $enhanced = \App\Support\BlogBodyEnhancer::enhance(
                     $post->rendered_body,
-                    view('blog._cta-valuacion')->render(),
+                    $valuationCtaHtml,
                     view('blog._cta-predio', ['post' => $post])->render(),
                     $post->title,
                 );
