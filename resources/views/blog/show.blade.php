@@ -230,6 +230,7 @@
                              texto blanco sobre fondo claro — invisible (bug
                              real reportado, el CTA final "no tenía botón"). --}}
                         <a href="{{ $cta['url'] }}"
+                           data-track-location="cta_auto_final"
                            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 shrink-0 shadow-brand"
                            style="background: var(--color-primary, #3B82C4);">
                             {{ $cta['btn'] }}

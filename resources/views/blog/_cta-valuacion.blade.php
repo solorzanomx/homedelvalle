@@ -8,6 +8,7 @@
             <p class="mt-1 text-sm text-gray-500 leading-relaxed">Piso, orientación, estado y metros de fachada mueven el número. Recibe el de tu propiedad específica, gratis y en menos de 24 horas.</p>
         </div>
         <a href="{{ route('precios.opinion') }}"
+           data-track-location="cta_valuacion"
            class="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold shrink-0 transition-all duration-300 hover:-translate-y-0.5 shadow-brand"
            style="background: var(--color-primary, #3B82C4);">
             Recibir mi número exacto

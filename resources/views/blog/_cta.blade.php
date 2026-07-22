@@ -13,6 +13,7 @@
             @endif
             @if(!empty($cta['button_text']) && !empty($cta['link']))
                 <a href="{{ $cta['link'] }}"
+                   data-track-location="cta_body"
                    class="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-300 hover:-translate-y-0.5"
                    style="background: var(--color-primary, #3B82C4); box-shadow: 0 4px 14px rgba(59,130,196,0.3);">
                     {{ $cta['button_text'] }}

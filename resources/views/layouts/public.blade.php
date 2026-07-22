@@ -143,6 +143,12 @@
                 window.hdvTrack('phone_click', params);
             } else if (href.lastIndexOf('mailto:', 0) === 0) {
                 window.hdvTrack('email_click', params);
+            } else if (a.dataset.trackLocation) {
+                // CTAs internos marcados con data-track-location (tarjetas del
+                // blog: /contacto, /vende-a-desarrolladora, opinión de valor,
+                // etc.) — antes no disparaban nada, un clic real e intencional
+                // que Analytics nunca veía (hallazgo real de auditoría).
+                window.hdvTrack('cta_click', params);
             }
         }, true);
 

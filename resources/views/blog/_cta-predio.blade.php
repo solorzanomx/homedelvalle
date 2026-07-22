@@ -10,6 +10,7 @@
 @endphp
 <div class="not-prose my-8">
     <a href="{{ route('landing.vende-desarrolladora') }}"
+       data-track-location="cta_predio"
        class="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-emerald-50 border border-emerald-200 px-6 py-5 hover:bg-emerald-100/70 hover:border-emerald-300 transition-all duration-300">
         <div class="flex-1">
             @if($esHerencia)
