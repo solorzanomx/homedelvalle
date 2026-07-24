@@ -21,6 +21,8 @@
 .c-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 1.25rem; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 0.5rem; }
 .c-link-copy { font-size: 0.72rem; color: var(--primary); background: none; border: none; cursor: pointer; padding: 0; text-decoration: underline; }
 .c-link-sent { font-size: 0.68rem; color: var(--text-muted); }
+.c-btn-whatsapp { display: inline-flex; align-items: center; gap: 0.3rem; background: #25D366; color: #fff; border: none; border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.7rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+.c-btn-whatsapp:hover { opacity: 0.9; }
 </style>
 @endsection
 
@@ -82,7 +84,8 @@
                         <span class="c-badge c-badge-off">Oculto</span>
                     @endif
                     @if($c->consent_status === 'pending')
-                        <button type="button" class="c-link-copy" onclick="copyConsentLink('{{ route('collaborator.consent.show', $c->consent_token) }}', {{ $c->id }})">Copiar link de autorización</button>
+                        <button type="button" class="c-link-copy" onclick="copyConsentLink('{{ route('collaborator.consent.show', $c->consent_token) }}', {{ $c->id }})">Copiar link</button>
+                        <button type="button" class="c-btn-whatsapp" onclick="sendConsentLinkByWhatsApp('{{ route('collaborator.consent.show', $c->consent_token) }}', '{{ addslashes($c->name) }}', {{ $c->id }})">Enviar por WhatsApp</button>
                         @if($c->link_sent_at)
                             <span class="c-link-sent">enviado {{ $c->link_sent_at->diffForHumans() }}</span>
                         @endif
@@ -106,14 +109,24 @@
 <script>
 function copyConsentLink(url, id) {
     navigator.clipboard.writeText(url).then(function () {
-        fetch('/admin/collaborators/' + id + '/mark-link-sent', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-        }).then(() => location.reload());
+        markLinkSent(id);
     });
+}
+
+function sendConsentLinkByWhatsApp(url, name, id) {
+    const text = 'Hola ' + name + ', te comparto este link para revisar y autorizar tu perfil en homedelvalle.mx: ' + url;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+    markLinkSent(id);
+}
+
+function markLinkSent(id) {
+    fetch('/admin/collaborators/' + id + '/mark-link-sent', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+        },
+    }).then(() => location.reload());
 }
 </script>
 @endsection

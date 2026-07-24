@@ -29,6 +29,10 @@
 .avatar-circle:hover .avatar-circle-overlay { opacity: 1; }
 .avatar-upload-info { font-size: 0.75rem; color: var(--text-muted); }
 .avatar-upload-info span { display: block; font-size: 0.82rem; font-weight: 600; color: var(--primary); cursor: pointer; }
+
+.consent-link-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.btn-whatsapp { display: inline-flex; align-items: center; gap: 0.35rem; background: #25D366; color: #fff; border: none; border-radius: 6px; padding: 0.45rem 0.8rem; font-size: 0.78rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+.btn-whatsapp:hover { opacity: 0.9; }
 </style>
 @endsection
 
@@ -51,7 +55,11 @@
         @endif
     </div>
     @if($collaborator->consent_status === 'pending')
-        <input type="text" class="consent-link-input" readonly value="{{ route('collaborator.consent.show', $collaborator->consent_token) }}" onclick="this.select()">
+        <div class="consent-link-actions">
+            <input type="text" class="consent-link-input" id="consentLinkInput" readonly value="{{ route('collaborator.consent.show', $collaborator->consent_token) }}" onclick="this.select()">
+            <button type="button" class="btn btn-outline btn-sm" onclick="copyConsentLinkInput()">Copiar</button>
+            <button type="button" class="btn-whatsapp" onclick="sendConsentLinkByWhatsApp('{{ addslashes($collaborator->name) }}')">Enviar por WhatsApp</button>
+        </div>
     @endif
 </div>
 @endif
@@ -114,10 +122,10 @@
                     @endif
                     <div class="avatar-circle-overlay">&#128247;</div>
                 </div>
-                <input type="file" id="photoInput" name="photo" accept="image/jpeg,image/png,image/jpg,image/webp" style="display:none;" onchange="previewAvatar(this)">
+                <input type="file" id="photoInput" name="photo" accept="image/jpeg,image/png,image/jpg,image/webp" style="display:none;" onchange="handlePhotoSelect(this)">
                 <div class="avatar-upload-info">
                     <span onclick="document.getElementById('photoInput').click()">Subir foto de perfil</span>
-                    JPG, PNG o WebP. Max 2MB.
+                    JPG, PNG o WebP. Puedes ajustar zoom y posición al subirla.
                 </div>
             </div>
             @error('photo')<div class="form-hint" style="color:var(--danger); margin-bottom:1rem;">{{ $message }}</div>@enderror
@@ -143,28 +151,128 @@
         </form>
     </div>
 </div>
+
+{{-- Modal de recorte — mismo cropper.js que usa la edición de usuarios --}}
+<div id="cropperModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; max-width:460px; width:92%; padding:1.2rem; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem;">
+            <h3 style="margin:0; font-size:1rem; font-weight:600;">Ajustar foto de perfil</h3>
+            <button type="button" onclick="closeCropperModal()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#666;">&times;</button>
+        </div>
+        <div style="width:100%; max-height:360px; overflow:hidden; border-radius:8px; background:#f0f0f0;">
+            <img id="cropperImage" src="" style="display:block; max-width:100%;">
+        </div>
+        <div style="display:flex; align-items:center; gap:0.6rem; margin-top:0.8rem;">
+            <button type="button" onclick="cropperInstance?.zoom(-0.1)" style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:6px; padding:0.4rem 0.7rem; cursor:pointer; font-size:0.9rem;" title="Alejar">&#8722;</button>
+            <button type="button" onclick="cropperInstance?.zoom(0.1)" style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:6px; padding:0.4rem 0.7rem; cursor:pointer; font-size:0.9rem;" title="Acercar">&#43;</button>
+            <button type="button" onclick="cropperInstance?.rotate(-90)" style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:6px; padding:0.4rem 0.7rem; cursor:pointer; font-size:0.9rem;" title="Rotar">&#8635;</button>
+            <div style="flex:1;"></div>
+            <button type="button" onclick="closeCropperModal()" style="background:#f3f4f6; border:1px solid #e5e7eb; border-radius:8px; padding:0.5rem 1rem; cursor:pointer; font-size:0.85rem;">Cancelar</button>
+            <button type="button" onclick="applyCropToForm()" style="background:var(--primary, #667eea); color:#fff; border:none; border-radius:8px; padding:0.5rem 1.2rem; cursor:pointer; font-size:0.85rem; font-weight:600;">Guardar</button>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 @endsection
 
 @section('scripts')
 <script>
-function previewAvatar(input) {
+let cropperInstance = null;
+
+function handlePhotoSelect(input) {
     if (!input.files || !input.files[0]) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var circle = document.querySelector('.avatar-circle');
-        var existing = circle.querySelector('img');
-        if (existing) {
-            existing.src = e.target.result;
-        } else {
-            var placeholder = document.getElementById('photoPlaceholder');
-            if (placeholder) placeholder.style.display = 'none';
-            var img = document.createElement('img');
-            img.src = e.target.result;
-            circle.insertBefore(img, circle.firstChild);
-            circle.querySelector('.avatar-circle-overlay').style.display = 'flex';
-        }
+    const file = input.files[0];
+    const allowed = ['image/jpeg','image/png','image/jpg','image/webp'];
+    if (!allowed.includes(file.type)) { alert('Solo imágenes JPG, PNG o WebP.'); input.value = ''; return; }
+    if (file.size > 8 * 1024 * 1024) { alert('Máximo 8MB.'); input.value = ''; return; }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const img = document.getElementById('cropperImage');
+        img.src = e.target.result;
+        document.getElementById('cropperModal').style.display = 'flex';
+
+        if (cropperInstance) cropperInstance.destroy();
+
+        setTimeout(() => {
+            cropperInstance = new Cropper(img, {
+                aspectRatio: 1,
+                viewMode: 1,
+                dragMode: 'move',
+                cropBoxResizable: false,
+                cropBoxMovable: false,
+                toggleDragModeOnDblclick: false,
+                background: true,
+                autoCropArea: 1,
+                responsive: true,
+                ready() {
+                    const cropBox = this.cropper.querySelector('.cropper-view-box');
+                    const face = this.cropper.querySelector('.cropper-face');
+                    if (cropBox) cropBox.style.borderRadius = '50%';
+                    if (face) face.style.borderRadius = '50%';
+                }
+            });
+        }, 100);
     };
-    reader.readAsDataURL(input.files[0]);
+    reader.readAsDataURL(file);
+}
+
+function closeCropperModal() {
+    document.getElementById('cropperModal').style.display = 'none';
+    if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+    document.getElementById('photoInput').value = '';
+}
+
+function applyCropToForm() {
+    if (!cropperInstance) return;
+
+    const canvas = cropperInstance.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+
+    canvas.toBlob(function (blob) {
+        // La foto recortada se convierte en el archivo que se envía con el
+        // formulario normal (crear/guardar) — no se sube por separado.
+        const file = new File([blob], 'foto-perfil.jpg', { type: 'image/jpeg' });
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        document.getElementById('photoInput').files = dt.files;
+
+        const circle = document.querySelector('.avatar-circle');
+        let img = circle.querySelector('img');
+        const placeholder = document.getElementById('photoPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
+        if (!img) {
+            img = document.createElement('img');
+            circle.insertBefore(img, circle.firstChild);
+        }
+        img.src = canvas.toDataURL('image/jpeg', 0.9);
+        circle.querySelector('.avatar-circle-overlay').style.display = 'flex';
+
+        document.getElementById('cropperModal').style.display = 'none';
+        cropperInstance.destroy();
+        cropperInstance = null;
+    }, 'image/jpeg', 0.9);
+}
+
+document.getElementById('cropperModal')?.addEventListener('click', function (e) {
+    if (e.target === this) closeCropperModal();
+});
+
+function copyConsentLinkInput() {
+    const input = document.getElementById('consentLinkInput');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+}
+
+function sendConsentLinkByWhatsApp(name) {
+    const link = document.getElementById('consentLinkInput').value;
+    const text = 'Hola ' + name + ', te comparto este link para revisar y autorizar tu perfil en homedelvalle.mx: ' + link;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
 }
 </script>
 @endsection
