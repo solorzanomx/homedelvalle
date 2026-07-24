@@ -68,6 +68,8 @@ use App\Http\Controllers\Admin\ServiciosPageController;
 use App\Http\Controllers\Admin\NosotrosPageController;
 use App\Http\Controllers\Admin\VenderPageController;
 use App\Http\Controllers\Admin\TestimonialController;
+use App\Http\Controllers\Admin\CollaboratorController;
+use App\Http\Controllers\CollaboratorConsentController;
 use App\Http\Controllers\Portal\PortalDashboardController;
 use App\Http\Controllers\Portal\PortalRentalController;
 use App\Http\Controllers\Portal\PortalDocumentController;
@@ -80,6 +82,11 @@ Route::get('/visit/{token}/reschedule', [VisitResponseController::class, 'resche
 Route::post('/visit/{token}/reschedule', [VisitResponseController::class, 'rescheduleSubmit'])->name('visit.reschedule.submit');
 Route::get('/visit/{token}/feedback-form', [VisitResponseController::class, 'showFeedbackForm'])->name('visit.feedback-form');
 Route::post('/visit/{token}/feedback', [VisitResponseController::class, 'submitFeedback'])->name('visit.feedback');
+
+// Autorización de colaboradores externos (público — sin auth, por token)
+Route::get('/colaborador/{token}', [CollaboratorConsentController::class, 'show'])->name('collaborator.consent.show');
+Route::post('/colaborador/{token}/autorizar', [CollaboratorConsentController::class, 'authorizeConsent'])->name('collaborator.consent.authorize');
+Route::post('/colaborador/{token}/declinar', [CollaboratorConsentController::class, 'decline'])->name('collaborator.consent.decline');
 
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -618,6 +625,10 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
 
         // Testimonials
         Route::resource('testimonials', TestimonialController::class)->except(['show']);
+
+        // Colaboradores externos (red de aliados en /nosotros)
+        Route::resource('collaborators', CollaboratorController::class)->except(['show']);
+        Route::post('/collaborators/{collaborator}/mark-link-sent', [CollaboratorController::class, 'markLinkSent'])->name('collaborators.mark-link-sent');
 
         // Help Center (admin management)
         Route::get('/help/manage', [HelpCenterController::class, 'adminIndex'])->name('help.manage');

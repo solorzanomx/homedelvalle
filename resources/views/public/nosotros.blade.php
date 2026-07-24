@@ -155,6 +155,46 @@
     </section>
     @endif
 
+    {{-- Con quién trabajamos --}}
+    @if(isset($collaborators) && $collaborators->count())
+    <section class="py-20 sm:py-24 bg-gray-50/60">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
+                <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Con quién trabajamos</p>
+                <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Nuestra red de confianza</h2>
+                <p class="mt-4 text-base text-gray-500 max-w-2xl mx-auto">Colaboradores externos que complementan el proceso en casos específicos — no forman parte de la dirección de Home del Valle.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @foreach($collaborators as $index => $collaborator)
+                <div class="group text-center rounded-2xl border border-gray-200/60 bg-white p-6 hover:shadow-premium-lg hover:border-brand-100 hover:-translate-y-1 transition-all duration-500"
+                     x-data x-intersect.once="$el.classList.add('animate-fade-in-up')" style="animation-delay: {{ $index * 100 }}ms">
+                    <div class="w-16 h-16 mx-auto rounded-full overflow-hidden mb-4 ring-4 ring-brand-100 group-hover:ring-brand-200 transition-all duration-500">
+                        @if($collaborator->photo_path)
+                            <img src="{{ Storage::url($collaborator->photo_path) }}" alt="{{ $collaborator->name }}" class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white text-lg font-bold">
+                                {{ strtoupper(substr($collaborator->name, 0, 1)) }}
+                            </div>
+                        @endif
+                    </div>
+                    <h3 class="text-base font-bold text-gray-900">{{ $collaborator->name }}</h3>
+                    <p class="mt-1 text-sm text-brand-500 font-medium">{{ $collaborator->role }}</p>
+                    @if($collaborator->bio)
+                    <p class="mt-2 text-sm text-gray-500 leading-relaxed">{{ $collaborator->bio }}</p>
+                    @endif
+                    @if($collaborator->link_url)
+                    <a href="{{ $collaborator->link_url }}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-500 hover:text-brand-600">
+                        {{ $collaborator->link_label ?: 'Ver más' }}
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    </a>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+    @endif
+
     {{-- Google Maps --}}
     @if($siteSettings?->google_maps_embed)
     <section class="py-20 sm:py-24 bg-gray-50/60">

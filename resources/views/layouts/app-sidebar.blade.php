@@ -584,6 +584,11 @@
                             <span class="nav-icon"><x-icon name="heart" class="w-4 h-4" /></span> Testimonios
                         </a>
                         @endif
+                        @if(Route::has('admin.collaborators.index'))
+                        <a href="{{ route('admin.collaborators.index') }}" class="nav-item {{ request()->routeIs('admin.collaborators.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="users" class="w-4 h-4" /></span> Colaboradores
+                        </a>
+                        @endif
                         @if(Route::has('admin.forms.index'))
                         <a href="{{ route('admin.forms.index') }}" class="nav-item {{ request()->routeIs('admin.forms.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Formularios

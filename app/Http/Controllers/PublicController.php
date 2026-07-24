@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ContactFormRequest;
 use App\Models\Broker;
+use App\Models\Collaborator;
 use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscriber;
 use App\Models\Property;
@@ -87,7 +88,12 @@ class PublicController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('public.nosotros', compact('teamMembers'));
+        $collaborators = Collaborator::published()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        return view('public.nosotros', compact('teamMembers', 'collaborators'));
     }
 
     public function servicios()
