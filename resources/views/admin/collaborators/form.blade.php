@@ -3,10 +3,32 @@
 
 @section('styles')
 <style>
-.preview-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border); }
 .consent-status-box { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.1rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); margin-bottom: 1.25rem; flex-wrap: wrap; }
 .consent-status-box .label { font-size: 0.8rem; color: var(--text-muted); }
 .consent-link-input { font-size: 0.78rem; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; flex: 1; min-width: 220px; }
+
+/* Avatar upload — mismo patrón que admin/users/create */
+.avatar-upload {
+    display: flex; align-items: center; gap: 1.25rem; margin-bottom: 0.5rem;
+}
+.avatar-circle {
+    width: 80px; height: 80px; border-radius: 50%; background: var(--border);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    overflow: hidden; cursor: pointer; position: relative;
+    font-size: 2rem; color: var(--text-muted); transition: border-color 0.15s;
+    border: 2px dashed var(--border);
+}
+.avatar-circle:hover { border-color: var(--primary); }
+.avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-circle-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.4); display: none;
+    align-items: center; justify-content: center; color: #fff; font-size: 1.1rem;
+    border-radius: 50%;
+}
+.avatar-circle img ~ .avatar-circle-overlay { display: flex; opacity: 0; transition: opacity 0.2s; }
+.avatar-circle:hover .avatar-circle-overlay { opacity: 1; }
+.avatar-upload-info { font-size: 0.75rem; color: var(--text-muted); }
+.avatar-upload-info span { display: block; font-size: 0.82rem; font-weight: 600; color: var(--primary); cursor: pointer; }
 </style>
 @endsection
 
@@ -83,21 +105,22 @@
                 <textarea name="bio" class="form-textarea" rows="3" maxlength="600" placeholder="Una línea de qué hace y cómo apoya a los clientes de Home del Valle.">{{ old('bio', $collaborator->bio ?? '') }}</textarea>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Foto de perfil</label>
-                <div style="display:flex; align-items:center; gap:1rem;">
+            <div class="avatar-upload">
+                <div class="avatar-circle" onclick="document.getElementById('photoInput').click()">
                     @if($collaborator && $collaborator->photo_path)
-                        <img src="{{ Storage::url($collaborator->photo_path) }}" class="preview-avatar" id="photoPreview">
+                        <img src="{{ Storage::url($collaborator->photo_path) }}" alt="">
                     @else
-                        <div class="preview-avatar" id="photoPreview" style="background:var(--bg); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:0.75rem;">Sin foto</div>
+                        <span id="photoPlaceholder">&#128100;</span>
                     @endif
-                    <div>
-                        <input type="file" name="photo" accept="image/*" id="photoInput" style="display:none;" onchange="previewFile(this)">
-                        <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('photoInput').click()">Subir imagen</button>
-                        <div class="form-hint">JPG, PNG. Max 2MB.</div>
-                    </div>
+                    <div class="avatar-circle-overlay">&#128247;</div>
+                </div>
+                <input type="file" id="photoInput" name="photo" accept="image/jpeg,image/png,image/jpg,image/webp" style="display:none;" onchange="previewAvatar(this)">
+                <div class="avatar-upload-info">
+                    <span onclick="document.getElementById('photoInput').click()">Subir foto de perfil</span>
+                    JPG, PNG o WebP. Max 2MB.
                 </div>
             </div>
+            @error('photo')<div class="form-hint" style="color:var(--danger); margin-bottom:1rem;">{{ $message }}</div>@enderror
 
             <div class="form-group">
                 <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
@@ -124,23 +147,24 @@
 
 @section('scripts')
 <script>
-function previewFile(input) {
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var preview = document.getElementById('photoPreview');
-            if (preview.tagName === 'IMG') {
-                preview.src = e.target.result;
-            } else {
-                var img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'preview-avatar';
-                img.id = 'photoPreview';
-                preview.replaceWith(img);
-            }
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
+function previewAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var circle = document.querySelector('.avatar-circle');
+        var existing = circle.querySelector('img');
+        if (existing) {
+            existing.src = e.target.result;
+        } else {
+            var placeholder = document.getElementById('photoPlaceholder');
+            if (placeholder) placeholder.style.display = 'none';
+            var img = document.createElement('img');
+            img.src = e.target.result;
+            circle.insertBefore(img, circle.firstChild);
+            circle.querySelector('.avatar-circle-overlay').style.display = 'flex';
+        }
+    };
+    reader.readAsDataURL(input.files[0]);
 }
 </script>
 @endsection
