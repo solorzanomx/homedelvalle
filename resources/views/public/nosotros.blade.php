@@ -162,7 +162,6 @@
             <div class="text-center mb-12" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <p class="text-sm font-semibold text-brand-500 uppercase tracking-widest mb-3">Con quién trabajamos</p>
                 <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">Nuestra red de confianza</h2>
-                <p class="mt-4 text-base text-gray-500 max-w-2xl mx-auto">Colaboradores externos que complementan el proceso en casos específicos — no forman parte de la dirección de Home del Valle.</p>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 @foreach($collaborators as $index => $collaborator)
