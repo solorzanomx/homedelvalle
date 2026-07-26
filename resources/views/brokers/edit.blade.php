@@ -158,6 +158,11 @@
                 <input type="tel" name="phone" class="form-input" value="{{ old('phone', $broker->phone) }}" placeholder="+52 55 1234 5678">
             </div>
             <div class="form-group">
+                <label class="form-label">Fecha de nacimiento</label>
+                <input type="date" name="birth_date" class="form-input" value="{{ old('birth_date', $broker->birth_date?->format('Y-m-d')) }}">
+                <p class="form-hint">Para el correo automático de cumpleaños.</p>
+            </div>
+            <div class="form-group">
                 <label class="form-label">Empresa</label>
                 <select name="broker_company_id" class="form-select">
                     <option value="">Sin empresa</option>

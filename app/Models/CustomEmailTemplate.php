@@ -51,7 +51,7 @@ class CustomEmailTemplate extends Model
         $html = $this->html_body;
 
         foreach ($data as $key => $value) {
-            $html = str_replace("{{$key}}", $value, $html);
+            $html = str_replace('{{' . $key . '}}', $value, $html);
         }
 
         return $html;
@@ -61,7 +61,7 @@ class CustomEmailTemplate extends Model
     {
         $subject = $this->subject;
         foreach ($data as $key => $value) {
-            $subject = str_replace("{{$key}}", $value, $subject);
+            $subject = str_replace('{{' . $key . '}}', $value, $subject);
         }
 
         try {

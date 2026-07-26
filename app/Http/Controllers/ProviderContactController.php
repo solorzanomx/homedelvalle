@@ -15,6 +15,7 @@ class ProviderContactController extends Controller
             'role' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'birth_date' => 'nullable|date',
             'status' => 'in:active,inactive',
         ]);
 
@@ -29,6 +30,7 @@ class ProviderContactController extends Controller
             'role' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'birth_date' => 'nullable|date',
             'status' => 'in:active,inactive',
         ]);
 

@@ -66,17 +66,36 @@
             <div class="card-body">
                 <div class="section-title">Empleados / Contactos ({{ $contacts->count() }})</div>
                 @forelse($contacts as $contact)
-                <div class="contact-item">
+                <div class="contact-item" id="contact-view-{{ $contact->id }}">
                     <div class="contact-avatar">{{ strtoupper(substr($contact->name, 0, 1)) }}</div>
                     <div class="contact-info">
                         <div class="contact-name">{{ $contact->name }}</div>
-                        <div class="contact-meta">{{ $contact->role ?: 'Sin puesto' }} @if($contact->phone) &middot; {{ $contact->phone }} @endif</div>
+                        <div class="contact-meta">
+                            {{ $contact->role ?: 'Sin puesto' }}
+                            @if($contact->phone) &middot; {{ $contact->phone }} @endif
+                            @if($contact->email) &middot; {{ $contact->email }} @endif
+                            @if($contact->birth_date) &middot; 🎂 {{ $contact->birth_date->format('d/m') }} @endif
+                        </div>
                     </div>
-                    <form method="POST" action="{{ route('provider-contacts.destroy', $contact) }}" onsubmit="return confirm('¿Eliminar este contacto?')">
+                    <button type="button" class="btn btn-sm btn-outline" onclick="toggleContactEdit({{ $contact->id }})">Editar</button>
+                    <form method="POST" action="{{ route('provider-contacts.destroy', $contact) }}" onsubmit="return confirm('¿Eliminar este contacto?')" style="margin:0;">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-sm btn-outline" style="color:var(--danger);">Eliminar</button>
                     </form>
                 </div>
+                <form method="POST" action="{{ route('provider-contacts.update', $contact) }}" id="contact-edit-{{ $contact->id }}" style="display:none; gap:0.5rem; flex-wrap:wrap; padding:0.5rem 0; border-bottom:1px solid var(--border);">
+                    @csrf @method('PUT')
+                    <input type="text" name="name" class="form-input" value="{{ $contact->name }}" placeholder="Nombre" required style="flex:1; min-width:120px;">
+                    <input type="text" name="role" class="form-input" value="{{ $contact->role }}" placeholder="Puesto (ej. Notario)" style="flex:1; min-width:120px;">
+                    <input type="tel" name="phone" class="form-input" value="{{ $contact->phone }}" placeholder="Teléfono" style="flex:1; min-width:100px;">
+                    <input type="email" name="email" class="form-input" value="{{ $contact->email }}" placeholder="Correo" style="flex:1; min-width:140px;">
+                    <div style="flex:1; min-width:140px;">
+                        <input type="date" name="birth_date" class="form-input" value="{{ $contact->birth_date?->format('Y-m-d') }}" style="width:100%;">
+                        <p class="form-hint" style="margin:2px 0 0;">Fecha de nacimiento — para el correo de cumpleaños.</p>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="toggleContactEdit({{ $contact->id }})">Cancelar</button>
+                </form>
                 @empty
                 <p class="text-muted" style="font-size:0.82rem;">Sin empleados registrados todavía.</p>
                 @endforelse
@@ -86,6 +105,11 @@
                     <input type="text" name="name" class="form-input" placeholder="Nombre" required style="flex:1; min-width:120px;">
                     <input type="text" name="role" class="form-input" placeholder="Puesto (ej. Notario)" style="flex:1; min-width:120px;">
                     <input type="tel" name="phone" class="form-input" placeholder="Teléfono" style="flex:1; min-width:100px;">
+                    <input type="email" name="email" class="form-input" placeholder="Correo" style="flex:1; min-width:140px;">
+                    <div style="flex:1; min-width:140px;">
+                        <input type="date" name="birth_date" class="form-input" style="width:100%;">
+                        <p class="form-hint" style="margin:2px 0 0;">Fecha de nacimiento (opcional)</p>
+                    </div>
                     <button type="submit" class="btn btn-sm btn-primary">Agregar</button>
                 </form>
             </div>
@@ -135,4 +159,16 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function toggleContactEdit(id) {
+    var view = document.getElementById('contact-view-' + id);
+    var edit = document.getElementById('contact-edit-' + id);
+    var editing = edit.style.display !== 'none';
+    edit.style.display = editing ? 'none' : 'flex';
+    view.style.display = editing ? 'flex' : 'none';
+}
+</script>
 @endsection

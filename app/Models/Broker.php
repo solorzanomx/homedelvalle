@@ -11,11 +11,12 @@ class Broker extends Model
     protected $fillable = [
         'name', 'email', 'phone', 'license_number',
         'commission_rate', 'company_name', 'bio', 'status', 'photo',
-        'broker_company_id', 'type', 'specialty', 'referral_source',
+        'broker_company_id', 'type', 'specialty', 'referral_source', 'birth_date',
     ];
 
     protected $casts = [
         'commission_rate' => 'decimal:2',
+        'birth_date' => 'date',
     ];
 
     public function company(): BelongsTo
