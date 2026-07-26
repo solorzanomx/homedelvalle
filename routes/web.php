@@ -92,6 +92,10 @@ Route::post('/colaborador/{token}/declinar', [CollaboratorConsentController::cla
 Route::get('/verificacion-broker/{token}', [\App\Http\Controllers\BrokerVerificationController::class, 'show'])->name('broker-verification.show');
 Route::post('/verificacion-broker/{token}', [\App\Http\Controllers\BrokerVerificationController::class, 'submit'])->name('broker-verification.submit');
 
+// Actualización de datos de brokers YA activos en Brokers Externos (público — sin auth, por token)
+Route::get('/actualizar-datos-broker/{token}', [\App\Http\Controllers\BrokerSelfUpdateController::class, 'show'])->name('broker-self-update.show');
+Route::post('/actualizar-datos-broker/{token}', [\App\Http\Controllers\BrokerSelfUpdateController::class, 'submit'])->name('broker-self-update.submit');
+
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');
 

@@ -47,7 +47,7 @@ class BrokerVerificationController extends Controller
         $birthDate = null;
         if (!empty($validated['birth_day']) && !empty($validated['birth_month'])) {
             try {
-                $birthDate = \Carbon\Carbon::createSafe(2000, $validated['birth_month'], $validated['birth_day'])?->toDateString();
+                $birthDate = \Carbon\Carbon::createSafe(2000, (int) $validated['birth_month'], (int) $validated['birth_day'])?->toDateString();
             } catch (\Throwable) {
                 $birthDate = null;
             }
@@ -58,7 +58,7 @@ class BrokerVerificationController extends Controller
         $payload['broker_verification_data'] = [
             'name'                => $validated['name'],
             'company_name'        => $validated['has_company'] === '1' ? ($validated['company_name'] ?? null) : null,
-            'interest_zones'      => $validated['interest_zones']
+            'interest_zones'      => !empty($validated['interest_zones'])
                 ? array_values(array_filter(array_map('trim', explode(',', $validated['interest_zones']))))
                 : [],
             'license_number'      => $validated['license_number'] ?? null,

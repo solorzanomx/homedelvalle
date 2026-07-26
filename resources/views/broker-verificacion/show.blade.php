@@ -38,23 +38,28 @@ input:focus, select:focus{border-color:#2E80C6;}
     <h1>¡Nos encanta trabajar con colegas!</h1>
     <p class="subtext">Para poder empezar a compartirte propiedades y comisiones, primero nos gustaría conocerte un poco — nos ayuda a que la colaboración funcione bien para los dos. Tómate un minuto para confirmar tus datos.</p>
 
-    <form method="POST" action="{{ route('broker-verification.submit', $token) }}">
+    @php
+        $prefill = $prefill ?? ['name' => $lead->full_name ?? '', 'phone' => $lead->phone ?? ''];
+        $submitRoute = $submitRoute ?? route('broker-verification.submit', $token);
+    @endphp
+
+    <form method="POST" action="{{ $submitRoute }}">
         @csrf
 
         <div class="form-group">
             <label>Tu nombre</label>
-            <input type="text" name="name" value="{{ old('name', $lead->full_name) }}" required>
+            <input type="text" name="name" value="{{ old('name', $prefill['name'] ?? '') }}" required>
         </div>
 
         <div class="form-group">
             <label>¿Trabajas para una empresa o de forma independiente?</label>
             <div class="company-toggle">
                 <label class="company-opt" id="optSi" onclick="setCompany(true)">
-                    <input type="radio" name="has_company" value="1" {{ old('has_company') === '1' ? 'checked' : '' }}>
+                    <input type="radio" name="has_company" value="1" {{ old('has_company', $prefill['has_company'] ?? '0') === '1' ? 'checked' : '' }}>
                     Empresa
                 </label>
                 <label class="company-opt active" id="optNo" onclick="setCompany(false)">
-                    <input type="radio" name="has_company" value="0" {{ old('has_company', '0') === '0' ? 'checked' : '' }}>
+                    <input type="radio" name="has_company" value="0" {{ old('has_company', $prefill['has_company'] ?? '0') === '0' ? 'checked' : '' }}>
                     Independiente
                 </label>
             </div>
@@ -62,37 +67,38 @@ input:focus, select:focus{border-color:#2E80C6;}
 
         <div class="form-group" id="companyNameField">
             <label>Nombre de tu empresa</label>
-            <input type="text" name="company_name" value="{{ old('company_name') }}">
+            <input type="text" name="company_name" value="{{ old('company_name', $prefill['company_name'] ?? '') }}">
         </div>
 
         <div class="form-group">
             <label>¿En qué zonas trabajas?</label>
-            <input type="text" name="interest_zones" value="{{ old('interest_zones') }}" placeholder="Ej. Del Valle, Narvarte, Benito Juárez en general">
+            <input type="text" name="interest_zones" value="{{ old('interest_zones', $prefill['interest_zones'] ?? '') }}" placeholder="Ej. Del Valle, Narvarte, Benito Juárez en general">
             <p class="hint">Separadas por coma, o solo escribe la zona donde te mueves más.</p>
         </div>
 
         <div class="form-group">
             <label>Teléfono de contacto</label>
-            <input type="tel" name="phone" value="{{ old('phone', $lead->phone) }}">
+            <input type="tel" name="phone" value="{{ old('phone', $prefill['phone'] ?? '') }}">
         </div>
 
         <div class="form-group">
             <label>Número de cédula/licencia (si tienes)</label>
-            <input type="text" name="license_number" value="{{ old('license_number') }}">
+            <input type="text" name="license_number" value="{{ old('license_number', $prefill['license_number'] ?? '') }}">
         </div>
 
         <div class="form-group">
             <label>Página web (tuya o de tu empresa, si tienes)</label>
-            <input type="url" name="website" value="{{ old('website') }}" placeholder="https://...">
+            <input type="url" name="website" value="{{ old('website', $prefill['website'] ?? '') }}" placeholder="https://...">
         </div>
 
         <div class="form-group">
             <label>¿Cuántas operaciones cierras al año, aproximadamente?</label>
             <select name="operations_per_year">
-                <option value="" {{ old('operations_per_year') === '' ? 'selected' : '' }}>Prefiero no decir</option>
-                <option value="1-5" {{ old('operations_per_year') === '1-5' ? 'selected' : '' }}>1 a 5</option>
-                <option value="6-15" {{ old('operations_per_year') === '6-15' ? 'selected' : '' }}>6 a 15</option>
-                <option value="15+" {{ old('operations_per_year') === '15+' ? 'selected' : '' }}>Más de 15</option>
+                @php $opy = old('operations_per_year', $prefill['operations_per_year'] ?? ''); @endphp
+                <option value="" {{ $opy === '' ? 'selected' : '' }}>Prefiero no decir</option>
+                <option value="1-5" {{ $opy === '1-5' ? 'selected' : '' }}>1 a 5</option>
+                <option value="6-15" {{ $opy === '6-15' ? 'selected' : '' }}>6 a 15</option>
+                <option value="15+" {{ $opy === '15+' ? 'selected' : '' }}>Más de 15</option>
             </select>
         </div>
 
@@ -101,14 +107,16 @@ input:focus, select:focus{border-color:#2E80C6;}
             <div style="display:flex;gap:10px;">
                 <select name="birth_day" style="flex:1;">
                     <option value="">Día</option>
+                    @php $bd = old('birth_day', $prefill['birth_day'] ?? ''); @endphp
                     @for($d = 1; $d <= 31; $d++)
-                        <option value="{{ $d }}" {{ old('birth_day') == $d ? 'selected' : '' }}>{{ $d }}</option>
+                        <option value="{{ $d }}" {{ $bd == $d ? 'selected' : '' }}>{{ $d }}</option>
                     @endfor
                 </select>
                 <select name="birth_month" style="flex:1.4;">
                     <option value="">Mes</option>
+                    @php $bm = old('birth_month', $prefill['birth_month'] ?? ''); @endphp
                     @foreach(['1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre'] as $val => $mes)
-                        <option value="{{ $val }}" {{ old('birth_month') == $val ? 'selected' : '' }}>{{ $mes }}</option>
+                        <option value="{{ $val }}" {{ $bm == $val ? 'selected' : '' }}>{{ $mes }}</option>
                     @endforeach
                 </select>
             </div>

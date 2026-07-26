@@ -187,6 +187,11 @@
                 @else
                     <span class="u-role-badge" style="background:rgba(239,68,68,0.1); color:#ef4444;">Inactivo</span>
                 @endif
+                @if($broker->verification_completed_at)
+                    <span class="u-role-badge" style="background:rgba(134,25,143,0.1); color:#86198f;">✅ Actualizado</span>
+                @elseif($broker->verification_sent_at)
+                    <span class="u-role-badge" style="background:rgba(59,130,246,0.1); color:#1d4ed8;">✉ Sin responder</span>
+                @endif
             </div>
             <div class="u-card-meta">
                 @if($broker->phone)

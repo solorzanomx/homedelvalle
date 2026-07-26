@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
  */
 class SendBrokerVerificationEmails extends Command
 {
-    protected $signature = 'app:send-broker-verification-emails';
+    protected $signature = 'app:send-broker-verification-emails {--lead= : Forzar el envío a un lead específico por ID, ignorando la espera de 2 días}';
     protected $description = 'Envía el correo de verificación a posibles brokers de EasyBroker con 2+ días sin trabajar';
 
     public function handle(): int
@@ -30,13 +30,21 @@ class SendBrokerVerificationEmails extends Command
             return self::FAILURE;
         }
 
-        $candidatos = FormSubmission::where('lead_tag', 'LEAD_BROKER')
-            ->where('status', 'new')
-            ->where('created_at', '<=', now()->subDays(2))
-            ->whereNull('payload->broker_verification_sent_at')
-            ->whereNull('payload->broker_verification_skipped_at')
-            ->whereNotNull('email')
-            ->get();
+        if ($leadId = $this->option('lead')) {
+            $candidatos = FormSubmission::where('id', $leadId)
+                ->whereNull('payload->broker_verification_sent_at')
+                ->whereNull('payload->broker_verification_skipped_at')
+                ->whereNotNull('email')
+                ->get();
+        } else {
+            $candidatos = FormSubmission::where('lead_tag', 'LEAD_BROKER')
+                ->where('status', 'new')
+                ->where('created_at', '<=', now()->subDays(2))
+                ->whereNull('payload->broker_verification_sent_at')
+                ->whereNull('payload->broker_verification_skipped_at')
+                ->whereNotNull('email')
+                ->get();
+        }
 
         $enviados = 0;
         $saltados = 0;

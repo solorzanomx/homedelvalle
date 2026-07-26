@@ -13,6 +13,7 @@ class Broker extends Model
         'commission_rate', 'company_name', 'bio', 'status', 'photo',
         'broker_company_id', 'type', 'specialty', 'referral_source', 'birth_date',
         'interest_zones', 'website', 'operations_per_year',
+        'verification_token', 'verification_sent_at', 'verification_completed_at',
     ];
 
     public const OPERATIONS_PER_YEAR_LABELS = [
@@ -25,6 +26,8 @@ class Broker extends Model
         'commission_rate' => 'decimal:2',
         'birth_date' => 'date',
         'interest_zones' => 'array',
+        'verification_sent_at' => 'datetime',
+        'verification_completed_at' => 'datetime',
     ];
 
     public function company(): BelongsTo
