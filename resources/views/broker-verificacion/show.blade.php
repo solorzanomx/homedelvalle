@@ -96,6 +96,25 @@ input:focus, select:focus{border-color:#2E80C6;}
             </select>
         </div>
 
+        <div class="form-group">
+            <label>🎂 Tu cumpleaños (solo día y mes, lo prometemos)</label>
+            <div style="display:flex;gap:10px;">
+                <select name="birth_day" style="flex:1;">
+                    <option value="">Día</option>
+                    @for($d = 1; $d <= 31; $d++)
+                        <option value="{{ $d }}" {{ old('birth_day') == $d ? 'selected' : '' }}>{{ $d }}</option>
+                    @endfor
+                </select>
+                <select name="birth_month" style="flex:1.4;">
+                    <option value="">Mes</option>
+                    @foreach(['1'=>'Enero','2'=>'Febrero','3'=>'Marzo','4'=>'Abril','5'=>'Mayo','6'=>'Junio','7'=>'Julio','8'=>'Agosto','9'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre'] as $val => $mes)
+                        <option value="{{ $val }}" {{ old('birth_month') == $val ? 'selected' : '' }}>{{ $mes }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <p class="hint">Nos gusta consentir a nuestros colegas en su día — no pedimos el año.</p>
+        </div>
+
         @error('name')<p style="color:#ef4444;font-size:12.5px;margin-top:-8px;margin-bottom:12px;">{{ $message }}</p>@enderror
 
         <button type="submit" class="btn">Enviar mis datos</button>

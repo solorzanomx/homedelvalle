@@ -37,7 +37,21 @@ class BrokerVerificationController extends Controller
             'phone'               => 'nullable|string|max:20',
             'website'             => 'nullable|url|max:255',
             'operations_per_year' => 'nullable|in:1-5,6-15,15+',
+            'birth_day'           => 'nullable|integer|min:1|max:31',
+            'birth_month'         => 'nullable|integer|min:1|max:12',
         ]);
+
+        // Año fijo (2000, bisiesto) porque solo nos interesan día y mes — la
+        // automatización de cumpleaños (SendBirthdayGreetings) compara con
+        // whereMonth()/whereDay() y nunca lee el año.
+        $birthDate = null;
+        if (!empty($validated['birth_day']) && !empty($validated['birth_month'])) {
+            try {
+                $birthDate = \Carbon\Carbon::createSafe(2000, $validated['birth_month'], $validated['birth_day'])?->toDateString();
+            } catch (\Throwable) {
+                $birthDate = null;
+            }
+        }
 
         $payload = $lead->payload ?? [];
         $payload['broker_verification_completed_at'] = now()->toDateTimeString();
@@ -51,6 +65,7 @@ class BrokerVerificationController extends Controller
             'phone'               => $validated['phone'] ?? $lead->phone,
             'website'             => $validated['website'] ?? null,
             'operations_per_year' => $validated['operations_per_year'] ?? null,
+            'birth_date'          => $birthDate,
         ];
 
         $lead->update(['payload' => $payload]);

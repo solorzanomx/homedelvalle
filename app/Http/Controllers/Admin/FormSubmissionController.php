@@ -185,6 +185,7 @@ class FormSubmissionController extends Controller
             'interest_zones'      => $verificacion['interest_zones'] ?? null,
             'website'             => $verificacion['website'] ?? null,
             'operations_per_year' => $verificacion['operations_per_year'] ?? null,
+            'birth_date'          => $verificacion['birth_date'] ?? null,
             'status'          => 'active',
             'specialty'       => $especialidad,
             'referral_source' => 'Lead de portal (' . ($formSubmission->payload['portal_origen'] ?? 'EasyBroker') . ')' . ($verificacion ? ' — verificado' : ''),
