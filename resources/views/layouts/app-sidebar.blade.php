@@ -755,6 +755,9 @@
                         <a href="{{ route('providers.index') }}" class="nav-item {{ request()->routeIs('providers.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="briefcase" class="w-4 h-4" /></span> Proveedores
                         </a>
+                        <a href="{{ route('developers.index') }}" class="nav-item {{ request()->routeIs('developers.*') || request()->routeIs('developer-contacts.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="hard-hat" class="w-4 h-4" /></span> Constructoras
+                        </a>
                         @endpermission
                     </div>
                 </div>

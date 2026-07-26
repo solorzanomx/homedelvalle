@@ -238,6 +238,10 @@ Route::middleware('auth')->group(function () {
     Route::post('providers/{provider}/contacts', [\App\Http\Controllers\ProviderContactController::class, 'store'])->name('providers.contacts.store');
     Route::put('provider-contacts/{contact}', [\App\Http\Controllers\ProviderContactController::class, 'update'])->name('provider-contacts.update');
     Route::delete('provider-contacts/{contact}', [\App\Http\Controllers\ProviderContactController::class, 'destroy'])->name('provider-contacts.destroy');
+
+    // Constructoras / Desarrolladoras (cartera del negocio principal)
+    Route::resource('developers', \App\Http\Controllers\DeveloperCompanyController::class);
+    Route::resource('developer-contacts', \App\Http\Controllers\DeveloperContactController::class)->except(['show']);
     Route::post('operations/{operation}/provider-charges', [\App\Http\Controllers\ProviderChargeController::class, 'storeForOperation'])->name('operations.provider-charges.store');
     Route::post('rentals/{rental}/provider-charges', [\App\Http\Controllers\ProviderChargeController::class, 'storeForRental'])->name('rentals.provider-charges.store');
     Route::patch('provider-charges/{charge}/status', [\App\Http\Controllers\ProviderChargeController::class, 'updateStatus'])->name('provider-charges.update-status');
