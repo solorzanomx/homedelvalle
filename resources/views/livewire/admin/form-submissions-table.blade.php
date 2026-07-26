@@ -130,6 +130,23 @@
                             'cold' => ['label'=>'❄ Frío',      'bg'=>'#eff6ff', 'color'=>'#1d4ed8', 'border'=>'#93c5fd'],
                             default=> ['label'=>'—',           'bg'=>'transparent', 'color'=>'var(--text-muted)', 'border'=>'transparent'],
                         };
+
+                        // Etapa de verificación de broker — reemplaza el badge de
+                        // estado normal mientras el proceso siga abierto, para que
+                        // se note en la lista general sin entrar a cada ficha.
+                        $brokerStage = null;
+                        if ($sub->lead_tag === 'LEAD_BROKER' || !empty($sub->payload['posible_broker'])) {
+                            $decidido = $sub->status === 'qualified' || ($sub->payload['broker_verification_decision'] ?? null) === 'rejected';
+                            if (!$decidido) {
+                                if (!empty($sub->payload['broker_verification_completed_at'])) {
+                                    $brokerStage = ['label' => '✅ Verificado — revisar', 'bg' => '#fdf4ff', 'color' => '#86198f', 'border' => '#e9d5ff'];
+                                } elseif (!empty($sub->payload['broker_verification_sent_at'])) {
+                                    $brokerStage = ['label' => '✉ Verificación enviada', 'bg' => '#eff6ff', 'color' => '#1d4ed8', 'border' => '#93c5fd'];
+                                } else {
+                                    $brokerStage = ['label' => '🤝 Posible broker', 'bg' => '#fdf4ff', 'color' => '#86198f', 'border' => '#e9d5ff'];
+                                }
+                            }
+                        }
                     @endphp
                     @php $unseen = !$sub->seen_at; @endphp
                     <tr wire:key="sub-{{ $sub->id }}" style="{{ in_array((string)$sub->id, $selected) ? 'background:rgba(99,102,241,0.06)' : ($unseen ? 'background:rgba(245,158,11,0.04)' : '') }}">
@@ -153,7 +170,13 @@
                                 {{ $tempMeta['label'] }}
                             </span>
                         </td>
-                        <td><span class="badge {{ $statusColors[$sub->status] ?? '' }}">{{ $statusLabels[$sub->status] ?? $sub->status }}</span></td>
+                        <td>
+                            @if($brokerStage)
+                                <span style="display:inline-flex;align-items:center;font-size:0.78rem;font-weight:600;padding:3px 8px;border-radius:99px;background:{{ $brokerStage['bg'] }};color:{{ $brokerStage['color'] }};border:1px solid {{ $brokerStage['border'] }};white-space:nowrap">{{ $brokerStage['label'] }}</span>
+                            @else
+                                <span class="badge {{ $statusColors[$sub->status] ?? '' }}">{{ $statusLabels[$sub->status] ?? $sub->status }}</span>
+                            @endif
+                        </td>
                         <td style="font-size:0.82rem">
                             <div>{{ $sub->email }}</div>
                             <div style="color:var(--text-muted)">{{ $sub->phone }}</div>
