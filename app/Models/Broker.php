@@ -12,7 +12,13 @@ class Broker extends Model
         'name', 'email', 'phone', 'license_number',
         'commission_rate', 'company_name', 'bio', 'status', 'photo',
         'broker_company_id', 'type', 'specialty', 'referral_source', 'birth_date',
-        'interest_zones',
+        'interest_zones', 'website', 'operations_per_year',
+    ];
+
+    public const OPERATIONS_PER_YEAR_LABELS = [
+        '1-5'  => '1 a 5 al año',
+        '6-15' => '6 a 15 al año',
+        '15+'  => 'Más de 15 al año',
     ];
 
     protected $casts = [

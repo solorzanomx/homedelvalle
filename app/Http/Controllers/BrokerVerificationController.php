@@ -29,24 +29,28 @@ class BrokerVerificationController extends Controller
         }
 
         $validated = $request->validate([
-            'name'           => 'required|string|max:255',
-            'has_company'    => 'required|in:0,1',
-            'company_name'   => 'nullable|string|max:255',
-            'interest_zones' => 'nullable|string|max:500',
-            'license_number' => 'nullable|string|max:100',
-            'phone'          => 'nullable|string|max:20',
+            'name'                => 'required|string|max:255',
+            'has_company'         => 'required|in:0,1',
+            'company_name'        => 'nullable|string|max:255',
+            'interest_zones'      => 'nullable|string|max:500',
+            'license_number'      => 'nullable|string|max:100',
+            'phone'               => 'nullable|string|max:20',
+            'website'             => 'nullable|url|max:255',
+            'operations_per_year' => 'nullable|in:1-5,6-15,15+',
         ]);
 
         $payload = $lead->payload ?? [];
         $payload['broker_verification_completed_at'] = now()->toDateTimeString();
         $payload['broker_verification_data'] = [
-            'name'           => $validated['name'],
-            'company_name'   => $validated['has_company'] === '1' ? ($validated['company_name'] ?? null) : null,
-            'interest_zones' => $validated['interest_zones']
+            'name'                => $validated['name'],
+            'company_name'        => $validated['has_company'] === '1' ? ($validated['company_name'] ?? null) : null,
+            'interest_zones'      => $validated['interest_zones']
                 ? array_values(array_filter(array_map('trim', explode(',', $validated['interest_zones']))))
                 : [],
-            'license_number' => $validated['license_number'] ?? null,
-            'phone'          => $validated['phone'] ?? $lead->phone,
+            'license_number'      => $validated['license_number'] ?? null,
+            'phone'               => $validated['phone'] ?? $lead->phone,
+            'website'             => $validated['website'] ?? null,
+            'operations_per_year' => $validated['operations_per_year'] ?? null,
         ];
 
         $lead->update(['payload' => $payload]);

@@ -110,6 +110,8 @@
                     <div><strong>Zonas de interés:</strong> {{ !empty($verificacionBroker['interest_zones']) ? implode(', ', $verificacionBroker['interest_zones']) : '—' }}</div>
                     <div><strong>Licencia:</strong> {{ $verificacionBroker['license_number'] ?? '—' }}</div>
                     <div><strong>Teléfono:</strong> {{ $verificacionBroker['phone'] ?? '—' }}</div>
+                    <div><strong>Página web:</strong> {{ $verificacionBroker['website'] ?? '—' }}</div>
+                    <div><strong>Operaciones/año:</strong> {{ \App\Models\Broker::OPERATIONS_PER_YEAR_LABELS[$verificacionBroker['operations_per_year'] ?? ''] ?? 'No dijo' }}</div>
                 </div>
                 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
                     <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}">

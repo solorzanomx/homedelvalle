@@ -14,8 +14,10 @@ h1{font-size:21px;font-weight:800;color:#0E304B;margin-bottom:10px;letter-spacin
 .subtext{font-size:14.5px;color:#5A6573;line-height:1.65;margin-bottom:26px;text-align:center;}
 .form-group{margin-bottom:16px;}
 label{display:block;font-size:12.5px;font-weight:700;color:#0E304B;margin-bottom:5px;}
-input[type=text], input[type=tel]{width:100%;border:1.5px solid #D5DCE7;border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;color:#0E304B;outline:none;}
-input:focus{border-color:#2E80C6;}
+input[type=text], input[type=tel], input[type=url], select{width:100%;border:1.5px solid #D5DCE7;border-radius:10px;padding:11px 13px;font-family:inherit;font-size:14px;color:#0E304B;outline:none;background:#fff;}
+input:focus, select:focus{border-color:#2E80C6;}
+.privacy-note{font-size:11.5px;color:#94a3b8;line-height:1.6;margin:4px 0 16px;text-align:center;}
+.privacy-note a{color:#2270B0;font-weight:700;}
 .hint{font-size:11.5px;color:#94a3b8;margin-top:4px;}
 .company-toggle{display:flex;gap:10px;margin-bottom:16px;}
 .company-opt{flex:1;border:1.5px solid #D5DCE7;border-radius:10px;padding:10px;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A6573;}
@@ -79,9 +81,25 @@ input:focus{border-color:#2E80C6;}
             <input type="text" name="license_number" value="{{ old('license_number') }}">
         </div>
 
+        <div class="form-group">
+            <label>Página web (tuya o de tu empresa, si tienes)</label>
+            <input type="url" name="website" value="{{ old('website') }}" placeholder="https://...">
+        </div>
+
+        <div class="form-group">
+            <label>¿Cuántas operaciones cierras al año, aproximadamente?</label>
+            <select name="operations_per_year">
+                <option value="" {{ old('operations_per_year') === '' ? 'selected' : '' }}>Prefiero no decir</option>
+                <option value="1-5" {{ old('operations_per_year') === '1-5' ? 'selected' : '' }}>1 a 5</option>
+                <option value="6-15" {{ old('operations_per_year') === '6-15' ? 'selected' : '' }}>6 a 15</option>
+                <option value="15+" {{ old('operations_per_year') === '15+' ? 'selected' : '' }}>Más de 15</option>
+            </select>
+        </div>
+
         @error('name')<p style="color:#ef4444;font-size:12.5px;margin-top:-8px;margin-bottom:12px;">{{ $message }}</p>@enderror
 
         <button type="submit" class="btn">Enviar mis datos</button>
+        <p class="privacy-note">Al enviar tus datos, aceptas nuestro <a href="{{ route('legal.public', 'aviso-de-privacidad') }}" target="_blank">Aviso de Privacidad</a>.</p>
     </form>
 
     <div class="divider"></div>
