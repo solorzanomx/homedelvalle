@@ -74,6 +74,8 @@ Schedule::job(new \App\Jobs\SendWeeklyPropertySummary)->weeklyOn(1, '08:00') // 
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('SendWeeklyPropertySummary scheduled run failed'));
 Schedule::command('app:send-birthday-greetings')->dailyAt('09:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('app:send-birthday-greetings scheduled run failed'));
+Schedule::command('app:send-broker-verification-emails')->dailyAt('10:00')
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('app:send-broker-verification-emails scheduled run failed'));
 
 Schedule::command('market:update-prices')
     ->monthlyOn(1, '08:00')

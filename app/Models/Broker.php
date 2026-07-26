@@ -12,11 +12,13 @@ class Broker extends Model
         'name', 'email', 'phone', 'license_number',
         'commission_rate', 'company_name', 'bio', 'status', 'photo',
         'broker_company_id', 'type', 'specialty', 'referral_source', 'birth_date',
+        'interest_zones',
     ];
 
     protected $casts = [
         'commission_rate' => 'decimal:2',
         'birth_date' => 'date',
+        'interest_zones' => 'array',
     ];
 
     public function company(): BelongsTo

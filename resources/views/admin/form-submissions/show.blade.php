@@ -55,6 +55,9 @@
                 $waMsg = "Hola {$nombreCorto}, te contactamos de Home del Valle sobre tu solicitud. ¿En qué horario te queda bien platicar?";
             }
             $esPosibleBroker = ($submission->lead_tag === 'LEAD_BROKER') || !empty($submission->payload['posible_broker']);
+            $verificacionBroker = $submission->payload['broker_verification_data'] ?? null;
+            $verificacionCompletada = !empty($submission->payload['broker_verification_completed_at']);
+            $verificacionDecidida = $submission->status === 'qualified' || ($submission->payload['broker_verification_decision'] ?? null) === 'rejected';
 
             // Si la IA ya redactó la respuesta, el WhatsApp sale con ella
             if (!empty($submission->payload['ai_respuesta'])) {
@@ -97,12 +100,41 @@
             </div>
         </div>
 
-        @if($esPosibleBroker)
+        @if($verificacionCompletada && !$verificacionDecidida)
+        <div class="card" style="border-left:4px solid #86198f;background:#fdf4ff">
+            <div class="card-body">
+                <p style="font-weight:700;color:#86198f;margin:0 0 0.5rem">✅ Verificación de broker completada</p>
+                <div style="font-size:0.85rem;line-height:1.8;margin-bottom:1rem;">
+                    <div><strong>Nombre:</strong> {{ $verificacionBroker['name'] ?? '—' }}</div>
+                    <div><strong>Empresa:</strong> {{ $verificacionBroker['company_name'] ?? 'Independiente' }}</div>
+                    <div><strong>Zonas de interés:</strong> {{ !empty($verificacionBroker['interest_zones']) ? implode(', ', $verificacionBroker['interest_zones']) : '—' }}</div>
+                    <div><strong>Licencia:</strong> {{ $verificacionBroker['license_number'] ?? '—' }}</div>
+                    <div><strong>Teléfono:</strong> {{ $verificacionBroker['phone'] ?? '—' }}</div>
+                </div>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-primary" style="background:#86198f;border-color:#86198f">Aprobar y agregar a Brokers Externos</button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.form-submissions.reject-broker', $submission) }}" onsubmit="return confirm('¿Descartar este contacto?')">
+                        @csrf
+                        <button type="submit" class="btn btn-outline" style="color:var(--danger)">Rechazar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @elseif($esPosibleBroker)
         <div class="card" style="border-left:4px solid #86198f;background:#fdf4ff">
             <div class="card-body" style="display:flex;align-items:center;gap:1rem;justify-content:space-between;flex-wrap:wrap">
                 <div>
                     <p style="font-weight:700;color:#86198f;margin:0">🤝 Posible broker pidiendo colaboración</p>
-                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0.25rem 0 0">El mensaje sugiere que es un asesor, no un comprador. Regístralo en la red de colaboración para envíos de inventario compartido.</p>
+                    <p style="font-size:0.82rem;color:var(--text-muted);margin:0.25rem 0 0">
+                        @if(!empty($submission->payload['broker_verification_sent_at']))
+                            Se le envió correo de verificación el {{ \Illuminate\Support\Carbon::parse($submission->payload['broker_verification_sent_at'])->format('d/m/Y') }} — esperando respuesta. También puedes registrarlo directo si ya lo conoces.
+                        @else
+                            El mensaje sugiere que es un asesor, no un comprador. Se le mandará un correo de verificación automático en unos días — o regístralo directo si ya lo conoces.
+                        @endif
+                    </p>
                 </div>
                 <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}">
                     @csrf

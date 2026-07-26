@@ -153,10 +153,15 @@ class FormSubmissionController extends Controller
      */
     public function convertToBroker(FormSubmission $formSubmission)
     {
-        $existing = \App\Models\Broker::where(function ($q) use ($formSubmission) {
+        $verificacion = $formSubmission->payload['broker_verification_data'] ?? null;
+
+        $existing = \App\Models\Broker::where(function ($q) use ($formSubmission, $verificacion) {
             $q->where('email', $formSubmission->email);
             if ($formSubmission->phone && $formSubmission->phone !== 'sin teléfono') {
                 $q->orWhere('phone', $formSubmission->phone);
+            }
+            if (!empty($verificacion['phone'])) {
+                $q->orWhere('phone', $verificacion['phone']);
             }
         })->first();
 
@@ -168,23 +173,40 @@ class FormSubmissionController extends Controller
         }
 
         // Especialidad inferida de la propiedad por la que preguntó
-        $propiedad   = $formSubmission->payload['propiedad_local'] ?? null;
+        $propiedad    = $formSubmission->payload['propiedad_local'] ?? null;
         $especialidad = $propiedad ? "Preguntó por: {$propiedad}" : null;
 
         $broker = \App\Models\Broker::create([
-            'name'            => $formSubmission->full_name,
+            'name'            => $verificacion['name'] ?? $formSubmission->full_name,
             'email'           => str_contains($formSubmission->email, '@sin-correo.easybroker') ? null : $formSubmission->email,
-            'phone'           => $formSubmission->phone === 'sin teléfono' ? null : $formSubmission->phone,
+            'phone'           => $verificacion['phone'] ?? ($formSubmission->phone === 'sin teléfono' ? null : $formSubmission->phone),
+            'company_name'    => $verificacion['company_name'] ?? null,
+            'license_number'  => $verificacion['license_number'] ?? null,
+            'interest_zones'  => $verificacion['interest_zones'] ?? null,
             'status'          => 'active',
             'specialty'       => $especialidad,
-            'referral_source' => 'Lead de portal (' . ($formSubmission->payload['portal_origen'] ?? 'EasyBroker') . ')',
+            'referral_source' => 'Lead de portal (' . ($formSubmission->payload['portal_origen'] ?? 'EasyBroker') . ')' . ($verificacion ? ' — verificado' : ''),
             'bio'             => $formSubmission->payload['mensaje'] ?? null,
         ]);
 
         $formSubmission->update(['status' => 'qualified', 'lead_tag' => 'LEAD_BROKER']);
 
         return redirect()->route('brokers.show', $broker)
-            ->with('success', "«{$broker->name}» registrado en Brokers Externos — completa su comisión y empresa.");
+            ->with('success', "«{$broker->name}» registrado en Brokers Externos" . ($verificacion ? ' con sus datos verificados.' : ' — completa su comisión y empresa.'));
+    }
+
+    public function rejectBroker(FormSubmission $formSubmission)
+    {
+        $payload = $formSubmission->payload ?? [];
+        $payload['broker_verification_decision'] = 'rejected';
+        $payload['broker_verification_decided_at'] = now()->toDateTimeString();
+
+        $formSubmission->update([
+            'payload' => $payload,
+            'status'  => 'lost',
+        ]);
+
+        return back()->with('success', 'Contacto descartado — no se agregó a Brokers Externos.');
     }
 
     /**

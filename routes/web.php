@@ -88,6 +88,10 @@ Route::get('/colaborador/{token}', [CollaboratorConsentController::class, 'show'
 Route::post('/colaborador/{token}/autorizar', [CollaboratorConsentController::class, 'authorizeConsent'])->name('collaborator.consent.authorize');
 Route::post('/colaborador/{token}/declinar', [CollaboratorConsentController::class, 'decline'])->name('collaborator.consent.decline');
 
+// Verificación de brokers externos (público — sin auth, por token)
+Route::get('/verificacion-broker/{token}', [\App\Http\Controllers\BrokerVerificationController::class, 'show'])->name('broker-verification.show');
+Route::post('/verificacion-broker/{token}', [\App\Http\Controllers\BrokerVerificationController::class, 'submit'])->name('broker-verification.submit');
+
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -365,6 +369,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::patch('/form-submissions/{formSubmission}/notes', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateNotes'])->name('form-submissions.notes');
     Route::post('/form-submissions/{formSubmission}/convert-client', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'convertToClient'])->name('form-submissions.convert-client');
     Route::post('/form-submissions/{formSubmission}/convert-broker', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'convertToBroker'])->name('form-submissions.convert-broker');
+    Route::post('/form-submissions/{formSubmission}/reject-broker', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'rejectBroker'])->name('form-submissions.reject-broker');
     Route::post('/form-submissions/{formSubmission}/ai-suggest', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'aiSuggest'])->name('form-submissions.ai-suggest');
     Route::delete('/form-submissions/{formSubmission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
     Route::delete('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'bulkDestroy'])->name('form-submissions.bulk-destroy');
