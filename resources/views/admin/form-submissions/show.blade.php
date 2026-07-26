@@ -219,7 +219,7 @@
                     <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);width:140px;flex-shrink:0;text-transform:capitalize">{{ str_replace('_', ' ', $key) }}</span>
                     <span style="font-size:0.85rem;word-break:break-word">
                         @if(is_array($value))
-                            {{ implode(', ', $value) }}
+                            {{ implode(', ', array_map(fn($v) => is_array($v) ? (empty($v) ? '—' : implode('/', $v)) : ($v ?? '—'), $value)) }}
                         @else
                             {{ $value ?: '—' }}
                         @endif
