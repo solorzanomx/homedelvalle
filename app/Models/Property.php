@@ -82,6 +82,11 @@ class Property extends Model
         return $this->hasOne(PropertyQrCode::class);
     }
 
+    public function developmentProfile(): HasOne
+    {
+        return $this->hasOne(PropertyDevelopmentProfile::class);
+    }
+
     public function valuations(): HasMany
     {
         return $this->hasMany(PropertyValuation::class)->latest();

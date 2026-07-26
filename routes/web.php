@@ -209,6 +209,12 @@ Route::middleware('auth')->group(function () {
     Route::post('properties/{property}/portal-reports', [PropertyController::class, 'uploadPortalReport'])->name('properties.portal-reports.store');
     Route::get('properties/{property}/pdf', [PropertyFichaController::class, 'pdf'])->name('properties.pdf');
     Route::post('properties/{property}/send-ficha', [PropertyFichaController::class, 'email'])->name('properties.send-ficha');
+    // Perfil técnico para desarrollo (terrenos / casas en venta con potencial)
+    Route::get('properties/{property}/development-profile', [\App\Http\Controllers\PropertyDevelopmentProfileController::class, 'edit'])->name('properties.development-profile.edit');
+    Route::put('properties/{property}/development-profile', [\App\Http\Controllers\PropertyDevelopmentProfileController::class, 'update'])->name('properties.development-profile.update');
+    Route::get('properties/{property}/ficha-tecnica.pdf', [\App\Http\Controllers\PropertyTechnicalFichaController::class, 'pdf'])->name('properties.ficha-tecnica.pdf');
+    Route::get('properties/{property}/send-ficha-tecnica', [\App\Http\Controllers\PropertyTechnicalFichaController::class, 'showSend'])->name('properties.ficha-tecnica.send-form');
+    Route::post('properties/{property}/send-ficha-tecnica', [\App\Http\Controllers\PropertyTechnicalFichaController::class, 'send'])->name('properties.ficha-tecnica.send');
     // QR Codes
     Route::post('properties/{property}/qr/generate', [PropertyQrController::class, 'generate'])->name('properties.qr.generate');
     Route::get('properties/{property}/qr/download', [PropertyQrController::class, 'download'])->name('properties.qr.download');

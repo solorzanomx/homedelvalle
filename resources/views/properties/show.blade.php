@@ -351,6 +351,10 @@
         @if(in_array($property->operation_type, ['rental', 'temporary_rental']))
             <a href="{{ route('rentals.create', array_filter(['property' => $property->id, 'owner' => $property->client_id])) }}" class="btn btn-outline">&#127968; Nueva renta</a>
         @endif
+        @if(in_array($property->property_type, ['Land', 'House']) && $property->operation_type === 'sale')
+            <a href="{{ route('properties.development-profile.edit', $property) }}" class="btn btn-outline" style="color:#7c3aed;border-color:#7c3aed;">&#127959; Perfil técnico</a>
+            <a href="{{ route('properties.ficha-tecnica.send-form', $property) }}" class="btn btn-outline" style="color:#7c3aed;border-color:#7c3aed;">&#127981; Ficha técnica a constructoras</a>
+        @endif
         @if($property->broker && $property->broker->phone)
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $property->broker->phone) }}" target="_blank" class="btn btn-outline" style="color:#25d366; border-color:#25d366;">&#128172; Broker</a>
         @endif
