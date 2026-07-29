@@ -31,7 +31,7 @@ return new class extends Migration
             $table->decimal('valor_unitario_suelo', 14, 2)->nullable();
             $table->decimal('valor_suelo', 16, 2)->nullable();
             $table->string('cve_vus', 30)->nullable();
-            $table->string('subsidio', 10)->nullable();
+            $table->string('subsidio', 50)->nullable();
             $table->timestamps();
 
             $table->index('colonia');
