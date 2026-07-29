@@ -14,6 +14,7 @@ class Broker extends Model
         'broker_company_id', 'type', 'specialty', 'referral_source', 'birth_date',
         'interest_zones', 'website', 'operations_per_year',
         'verification_token', 'verification_sent_at', 'verification_completed_at',
+        'email_opened_at',
     ];
 
     public const OPERATIONS_PER_YEAR_LABELS = [
@@ -28,6 +29,7 @@ class Broker extends Model
         'interest_zones' => 'array',
         'verification_sent_at' => 'datetime',
         'verification_completed_at' => 'datetime',
+        'email_opened_at' => 'datetime',
     ];
 
     public function company(): BelongsTo

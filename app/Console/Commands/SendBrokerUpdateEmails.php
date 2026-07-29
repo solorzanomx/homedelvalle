@@ -44,7 +44,7 @@ class SendBrokerUpdateEmails extends Command
                 $template->send($broker->email, [
                     'nombre'            => $broker->name,
                     'link_verificacion' => $link,
-                ]);
+                ], $broker);
 
                 $broker->update([
                     'verification_token'    => $token,

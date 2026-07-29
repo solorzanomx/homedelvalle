@@ -46,7 +46,7 @@ class SendBirthdayGreetings extends Command
                 }
 
                 try {
-                    $template->send($recipient->email, ['nombre' => $recipient->name]);
+                    $template->send($recipient->email, ['nombre' => $recipient->name], $recipient);
 
                     BirthdayEmailLog::create([
                         'recipient_type' => $type,

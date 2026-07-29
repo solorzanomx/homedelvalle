@@ -73,7 +73,7 @@ class SendBrokerVerificationEmails extends Command
                 $template->send($lead->email, [
                     'nombre'            => $lead->full_name,
                     'link_verificacion' => $link,
-                ]);
+                ], $lead);
 
                 $payload['broker_verification_token'] = $token;
                 $payload['broker_verification_sent_at'] = now()->toDateTimeString();

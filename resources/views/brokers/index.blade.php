@@ -192,6 +192,9 @@
                 @elseif($broker->verification_sent_at)
                     <span class="u-role-badge" style="background:rgba(59,130,246,0.1); color:#1d4ed8;">✉ Sin responder</span>
                 @endif
+                @if($broker->email_opened_at)
+                    <span class="u-role-badge" style="background:rgba(16,185,129,0.1); color:#10b981;">👁 Abrió el correo</span>
+                @endif
             </div>
             <div class="u-card-meta">
                 @if($broker->phone)
