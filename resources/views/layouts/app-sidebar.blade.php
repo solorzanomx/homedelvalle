@@ -758,6 +758,9 @@
                         <a href="{{ route('developers.index') }}" class="nav-item {{ request()->routeIs('developers.*') || request()->routeIs('developer-contacts.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="hard-hat" class="w-4 h-4" /></span> Constructoras
                         </a>
+                        <a href="{{ route('catastro-bj.index') }}" class="nav-item {{ request()->routeIs('catastro-bj.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="map" class="w-4 h-4" /></span> Catastro BJ
+                        </a>
                         @endpermission
                     </div>
                 </div>

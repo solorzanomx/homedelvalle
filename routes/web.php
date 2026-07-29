@@ -256,6 +256,10 @@ Route::middleware('auth')->group(function () {
     // Constructoras / Desarrolladoras (cartera del negocio principal)
     Route::resource('developers', \App\Http\Controllers\DeveloperCompanyController::class);
     Route::resource('developer-contacts', \App\Http\Controllers\DeveloperContactController::class)->except(['show']);
+
+    // Buscador de catastro/zonificación de Benito Juárez (independiente de Property)
+    Route::get('catastro-bj', [\App\Http\Controllers\CatastroBjController::class, 'index'])->name('catastro-bj.index');
+    Route::get('catastro-bj/exportar', [\App\Http\Controllers\CatastroBjController::class, 'export'])->name('catastro-bj.export');
     Route::post('operations/{operation}/provider-charges', [\App\Http\Controllers\ProviderChargeController::class, 'storeForOperation'])->name('operations.provider-charges.store');
     Route::post('rentals/{rental}/provider-charges', [\App\Http\Controllers\ProviderChargeController::class, 'storeForRental'])->name('rentals.provider-charges.store');
     Route::patch('provider-charges/{charge}/status', [\App\Http\Controllers\ProviderChargeController::class, 'updateStatus'])->name('provider-charges.update-status');
