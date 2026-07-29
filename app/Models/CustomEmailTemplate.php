@@ -59,9 +59,11 @@ class CustomEmailTemplate extends Model
     }
 
     /**
-     * $trackable (opcional): modelo al que correlacionar la apertura (ej. un
-     * Broker) — además de quedar en email_opens, se denormaliza en el propio
-     * registro cuando el modelo lo soporta (ej. Broker::email_opened_at).
+     * $trackable (opcional): modelo al que ligar el mensaje (Client, Broker,
+     * FormSubmission...) — queda en Message.trackable, y si es un Client
+     * también en Message.client_id para que aparezca en su timeline como
+     * cualquier otro correo. El pixel de apertura usa external_id como token
+     * y reutiliza Message::markOpened() — un solo log para todo.
      */
     public function send($to, array $data = [], ?Model $trackable = null): void
     {
@@ -70,14 +72,30 @@ class CustomEmailTemplate extends Model
             $subject = str_replace('{{' . $key . '}}', $value, $subject);
         }
 
-        $html = $this->injectTrackingPixel($this->render($data), $to, $trackable);
+        $token = Str::random(40);
+
+        $message = Message::create([
+            'client_id' => $trackable instanceof Client ? $trackable->id : null,
+            'trackable_type' => $trackable ? get_class($trackable) : null,
+            'trackable_id' => $trackable?->getKey(),
+            'channel' => 'email',
+            'subject' => $subject,
+            'body' => $this->render($data),
+            'status' => 'queued',
+            'external_id' => $token,
+            'metadata' => ['to' => $to, 'custom_email_template_id' => $this->id, 'template_slug' => $this->slug],
+        ]);
+
+        $html = $this->injectTrackingPixel($this->render($data), $token);
 
         try {
-            Mail::html($html, function ($message) use ($to, $subject) {
-                $message->to($to)
+            Mail::html($html, function ($mail) use ($to, $subject) {
+                $mail->to($to)
                     ->from(config('mail.from.address'), config('mail.from.name'))
                     ->subject($subject);
             });
+
+            $message->markSent();
 
             $this->testingLogs()->create([
                 'test_email' => $to,
@@ -86,6 +104,8 @@ class CustomEmailTemplate extends Model
                 'sent_at' => now(),
             ]);
         } catch (\Throwable $e) {
+            $message->markFailed();
+
             $this->testingLogs()->create([
                 'test_email' => $to,
                 'test_data' => $data,
@@ -98,18 +118,8 @@ class CustomEmailTemplate extends Model
         }
     }
 
-    private function injectTrackingPixel(string $html, string $to, ?Model $trackable = null): string
+    private function injectTrackingPixel(string $html, string $token): string
     {
-        $token = Str::random(40);
-
-        EmailOpen::create([
-            'token' => $token,
-            'custom_email_template_id' => $this->id,
-            'recipient_email' => $to,
-            'trackable_type' => $trackable ? get_class($trackable) : null,
-            'trackable_id' => $trackable?->getKey(),
-        ]);
-
         $pixel = '<img src="' . route('email.pixel', $token) . '" width="1" height="1" alt="" style="display:none;border:0;">';
 
         return str_contains($html, '</body>')

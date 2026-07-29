@@ -125,8 +125,16 @@
                     <td>
                         @if($msg->client)
                         <a href="{{ route('clients.show', $msg->client_id) }}" class="msg-client">{{ $msg->client->name }}</a>
+                        @elseif($msg->trackable instanceof \App\Models\Broker)
+                        <a href="{{ route('brokers.show', $msg->trackable) }}" class="msg-client">{{ $msg->trackable->name }}</a>
+                        <span class="msg-dir">(Broker)</span>
+                        @elseif($msg->trackable instanceof \App\Models\FormSubmission)
+                        <a href="{{ route('admin.form-submissions.show', $msg->trackable) }}" class="msg-client">{{ $msg->trackable->full_name }}</a>
+                        <span class="msg-dir">(Lead)</span>
+                        @elseif($msg->trackable)
+                        <span>{{ $msg->trackable->name ?? class_basename($msg->trackable) }}</span>
                         @else
-                        <span style="color:var(--text-muted);">—</span>
+                        <span style="color:var(--text-muted);">{{ $msg->metadata['to'] ?? '—' }}</span>
                         @endif
                     </td>
                     <td>

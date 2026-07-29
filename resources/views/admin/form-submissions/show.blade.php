@@ -231,6 +231,42 @@
             </div>
         </div>
 
+        {{-- Mensajes enviados --}}
+        <div class="card">
+            <div class="card-header"><h3>Mensajes enviados</h3></div>
+            <div class="card-body" style="padding:0">
+                @forelse($messages as $msg)
+                @php
+                    $msgStatusLabel = match($msg->status) {
+                        'sent'    => $msg->opened_at ? 'Abierto' . ($msg->open_count > 1 ? " {$msg->open_count}x" : '') : 'Enviado',
+                        'opened'  => 'Abierto' . ($msg->open_count > 1 ? " {$msg->open_count}x" : ''),
+                        'failed'  => 'Fallido',
+                        'queued'  => 'En cola',
+                        'skipped' => 'Omitido',
+                        'replied' => 'Respondido',
+                        default   => ucfirst($msg->status),
+                    };
+                    $msgStatusColor = match(true) {
+                        $msg->status === 'failed' => '#dc2626',
+                        (bool) $msg->opened_at || $msg->status === 'opened' => '#15803d',
+                        $msg->status === 'queued' => '#92400e',
+                        default => '#1d4ed8',
+                    };
+                @endphp
+                <div style="padding:0.75rem 1.2rem;border-bottom:1px solid var(--border);display:flex;gap:1rem;align-items:flex-start">
+                    <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);width:90px;flex-shrink:0">{{ strtoupper($msg->channel) }}</span>
+                    <div style="flex:1;min-width:0;">
+                        @if($msg->subject)<div style="font-size:0.85rem;font-weight:600;">{{ $msg->subject }}</div>@endif
+                        <div style="font-size:0.75rem;color:var(--text-muted);">{{ $msg->created_at->format('d/m/Y H:i') }}</div>
+                    </div>
+                    <span style="font-size:0.72rem;font-weight:600;color:{{ $msgStatusColor }};white-space:nowrap;">{{ $msgStatusLabel }}</span>
+                </div>
+                @empty
+                <div style="padding:1.2rem;color:var(--text-muted);font-size:0.85rem">Sin mensajes enviados a este lead.</div>
+                @endforelse
+            </div>
+        </div>
+
         {{-- Notes --}}
         <div class="card">
             <div class="card-header"><h3>Notas internas</h3></div>

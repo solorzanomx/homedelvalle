@@ -12,7 +12,7 @@ class Message extends Model
         'client_id', 'user_id', 'enrollment_id', 'channel', 'direction',
         'subject', 'body', 'status', 'external_id',
         'sent_at', 'delivered_at', 'opened_at', 'replied_at',
-        'open_count', 'metadata',
+        'open_count', 'metadata', 'trackable_type', 'trackable_id',
     ];
 
     protected function casts(): array
@@ -29,6 +29,7 @@ class Message extends Model
     public function client(): BelongsTo     { return $this->belongsTo(Client::class); }
     public function user(): BelongsTo       { return $this->belongsTo(User::class); }
     public function enrollment(): BelongsTo { return $this->belongsTo(AutomationEnrollment::class); }
+    public function trackable(): MorphTo    { return $this->morphTo(); }
 
     // ── Scopes ────────────────────────────────────────
     public function scopeChannel($q, string $ch)  { return $q->where('channel', $ch); }

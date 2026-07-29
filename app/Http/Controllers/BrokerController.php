@@ -87,8 +87,8 @@ class BrokerController extends Controller
 
     public function show(string $id)
     {
-        $broker = Broker::with(['company', 'clients', 'properties', 'deals', 'operations', 'commissions'])
-            ->withCount(['clients', 'properties', 'deals', 'operations'])
+        $broker = Broker::with(['company', 'clients', 'properties', 'deals', 'operations', 'commissions', 'messages' => fn ($q) => $q->latest()])
+            ->withCount(['clients', 'properties', 'deals', 'operations', 'messages'])
             ->findOrFail($id);
 
         $totalCommission = $broker->commissions->sum('amount');

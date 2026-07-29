@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Broker;
-use App\Models\EmailOpen;
+use App\Models\Message;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -18,21 +18,14 @@ class EmailOpenController extends Controller
 
     public function pixel(Request $request, string $token): Response
     {
-        $open = EmailOpen::where('token', $token)->first();
+        $message = Message::where('external_id', $token)->first();
 
-        if ($open) {
-            $isFirstOpen = is_null($open->opened_at);
-            $open->increment('opens_count');
+        if ($message) {
+            $isFirstOpen = is_null($message->opened_at);
+            $message->markOpened();
 
-            if ($isFirstOpen) {
-                $open->update([
-                    'opened_at' => now(),
-                    'user_agent' => substr((string) $request->userAgent(), 0, 255),
-                ]);
-
-                if ($open->trackable_type === Broker::class && $open->trackable_id) {
-                    Broker::whereKey($open->trackable_id)->update(['email_opened_at' => now()]);
-                }
+            if ($isFirstOpen && $message->trackable_type === Broker::class && $message->trackable_id) {
+                Broker::whereKey($message->trackable_id)->update(['email_opened_at' => now()]);
             }
         }
 

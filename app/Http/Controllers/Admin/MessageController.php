@@ -10,7 +10,7 @@ class MessageController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Message::with(['client', 'user'])->latest();
+        $query = Message::with(['client', 'user', 'trackable'])->latest();
 
         if ($request->filled('channel')) {
             $query->where('channel', $request->channel);

@@ -140,6 +140,7 @@
         <button type="button" class="p-tab" onclick="showTab('operations', this)">Operaciones <span style="font-size:0.68rem; color:var(--text-muted);">{{ $broker->operations_count }}</span></button>
         <button type="button" class="p-tab" onclick="showTab('commissions', this)">Comisiones</button>
         <button type="button" class="p-tab" onclick="showTab('clients', this)">Clientes <span style="font-size:0.68rem; color:var(--text-muted);">{{ $broker->clients_count }}</span></button>
+        <button type="button" class="p-tab" onclick="showTab('messages', this)">Mensajes <span style="font-size:0.68rem; color:var(--text-muted);">{{ $broker->messages_count }}</span></button>
     </div>
 
     {{-- Tab: Info --}}
@@ -296,6 +297,39 @@
         </div>
         @empty
         <p style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem;">Sin clientes asignados.</p>
+        @endforelse
+    </div>
+
+    {{-- Tab: Messages --}}
+    <div class="p-panel" id="panel-messages">
+        <div class="p-section-title">Mensajes enviados</div>
+        @forelse($broker->messages as $msg)
+        @php
+            $msgStatusLabel = match($msg->status) {
+                'sent'    => $msg->opened_at ? 'Abierto' . ($msg->open_count > 1 ? " {$msg->open_count}x" : '') : 'Enviado',
+                'opened'  => 'Abierto' . ($msg->open_count > 1 ? " {$msg->open_count}x" : ''),
+                'failed'  => 'Fallido',
+                'queued'  => 'En cola',
+                'skipped' => 'Omitido',
+                'replied' => 'Respondido',
+                default   => ucfirst($msg->status),
+            };
+            $msgBadgeClass = match(true) {
+                $msg->status === 'failed' => 'badge-red',
+                (bool) $msg->opened_at || $msg->status === 'opened' => 'badge-green',
+                $msg->status === 'queued' => 'badge-yellow',
+                default => 'badge-blue',
+            };
+        @endphp
+        <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.65rem 0; border-bottom:1px solid var(--border);">
+            <div style="flex:1; min-width:0;">
+                @if($msg->subject)<div style="font-weight:500; font-size:0.85rem;">{{ $msg->subject }}</div>@endif
+                <div style="font-size:0.72rem; color:var(--text-muted);">{{ strtoupper($msg->channel) }} &middot; {{ $msg->created_at->format('d/m/Y H:i') }}</div>
+            </div>
+            <span class="badge {{ $msgBadgeClass }}" style="font-size:0.68rem;">{{ $msgStatusLabel }}</span>
+        </div>
+        @empty
+        <p style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.85rem;">Sin mensajes enviados.</p>
         @endforelse
     </div>
 

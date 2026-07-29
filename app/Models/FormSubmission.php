@@ -7,6 +7,7 @@ use App\Models\Concerns\HasAttribution;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -108,6 +109,11 @@ class FormSubmission extends Model implements HasMedia
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    public function messages(): MorphMany
+    {
+        return $this->morphMany(Message::class, 'trackable');
     }
 
     public function landingPost(): BelongsTo

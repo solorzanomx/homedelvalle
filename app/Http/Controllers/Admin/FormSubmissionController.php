@@ -53,7 +53,8 @@ class FormSubmissionController extends Controller
         if (! $formSubmission->seen_at) {
             $formSubmission->update(['seen_at' => now()]);
         }
-        return view('admin.form-submissions.show', ['submission' => $formSubmission]);
+        $messages = $formSubmission->messages()->with('user')->latest()->get();
+        return view('admin.form-submissions.show', ['submission' => $formSubmission, 'messages' => $messages]);
     }
 
     public function updateStatus(Request $request, FormSubmission $formSubmission)

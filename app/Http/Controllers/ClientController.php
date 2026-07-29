@@ -158,6 +158,7 @@ class ClientController extends Controller
         $this->authorize('view', $client);
 
         $emails = $client->emails()->with('user')->latest()->get();
+        $messages = $client->messages()->with('user')->latest()->get();
         $interactions = $client->interactions()->with(['user', 'valuation'])->latest()->get();
 
         // Properties where this client is the owner
@@ -210,6 +211,28 @@ class ClientController extends Controller
                 'type_label' => 'Correo',
                 'body' => '<strong>' . e($email->subject) . '</strong> ' . $statusHtml . $propsHtml,
                 'meta' => 'Por ' . e($email->user->name ?? 'Sistema') . ' &middot; <a href="' . route('clients.email.show', $email) . '" style="color:var(--primary);">Ver correo</a>',
+            ]);
+        }
+
+        // Mensajes de automatizaciones / plantillas (Message) → también al timeline
+        foreach ($messages as $msg) {
+            $msgStatusHtml = match ($msg->status) {
+                'failed'  => '<span class="email-status status-failed">&#10007; Fallido</span>',
+                'skipped' => '<span style="color:var(--text-muted);font-size:.75rem;">Omitido</span>',
+                'replied' => '<span class="email-status status-opened">&#8617; Respondido</span>',
+                'queued'  => '<span style="color:var(--text-muted);font-size:.75rem;">En cola</span>',
+                default   => $msg->opened_at
+                    ? '<span class="email-status status-opened">&#10003; Abierto ' . $msg->open_count . 'x</span>'
+                    : '<span class="email-status status-sent">Enviado</span>',
+            };
+
+            $timeline->push([
+                'date' => $msg->created_at,
+                'dot' => $msg->channel === 'whatsapp' ? 'whatsapp' : 'email',
+                'color' => $msg->channel === 'whatsapp' ? '#25d366' : '#3b82f6',
+                'type_label' => $msg->channel === 'whatsapp' ? 'WhatsApp' : 'Correo',
+                'body' => ($msg->subject ? '<strong>' . e($msg->subject) . '</strong> ' : '') . $msgStatusHtml,
+                'meta' => 'Por ' . e($msg->user->name ?? 'Sistema (automatización)'),
             ]);
         }
 
