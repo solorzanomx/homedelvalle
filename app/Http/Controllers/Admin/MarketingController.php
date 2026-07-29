@@ -7,7 +7,6 @@ use App\Models\Client;
 use App\Models\Deal;
 use App\Models\MarketingCampaign;
 use App\Models\MarketingChannel;
-use App\Models\Transaction;
 use Illuminate\Http\Request;
 
 class MarketingController extends Controller
@@ -18,23 +17,26 @@ class MarketingController extends Controller
         $currentYear = now()->year;
 
         // KPIs
+        // El costo real de un lead viene del gasto de campañas (validado al
+        // crear/editar la campaña), no de "acquisition_cost" en Client — ese
+        // campo es texto libre sin tope, capturado a mano por cliente, y
+        // producía cifras absurdas (nadie garantiza qué puso ahí quien
+        // capturó). Con campañas, el dato ya existe y es confiable.
         $leadsThisMonth = Client::whereMonth('created_at', $currentMonth)
             ->whereYear('created_at', $currentYear)->count();
 
-        $avgCostPerLead = Client::whereMonth('created_at', $currentMonth)
-            ->whereYear('created_at', $currentYear)
-            ->whereNotNull('acquisition_cost')
-            ->avg('acquisition_cost') ?? 0;
+        $totalMarketingSpend = MarketingCampaign::sum('spent');
+        $totalLeadsWithChannel = Client::whereNotNull('marketing_channel_id')->count();
+        $avgCostPerLead = $totalLeadsWithChannel > 0 ? $totalMarketingSpend / $totalLeadsWithChannel : 0;
 
         $totalClients = Client::count();
         $clientsWithWonDeals = Client::whereHas('deals', fn($q) => $q->where('stage', 'won'))->count();
         $conversionRate = $totalClients > 0 ? round(($clientsWithWonDeals / $totalClients) * 100, 1) : 0;
 
-        $marketingSpendMonth = Transaction::where('type', 'expense')
-            ->where('category', 'marketing')
-            ->whereMonth('date', $currentMonth)
-            ->whereYear('date', $currentYear)
-            ->sum('amount');
+        // Gasto de campañas activas — proxy de "gasto actual" ya que el
+        // gasto de campaña es un total acumulado, no un registro por fecha
+        // como Transaction (que nadie ha estado llenando con category=marketing).
+        $marketingSpendMonth = MarketingCampaign::active()->sum('spent');
 
         // Channel analytics
         $channels = MarketingChannel::active()->ordered()
@@ -48,7 +50,7 @@ class MarketingController extends Controller
         foreach ($channels as $channel) {
             $channelClients = Client::where('marketing_channel_id', $channel->id);
             $totalLeads = $channel->clients_count;
-            $totalCost = (clone $channelClients)->sum('acquisition_cost');
+            $totalCost = MarketingCampaign::where('marketing_channel_id', $channel->id)->sum('spent');
             $cpl = $totalLeads > 0 ? $totalCost / $totalLeads : 0;
 
             // Conversion funnel

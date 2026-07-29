@@ -40,7 +40,7 @@
 .funnel-row-wrap { }
 .funnel-row-header { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 500; margin-bottom: 0.25rem; }
 .funnel-bars { display: flex; gap: 3px; height: 20px; }
-.funnel-bar { height: 100%; border-radius: 3px; transition: width 0.3s; min-width: 3px; }
+.funnel-bar { height: 100%; border-radius: 3px; transition: width 0.3s; }
 .funnel-legend { display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 .funnel-legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; color: var(--text-muted); }
 .funnel-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
@@ -197,10 +197,10 @@
                 </div>
                 <div class="funnel-bars">
                     @php $maxF = max($stat['leads'], 1); @endphp
-                    <div class="funnel-bar" style="width:{{ ($stat['leads'] / $maxF) * 100 }}%; background:#93c5fd;" title="Leads: {{ $stat['leads'] }}"></div>
-                    <div class="funnel-bar" style="width:{{ ($stat['contacted'] / $maxF) * 100 }}%; background:#6ee7b7;" title="Contactados: {{ $stat['contacted'] }}"></div>
-                    <div class="funnel-bar" style="width:{{ ($stat['visited'] / $maxF) * 100 }}%; background:#fde68a;" title="Visitados: {{ $stat['visited'] }}"></div>
-                    <div class="funnel-bar" style="width:{{ ($stat['won'] / $maxF) * 100 }}%; background:#10b981;" title="Ganados: {{ $stat['won'] }}"></div>
+                    <div class="funnel-bar" style="width:{{ $stat['leads'] > 0 ? max(2, ($stat['leads'] / $maxF) * 100) : 0 }}%; background:#93c5fd;" title="Leads: {{ $stat['leads'] }}"></div>
+                    <div class="funnel-bar" style="width:{{ $stat['contacted'] > 0 ? max(2, ($stat['contacted'] / $maxF) * 100) : 0 }}%; background:#6ee7b7;" title="Contactados: {{ $stat['contacted'] }}"></div>
+                    <div class="funnel-bar" style="width:{{ $stat['visited'] > 0 ? max(2, ($stat['visited'] / $maxF) * 100) : 0 }}%; background:#fde68a;" title="Visitados: {{ $stat['visited'] }}"></div>
+                    <div class="funnel-bar" style="width:{{ $stat['won'] > 0 ? max(2, ($stat['won'] / $maxF) * 100) : 0 }}%; background:#10b981;" title="Ganados: {{ $stat['won'] }}"></div>
                 </div>
             </div>
             @endif
