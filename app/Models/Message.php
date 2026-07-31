@@ -11,8 +11,8 @@ class Message extends Model
     protected $fillable = [
         'client_id', 'user_id', 'enrollment_id', 'channel', 'direction',
         'subject', 'body', 'status', 'external_id',
-        'sent_at', 'delivered_at', 'opened_at', 'replied_at',
-        'open_count', 'metadata', 'trackable_type', 'trackable_id',
+        'sent_at', 'delivered_at', 'opened_at', 'replied_at', 'clicked_at',
+        'open_count', 'click_count', 'metadata', 'trackable_type', 'trackable_id',
     ];
 
     protected function casts(): array
@@ -23,6 +23,7 @@ class Message extends Model
             'delivered_at' => 'datetime',
             'opened_at' => 'datetime',
             'replied_at' => 'datetime',
+            'clicked_at' => 'datetime',
         ];
     }
 
@@ -30,6 +31,22 @@ class Message extends Model
     public function user(): BelongsTo       { return $this->belongsTo(User::class); }
     public function enrollment(): BelongsTo { return $this->belongsTo(AutomationEnrollment::class); }
     public function trackable(): MorphTo    { return $this->morphTo(); }
+
+    /**
+     * El transporte de Resend agrega el header X-Resend-Email-ID al mensaje
+     * enviado (ver ResendTransportFactory::doSend) — es el ID que después
+     * llega en los webhooks (data.email_id), así correlacionamos sin pixel.
+     */
+    public static function resendIdFrom($sentMessage): ?string
+    {
+        try {
+            $original = $sentMessage?->getSymfonySentMessage()?->getOriginalMessage();
+            $header = $original?->getHeaders()->get('X-Resend-Email-ID');
+            return $header?->getBodyAsString();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 
     // ── Scopes ────────────────────────────────────────
     public function scopeChannel($q, string $ch)  { return $q->where('channel', $ch); }
@@ -41,7 +58,20 @@ class Message extends Model
     // ── Helpers ───────────────────────────────────────
     public function markSent(): void    { $this->update(['status' => 'sent', 'sent_at' => now()]); }
     public function markOpened(): void  { $this->increment('open_count'); $this->update(['status' => 'opened', 'opened_at' => $this->opened_at ?? now()]); }
+    public function markClicked(): void { $this->increment('click_count'); $this->update(['status' => 'clicked', 'clicked_at' => $this->clicked_at ?? now()]); }
     public function markReplied(): void { $this->update(['status' => 'replied', 'replied_at' => now()]); }
     public function markFailed(): void  { $this->update(['status' => 'failed']); }
     public function markSkipped(): void { $this->update(['status' => 'skipped']); }
+    public function markBounced(): void { $this->update(['status' => 'bounced']); }
+    public function markComplained(): void { $this->update(['status' => 'complained']); }
+
+    /** 'delivered' puede llegar después de 'opened'/'clicked' por orden de webhooks — no retroceder el estado. */
+    public function markDelivered(): void
+    {
+        if (in_array($this->status, ['opened', 'clicked', 'replied'], true)) {
+            $this->update(['delivered_at' => $this->delivered_at ?? now()]);
+            return;
+        }
+        $this->update(['status' => 'delivered', 'delivered_at' => $this->delivered_at ?? now()]);
+    }
 }

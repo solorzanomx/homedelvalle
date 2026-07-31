@@ -16,6 +16,7 @@
         "laravel/tinker": "^3.0",
         "phpmailer/phpmailer": "^6.9",
         "phpoffice/phpspreadsheet": "^5.8",
+        "resend/resend-laravel": "^1.4",
         "spatie/browsershot": "^5.2",
         "spatie/laravel-medialibrary": "11.21.2"
     },

@@ -96,9 +96,6 @@ Route::post('/verificacion-broker/{token}', [\App\Http\Controllers\BrokerVerific
 Route::get('/actualizar-datos-broker/{token}', [\App\Http\Controllers\BrokerSelfUpdateController::class, 'show'])->name('broker-self-update.show');
 Route::post('/actualizar-datos-broker/{token}', [\App\Http\Controllers\BrokerSelfUpdateController::class, 'submit'])->name('broker-self-update.submit');
 
-// Pixel de apertura de correo (público — sin auth, por token)
-Route::get('/e/{token}', [\App\Http\Controllers\EmailOpenController::class, 'pixel'])->where('token', '[A-Za-z0-9]+')->name('email.pixel');
-
 // Página pública
 Route::get('/', [HomeController::class, 'index'])->name('home');
 

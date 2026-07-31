@@ -6,6 +6,12 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
+    // Laravel activa auto-discovery de eventos por defecto (escanea
+    // app/Listeners por convención de nombre), duplicado con nuestro
+    // App\Providers\EventServiceProvider explícito — cada listener nuevo
+    // se registraba dos veces y disparaba dos veces (bug real ya presente:
+    // SendAcuseMail traía un guard de Cache para tapar justo este síntoma).
+    ->withEvents(discover: false)
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',

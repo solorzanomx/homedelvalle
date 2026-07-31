@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class CustomEmailTemplate extends Model
 {
@@ -62,8 +61,9 @@ class CustomEmailTemplate extends Model
      * $trackable (opcional): modelo al que ligar el mensaje (Client, Broker,
      * FormSubmission...) — queda en Message.trackable, y si es un Client
      * también en Message.client_id para que aparezca en su timeline como
-     * cualquier otro correo. El pixel de apertura usa external_id como token
-     * y reutiliza Message::markOpened() — un solo log para todo.
+     * cualquier otro correo. La apertura/clic se rastrean vía Resend
+     * (webhooks), no con pixel propio — external_id guarda el ID real que
+     * Resend devuelve al enviar.
      */
     public function send($to, array $data = [], ?Model $trackable = null): void
     {
@@ -71,8 +71,6 @@ class CustomEmailTemplate extends Model
         foreach ($data as $key => $value) {
             $subject = str_replace('{{' . $key . '}}', $value, $subject);
         }
-
-        $token = Str::random(40);
 
         $message = Message::create([
             'client_id' => $trackable instanceof Client ? $trackable->id : null,
@@ -82,20 +80,19 @@ class CustomEmailTemplate extends Model
             'subject' => $subject,
             'body' => $this->render($data),
             'status' => 'queued',
-            'external_id' => $token,
             'metadata' => ['to' => $to, 'custom_email_template_id' => $this->id, 'template_slug' => $this->slug],
         ]);
 
-        $html = $this->injectTrackingPixel($this->render($data), $token);
-
         try {
-            Mail::html($html, function ($mail) use ($to, $subject) {
+            Mail::html($this->render($data), function ($mail) use ($to, $subject, $message) {
                 $mail->to($to)
                     ->from(config('mail.from.address'), config('mail.from.name'))
                     ->subject($subject);
+                // El listener global RecordSentMessage usa este header para
+                // encontrar y completar esta misma fila (external_id, sent_at)
+                // en vez de crear una duplicada.
+                $mail->getSymfonyMessage()->getHeaders()->addTextHeader('X-Message-Row-Id', (string) $message->id);
             });
-
-            $message->markSent();
 
             $this->testingLogs()->create([
                 'test_email' => $to,
@@ -116,15 +113,6 @@ class CustomEmailTemplate extends Model
 
             throw $e;
         }
-    }
-
-    private function injectTrackingPixel(string $html, string $token): string
-    {
-        $pixel = '<img src="' . route('email.pixel', $token) . '" width="1" height="1" alt="" style="display:none;border:0;">';
-
-        return str_contains($html, '</body>')
-            ? str_replace('</body>', $pixel . '</body>', $html)
-            : $html . $pixel;
     }
 
     public function publish(): void
