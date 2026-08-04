@@ -436,6 +436,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('/email/settings', [EmailSettingsController::class, 'update'])->name('email.settings.update');
         Route::post('/email/settings/test', [EmailSettingsController::class, 'test'])->name('email.settings.test-connection');
         Route::post('/email/settings/send-test', [EmailSettingsController::class, 'sendTest'])->name('email.settings.send-test');
+        Route::post('/email/settings/test-imap', [EmailSettingsController::class, 'testImap'])->name('email.settings.test-imap');
 
         // Email templates
         Route::post('/email/templates/upload-image', [EmailTemplateController::class, 'uploadImage'])->name('email.templates.upload-image');

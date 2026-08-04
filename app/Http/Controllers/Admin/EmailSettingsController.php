@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\EmailSetting;
+use App\Services\EmailReplyChecker;
 use App\Services\EmailService;
 use Illuminate\Http\Request;
 
@@ -25,16 +26,26 @@ class EmailSettingsController extends Controller
             'username' => 'nullable|string|max:255',
             'password' => 'nullable|string|max:500',
             'enable_ssl' => 'boolean',
+            'imap_enabled' => 'boolean',
+            'imap_host' => 'nullable|string|max:255',
+            'imap_port' => 'nullable|integer|min:1|max:65535',
+            'imap_encryption' => 'nullable|string|in:ssl,tls,none',
+            'imap_username' => 'nullable|string|max:255',
+            'imap_password' => 'nullable|string|max:500',
         ]);
 
         $validated['enable_ssl'] = $request->boolean('enable_ssl');
+        $validated['imap_enabled'] = $request->boolean('imap_enabled');
 
         $settings = EmailSetting::first();
 
         if ($settings) {
-            // Don't overwrite password if field was left empty
+            // Don't overwrite passwords if the fields were left empty
             if (empty($validated['password'])) {
                 unset($validated['password']);
+            }
+            if (empty($validated['imap_password'])) {
+                unset($validated['imap_password']);
             }
             $settings->update($validated);
         } else {
@@ -47,6 +58,17 @@ class EmailSettingsController extends Controller
     public function test(EmailService $emailService)
     {
         $result = $emailService->testConnection();
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', $result['message']);
+    }
+
+    public function testImap(EmailReplyChecker $checker)
+    {
+        $result = $checker->testConnection();
 
         if ($result['success']) {
             return back()->with('success', $result['message']);

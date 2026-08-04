@@ -66,6 +66,8 @@ Schedule::command('visits:send-reminders')->dailyAt('07:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('visits:send-reminders scheduled run failed'));
 Schedule::command('leads:check-uncontacted')->everyFifteenMinutes()->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('leads:check-uncontacted scheduled run failed'));
+Schedule::command('email:check-replies')->everyFiveMinutes()->withoutOverlapping()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('email:check-replies scheduled run failed'));
 Schedule::command('captaciones:check-exclusiva-pending')->dailyAt('09:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('captaciones:check-exclusiva-pending scheduled run failed'));
 Schedule::command('captaciones:check-valuacion-pendiente')->dailyAt('09:00')

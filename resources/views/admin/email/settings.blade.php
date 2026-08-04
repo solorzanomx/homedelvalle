@@ -150,4 +150,80 @@
         </div>
     </div>
 </div>
+
+<div class="card" style="margin-top:1.5rem;">
+    <div class="card-header"><h3>Revisar Respuestas (IMAP)</h3></div>
+    <div class="card-body">
+        <p class="text-muted" style="font-size:0.85rem; margin-bottom:1rem;">
+            Revisa cada 5 minutos la bandeja de entrada del correo remitente para detectar respuestas de clientes,
+            registrarlas en su ficha y detener automaticamente cualquier cadencia de seguimiento activa.
+            Usa una <strong>"Contrasena de aplicacion"</strong> generada en la cuenta de Google del correo remitente
+            (myaccount.google.com/apppasswords) — no la contrasena normal de la cuenta.
+        </p>
+        <form method="POST" action="{{ route('admin.email.settings.update') }}">
+            @csrf
+            {{-- Preserve the SMTP fields already saved so this form doesn't blank them out --}}
+            <input type="hidden" name="smtp_server" value="{{ $emailSettings->smtp_server ?? '' }}">
+            <input type="hidden" name="port" value="{{ $emailSettings->port ?? 587 }}">
+            <input type="hidden" name="from_email" value="{{ $emailSettings->from_email ?? '' }}">
+            <input type="hidden" name="from_name" value="{{ $emailSettings->from_name ?? '' }}">
+            <input type="hidden" name="username" value="{{ $emailSettings->username ?? '' }}">
+            <input type="hidden" name="enable_ssl" value="{{ $emailSettings->enable_ssl ?? true ? '1' : '0' }}">
+
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer;">
+                        <input type="hidden" name="imap_enabled" value="0">
+                        <input type="checkbox" name="imap_enabled" value="1"
+                               {{ old('imap_enabled', $emailSettings->imap_enabled ?? false) ? 'checked' : '' }}
+                               style="width:16px; height:16px; accent-color:var(--primary);">
+                        <span class="form-label" style="margin:0;">Activar revision automatica de respuestas</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Servidor IMAP</label>
+                    <input type="text" name="imap_host" class="form-input"
+                           value="{{ old('imap_host', $emailSettings->imap_host ?? 'imap.gmail.com') }}"
+                           placeholder="imap.gmail.com">
+                    @error('imap_host') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Puerto IMAP</label>
+                    <input type="number" name="imap_port" class="form-input"
+                           value="{{ old('imap_port', $emailSettings->imap_port ?? 993) }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Correo a revisar</label>
+                    <input type="email" name="imap_username" class="form-input"
+                           value="{{ old('imap_username', $emailSettings->imap_username ?? '') }}"
+                           placeholder="contacto@homedelvalle.mx">
+                    <p class="form-hint">La bandeja real de Google Workspace donde llegan las respuestas.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contrasena de aplicacion</label>
+                    <input type="password" name="imap_password" class="form-input"
+                           placeholder="{{ $emailSettings && $emailSettings->imap_password ? '••••••••  (dejar vacio para no cambiar)' : 'Generada en myaccount.google.com/apppasswords' }}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Encriptacion</label>
+                    <select name="imap_encryption" class="form-input">
+                        @foreach(['ssl' => 'SSL', 'tls' => 'TLS', 'none' => 'Ninguna'] as $val => $label)
+                        <option value="{{ $val }}" {{ old('imap_encryption', $emailSettings->imap_encryption ?? 'ssl') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="form-actions" style="display:flex; gap:0.75rem;">
+                <button type="submit" class="btn btn-primary">Guardar Configuracion IMAP</button>
+            </div>
+        </form>
+        <form method="POST" action="{{ route('admin.email.settings.test-imap') }}" style="margin-top:0.75rem;">
+            @csrf
+            <button type="submit" class="btn btn-outline">&#9889; Verificar Conexion IMAP</button>
+        </form>
+        @if($emailSettings && $emailSettings->imap_last_checked_at)
+        <p class="text-muted" style="font-size:0.8rem; margin-top:0.75rem;">Ultima revision: {{ $emailSettings->imap_last_checked_at->diffForHumans() }}</p>
+        @endif
+    </div>
+</div>
 @endsection
