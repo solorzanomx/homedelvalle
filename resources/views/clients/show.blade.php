@@ -204,7 +204,34 @@
         @endif
         <a href="{{ route('clients.edit', $client) }}" class="btn btn-outline">&#9998; Editar</a>
         <a href="{{ route('rentals.create', ['owner' => $client->id]) }}" class="btn btn-outline">&#127968; Nueva renta</a>
+        <button type="button" class="btn btn-outline" onclick="document.getElementById('quick-task-form').style.display = (document.getElementById('quick-task-form').style.display === 'none' ? 'block' : 'none');">&#128203; Tarea</button>
     </div>
+
+    <form id="quick-task-form" action="{{ route('tasks.store') }}" method="POST" style="display:none;margin-top:12px;padding:16px;background:var(--bg,#F6F8FB);border-radius:10px;border:1px solid var(--border,#E6EAF1);">
+        @csrf
+        <input type="hidden" name="client_id" value="{{ $client->id }}">
+        <input type="hidden" name="status" value="pending">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+            <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Titulo de la tarea</label>
+                <input type="text" name="title" class="form-input" style="width:100%;" placeholder="Ej: Dar seguimiento sobre la presentacion" required>
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Fecha de vencimiento</label>
+                <input type="date" name="due_date" class="form-input" style="width:100%;">
+            </div>
+            <div>
+                <label style="display:block;font-size:12px;font-weight:700;color:var(--text-muted,#7A8594);margin-bottom:4px;">Prioridad</label>
+                <select name="priority" class="form-select" style="width:100%;">
+                    <option value="low">Baja</option>
+                    <option value="medium" selected>Media</option>
+                    <option value="high">Alta</option>
+                    <option value="urgent">Urgente</option>
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear tarea</button>
+    </form>
 </div>
 
 <div class="cli-layout">

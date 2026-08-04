@@ -85,6 +85,10 @@ class TaskController extends Controller
             return redirect()->route('operations.show', $task->operation_id)->with('success', 'Tarea creada exitosamente.');
         }
 
+        if ($task->client_id) {
+            return redirect()->route('clients.show', $task->client_id)->with('success', 'Tarea creada exitosamente.');
+        }
+
         return redirect()->route('tasks.index')->with('success', 'Tarea creada exitosamente.');
     }
 
