@@ -6,6 +6,7 @@ use App\Models\EmailSetting;
 use App\Models\EmailTemplate;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use PHPMailer\PHPMailer\PHPMailer;
 
 class EmailService
@@ -105,8 +106,11 @@ class EmailService
      */
     /**
      * @param array $attachments  Rutas absolutas de archivos a adjuntar, ej. ['/storage/app/file.pdf']
+     * @param int|null $messageRowId  ID de una fila Message ya creada — si se envia via Resend, se
+     *        adjunta como header X-Message-Row-Id para que RecordSentMessage/HandleResendWebhook
+     *        puedan correlacionar la apertura/click/rebote real de Resend con esa fila.
      */
-    public function send(string $to, string $subject, string $htmlBody, ?string $toName = null, ?string $textBody = null, ?User $sender = null, array $attachments = []): bool
+    public function send(string $to, string $subject, string $htmlBody, ?string $toName = null, ?string $textBody = null, ?User $sender = null, array $attachments = [], ?int $messageRowId = null): bool
     {
         $config = $this->resolveSmtpConfig($sender);
 
@@ -115,6 +119,45 @@ class EmailService
             return false;
         }
 
+        // Resend: usar el mailer nativo de Laravel (API, no SMTP) para que los
+        // webhooks de apertura/click/rebote de Resend tengan un email_id real
+        // que correlacionar. Por SMTP puro (PHPMailer) ese ID nunca se captura.
+        if (str_contains($config->host, 'resend.com') && config('resend.api_key')) {
+            return $this->sendViaResendMailer($to, $subject, $htmlBody, $toName, $config, $attachments, $messageRowId);
+        }
+
+        return $this->sendViaSmtp($to, $subject, $htmlBody, $toName, $textBody, $config, $attachments);
+    }
+
+    private function sendViaResendMailer(string $to, string $subject, string $htmlBody, ?string $toName, object $config, array $attachments, ?int $messageRowId): bool
+    {
+        try {
+            Mail::mailer('resend')->html($htmlBody, function ($message) use ($to, $toName, $subject, $config, $attachments, $messageRowId) {
+                $message->to($to, $toName ?: '')
+                    ->subject($subject)
+                    ->from($config->from_email, $config->from_name);
+
+                foreach ($attachments as $path) {
+                    if (file_exists($path)) {
+                        $message->attach($path);
+                    }
+                }
+
+                if ($messageRowId) {
+                    $message->getHeaders()->addTextHeader('X-Message-Row-Id', (string) $messageRowId);
+                }
+            });
+
+            Log::info('EmailService: Correo enviado (Resend API) a ' . $to . ' desde ' . $config->from_email . ' - Asunto: ' . $subject);
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('EmailService: Error al enviar correo (Resend API) a ' . $to . ' - ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    private function sendViaSmtp(string $to, string $subject, string $htmlBody, ?string $toName, ?string $textBody, object $config, array $attachments): bool
+    {
         $mail = new PHPMailer(true);
 
         try {
@@ -135,10 +178,10 @@ class EmailService
 
             $mail->send();
 
-            Log::info('EmailService: Correo enviado a ' . $to . ' desde ' . $config->from_email . ' - Asunto: ' . $subject);
+            Log::info('EmailService: Correo enviado (SMTP) a ' . $to . ' desde ' . $config->from_email . ' - Asunto: ' . $subject);
             return true;
         } catch (\Exception $e) {
-            Log::error('EmailService: Error al enviar correo a ' . $to . ' - ' . $e->getMessage());
+            Log::error('EmailService: Error al enviar correo (SMTP) a ' . $to . ' - ' . $e->getMessage());
             return false;
         }
     }

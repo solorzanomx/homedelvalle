@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Models\Broker;
+use App\Models\ClientEmail;
 use App\Models\Message;
 use Resend\Laravel\Events\EmailBounced;
 use Resend\Laravel\Events\EmailClicked;
@@ -34,6 +35,13 @@ class HandleResendWebhook
         // lista de Brokers Externos, sin join en esa vista.
         if ($isFirstOpen && $message->trackable_type === Broker::class && $message->trackable_id) {
             Broker::whereKey($message->trackable_id)->update(['email_opened_at' => now()]);
+        }
+
+        // Propaga la apertura real (detectada por Resend) a ClientEmail, que
+        // es lo que lee la ficha del cliente y la pantalla "Ver correo".
+        $clientEmailId = $message->metadata['client_email_id'] ?? null;
+        if ($clientEmailId) {
+            ClientEmail::find($clientEmailId)?->markAsOpened();
         }
     }
 

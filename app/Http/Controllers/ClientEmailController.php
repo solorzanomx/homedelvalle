@@ -69,30 +69,16 @@ class ClientEmailController extends Controller
             'status' => 'pending',
         ]);
 
-        // Add tracking pixel to HTML
-        $trackingUrl = route('email.track', $clientEmail->tracking_id);
-        $bodyWithTracking = $bodyHtml . '<img src="' . $trackingUrl . '" width="1" height="1" style="display:none;" alt="">';
-
         if (!$client->email) {
             $clientEmail->update(['status' => 'failed']);
             return redirect()->route('clients.show', $client)
                 ->with('error', 'Este cliente no tiene correo electrónico registrado.');
         }
 
-        // Send via EmailService with user's SMTP
-        $emailService = app(EmailService::class);
-        $sent = $emailService->send(
-            $client->email,
-            $validated['subject'],
-            $bodyWithTracking,
-            $client->name,
-            null,
-            $user
-        );
-
-        $clientEmail->update(['status' => $sent ? 'sent' : 'failed']);
-
-        // Unify: also create a Message record
+        // Fila unificada Message, creada ANTES de enviar para poder pasar su
+        // ID como header X-Message-Row-Id — asi el webhook real de Resend
+        // (apertura/click/rebote) la encuentra y la actualiza sola, en vez
+        // de depender de un pixel propio que Outlook/Hotmail suele bloquear.
         $msg = Message::create([
             'client_id' => $client->id,
             'user_id' => $user->id,
@@ -100,10 +86,25 @@ class ClientEmailController extends Controller
             'direction' => 'outbound',
             'subject' => $validated['subject'],
             'body' => $validated['message'],
-            'status' => $sent ? 'sent' : 'failed',
-            'sent_at' => $sent ? now() : null,
+            'status' => 'queued',
             'metadata' => ['client_email_id' => $clientEmail->id],
         ]);
+
+        // Send via EmailService with user's SMTP
+        $emailService = app(EmailService::class);
+        $sent = $emailService->send(
+            $client->email,
+            $validated['subject'],
+            $bodyHtml,
+            $client->name,
+            null,
+            $user,
+            [],
+            $msg->id
+        );
+
+        $clientEmail->update(['status' => $sent ? 'sent' : 'failed']);
+        $msg->update(['status' => $sent ? 'sent' : 'failed', 'sent_at' => $sent ? now() : null]);
 
         // Score the email send
         if ($sent) {
