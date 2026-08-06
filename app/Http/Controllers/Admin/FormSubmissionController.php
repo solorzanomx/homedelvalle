@@ -48,6 +48,91 @@ class FormSubmissionController extends Controller
         return view('admin.form-submissions.index', compact('submissions', 'counts'));
     }
 
+    public function create()
+    {
+        return view('admin.form-submissions.create');
+    }
+
+    /**
+     * Alta manual de un lead — para leads que llegan por un canal que no
+     * tiene integracion automatica (ej. Inmuebles24 antes de que el broker
+     * confirme IMAP, o cualquier contacto directo). Usa la misma estructura
+     * de payload que Inmuebles24LeadImporter (ref/codigo_aviso/etc. y
+     * busca_tipo/busca_presupuesto/busca_zonas) para que la ficha del lead
+     * (admin.form-submissions.show) renderice los mismos bloques "Aviso que
+     * consultó" y "Lo que busca" sin importar si el lead vino del correo
+     * automatico o se capturo a mano.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'form_type'        => 'required|string|max:50',
+            'full_name'        => 'required|string|max:255',
+            'email'            => 'required|email|max:255',
+            'phone'            => 'nullable|string|max:50',
+            'lead_tag'         => 'nullable|string|max:100',
+            'client_type'      => 'nullable|string|in:buyer,renter,owner,investor',
+            'lead_temperature' => 'nullable|string|in:hot,warm,cold',
+            'budget_min'       => 'nullable|numeric|min:0',
+            'budget_max'       => 'nullable|numeric|min:0',
+            'property_type'    => 'nullable|string|max:255',
+            'notes'            => 'nullable|string|max:2000',
+            // Datos del aviso consultado (portales sin API, ej. Inmuebles24)
+            'ref'               => 'nullable|string|max:100',
+            'codigo_aviso'      => 'nullable|string|max:100',
+            'codigo_anunciante' => 'nullable|string|max:100',
+            'titulo_aviso'      => 'nullable|string|max:255',
+            'tipo_operacion'    => 'nullable|string|max:50',
+            'tipo_propiedad'    => 'nullable|string|max:100',
+            'precio'            => 'nullable|string|max:100',
+            'ubicacion'         => 'nullable|string|max:255',
+            // Perfil de busqueda del interesado
+            'busca_tipo'        => 'nullable|string|max:255',
+            'busca_presupuesto' => 'nullable|string|max:100',
+            'busca_zonas'       => 'nullable|string|max:500',
+        ]);
+
+        $payload = array_filter([
+            'ref'               => $validated['ref'] ?? null,
+            'codigo_aviso'      => $validated['codigo_aviso'] ?? null,
+            'codigo_anunciante' => $validated['codigo_anunciante'] ?? null,
+            'titulo_aviso'      => $validated['titulo_aviso'] ?? null,
+            'tipo_operacion'    => $validated['tipo_operacion'] ?? null,
+            'tipo_propiedad'    => $validated['tipo_propiedad'] ?? null,
+            'precio'            => $validated['precio'] ?? null,
+            'ubicacion'         => $validated['ubicacion'] ?? null,
+            'busca_tipo'        => $validated['busca_tipo'] ?? null,
+            'busca_presupuesto' => $validated['busca_presupuesto'] ?? null,
+            'busca_zonas'       => !empty($validated['busca_zonas'])
+                ? array_values(array_filter(array_map('trim', explode(',', $validated['busca_zonas']))))
+                : null,
+            'alta_manual'       => true,
+        ], fn ($v) => $v !== null);
+
+        // withoutEvents: alta manual = el broker ya leyo el lead antes de
+        // capturarlo, no tiene sentido disparar el acuse automatico por
+        // correo (mismo criterio ya usado para EasyBroker/Inmuebles24).
+        $submission = FormSubmission::withoutEvents(fn () => FormSubmission::create([
+            'form_type'        => $validated['form_type'],
+            'source_page'      => $validated['form_type'] . ':manual',
+            'full_name'        => $validated['full_name'],
+            'email'            => $validated['email'],
+            'phone'            => $validated['phone'] ?: 'sin teléfono',
+            'lead_tag'         => $validated['lead_tag'] ?: null,
+            'client_type'      => $validated['client_type'] ?? null,
+            'lead_temperature' => $validated['lead_temperature'] ?? 'warm',
+            'budget_min'       => $validated['budget_min'] ?? null,
+            'budget_max'       => $validated['budget_max'] ?? null,
+            'property_type'    => $validated['property_type'] ?? null,
+            'status'           => 'new',
+            'notes'            => $validated['notes'] ?? null,
+            'payload'          => $payload,
+        ]));
+
+        return redirect()->route('admin.form-submissions.show', $submission)
+            ->with('success', 'Lead creado manualmente.');
+    }
+
     public function show(FormSubmission $formSubmission)
     {
         if (! $formSubmission->seen_at) {

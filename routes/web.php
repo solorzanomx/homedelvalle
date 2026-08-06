@@ -372,6 +372,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');
+    Route::get('/form-submissions/create', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'create'])->name('form-submissions.create');
+    Route::post('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'store'])->name('form-submissions.store');
     Route::get('/form-submissions/{formSubmission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'show'])->name('form-submissions.show');
     Route::patch('/form-submissions/{formSubmission}/status', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateStatus'])->name('form-submissions.status');
     Route::patch('/form-submissions/{formSubmission}/notes', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateNotes'])->name('form-submissions.notes');
