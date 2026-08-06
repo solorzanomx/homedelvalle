@@ -664,6 +664,14 @@
                 </div>
                 <div id="ytPreviewContainer"></div>
 
+                <div class="section-label" style="margin-top:1.5rem;">Inmuebles24</div>
+                <div class="form-group">
+                    <label class="form-label">Código de aviso</label>
+                    <input type="text" name="inmuebles24_ad_code" class="form-input" value="{{ old('inmuebles24_ad_code') }}" placeholder="Ej. 149911364">
+                    <p class="form-hint">Solo si ya la publicaste ahí — cópialo del correo de Inmuebles24 después, no hace falta llenarlo ahora.</p>
+                    @error('inmuebles24_ad_code') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="step-actions">
                     <button type="button" class="btn btn-outline" onclick="goStep(2)">&larr; Anterior</button>
                     <button type="submit" class="btn btn-primary">Crear Propiedad</button>

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\FormSubmission;
+use App\Models\Property;
 
 /**
  * Inmuebles24 no tiene API — los leads llegan por correo cada vez que
@@ -98,6 +99,15 @@ class Inmuebles24LeadImporter
         $temperatura = 'hot';
         [$budgetMin, $budgetMax] = $this->parseBudgetRange($data['busca_presupuesto'] ?? null);
 
+        // Vincula al aviso local si el codigo coincide con una Property que
+        // Alejandro ya anoto a mano (Inmuebles24 no tiene API para hacerlo
+        // solo, a diferencia de easybroker_id) — misma convencion de payload
+        // ('propiedad_local_id') que usa SyncEasyBrokerLeads para que la
+        // ficha del lead muestre el bloque "Propiedad de interés" real.
+        $propiedadLocal = !empty($data['codigo_aviso'])
+            ? Property::where('inmuebles24_ad_code', $data['codigo_aviso'])->first()
+            : null;
+
         // withoutEvents: igual que SyncEasyBrokerLeads — Alejandro decidio
         // 2026-08-06 que NO se manda acuse automatico por correo (el contacto
         // real con estos leads es por WhatsApp), asi que no se dispara
@@ -129,6 +139,8 @@ class Inmuebles24LeadImporter
                 'busca_tipo'         => $data['busca_tipo'] ?? null,
                 'busca_presupuesto'  => $data['busca_presupuesto'] ?? null,
                 'busca_zonas'        => $data['busca_zonas'] ?? [],
+                'propiedad_local_id' => $propiedadLocal?->id,
+                'propiedad_local'    => $propiedadLocal?->title,
             ],
         ]));
     }

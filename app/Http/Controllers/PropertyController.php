@@ -299,6 +299,7 @@ class PropertyController extends Controller
             'photos' => 'nullable|array|max:20',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'youtube_url' => 'nullable|url|max:500',
+            'inmuebles24_ad_code' => 'nullable|string|max:50',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -383,6 +384,7 @@ class PropertyController extends Controller
             'market_colonia_id' => 'nullable|exists:market_colonias,id',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'youtube_url' => 'nullable|url|max:500',
+            'inmuebles24_ad_code' => 'nullable|string|max:50',
         ]);
 
         if ($request->hasFile('photo')) {

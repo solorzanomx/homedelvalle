@@ -624,6 +624,14 @@
                                 @endif
                             </div>
                         </div>
+
+                        <div class="section-label" style="margin-top:1.5rem;">Inmuebles24</div>
+                        <div class="form-group">
+                            <label class="form-label">Código de aviso</label>
+                            <input type="text" name="inmuebles24_ad_code" class="form-input" value="{{ old('inmuebles24_ad_code', $property->inmuebles24_ad_code) }}" placeholder="Ej. 149911364">
+                            <p class="form-hint">Inmuebles24 no tiene API — copia aquí el "Código de aviso" que aparece en el correo cuando alguien pregunta por esta propiedad, así el lead se vincula automáticamente a esta ficha.</p>
+                            @error('inmuebles24_ad_code') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
                     </div>
                 </div>
             </div>
