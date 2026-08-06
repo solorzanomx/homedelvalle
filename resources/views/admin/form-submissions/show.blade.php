@@ -49,6 +49,10 @@
                     . ". ¿Te gustaría agendar una visita esta semana?";
             } elseif (!empty($submission->payload['eb_property_id'])) {
                 $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en la propiedad {$submission->payload['eb_property_id']} — con gusto te comparto los detalles. ¿Qué estás buscando: comprar o rentar?";
+            } elseif (!empty($submission->payload['titulo_aviso'])) {
+                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$submission->payload['titulo_aviso']}»"
+                    . (!empty($submission->payload['precio']) ? " ({$submission->payload['precio']})" : '')
+                    . ". ¿Te gustaría agendar una visita esta semana?";
             } elseif (in_array($submission->form_type, ['vendedor', 'vendedor_predio'])) {
                 $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Recibimos tu solicitud de valuación — ¿tienes 5 minutos para platicar de tu propiedad?";
             } else {
@@ -185,6 +189,54 @@
                 @endif
             </div>
         </div>
+        @endif
+
+        @if($submission->form_type === 'inmuebles24')
+        <div class="card">
+            <div class="card-header"><h3>Aviso que consultó</h3></div>
+            <div class="card-body">
+                <p style="font-weight:700;margin:0">{{ $submission->payload['titulo_aviso'] ?? 'Aviso de Inmuebles24' }}</p>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin:0.2rem 0 0">
+                    @if(!empty($submission->payload['tipo_operacion']))
+                    <span class="badge {{ $submission->payload['tipo_operacion'] === 'Venta' ? 'badge-blue' : 'badge-green' }}">{{ $submission->payload['tipo_operacion'] }}</span>
+                    @endif
+                    {{ $submission->payload['tipo_propiedad'] ?? '' }}
+                    · {{ $submission->payload['precio'] ?? 'precio no especificado' }}
+                    @if(!empty($submission->payload['ubicacion'])) · {{ $submission->payload['ubicacion'] }} @endif
+                </p>
+                <p style="font-size:0.78rem;color:var(--text-muted);margin:0.5rem 0 0">
+                    Código de aviso: {{ $submission->payload['codigo_aviso'] ?? '—' }}
+                    · Código de anunciante: {{ $submission->payload['codigo_anunciante'] ?? '—' }}
+                </p>
+            </div>
+        </div>
+
+        @if(!empty($submission->payload['busca_tipo']) || !empty($submission->payload['busca_presupuesto']) || !empty($submission->payload['busca_zonas']))
+        <div class="card">
+            <div class="card-header"><h3>Lo que busca {{ $nombreCorto }}</h3></div>
+            <div class="card-body">
+                @if(!empty($submission->payload['busca_tipo']))
+                <p style="margin:0 0 0.5rem"><strong>Tipo:</strong> {{ $submission->payload['busca_tipo'] }}</p>
+                @endif
+                @if($submission->budget_min || $submission->budget_max)
+                <p style="margin:0 0 0.5rem"><strong>Presupuesto:</strong>
+                    ${{ number_format((float) $submission->budget_min) }}
+                    @if($submission->budget_max && $submission->budget_max != $submission->budget_min)
+                        – ${{ number_format((float) $submission->budget_max) }}
+                    @endif
+                </p>
+                @endif
+                @if(!empty($submission->payload['busca_zonas']))
+                <p style="margin:0 0 0.4rem"><strong>Zonas de interés:</strong></p>
+                <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+                    @foreach($submission->payload['busca_zonas'] as $zona)
+                    <span class="badge badge-blue">{{ $zona }}</span>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
         @endif
 
         {{-- Contact info --}}

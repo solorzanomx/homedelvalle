@@ -44,6 +44,12 @@ class Inmuebles24LeadImporter
         $codigoAviso = $this->extractAfterLabel($text, 'Código de aviso:');
         $codigoAnun  = $this->extractAfterLabel($text, 'Código del anunciante:');
 
+        // Bloque "Conoce lo que busca [Nombre]" — solo aparece si Inmuebles24
+        // tiene un perfil de busqueda guardado del interesado (no siempre viene).
+        $buscaTipo = $this->extractAfterIcon($text, 'lupa.png');
+        $buscaPresupuesto = $this->extractAfterIcon($text, 'dinero.png');
+        $buscaZonas = $this->extractZonasInteres($text);
+
         preg_match('/REF:#(\d+)#/', $subject, $refMatch);
         preg_match('/CÓD:([A-Z0-9]+)/u', $subject, $codMatch);
 
@@ -62,6 +68,9 @@ class Inmuebles24LeadImporter
             'codigo_aviso'    => $codigoAviso,
             'codigo_anunciante' => $codigoAnun,
             'ref'             => $refMatch[1] ?? null,
+            'busca_tipo'         => $buscaTipo,
+            'busca_presupuesto'  => $buscaPresupuesto,
+            'busca_zonas'        => $buscaZonas,
         ];
     }
 
@@ -87,6 +96,7 @@ class Inmuebles24LeadImporter
         // (venta -> comprador, renta -> inquilino) en vez de la IA.
         $clientType = str_contains(mb_strtolower($data['tipo_operacion'] ?? ''), 'renta') ? 'renter' : 'buyer';
         $temperatura = 'hot';
+        [$budgetMin, $budgetMax] = $this->parseBudgetRange($data['busca_presupuesto'] ?? null);
 
         // withoutEvents: igual que SyncEasyBrokerLeads — Alejandro decidio
         // 2026-08-06 que NO se manda acuse automatico por correo (el contacto
@@ -104,6 +114,9 @@ class Inmuebles24LeadImporter
             'status'           => 'new',
             'utm_source'       => 'inmuebles24',
             'utm_medium'       => 'email_lead',
+            'budget_min'       => $budgetMin,
+            'budget_max'       => $budgetMax,
+            'property_type'    => $data['busca_tipo'] ?? $data['tipo_propiedad'] ?? null,
             'payload'          => [
                 'ref'                => $data['ref'],
                 'codigo_aviso'       => $data['codigo_aviso'],
@@ -113,6 +126,9 @@ class Inmuebles24LeadImporter
                 'tipo_propiedad'     => $data['tipo_propiedad'],
                 'precio'             => $data['precio'],
                 'ubicacion'          => $data['ubicacion'],
+                'busca_tipo'         => $data['busca_tipo'] ?? null,
+                'busca_presupuesto'  => $data['busca_presupuesto'] ?? null,
+                'busca_zonas'        => $data['busca_zonas'] ?? [],
             ],
         ]));
     }
@@ -170,5 +186,59 @@ class Inmuebles24LeadImporter
             }
         }
         return null;
+    }
+
+    /**
+     * Bloque "Conoce lo que busca [Nombre]": cada renglon es un icono
+     * (lupa.png = tipo de propiedad/operacion, dinero.png = presupuesto)
+     * seguido del primer <span>texto</span>.
+     */
+    private function extractAfterIcon(string $text, string $iconFile): ?string
+    {
+        $icon = preg_quote($iconFile, '/');
+        if (!preg_match('/' . $icon . '"[^>]*>\s*<span[^>]*>([^<]+)<\/span>/u', $text, $m)) {
+            return null;
+        }
+        $value = trim($m[1]);
+        return $value !== '' ? $value : null;
+    }
+
+    /**
+     * Zonas de interes: badges con un estilo especifico y distinto del badge
+     * "Venta | Departamento" del aviso consultado (ese usa border-radius:23px,
+     * las zonas usan border-radius:4px con este padding exacto).
+     */
+    private function extractZonasInteres(string $text): array
+    {
+        preg_match_all(
+            '/border:\s*1px solid #EDEDED;border-radius:4px;padding:2px 8px 2px 8px;margin-bottom:4px;margin-top:8px;">([^<]+)<\/span>/u',
+            $text,
+            $matches
+        );
+
+        return array_values(array_unique(array_map('trim', $matches[1] ?? [])));
+    }
+
+    /**
+     * "MXN 4.890.000 - MXN 5.190.000" -> [4890000, 5190000]. Formato Navent
+     * usa punto como separador de miles (no decimal). Un solo monto tambien
+     * se acepta (min=max). Sin match, [null, null].
+     */
+    private function parseBudgetRange(?string $raw): array
+    {
+        if (!$raw) {
+            return [null, null];
+        }
+
+        preg_match_all('/[\d.]{4,}/', $raw, $matches);
+        $numbers = array_map(fn ($n) => (int) str_replace('.', '', $n), $matches[0] ?? []);
+
+        if (empty($numbers)) {
+            return [null, null];
+        }
+
+        return count($numbers) >= 2
+            ? [min($numbers[0], $numbers[1]), max($numbers[0], $numbers[1])]
+            : [$numbers[0], $numbers[0]];
     }
 }
