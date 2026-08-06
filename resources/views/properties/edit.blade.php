@@ -601,9 +601,12 @@
                                 @if($property->isPublishedToEasyBroker())
                                     <span class="eb-dot" style="background:var(--success);"></span>
                                     <span style="font-size:0.85rem; font-weight:500; color:var(--success);">Publicada</span>
-                                @elseif($property->hasEasyBrokerId())
+                                @elseif($property->hasEasyBrokerId() && $property->easybroker_published_at)
                                     <span class="eb-dot" style="background:#eab308;"></span>
                                     <span style="font-size:0.85rem; font-weight:500; color:#a16207;">Despublicada</span>
+                                @elseif($property->hasEasyBrokerId())
+                                    <span class="eb-dot" style="background:#6366f1;"></span>
+                                    <span style="font-size:0.85rem; font-weight:500; color:#4338ca;">Vinculada manualmente</span>
                                 @else
                                     <span class="eb-dot" style="background:var(--border);"></span>
                                     <span style="font-size:0.85rem; color:var(--text-muted);">No publicada</span>
@@ -622,6 +625,12 @@
                                 @else
                                     <button type="button" class="btn btn-sm btn-primary" onclick="ebAction('publish')">Publicar en EasyBroker</button>
                                 @endif
+                            </div>
+                            <div class="form-group" style="margin-top:0.75rem;">
+                                <label class="form-label">Código de anuncio (manual)</label>
+                                <input type="text" name="easybroker_id" class="form-input" value="{{ old('easybroker_id', $property->easybroker_id) }}" placeholder="Ej. EB-AB1234">
+                                <p class="form-hint">Mientras no se pueda publicar automáticamente: copia aquí el ID del anuncio ya creado en EasyBroker, así los leads de portales se vinculan igual a esta ficha.</p>
+                                @error('easybroker_id') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                             </div>
                         </div>
 

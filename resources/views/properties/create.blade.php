@@ -672,6 +672,14 @@
                     @error('inmuebles24_ad_code') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                 </div>
 
+                <div class="section-label" style="margin-top:1.5rem;">EasyBroker</div>
+                <div class="form-group">
+                    <label class="form-label">Código de anuncio (manual)</label>
+                    <input type="text" name="easybroker_id" class="form-input" value="{{ old('easybroker_id') }}" placeholder="Ej. EB-AB1234">
+                    <p class="form-hint">Mientras no se pueda publicar automáticamente: solo si ya la publicaste directo en EasyBroker, copia aquí su ID.</p>
+                    @error('easybroker_id') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                </div>
+
                 <div class="step-actions">
                     <button type="button" class="btn btn-outline" onclick="goStep(2)">&larr; Anterior</button>
                     <button type="submit" class="btn btn-primary">Crear Propiedad</button>
