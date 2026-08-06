@@ -146,6 +146,7 @@ class FormSubmissionsTable extends Component
             'b2b'       => FormSubmission::where('form_type', 'b2b')->count(),
             'contacto'  => FormSubmission::where('form_type', 'contacto')->count(),
             'easybroker' => FormSubmission::where('form_type', 'easybroker')->count(),
+            'inmuebles24' => FormSubmission::where('form_type', 'inmuebles24')->count(),
             'brokers'    => FormSubmission::where('lead_tag', 'LEAD_BROKER')->count(),
         ];
 

@@ -8,10 +8,16 @@ use App\Models\EmailSetting;
 use App\Models\Interaction;
 use App\Models\Message;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Webklex\PHPIMAP\ClientManager;
 
+/**
+ * Se encarga UNICAMENTE de: dado un mensaje IMAP ya identificado como venido
+ * de un Client conocido, registrar la respuesta y detener sus automations.
+ * La conexion IMAP y el recorrido de la bandeja viven en EmailInboxProcessor
+ * (que tambien delega a Inmuebles24LeadImporter) — asi solo hay UNA conexion
+ * y UN recorrido de mensajes por corrida del scheduler.
+ */
 class EmailReplyChecker
 {
     public function testConnection(): array
@@ -33,58 +39,12 @@ class EmailReplyChecker
         }
     }
 
-    /**
-     * Revisa la bandeja de entrada por correos no leidos de clientes conocidos,
-     * los registra como respuesta y detiene cualquier automatizacion activa de ese cliente.
-     */
-    public function checkReplies(): array
+    public function findClientByEmail(string $email): ?Client
     {
-        $stats = ['checked' => 0, 'matched' => 0, 'unmatched' => 0, 'error' => null];
-
-        $settings = EmailSetting::first();
-        if (!$settings || !$settings->imap_enabled || !$settings->imap_host || !$settings->imap_username) {
-            return $stats;
-        }
-
-        try {
-            $client = $this->makeClient($settings);
-            $client->connect();
-
-            $inbox = $client->getFolder('INBOX');
-            $messages = $inbox->query()->unseen()->get();
-
-            foreach ($messages as $imapMessage) {
-                $stats['checked']++;
-
-                $from = $imapMessage->getFrom();
-                $fromEmail = ($from && count($from)) ? strtolower(trim((string) $from[0]->mail)) : null;
-
-                if (!$fromEmail) {
-                    continue;
-                }
-
-                $clientModel = Client::whereRaw('LOWER(email) = ?', [$fromEmail])->first();
-
-                if (!$clientModel) {
-                    $stats['unmatched']++;
-                    continue;
-                }
-
-                $stats['matched']++;
-                $this->recordReply($clientModel, $imapMessage);
-            }
-
-            $settings->update(['imap_last_checked_at' => now()]);
-            $client->disconnect();
-        } catch (\Throwable $e) {
-            Log::error('EmailReplyChecker: ' . $e->getMessage());
-            $stats['error'] = $e->getMessage();
-        }
-
-        return $stats;
+        return Client::whereRaw('LOWER(email) = ?', [strtolower($email)])->first();
     }
 
-    private function recordReply(Client $clientModel, $imapMessage): void
+    public function recordReply(Client $clientModel, $imapMessage): void
     {
         $subject = (string) ($imapMessage->getSubject() ?? '(sin asunto)');
         $rawBody = (string) ($imapMessage->getTextBody() ?: $imapMessage->getHTMLBody() ?: '');
@@ -128,7 +88,7 @@ class EmailReplyChecker
             ->each(fn (AutomationEnrollment $e) => $e->markCompleted());
     }
 
-    private function makeClient(EmailSetting $settings)
+    public function makeClient(EmailSetting $settings)
     {
         $manager = new ClientManager();
 
