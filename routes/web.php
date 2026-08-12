@@ -313,6 +313,9 @@ Route::middleware('auth')->group(function () {
     Route::post('polizas/{poliza}/events', [PolizaJuridicaController::class, 'addEvent'])->name('polizas.events.store');
 
     // Contratos
+    Route::get('contracts', [ContractController::class, 'index'])->name('contracts.index');
+    Route::get('contracts/create', [ContractController::class, 'create'])->name('contracts.create');
+    Route::post('contracts', [ContractController::class, 'createFromPicker'])->name('contracts.store');
     Route::post('rentals/{rental}/contracts/generate', [ContractController::class, 'generate'])->name('rentals.contracts.generate');
     Route::post('rentals/{rental}/contracts/upload', [ContractController::class, 'upload'])->name('rentals.contracts.upload');
     Route::get('contracts/{contract}/preview', [ContractController::class, 'preview'])->name('contracts.preview');

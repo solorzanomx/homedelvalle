@@ -683,6 +683,11 @@
                             <span class="nav-icon"><x-icon name="file-text" class="w-4 h-4" /></span> Plantillas Contrato
                         </a>
                         @endif
+                        @if(Route::has('contracts.index'))
+                        <a href="{{ route('contracts.index') }}" class="nav-item {{ request()->routeIs('contracts.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="file-text" class="w-4 h-4" /></span> Contratos
+                        </a>
+                        @endif
                     </div>
                 </div>
                 @endpermission

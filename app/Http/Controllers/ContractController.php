@@ -19,6 +19,84 @@ class ContractController extends Controller
     public function __construct(protected ContractService $contractService) {}
 
     /**
+     * Listado global de todos los contratos (venta + renta).
+     */
+    public function index(Request $request)
+    {
+        $query = Contract::with([
+            'operation.client', 'operation.secondaryClient', 'operation.property',
+            'rentalProcess.ownerClient', 'rentalProcess.tenantClient', 'rentalProcess.property',
+            'template', 'currentVersion',
+        ]);
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('estado')) {
+            $estado = $request->estado;
+            $query->where(function ($q) use ($estado) {
+                $q->whereHas('currentVersion', fn ($v) => $v->where('signature_status', $estado))
+                    ->orWhere(fn ($q2) => $q2->whereNull('current_version_id')->where('signature_status', $estado));
+            });
+        }
+
+        if ($request->filled('q')) {
+            $term = '%' . $request->q . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'like', $term)
+                    ->orWhere('folio', 'like', $term)
+                    ->orWhereHas('operation.client', fn ($c) => $c->where('name', 'like', $term))
+                    ->orWhereHas('operation.secondaryClient', fn ($c) => $c->where('name', 'like', $term))
+                    ->orWhereHas('operation.property', fn ($p) => $p->where('address', 'like', $term)->orWhere('title', 'like', $term))
+                    ->orWhereHas('rentalProcess.ownerClient', fn ($c) => $c->where('name', 'like', $term))
+                    ->orWhereHas('rentalProcess.tenantClient', fn ($c) => $c->where('name', 'like', $term))
+                    ->orWhereHas('rentalProcess.property', fn ($p) => $p->where('address', 'like', $term)->orWhere('title', 'like', $term));
+            });
+        }
+
+        $contracts = $query->latest()->paginate(20)->appends($request->only(['type', 'estado', 'q']));
+
+        return view('contracts.index', compact('contracts'));
+    }
+
+    /**
+     * Formulario para elegir un trato (Operación o Renta) y arrancar un contrato desde ahí.
+     */
+    public function create()
+    {
+        $operations = Operation::with(['property', 'client'])
+            ->where('status', 'active')
+            ->where('type', 'venta')
+            ->latest()
+            ->get();
+
+        $rentals = RentalProcess::with(['property', 'ownerClient'])
+            ->where('status', 'active')
+            ->latest()
+            ->get();
+
+        $contractTemplates = ContractTemplate::active()->get();
+
+        return view('contracts.create', compact('operations', 'rentals', 'contractTemplates'));
+    }
+
+    /**
+     * Recibe el picker del índice global y reenvía a los métodos ya
+     * existentes (generateForOperation/generate) sin duplicar su lógica.
+     */
+    public function createFromPicker(Request $request)
+    {
+        $request->validate(['deal' => 'required|string']);
+
+        [$dealType, $dealId] = explode(':', $request->input('deal'), 2);
+
+        return $dealType === 'operation'
+            ? $this->generateForOperation($request, $dealId)
+            : $this->generate($request, $dealId);
+    }
+
+    /**
      * Generate a contract from a template.
      */
     public function generate(Request $request, string $rentalId)
@@ -47,7 +125,7 @@ class ContractController extends Controller
         // Auto-generate PDF
         $this->contractService->generatePdf($contract);
 
-        return back()->with('success', 'Contrato generado exitosamente.');
+        return redirect()->route('rentals.show', $rental->id)->with('success', 'Contrato generado exitosamente.');
     }
 
     /**
@@ -116,7 +194,7 @@ class ContractController extends Controller
 
             $this->contractService->generateVersion($contract);
 
-            return back()->with('success', 'Contrato generado — versión ' . $contract->fresh()->currentVersion->version_number . '.');
+            return redirect()->route('operations.show', $operation->id)->with('success', 'Contrato generado — versión ' . $contract->fresh()->currentVersion->version_number . '.');
         }
 
         // Camino legacy (renta con plantilla de texto libre, sin cláusulas estructuradas).
@@ -153,7 +231,7 @@ class ContractController extends Controller
 
         $this->contractService->generatePdf($contract);
 
-        return back()->with('success', 'Contrato generado exitosamente.');
+        return redirect()->route('operations.show', $operation->id)->with('success', 'Contrato generado exitosamente.');
     }
 
     /**
