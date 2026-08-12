@@ -708,6 +708,81 @@
                 <div style="text-align:center; padding:2rem; color:var(--text-muted);">Sin contratos.</div>
             @else
                 @foreach($operation->contracts->sortByDesc('created_at') as $contract)
+                @if($contract->template && $contract->template->uses_clauses)
+                {{-- Contrato con cláusulas estructuradas + versiones (venta / renta nuevo formato) --}}
+                <div class="card" style="margin-bottom:0.65rem;">
+                    <div class="card-body" style="padding:0.85rem;">
+                        <div style="display:flex; align-items:flex-start; gap:0.65rem;">
+                            <div style="font-size:1.3rem; flex-shrink:0;">
+                                @if($contract->is_signed) &#9989; @else &#128196; @endif
+                            </div>
+                            <div style="flex:1; overflow:hidden;">
+                                <div style="font-weight:600; font-size:0.88rem;">{{ $contract->title }}</div>
+                                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:0.1rem;">
+                                    {{ \App\Models\ContractTemplate::TYPES[$contract->type] ?? ucfirst($contract->type) }} &middot; Folio {{ $contract->folio }} &middot; {{ $contract->versions->count() }} versión(es)
+                                </div>
+                            </div>
+                            <span class="badge badge-{{ $contract->is_signed ? 'green' : 'blue' }}">{{ $contract->is_signed ? 'Firmado' : 'En proceso' }}</span>
+                        </div>
+
+                        <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--border);">
+                            <button type="button" class="btn btn-sm btn-outline" onclick="var w=this.nextElementSibling; w.style.display = w.style.display==='none' ? 'block' : 'none';">Editar cláusulas</button>
+                            <form method="POST" action="{{ route('operations.contracts.generate-version', [$operation->id, $contract->id]) }}" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('¿Generar una nueva versión del PDF con las cláusulas actuales?')">Generar nueva versión</button>
+                            </form>
+
+                            <div style="display:none; margin-top:0.65rem;">
+                                @include('partials.contract-clause-editor', [
+                                    'clauses' => $contract->clauses,
+                                    'editorId' => 'contract-' . $contract->id,
+                                    'clauseRoutes' => [
+                                        'store' => route('contracts.clauses.store', $contract->id),
+                                        'update' => fn($clauseId) => route('contracts.clauses.update', [$contract->id, $clauseId]),
+                                        'destroy' => fn($clauseId) => route('contracts.clauses.destroy', [$contract->id, $clauseId]),
+                                        'reorder' => route('contracts.clauses.reorder', $contract->id),
+                                    ],
+                                ])
+                            </div>
+                        </div>
+
+                        @if($contract->versions->isNotEmpty())
+                        <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--border);">
+                            <div class="info-label" style="margin-bottom:0.4rem;">Historial de versiones</div>
+                            @foreach($contract->versions->sortByDesc('version_number') as $version)
+                            <div style="display:flex; align-items:center; gap:0.5rem; padding:0.4rem 0; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+                                <span style="font-weight:600; font-size:0.82rem; width:64px;">v{{ $version->version_number }}</span>
+                                <span style="font-size:0.72rem; color:var(--text-muted); flex:1;">{{ $version->created_at->format('d/m/Y H:i') }} @if($version->generation_note) &middot; {{ $version->generation_note }} @endif</span>
+                                <span class="badge badge-{{ match($version->signature_status) { 'signed' => 'green', 'pending_signature' => 'yellow', default => 'blue' } }}" style="font-size:0.68rem;">{{ $version->signature_status_label }}</span>
+                                <a href="{{ route('contracts.versions.preview', [$contract->id, $version->id]) }}" class="btn btn-sm btn-outline" target="_blank">Vista Previa</a>
+                                <a href="{{ route('contracts.versions.download', [$contract->id, $version->id]) }}" class="btn btn-sm btn-outline">&#8615; PDF</a>
+                                <button type="button" class="btn btn-sm btn-outline" onclick="var w=this.nextElementSibling; w.style.display = w.style.display==='none' ? 'inline-flex' : 'none';">Enviar</button>
+                                <form method="POST" action="{{ route('contracts.versions.send', [$contract->id, $version->id]) }}" style="display:none; gap:0.3rem; align-items:center;">
+                                    @csrf
+                                    <input type="email" name="to_email" class="form-input" style="width:180px;" placeholder="correo@ejemplo.com" required value="{{ $version->version_number === $contract->versions->max('version_number') ? ($operation->secondaryClient->email ?? '') : '' }}">
+                                    <button type="submit" class="btn btn-sm btn-primary">Enviar</button>
+                                </form>
+                                @if(!$version->is_signed && !$contract->is_signed)
+                                <button type="button" class="btn btn-sm btn-primary" onclick="var w=this.nextElementSibling; w.style.display = w.style.display==='none' ? 'inline-flex' : 'none';">Firmar</button>
+                                <form method="POST" action="{{ route('contracts.versions.sign', [$contract->id, $version->id]) }}" style="display:none; gap:0.3rem; align-items:center;">
+                                    @csrf
+                                    <input type="text" name="signer_name" class="form-input" style="width:130px;" placeholder="Nombre firmante" required>
+                                    <input type="email" name="signer_email" class="form-input" style="width:150px;" placeholder="Email firmante" required>
+                                    <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Registrar firma digital?')">Confirmar</button>
+                                </form>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
+
+                        <div style="margin-top:0.6rem; text-align:right;">
+                            <form method="POST" action="{{ route('contracts.destroy', $contract->id) }}" style="display:inline;" onsubmit="return confirm('¿Eliminar este contrato y todo su historial de versiones?')">@csrf @method('DELETE') <button type="submit" class="btn btn-sm btn-danger">Eliminar contrato</button></form>
+                        </div>
+                    </div>
+                </div>
+                @else
+                {{-- Contrato legacy (renta, sin cláusulas estructuradas) --}}
                 <div class="card" style="margin-bottom:0.65rem;">
                     <div class="card-body" style="padding:0.85rem;">
                         <div style="display:flex; align-items:flex-start; gap:0.65rem;">
@@ -747,6 +822,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
                 @endforeach
             @endif
         </div>
@@ -1102,37 +1178,6 @@
                 <div class="info-label" style="margin-bottom:0.5rem;">Post-Cierre</div>
                 <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.6rem;">Esta renta ya tiene su expediente de seguimiento (pagos, renovación, póliza).</p>
                 <a href="{{ route('admin.rentas.gestion.show', $operation->rentalProcess->id) }}" class="btn btn-sm btn-primary">Ver expediente Post-Cierre →</a>
-            </div>
-        </div>
-        @endif
-
-        {{-- Contrato de Compraventa --}}
-        @if($operation->type === 'venta' && $operation->stage === 'contrato')
-        <div class="card" style="margin-bottom:0.75rem;">
-            <div class="card-body" style="padding:0.85rem;">
-                <div class="info-label" style="margin-bottom:0.5rem;">Contrato de Compraventa</div>
-                @php $ccDoc = $operation->documents->where('category', 'contrato_compraventa')->sortByDesc('created_at')->first(); @endphp
-                @if(!$ccDoc)
-                    @if($operation->secondaryClient)
-                        <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.6rem;">Genera el contrato de compraventa entre {{ $operation->client->name ?? 'el vendedor' }} y {{ $operation->secondaryClient->name }}.</p>
-                        <form method="POST" action="{{ route('operations.contrato-compraventa.generar', $operation->id) }}">
-                            @csrf
-                            <button type="submit" class="btn btn-sm btn-primary">Generar Contrato</button>
-                        </form>
-                    @else
-                        <p style="font-size:0.78rem; color:#ef4444;">Esta Operation no tiene un comprador vinculado — acepta una oferta primero.</p>
-                    @endif
-                @else
-                    <a href="{{ route('operations.contrato-compraventa.pdf', $operation->id) }}" target="_blank" class="btn btn-sm btn-outline" style="margin-bottom:0.5rem; display:inline-block;">Ver PDF</a>
-                    <form method="POST" action="{{ route('operations.contrato-compraventa.generar', $operation->id) }}" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-outline">Regenerar</button>
-                    </form>
-                    <form method="POST" action="{{ route('operations.contrato-compraventa.confirmar-firma', $operation->id) }}" style="margin-top:0.5rem;">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-primary">Confirmar firma manual</button>
-                    </form>
-                @endif
             </div>
         </div>
         @endif

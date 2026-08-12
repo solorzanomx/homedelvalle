@@ -63,17 +63,41 @@
                                 Plantilla activa
                             </label>
                         </div>
+                        <div class="form-group full-width">
+                            <label class="form-label" style="display:flex; align-items:center; gap:0.5rem;">
+                                <input type="checkbox" name="uses_clauses" value="1" {{ old('uses_clauses', $contract_template->uses_clauses) ? 'checked' : '' }}>
+                                Usar cláusulas estructuradas (recomendado)
+                            </label>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">Permite editar el contrato como una lista ordenada de cláusulas (declaraciones/cláusulas/firma) en vez de un solo bloque de HTML. Se puede activar/desactivar en cualquier momento.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Body Editor --}}
-            <div class="card">
+            {{-- Body Editor (plantillas sin cláusulas estructuradas) --}}
+            <div class="card" id="legacy-body-card" style="{{ $contract_template->uses_clauses ? 'display:none;' : '' }}">
                 <div class="card-header">
                     <h3>Contenido del Contrato (HTML)</h3>
                 </div>
                 <div class="card-body">
-                    <textarea name="body" id="contractBody" class="form-textarea" rows="25" style="font-family:monospace; font-size:0.82rem; line-height:1.6;" required>{{ old('body', $contract_template->body) }}</textarea>
+                    <textarea name="body" id="contractBody" class="form-textarea" rows="25" style="font-family:monospace; font-size:0.82rem; line-height:1.6;">{{ old('body', $contract_template->body) }}</textarea>
+                </div>
+            </div>
+
+            {{-- Editor de cláusulas estructuradas --}}
+            <div class="card" id="clauses-card" style="{{ $contract_template->uses_clauses ? '' : 'display:none;' }}">
+                <div class="card-header"><h3>Cláusulas de la Plantilla</h3></div>
+                <div class="card-body">
+                    @include('partials.contract-clause-editor', [
+                        'clauses' => $contract_template->clauses,
+                        'editorId' => 'template-' . $contract_template->id,
+                        'clauseRoutes' => [
+                            'store' => route('contract-templates.clauses.store', $contract_template),
+                            'update' => fn($clauseId) => route('contract-templates.clauses.update', [$contract_template, $clauseId]),
+                            'destroy' => fn($clauseId) => route('contract-templates.clauses.destroy', [$contract_template, $clauseId]),
+                            'reorder' => route('contract-templates.clauses.reorder', $contract_template),
+                        ],
+                    ])
                 </div>
             </div>
 
@@ -139,6 +163,11 @@ tinymce.init({
         var form = editor.getElement().closest('form');
         if (form) { form.addEventListener('submit', function() { editor.save(); }); }
     }
+});
+
+document.querySelector('input[name="uses_clauses"]').addEventListener('change', function() {
+    document.getElementById('legacy-body-card').style.display = this.checked ? 'none' : '';
+    document.getElementById('clauses-card').style.display = this.checked ? '' : 'none';
 });
 </script>
 @endsection

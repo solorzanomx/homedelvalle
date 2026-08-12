@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class ContractTemplate extends Model
 {
-    protected $fillable = ['name', 'type', 'intent_target', 'body', 'variables', 'is_active'];
+    protected $fillable = ['name', 'type', 'intent_target', 'body', 'variables', 'is_active', 'uses_clauses'];
 
     const TYPES = [
         'rental'       => 'Contrato de Arrendamiento',
         'commission'   => 'Contrato de Comision',
         'renewal'      => 'Renovacion de Contrato',
         'presentation' => 'Presentación Inicial',
+        'sale'         => 'Contrato de Compraventa (Promesa)',
     ];
 
     const PRESENTATION_INTENTS = [
@@ -53,10 +54,36 @@ class ContractTemplate extends Model
         return [
             'variables' => 'array',
             'is_active' => 'boolean',
+            'uses_clauses' => 'boolean',
         ];
     }
 
     public function contracts() { return $this->hasMany(Contract::class); }
+
+    public function clauses()
+    {
+        return $this->morphMany(ContractClause::class, 'clauseable')->orderBy('sort_order');
+    }
+
+    /**
+     * Copia las cláusulas de la plantilla al contrato — desde ahí son
+     * independientes y editables por trato sin afectar la plantilla compartida.
+     */
+    public function cloneClausesInto(Contract $contract): void
+    {
+        foreach ($this->clauses as $clause) {
+            ContractClause::create([
+                'clauseable_type' => Contract::class,
+                'clauseable_id' => $contract->id,
+                'key' => $clause->key,
+                'title' => $clause->title,
+                'body' => $clause->body,
+                'section' => $clause->section,
+                'sort_order' => $clause->sort_order,
+                'is_locked' => $clause->is_locked,
+            ]);
+        }
+    }
 
     public function getTypeLabelAttribute(): string
     {

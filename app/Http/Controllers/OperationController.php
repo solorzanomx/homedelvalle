@@ -157,7 +157,7 @@ class OperationController extends Controller
             'stageLogs.user',
             'checklistItems.template', 'checklistItems.completedByUser',
             'documents.uploader', 'tasks.user',
-            'contracts.template', 'contracts.signer',
+            'contracts.template', 'contracts.signer', 'contracts.clauses', 'contracts.versions',
             'poliza.events.user', 'commissions',
             'sourceOperation', 'spawnedOperations',
             'comments.user', 'marketingStrategy', 'expenses.createdBy', 'purchaseOffers.client', 'purchaseOffers.addendums.representative',

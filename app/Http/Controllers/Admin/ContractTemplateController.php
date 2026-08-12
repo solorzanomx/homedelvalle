@@ -26,11 +26,14 @@ class ContractTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:' . implode(',', array_keys(ContractTemplate::TYPES)),
-            'body' => 'required|string',
+            'body' => 'nullable|string',
             'is_active' => 'nullable',
+            'uses_clauses' => 'nullable',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['uses_clauses'] = $request->boolean('uses_clauses');
+        $validated['body'] = $validated['body'] ?? '';
         $validated['variables'] = array_keys(ContractTemplate::DEFAULT_VARIABLES);
 
         ContractTemplate::create($validated);
@@ -50,11 +53,14 @@ class ContractTemplateController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|in:' . implode(',', array_keys(ContractTemplate::TYPES)),
-            'body' => 'required|string',
+            'body' => 'nullable|string',
             'is_active' => 'nullable',
+            'uses_clauses' => 'nullable',
         ]);
 
         $validated['is_active'] = $request->boolean('is_active');
+        $validated['uses_clauses'] = $request->boolean('uses_clauses');
+        $validated['body'] = $validated['body'] ?? '';
         $contract_template->update($validated);
 
         return redirect()->route('admin.contract-templates.index')->with('success', 'Plantilla actualizada.');

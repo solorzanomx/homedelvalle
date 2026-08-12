@@ -60,18 +60,25 @@
                                 Plantilla activa
                             </label>
                         </div>
+                        <div class="form-group full-width">
+                            <label class="form-label" style="display:flex; align-items:center; gap:0.5rem;">
+                                <input type="checkbox" name="uses_clauses" value="1" id="usesClauses" {{ old('uses_clauses') ? 'checked' : '' }}>
+                                Usar cláusulas estructuradas (recomendado)
+                            </label>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">Las cláusulas se agregan después de crear la plantilla, desde la pantalla de edición.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {{-- Body Editor --}}
-            <div class="card">
+            <div class="card" id="legacy-body-card">
                 <div class="card-header">
                     <h3>Contenido del Contrato (HTML)</h3>
                 </div>
                 <div class="card-body">
-                    <textarea name="body" id="contractBody" class="form-textarea" rows="25" style="font-family:monospace; font-size:0.82rem; line-height:1.6;" required placeholder="<h1>Contrato de Arrendamiento</h1>&#10;<p>En la ciudad de..., a @{{fecha_actual}}</p>">{{ old('body') }}</textarea>
-                    <div class="form-hint">Escribe HTML. Usa las variables de la barra lateral para insertar datos dinamicos.</div>
+                    <textarea name="body" id="contractBody" class="form-textarea" rows="25" style="font-family:monospace; font-size:0.82rem; line-height:1.6;" placeholder="<h1>Contrato de Arrendamiento</h1>&#10;<p>En la ciudad de..., a @{{fecha_actual}}</p>">{{ old('body') }}</textarea>
+                    <div class="form-hint">Escribe HTML. Usa las variables de la barra lateral para insertar datos dinamicos. Si activas cláusulas estructuradas, este contenido se ignora.</div>
                 </div>
             </div>
 

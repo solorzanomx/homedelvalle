@@ -42,6 +42,7 @@ use App\Http\Controllers\RentalProcessController;
 use App\Http\Controllers\RentalDocumentController;
 use App\Http\Controllers\PolizaJuridicaController;
 use App\Http\Controllers\ContractController;
+use App\Http\Controllers\ContractClauseController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
@@ -318,6 +319,22 @@ Route::middleware('auth')->group(function () {
     Route::post('contracts/{contract}/sign', [ContractController::class, 'sign'])->name('contracts.sign');
     Route::post('contracts/{contract}/send-signature', [ContractController::class, 'sendForSignature'])->name('contracts.send-signature');
     Route::delete('contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');
+
+    // Contratos — versiones y cláusulas (venta + renta con plantillas estructuradas)
+    Route::post('operations/{operation}/contracts/{contract}/generate-version', [ContractController::class, 'generateVersionForOperation'])->name('operations.contracts.generate-version');
+    Route::post('rentals/{rental}/contracts/{contract}/generate-version', [ContractController::class, 'generateVersionForRental'])->name('rentals.contracts.generate-version');
+    Route::get('contracts/{contract}/versions/{version}/preview', [ContractController::class, 'previewVersion'])->name('contracts.versions.preview');
+    Route::get('contracts/{contract}/versions/{version}/download', [ContractController::class, 'downloadVersion'])->name('contracts.versions.download');
+    Route::post('contracts/{contract}/versions/{version}/send', [ContractController::class, 'sendVersion'])->name('contracts.versions.send');
+    Route::post('contracts/{contract}/versions/{version}/sign', [ContractController::class, 'signVersion'])->name('contracts.versions.sign');
+    Route::post('contracts/{contract}/clauses', [ContractClauseController::class, 'store'])->name('contracts.clauses.store');
+    Route::put('contracts/{contract}/clauses/{clause}', [ContractClauseController::class, 'update'])->name('contracts.clauses.update');
+    Route::delete('contracts/{contract}/clauses/{clause}', [ContractClauseController::class, 'destroy'])->name('contracts.clauses.destroy');
+    Route::post('contracts/{contract}/clauses/reorder', [ContractClauseController::class, 'reorder'])->name('contracts.clauses.reorder');
+    Route::post('contract-templates/{contract_template}/clauses', [ContractClauseController::class, 'storeForTemplate'])->name('contract-templates.clauses.store');
+    Route::put('contract-templates/{contract_template}/clauses/{clause}', [ContractClauseController::class, 'updateForTemplate'])->name('contract-templates.clauses.update');
+    Route::delete('contract-templates/{contract_template}/clauses/{clause}', [ContractClauseController::class, 'destroyForTemplate'])->name('contract-templates.clauses.destroy');
+    Route::post('contract-templates/{contract_template}/clauses/reorder', [ContractClauseController::class, 'reorderForTemplate'])->name('contract-templates.clauses.reorder');
 
     // Tareas
     Route::resource('tasks', TaskController::class);

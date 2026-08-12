@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContractVersionMail;
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\ContractVersion;
 use App\Models\Operation;
 use App\Models\RentalProcess;
 use App\Services\ContractService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class ContractController extends Controller
@@ -56,7 +59,7 @@ class ContractController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'type' => 'required|in:rental,commission,renewal',
+            'type' => 'required|in:rental,commission,renewal,sale',
             'file' => 'required|file|max:20480|mimes:pdf,doc,docx',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -77,7 +80,10 @@ class ContractController extends Controller
     }
 
     /**
-     * Generate a contract from a template for an operation.
+     * Generate (or version) a contract from a template for an operation.
+     *
+     * Si ya existe un Contract vivo del mismo template para esta Operación,
+     * no se crea otro — se genera una nueva versión sobre el existente.
      */
     public function generateForOperation(Request $request, string $operationId)
     {
@@ -91,7 +97,29 @@ class ContractController extends Controller
 
         $template = ContractTemplate::findOrFail($validated['contract_template_id']);
 
-        // Build variables from operation data
+        $contract = Contract::where('operation_id', $operation->id)
+            ->where('contract_template_id', $template->id)
+            ->first();
+
+        if ($template->uses_clauses) {
+            if (!$contract) {
+                $contract = Contract::create([
+                    'operation_id' => $operation->id,
+                    'contract_template_id' => $template->id,
+                    'type' => $template->type,
+                    'title' => $validated['title'],
+                    'source' => 'generated',
+                    'notes' => $validated['notes'] ?? null,
+                ]);
+                $template->cloneClausesInto($contract);
+            }
+
+            $this->contractService->generateVersion($contract);
+
+            return back()->with('success', 'Contrato generado — versión ' . $contract->fresh()->currentVersion->version_number . '.');
+        }
+
+        // Camino legacy (renta con plantilla de texto libre, sin cláusulas estructuradas).
         $variables = [
             'fecha_actual' => now()->format('d/m/Y'),
             'nombre_propietario' => $operation->client->name ?? '',
@@ -129,6 +157,34 @@ class ContractController extends Controller
     }
 
     /**
+     * Genera una nueva versión de un Contract de venta ya existente.
+     */
+    public function generateVersionForOperation(Request $request, string $operationId, string $contractId)
+    {
+        $contract = Contract::where('operation_id', $operationId)->findOrFail($contractId);
+
+        $validated = $request->validate(['note' => 'nullable|string|max:500']);
+
+        $version = $this->contractService->generateVersion($contract, $validated['note'] ?? null);
+
+        return back()->with('success', 'Versión ' . $version->version_number . ' generada.');
+    }
+
+    /**
+     * Genera una nueva versión de un Contract de renta con cláusulas estructuradas.
+     */
+    public function generateVersionForRental(Request $request, string $rentalId, string $contractId)
+    {
+        $contract = Contract::where('rental_process_id', $rentalId)->findOrFail($contractId);
+
+        $validated = $request->validate(['note' => 'nullable|string|max:500']);
+
+        $version = $this->contractService->generateVersion($contract, $validated['note'] ?? null);
+
+        return back()->with('success', 'Versión ' . $version->version_number . ' generada.');
+    }
+
+    /**
      * Upload an external contract for an operation.
      */
     public function uploadForOperation(Request $request, string $operationId)
@@ -137,7 +193,7 @@ class ContractController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'type' => 'required|in:rental,commission,renewal',
+            'type' => 'required|in:rental,commission,renewal,sale',
             'file' => 'required|file|max:20480|mimes:pdf,doc,docx',
             'notes' => 'nullable|string|max:1000',
         ]);
@@ -162,13 +218,15 @@ class ContractController extends Controller
      */
     public function preview(string $contractId)
     {
-        $contract = Contract::findOrFail($contractId);
+        $contract = Contract::with('currentVersion')->findOrFail($contractId);
 
-        if (!$contract->generated_html) {
+        $html = $contract->currentVersion->generated_html ?? $contract->generated_html;
+
+        if (!$html) {
             return back()->with('error', 'Este contrato no tiene vista previa HTML.');
         }
 
-        return response($contract->generated_html)
+        return response($html)
             ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
@@ -177,18 +235,23 @@ class ContractController extends Controller
      */
     public function download(string $contractId)
     {
-        $contract = Contract::findOrFail($contractId);
+        $contract = Contract::with('currentVersion')->findOrFail($contractId);
+
+        $pdfPath = $contract->currentVersion->pdf_path ?? $contract->pdf_path;
+
+        if ($pdfPath && Storage::disk('public')->exists($pdfPath)) {
+            $filename = str_replace(' ', '_', $contract->title) . '.pdf';
+            return Storage::disk('public')->download($pdfPath, $filename);
+        }
+
+        // Camino legacy: generar PDF con Dompdf si hay HTML pero no archivo.
+        if ($contract->generated_html) {
+            $this->contractService->generatePdf($contract);
+            $contract->refresh();
+        }
 
         if (!$contract->pdf_path || !Storage::disk('public')->exists($contract->pdf_path)) {
-            // Try to generate PDF if we have HTML
-            if ($contract->generated_html) {
-                $this->contractService->generatePdf($contract);
-                $contract->refresh();
-            }
-
-            if (!$contract->pdf_path || !Storage::disk('public')->exists($contract->pdf_path)) {
-                return back()->with('error', 'Archivo no encontrado.');
-            }
+            return back()->with('error', 'Archivo no encontrado.');
         }
 
         $filename = str_replace(' ', '_', $contract->title) . '.pdf';
@@ -231,6 +294,83 @@ class ContractController extends Controller
         $contract = Contract::findOrFail($contractId);
         $contract->update(['signature_status' => 'pending_signature']);
         return back()->with('success', 'Contrato marcado como pendiente de firma.');
+    }
+
+    /**
+     * Preview HTML of a specific version.
+     */
+    public function previewVersion(string $contractId, string $versionId)
+    {
+        $version = ContractVersion::where('contract_id', $contractId)->findOrFail($versionId);
+
+        if (!$version->generated_html) {
+            return back()->with('error', 'Esta versión no tiene vista previa HTML.');
+        }
+
+        return response($version->generated_html)
+            ->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    /**
+     * Download a specific version's PDF.
+     */
+    public function downloadVersion(string $contractId, string $versionId)
+    {
+        $version = ContractVersion::with('contract')->where('contract_id', $contractId)->findOrFail($versionId);
+
+        if (!$version->pdf_path || !Storage::disk('public')->exists($version->pdf_path)) {
+            return back()->with('error', 'Archivo no encontrado.');
+        }
+
+        $filename = str_replace(' ', '_', $version->contract->title) . '-v' . $version->version_number . '.pdf';
+        return Storage::disk('public')->download($version->pdf_path, $filename);
+    }
+
+    /**
+     * Send a specific version's PDF by email to the counterparty.
+     */
+    public function sendVersion(Request $request, string $contractId, string $versionId)
+    {
+        $version = ContractVersion::with('contract')->where('contract_id', $contractId)->findOrFail($versionId);
+
+        $validated = $request->validate(['to_email' => 'required|email']);
+
+        if (!$version->pdf_path || !Storage::disk('public')->exists($version->pdf_path)) {
+            return back()->with('error', 'Esta versión no tiene PDF generado.');
+        }
+
+        Mail::to($validated['to_email'])->send(new ContractVersionMail($version));
+        $version->update(['sent_at' => now()]);
+
+        return back()->with('success', 'Versión ' . $version->version_number . ' enviada a ' . $validated['to_email'] . '.');
+    }
+
+    /**
+     * Record digital confirmation signature on a specific version.
+     */
+    public function signVersion(Request $request, string $contractId, string $versionId)
+    {
+        $version = ContractVersion::where('contract_id', $contractId)->findOrFail($versionId);
+
+        if ($version->is_signed) {
+            return back()->with('error', 'Esta versión ya está firmada.');
+        }
+
+        $validated = $request->validate([
+            'signer_name' => 'required|string|max:255',
+            'signer_email' => 'required|email|max:255',
+        ]);
+
+        $this->contractService->recordVersionSignature(
+            $version,
+            Auth::id(),
+            $validated['signer_name'],
+            $validated['signer_email'],
+            $request->ip(),
+            $request->userAgent()
+        );
+
+        return back()->with('success', 'Firma digital registrada exitosamente.');
     }
 
     /**

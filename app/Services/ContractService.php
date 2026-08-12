@@ -4,11 +4,14 @@ namespace App\Services;
 
 use App\Models\Contract;
 use App\Models\ContractTemplate;
+use App\Models\ContractVersion;
 use App\Models\RentalProcess;
 use App\Models\SiteSetting;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Browsershot\Browsershot;
 
 class ContractService
 {
@@ -31,7 +34,7 @@ class ContractService
     /**
      * Build replacement variables from a rental process.
      */
-    protected function buildVariables(RentalProcess $rental): array
+    public function buildVariables(RentalProcess $rental): array
     {
         $rental->loadMissing(['property', 'ownerClient', 'tenantClient', 'broker']);
         $settings = SiteSetting::first();
@@ -83,6 +86,132 @@ class ContractService
         $contract->update(['pdf_path' => $filename]);
 
         return $filename;
+    }
+
+    /**
+     * Genera una nueva versión inmutable del contrato (venta/renta con
+     * cláusulas estructuradas) usando Browsershot, con header/footer de
+     * marca repetido en cada página vía el mecanismo nativo de Chrome.
+     */
+    public function generateVersion(Contract $contract, ?string $note = null): ContractVersion
+    {
+        set_time_limit(120);
+
+        $contract->loadMissing(['clauses', 'operation.property', 'operation.client', 'operation.secondaryClient', 'rentalProcess']);
+
+        $tokens = $contract->operation_id
+            ? app(ContractClauseVariableResolver::class)->resolveForOperation($contract->operation)
+            : app(ContractClauseVariableResolver::class)->resolveForRental($contract->rentalProcess);
+
+        $clauses = $contract->clauses->map(function ($clause) use ($tokens) {
+            return [
+                'section' => $clause->section,
+                'title' => $clause->title,
+                'body' => str_replace(array_keys($tokens), array_values($tokens), $clause->body),
+            ];
+        })->values();
+
+        $folio = $contract->folio ?? ($tokens['{{folio}}'] ?? ('CT-' . $contract->id));
+        $isSale = $contract->type === 'sale';
+
+        $html = view('pdf.contract', [
+            'contract' => $contract,
+            'clauses' => $clauses,
+            'folio' => $folio,
+            'isSale' => $isSale,
+            'vendedorLabel' => $isSale ? 'EL PROMITENTE VENDEDOR' : 'ARRENDADOR',
+            'compradorLabel' => $isSale ? 'LA/EL PROMITENTE COMPRADOR(A)' : 'ARRENDATARIA/O',
+            'vendedorNombre' => $tokens['{{vendedor_nombre}}'] ?? ($contract->operation->client->name ?? ''),
+            'compradorNombre' => $tokens['{{comprador_nombre}}'] ?? ($contract->operation->secondaryClient->name ?? ''),
+            'propiedadDireccion' => $tokens['{{propiedad_direccion}}'] ?? '',
+            'precioTexto' => $tokens['{{precio_texto}}'] ?? '',
+            'plazoEscrituracion' => $tokens['{{fecha_limite_escrituracion}}'] ?? '',
+        ])->render();
+
+        $versionNumber = $contract->nextVersionNumber();
+        $parentDir = $contract->operation_id
+            ? 'contracts/operation-' . $contract->operation_id . '-' . $contract->id
+            : 'contracts/rental-' . $contract->rental_process_id . '-' . $contract->id;
+        $filename = $parentDir . '/v' . $versionNumber . '-' . time() . '.pdf';
+
+        $tmpPath = storage_path('app/tmp-' . uniqid('contract_') . '.pdf');
+
+        Browsershot::html($html)
+            ->setNodeBinary(config('browsershot.node_path', '/usr/bin/node'))
+            ->setChromePath(config('browsershot.chrome_path', '/usr/bin/google-chrome'))
+            ->noSandbox()
+            ->addChromiumArguments(['--disable-gpu', '--disable-dev-shm-usage', '--disable-extensions'])
+            ->showBackground()
+            ->emulateMedia('screen')
+            ->paperSize(215.9, 279.4)
+            ->margins(18, 11, 16, 11)
+            ->showBrowserHeaderAndFooter()
+            ->headerHtml($this->headerHtml($folio))
+            ->footerHtml($this->footerHtml($folio))
+            ->timeout(90)
+            ->savePdf($tmpPath);
+
+        Storage::disk('public')->put($filename, file_get_contents($tmpPath));
+        @unlink($tmpPath);
+
+        $version = ContractVersion::create([
+            'contract_id' => $contract->id,
+            'version_number' => $versionNumber,
+            'generated_html' => $html,
+            'pdf_path' => $filename,
+            'clauses_snapshot' => $clauses->toArray(),
+            'generated_by' => Auth::id(),
+            'generation_note' => $note,
+        ]);
+
+        $contract->update(['current_version_id' => $version->id, 'folio' => $folio]);
+
+        return $version;
+    }
+
+    protected function headerHtml(string $folio): string
+    {
+        return '<div style="width:100%; box-sizing:border-box; background:#1e1b4b; border-bottom:4px solid #2563eb; padding:8px 11mm; display:flex; align-items:center; justify-content:space-between; -webkit-print-color-adjust:exact;">
+            <span style="font-size:11px; font-weight:800; color:#fff; font-family:Arial,sans-serif;">Home del Valle</span>
+            <span style="font-size:6.5px; letter-spacing:1px; text-transform:uppercase; color:rgba(199,210,254,.7); font-family:Arial,sans-serif;">Documento Legal &middot; Confidencial</span>
+        </div>';
+    }
+
+    protected function footerHtml(string $folio): string
+    {
+        return '<div style="width:100%; box-sizing:border-box; font-family:Arial,sans-serif; color:#94a3b8;">
+            <div style="display:flex; justify-content:flex-end; gap:20px; padding:0 11mm 3px;">
+                <span style="font-size:6.3px; display:flex; align-items:center; gap:4px;">R&uacute;brica Vendedor <i style="display:inline-block;width:46px;border-bottom:1px solid #cbd5e1;font-style:normal;">&nbsp;</i></span>
+                <span style="font-size:6.3px; display:flex; align-items:center; gap:4px;">R&uacute;brica Comprador(a) <i style="display:inline-block;width:46px;border-bottom:1px solid #cbd5e1;font-style:normal;">&nbsp;</i></span>
+            </div>
+            <div style="border-top:1px solid #e2e8f0; padding:4px 11mm 6px; display:flex; justify-content:space-between; align-items:center; font-size:7.5px;">
+                <strong style="color:#1e1b4b; font-weight:600;">Home del Valle</strong>
+                <span>Contrato &middot; ' . e($folio) . '</span>
+                <span>P&aacute;gina <span class="pageNumber"></span> de <span class="totalPages"></span></span>
+            </div>
+        </div>';
+    }
+
+    /**
+     * Record a digital confirmation signature on a specific contract version.
+     */
+    public function recordVersionSignature(ContractVersion $version, int $userId, string $signerName, string $signerEmail, string $ip, string $userAgent): void
+    {
+        $version->update([
+            'signature_status' => 'signed',
+            'signed_at' => now(),
+            'signed_by' => $userId,
+            'signature_data' => [
+                'signer_name' => $signerName,
+                'signer_email' => $signerEmail,
+                'ip' => $ip,
+                'user_agent' => $userAgent,
+                'timestamp' => now()->toIso8601String(),
+                'method' => 'digital_confirmation',
+            ],
+        ]);
+
+        $version->contract()->update(['final_version_id' => $version->id]);
     }
 
     /**
