@@ -9,6 +9,7 @@ class ContractClause extends Model
     protected $fillable = ['clauseable_type', 'clauseable_id', 'key', 'title', 'body', 'section', 'sort_order', 'is_locked'];
 
     const SECTIONS = [
+        'caratula' => 'Carátula',
         'declaracion' => 'Declaración',
         'clausula' => 'Cláusula',
         'firma' => 'Firma',

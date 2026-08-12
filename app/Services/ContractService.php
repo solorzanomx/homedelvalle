@@ -89,6 +89,58 @@ class ContractService
     }
 
     /**
+     * Crea la cláusula de carátula (tabla-resumen + párrafo introductorio)
+     * como contenido inicial editable, si el contrato todavía no tiene una.
+     * Idempotente — seguro de llamar aunque ya exista.
+     */
+    public function ensureCaratulaClause(Contract $contract): void
+    {
+        if ($contract->clauses()->where('section', 'caratula')->exists()) {
+            return;
+        }
+
+        $isSale = $contract->type === 'sale';
+        $tokens = $contract->operation_id
+            ? app(ContractClauseVariableResolver::class)->resolveForOperation($contract->operation()->with(['property', 'client', 'secondaryClient'])->first())
+            : app(ContractClauseVariableResolver::class)->resolveForRental($contract->rentalProcess()->first());
+
+        $vendedorLabel = $isSale ? 'Promitente Vendedor' : 'Arrendador';
+        $compradorLabel = $isSale ? 'Promitente Compradora' : 'Arrendataria';
+        $vendedorNombre = $tokens['{{vendedor_nombre}}'] ?? '';
+        $compradorNombre = $tokens['{{comprador_nombre}}'] ?? '';
+        $propiedadDireccion = $tokens['{{propiedad_direccion}}'] ?? '';
+        $precioTexto = $tokens['{{precio_texto}}'] ?? '';
+        $plazoEscrituracion = $tokens['{{fecha_limite_escrituracion}}'] ?? '';
+
+        $rows = "<tr><td>{$vendedorLabel}</td><td>{$vendedorNombre}</td></tr>"
+            . "<tr><td>{$compradorLabel}</td><td>{$compradorNombre}</td></tr>";
+        if ($propiedadDireccion !== '') {
+            $rows .= "<tr><td>Inmueble</td><td>{$propiedadDireccion}</td></tr>";
+        }
+        if ($precioTexto !== '') {
+            $precioLabel = $isSale ? 'Precio' : 'Renta mensual';
+            $rows .= "<tr><td>{$precioLabel}</td><td>{$precioTexto}</td></tr>";
+        }
+        if ($isSale && $plazoEscrituracion !== '') {
+            $rows .= "<tr><td>Plazo para escriturar</td><td>{$plazoEscrituracion}</td></tr>";
+        }
+
+        $partyLabel1 = $isSale ? 'EL PROMITENTE VENDEDOR' : 'ARRENDADOR';
+        $partyLabel2 = $isSale ? 'LA/EL PROMITENTE COMPRADOR(A)' : 'ARRENDATARIA/O';
+
+        $body = "<table class=\"caratula-table\">{$rows}</table>"
+            . "<p>{$contract->title} que celebran, por una parte, {$vendedorNombre}, por su propio derecho, a quien en lo sucesivo se le denominará &ldquo;{$partyLabel1}&rdquo;; y por la otra parte, {$compradorNombre}, por su propio derecho, a quien en lo sucesivo se le denominará &ldquo;{$partyLabel2}&rdquo;; y a ambos conjuntamente como &ldquo;LAS PARTES&rdquo;, quienes manifiestan su voluntad de obligarse y sujetan el presente contrato al tenor de las declaraciones y cláusulas contenidas en las páginas siguientes.</p>";
+
+        $contract->clauses()->create([
+            'title' => 'Carátula',
+            'body' => $body,
+            'section' => 'caratula',
+            'sort_order' => 0,
+            'is_locked' => false,
+        ]);
+    }
+
+    /**
      * Genera una nueva versión inmutable del contrato (venta/renta con
      * cláusulas estructuradas) usando Browsershot, con header/footer de
      * marca repetido en cada página vía el mecanismo nativo de Chrome.

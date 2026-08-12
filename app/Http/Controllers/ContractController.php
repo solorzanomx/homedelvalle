@@ -190,6 +190,7 @@ class ContractController extends Controller
                     'notes' => $validated['notes'] ?? null,
                 ]);
                 $template->cloneClausesInto($contract);
+                $this->contractService->ensureCaratulaClause($contract);
             }
 
             $this->contractService->generateVersion($contract);
@@ -289,6 +290,16 @@ class ContractController extends Controller
         ]);
 
         return back()->with('success', 'Contrato subido exitosamente.');
+    }
+
+    /**
+     * Vista de documento completo ("tipo Word") para editar cláusulas y carátula en su posición real.
+     */
+    public function editDocument(string $contractId)
+    {
+        $contract = Contract::with(['clauses', 'template', 'operation', 'rentalProcess'])->findOrFail($contractId);
+
+        return view('contracts.edit', compact('contract'));
     }
 
     /**

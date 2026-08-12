@@ -6,6 +6,7 @@ use App\Models\Contract;
 use App\Models\ContractClause;
 use App\Models\ContractTemplate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ContractClauseController extends Controller
 {
@@ -80,8 +81,27 @@ class ContractClauseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'body' => 'required|string',
-            'section' => 'required|in:declaracion,clausula,firma',
+            'section' => 'required|in:caratula,declaracion,clausula,firma',
+            'insert_after_clause_id' => 'nullable|exists:contract_clauses,id',
         ]);
+
+        if (!empty($validated['insert_after_clause_id'])) {
+            return DB::transaction(function () use ($clauseable, $validated) {
+                $after = $clauseable->clauses()->findOrFail($validated['insert_after_clause_id']);
+
+                $clauseable->clauses()
+                    ->where('section', $after->section)
+                    ->where('sort_order', '>', $after->sort_order)
+                    ->increment('sort_order');
+
+                return $clauseable->clauses()->create([
+                    'title' => $validated['title'],
+                    'body' => $validated['body'],
+                    'section' => $validated['section'],
+                    'sort_order' => $after->sort_order + 1,
+                ]);
+            });
+        }
 
         $nextOrder = $clauseable->clauses()->max('sort_order') + 1;
 

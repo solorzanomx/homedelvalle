@@ -726,7 +726,7 @@
                         </div>
 
                         <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--border);">
-                            <button type="button" class="btn btn-sm btn-outline" onclick="var w=this.nextElementSibling; w.style.display = w.style.display==='none' ? 'block' : 'none';">Editar cláusulas</button>
+                            <a href="{{ route('contracts.edit-document', $contract->id) }}" class="btn btn-sm btn-outline">📝 Editar documento</a>
                             <form method="POST" action="{{ route('operations.contracts.generate-version', [$operation->id, $contract->id]) }}" style="display:inline;">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('¿Generar una nueva versión del PDF con las cláusulas actuales?')">Generar nueva versión</button>
@@ -739,19 +739,6 @@
                                     <button type="submit" class="btn btn-sm btn-outline">✨ Sugerir cláusulas con IA</button>
                                 </form>
                             @endif
-
-                            <div style="display:none; margin-top:0.65rem;">
-                                @include('partials.contract-clause-editor', [
-                                    'clauses' => $contract->clauses,
-                                    'editorId' => 'contract-' . $contract->id,
-                                    'clauseRoutes' => [
-                                        'store' => route('contracts.clauses.store', $contract->id),
-                                        'update' => fn($clauseId) => route('contracts.clauses.update', [$contract->id, $clauseId]),
-                                        'destroy' => fn($clauseId) => route('contracts.clauses.destroy', [$contract->id, $clauseId]),
-                                        'reorder' => route('contracts.clauses.reorder', $contract->id),
-                                    ],
-                                ])
-                            </div>
                         </div>
 
                         @php $pendingSuggestions = $contract->clauseSuggestions->where('status', 'pending'); @endphp
