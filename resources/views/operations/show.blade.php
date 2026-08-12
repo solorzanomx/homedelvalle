@@ -731,6 +731,14 @@
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('¿Generar una nueva versión del PDF con las cláusulas actuales?')">Generar nueva versión</button>
                             </form>
+                            @if($contract->ai_suggestion_status === 'pending')
+                                <span class="badge badge-yellow">✨ Generando sugerencias...</span>
+                            @else
+                                <form method="POST" action="{{ route('contracts.suggestions.request', $contract->id) }}" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-outline">✨ Sugerir cláusulas con IA</button>
+                                </form>
+                            @endif
 
                             <div style="display:none; margin-top:0.65rem;">
                                 @include('partials.contract-clause-editor', [
@@ -745,6 +753,31 @@
                                 ])
                             </div>
                         </div>
+
+                        @php $pendingSuggestions = $contract->clauseSuggestions->where('status', 'pending'); @endphp
+                        @if($pendingSuggestions->isNotEmpty())
+                        <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--border);">
+                            <div class="info-label" style="margin-bottom:0.4rem;">✨ Sugerencias de la IA ({{ $pendingSuggestions->count() }})</div>
+                            @foreach($pendingSuggestions as $suggestion)
+                            <div style="border:1px solid var(--border); border-radius:8px; padding:0.6rem 0.75rem; margin-bottom:0.5rem; background:rgba(139,92,246,0.04);">
+                                <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.3rem;">
+                                    <span style="font-size:0.7rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); background:var(--bg); border:1px solid var(--border); border-radius:4px; padding:0.1rem 0.4rem;">{{ $suggestion->type_label }}</span>
+                                    <span style="font-weight:600; font-size:0.84rem;">{{ $suggestion->proposed_title ?? $suggestion->clause?->title }}</span>
+                                </div>
+                                @if($suggestion->rationale)
+                                <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">{{ $suggestion->rationale }}</p>
+                                @endif
+                                @if($suggestion->suggestion_type !== 'remove' && $suggestion->proposed_body)
+                                <div style="font-size:0.78rem; background:var(--bg); border-radius:6px; padding:0.5rem 0.65rem; margin-bottom:0.5rem; max-height:120px; overflow:auto;">{!! $suggestion->proposed_body !!}</div>
+                                @endif
+                                <div style="display:flex; gap:0.4rem;">
+                                    <form method="POST" action="{{ route('contract-suggestions.approve', $suggestion->id) }}">@csrf <button type="submit" class="btn btn-sm btn-primary">Aceptar</button></form>
+                                    <form method="POST" action="{{ route('contract-suggestions.reject', $suggestion->id) }}">@csrf <button type="submit" class="btn btn-sm btn-outline">Rechazar</button></form>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                        @endif
 
                         @if($contract->versions->isNotEmpty())
                         <div style="margin-top:0.6rem; padding-top:0.6rem; border-top:1px solid var(--border);">

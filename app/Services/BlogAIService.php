@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Services\AI\AIManager;
+use App\Services\AI\Concerns\ParsesJsonFromLlm;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 class BlogAIService
 {
+    use ParsesJsonFromLlm;
+
     // Canon editorial (docs/posicionamiento-marca.md + reglas acumuladas).
     // Si cambia la estrategia de marca, este bloque es el que se actualiza.
     private const BRAND_CONTEXT = 'Home del Valle, inmobiliaria boutique de la alcaldía Benito Juárez, CDMX. NEGOCIO PRINCIPAL: captar predios/casas en exclusiva y conectarlos con su cartera propia de desarrolladoras y constructoras que buscan terreno para construir ("operamos desde la demanda, no desde la oferta"). Negocio de soporte: compra-venta y renta residencial boutique. Colonias foco: Del Valle (Centro, Norte, Sur), Narvarte (Poniente, Oriente), Nápoles, Portales, Xoco; también Acacias, Álamos, Letrán Valle, General Anaya, Noche Buena, Santa Cruz Atoyac, Vertiz Narvarte, Ciudad de los Deportes.';
@@ -385,21 +388,4 @@ PROMPT;
         }, $decoded)));
     }
 
-    private function parseJsonBlock(string $raw): array
-    {
-        $clean = preg_replace('/^```(?:json)?\s*/m', '', $raw);
-        $clean = preg_replace('/\s*```$/m', '', $clean);
-        $clean = trim($clean);
-        $start = strpos($clean, '{');
-        $end   = strrpos($clean, '}');
-        if ($start !== false && $end !== false) {
-            $clean = substr($clean, $start, $end - $start + 1);
-        }
-        $decoded = json_decode($clean, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            Log::warning('BlogAIService: JSON parse error', ['raw' => substr($raw, 0, 800)]);
-            throw new RuntimeException('La IA devolvió JSON inválido: ' . json_last_error_msg());
-        }
-        return $decoded;
-    }
 }

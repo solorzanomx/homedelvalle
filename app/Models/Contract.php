@@ -7,7 +7,7 @@ use Illuminate\Validation\ValidationException;
 
 class Contract extends Model
 {
-    protected $fillable = ['rental_process_id', 'operation_id', 'contract_template_id', 'current_version_id', 'final_version_id', 'type', 'title', 'folio', 'generated_html', 'pdf_path', 'source', 'signature_status', 'signature_data', 'signed_at', 'signed_by', 'notes',];
+    protected $fillable = ['rental_process_id', 'operation_id', 'contract_template_id', 'current_version_id', 'final_version_id', 'type', 'title', 'folio', 'generated_html', 'pdf_path', 'source', 'signature_status', 'signature_data', 'signed_at', 'signed_by', 'notes', 'ai_suggestion_status', 'ai_suggestion_requested_at',];
     const SIGNATURE_STATUSES = [
         'unsigned' => 'Sin Firmar',
         'pending_signature' => 'Pendiente de Firma',
@@ -24,6 +24,7 @@ class Contract extends Model
         return [
             'signature_data' => 'array',
             'signed_at' => 'datetime',
+            'ai_suggestion_requested_at' => 'datetime',
         ];
     }
 
@@ -55,6 +56,11 @@ class Contract extends Model
     public function nextVersionNumber(): int
     {
         return ($this->versions()->max('version_number') ?? 0) + 1;
+    }
+
+    public function clauseSuggestions()
+    {
+        return $this->hasMany(ContractClauseSuggestion::class)->latest();
     }
 
     public function getSignatureStatusLabelAttribute(): string

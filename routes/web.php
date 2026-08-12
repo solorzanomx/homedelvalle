@@ -43,6 +43,7 @@ use App\Http\Controllers\RentalDocumentController;
 use App\Http\Controllers\PolizaJuridicaController;
 use App\Http\Controllers\ContractController;
 use App\Http\Controllers\ContractClauseController;
+use App\Http\Controllers\ContractClauseSuggestionController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskController;
@@ -335,6 +336,11 @@ Route::middleware('auth')->group(function () {
     Route::put('contract-templates/{contract_template}/clauses/{clause}', [ContractClauseController::class, 'updateForTemplate'])->name('contract-templates.clauses.update');
     Route::delete('contract-templates/{contract_template}/clauses/{clause}', [ContractClauseController::class, 'destroyForTemplate'])->name('contract-templates.clauses.destroy');
     Route::post('contract-templates/{contract_template}/clauses/reorder', [ContractClauseController::class, 'reorderForTemplate'])->name('contract-templates.clauses.reorder');
+
+    // Sugerencias de cláusulas por IA
+    Route::post('contracts/{contract}/suggest-clauses', [ContractClauseSuggestionController::class, 'request'])->name('contracts.suggestions.request');
+    Route::post('contract-suggestions/{suggestion}/approve', [ContractClauseSuggestionController::class, 'approve'])->name('contract-suggestions.approve');
+    Route::post('contract-suggestions/{suggestion}/reject', [ContractClauseSuggestionController::class, 'reject'])->name('contract-suggestions.reject');
 
     // Tareas
     Route::resource('tasks', TaskController::class);
