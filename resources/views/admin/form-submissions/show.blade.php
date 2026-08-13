@@ -403,6 +403,17 @@
                 <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Mensaje pre-armado con la propiedad de interés — edítalo en WhatsApp antes de enviar si hace falta.</p>
                 @endif
 
+                @if($submission->email && !empty($submission->payload['ai_respuesta'] ?? null))
+                <form method="POST" action="{{ route('admin.form-submissions.send-email', $submission) }}" style="margin-top:0.5rem"
+                      onsubmit="return confirm('¿Enviar la respuesta sugerida por correo a {{ $submission->email }}?')">
+                    @csrf
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#1d4ed8;border-color:#1d4ed8">
+                        ✉️ Enviar por correo
+                    </button>
+                </form>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Envía la misma respuesta sugerida de arriba a {{ $submission->email }}, queda registrada en "Mensajes enviados" y verás ahí si la abrió.</p>
+                @endif
+
                 @if(!$esPosibleBroker && $submission->form_type === 'easybroker')
                 <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}" style="margin-top:0.5rem">
                     @csrf

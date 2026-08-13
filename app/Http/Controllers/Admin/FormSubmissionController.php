@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\FormSubmission;
+use App\Models\Message;
+use App\Models\SiteSetting;
+use App\Services\EmailService;
 use Illuminate\Http\Request;
 
 class FormSubmissionController extends Controller
@@ -321,6 +324,104 @@ class FormSubmissionController extends Controller
         FormSubmission::withoutEvents(fn () => $formSubmission->update(['payload' => $payload]));
 
         return back()->with('success', 'Respuesta sugerida generada — revísala antes de enviar.');
+    }
+
+    /**
+     * Envía la respuesta sugerida por IA (o la que esté en payload.ai_respuesta)
+     * por correo al lead, dejando registro en Message (misma tabla que ya
+     * alimenta la tarjeta "Mensajes enviados") para poder ver si se abrió.
+     */
+    public function sendEmail(FormSubmission $formSubmission, EmailService $emailService)
+    {
+        if (!$formSubmission->email) {
+            return back()->with('error', 'Este lead no tiene correo electrónico registrado.');
+        }
+
+        $texto = $formSubmission->payload['ai_respuesta'] ?? null;
+        if (!$texto) {
+            return back()->with('error', 'Genera la respuesta sugerida primero.');
+        }
+
+        $user = auth()->user();
+        $siteName = SiteSetting::first()?->site_name ?? 'Home del Valle';
+        $subject = 'Respuesta a tu consulta — ' . $siteName;
+
+        $bodyHtml = $this->buildLeadReplyEmailHtml($texto, $formSubmission, $user, $siteName);
+
+        $msg = Message::create([
+            'client_id' => $formSubmission->client_id,
+            'user_id' => $user->id,
+            'trackable_type' => FormSubmission::class,
+            'trackable_id' => $formSubmission->id,
+            'channel' => 'email',
+            'direction' => 'outbound',
+            'subject' => $subject,
+            'body' => $texto,
+            'status' => 'queued',
+        ]);
+
+        $sent = $emailService->send(
+            $formSubmission->email,
+            $subject,
+            $bodyHtml,
+            $formSubmission->full_name,
+            null,
+            $user,
+            [],
+            $msg->id
+        );
+
+        $msg->update(['status' => $sent ? 'sent' : 'failed', 'sent_at' => $sent ? now() : null]);
+
+        if ($sent && !$formSubmission->contacted_at) {
+            $formSubmission->update(['contacted_at' => now(), 'status' => $formSubmission->status === 'new' ? 'contacted' : $formSubmission->status]);
+        }
+
+        if (!$sent) {
+            return back()->with('error', 'No se pudo enviar el correo. Verifica la configuración SMTP.');
+        }
+
+        return back()->with('success', 'Correo enviado a ' . $formSubmission->email . '.');
+    }
+
+    private function buildLeadReplyEmailHtml(string $message, FormSubmission $formSubmission, $user, string $siteName): string
+    {
+        $senderName = $user->full_name ?? $user->name;
+        $senderTitle = $user->title ?? 'Asesor Inmobiliario';
+        $senderPhone = $user->phone ?? '';
+        $senderEmail = $user->mailSetting?->from_email ?? $user->email;
+
+        $html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+            body { font-family: Arial, Helvetica, sans-serif; color: #333; margin: 0; padding: 0; background: #f4f4f4; }
+            .email-wrap { max-width: 640px; margin: 0 auto; background: #fff; }
+            .email-header { background: linear-gradient(135deg, #667eea, #764ba2); padding: 24px 32px; color: #fff; }
+            .email-header h1 { margin: 0; font-size: 20px; }
+            .email-body { padding: 32px; }
+            .email-body p { line-height: 1.6; margin: 0 0 16px; }
+            .email-footer { background: #f8fafc; padding: 24px 32px; border-top: 1px solid #e2e8f0; font-size: 13px; color: #64748b; }
+            .sig-name { font-weight: 600; color: #1e293b; font-size: 14px; }
+        </style></head><body>';
+        $html .= '<div class="email-wrap">';
+        $html .= '<div class="email-header"><h1>' . e($siteName) . '</h1></div>';
+        $html .= '<div class="email-body">';
+        $html .= '<p>Hola <strong>' . e($formSubmission->full_name) . '</strong>,</p>';
+        $html .= '<p>' . nl2br(e($message)) . '</p>';
+        $html .= '<div style="margin-top:32px; padding-top:16px; border-top:1px solid #e2e8f0;">';
+        if ($user->email_signature) {
+            $html .= $user->email_signature;
+        } else {
+            $html .= '<p class="sig-name">' . e($senderName) . '</p>';
+            $html .= '<p style="margin:0; font-size:13px; color:#64748b;">' . e($senderTitle) . '</p>';
+            if ($senderPhone) {
+                $html .= '<p style="margin:2px 0 0; font-size:13px; color:#64748b;">' . e($senderPhone) . '</p>';
+            }
+            $html .= '<p style="margin:2px 0 0; font-size:13px; color:#667eea;">' . e($senderEmail) . '</p>';
+        }
+        $html .= '</div></div>';
+        $html .= '<div class="email-footer"><p style="margin:0;">' . e($siteName) . ' &middot; Tu plataforma de gestión inmobiliaria</p></div>';
+        $html .= '</div></body></html>';
+
+        return $html;
     }
 
     public function destroy(FormSubmission $formSubmission)
