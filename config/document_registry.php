@@ -33,6 +33,7 @@ return [
         'donde_generarlo' => 'Ficha de la valuación → Ver PDF',
         'preview_route' => 'admin.documentos.preview.opinion-valor',
         'changelog' => [
+            ['fecha' => '2026-08-14', 'resumen' => 'Rediseño completo hacia el lenguaje visual sobrio de Carta Oferta/Contrato de Exclusiva/Recibo de Apartado: se quitaron el hero de precio con degradado, el badge de diagnóstico como pill de color, las barras rojo/verde de la tabla waterfall y los tags como pills — todo a cajas con borde fino, navy/slate sin colores decorativos. Mismos datos y páginas, solo presentación.'],
             ['fecha' => '2026-07-02', 'resumen' => 'Acento de marca cambiado de verde a azul.'],
             ['fecha' => '2026-07-01', 'resumen' => 'Identidad visual unificada (era el navy/fuente de referencia de los otros 2 documentos). Personalización "Preparada para {nombre}" agregada — antes no tenía ningún dato del propietario.'],
         ],
