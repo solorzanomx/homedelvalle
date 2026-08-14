@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\Interaction;
 use App\Models\MarketColonia;
 use App\Models\MarketPriceSnapshot;
+use App\Models\MarketZoneSnapshot;
 use App\Models\PresentationSend;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -288,6 +289,60 @@ class PresentationGeneratorService
     }
 
     /**
+     * Datos reales del Observatorio de Precios para la ZONA del inmueble —
+     * 3 categorías de edad (nuevo/seminuevo/antiguo), misma fuente que usa el
+     * sitio público (MarketZoneSnapshot::summaryForZone) y Opinión de Valor.
+     * A diferencia de getMarketSnapshot() (colonia exacta, sistema legacy),
+     * esto es lo que alimenta la página "El mercado en tu zona" de la
+     * Presentación — devuelve null si no se puede resolver la zona real del
+     * inmueble o no hay ningún dato para su tipo de operación/inmueble, para
+     * no inventar cifras de una colonia que no es la del cliente.
+     */
+    public function getZoneMarketData(Captacion $captacion): ?array
+    {
+        $property = $captacion->property;
+        $intent   = $captacion->intent ?? 'general';
+
+        $operationType = str_starts_with($intent, 'renta_') ? 'rent' : 'sale';
+        $propertyType  = match(strtolower($property?->property_type ?? '')) {
+            'house' => 'house',
+            'office', 'commercial', 'warehouse' => 'office',
+            default => 'apartment',
+        };
+
+        // Resolver colonia: FK exacto primero (Property.market_colonia_id),
+        // match difuso por nombre solo como fallback para captaciones viejas
+        // sin vincular.
+        $colonia = null;
+        if ($property?->market_colonia_id) {
+            $colonia = MarketColonia::find($property->market_colonia_id);
+        }
+        if (!$colonia) {
+            $colony = $property?->colony ?? $captacion->property_address ?? '';
+            if (!empty($colony)) {
+                $colonia = MarketColonia::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower(trim($colony)) . '%'])->first();
+            }
+        }
+        if (!$colonia?->market_zone_id) return null;
+
+        $summary = MarketZoneSnapshot::summaryForZone($colonia->market_zone_id);
+        $byAge   = $summary[$operationType][$propertyType] ?? null;
+        if (!$byAge) return null;
+
+        $nuevo     = $byAge['new'] ?? null;
+        $seminuevo = $byAge['mid'] ?? null;
+        $antiguo   = $byAge['old'] ?? null;
+        if (!$nuevo && !$seminuevo && !$antiguo) return null;
+
+        return [
+            'zona'      => $colonia->zone?->name ?? $colonia->name,
+            'nuevo'     => $nuevo,
+            'seminuevo' => $seminuevo,
+            'antiguo'   => $antiguo,
+        ];
+    }
+
+    /**
      * Formatea el valor de comisión según el intent.
      * Venta: "X%" — Renta: "X mes(es) de renta"
      */
@@ -372,10 +427,14 @@ class PresentationGeneratorService
             $marketConfidence = $marketSnapshot->confidence;
         }
 
+        $zonaMercado = $this->getZoneMarketData($captacion);
+
         return [
             'nombrePropietario'  => $client?->name ?? '',
             'inmuebleTipo'       => $property ? ($property->property_type_label ?? $property->property_type) : '',
             'inmuebleColonia'    => $property?->colony ?? $captacion->property_address ?? '',
+            'zonaMercado'        => $zonaMercado,                    // ['zona', 'nuevo', 'seminuevo', 'antiguo'] o null
+            'zonaNombre'         => $zonaMercado['zona'] ?? null,    // ej. "Narvarte & Vértiz" — null si no se pudo resolver
             'comisionLabel'      => $comisionFormatted,  // ej. "5%" o "1 mes de renta"
             'comisionPct'        => $comisionFormatted,  // alias para compatibilidad con templates existentes
             'esRenta'            => str_starts_with($intent, 'renta_'),

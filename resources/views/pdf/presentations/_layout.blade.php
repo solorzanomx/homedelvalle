@@ -370,28 +370,52 @@ strong { color: #1e293b; }
 
       {{-- ═══ RENTA RESIDENCIAL ══════════════════════════════════════ --}}
       @elseif($isRenta)
-        <p>La <strong>demanda de renta residencial en Benito Juárez</strong> supera la oferta disponible. Las rentas en Del Valle y colonias aledañas han crecido <strong>11% anual</strong> en los últimos tres años, con una tasa de vacancia histórica de apenas ~4%.</p>
+        @php
+          $zm        = $zonaMercado ?? null;
+          $zoneLabel = $zonaNombre ?? 'Benito Juárez';
+          $propYear  = $captacion->property?->year_built;
+          $propAgeCat = null;
+          if ($propYear) {
+              $ageYears   = now()->year - (int) $propYear;
+              $propAgeCat = $ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo');
+          }
+          $hlBracket = $propAgeCat ?? 'seminuevo';
+          $maxHigh   = $zm ? max(
+              (float) ($zm['nuevo']->price_m2_high ?? 0),
+              (float) ($zm['seminuevo']->price_m2_high ?? 0),
+              (float) ($zm['antiguo']->price_m2_high ?? 0)
+          ) ?: 1 : 1;
+        @endphp
+        <p>La <strong>demanda de renta residencial en Benito Juárez</strong> supera la oferta disponible. Las rentas en {{ $zoneLabel }} y colonias aledañas han crecido <strong>11% anual</strong> en los últimos tres años, con una tasa de vacancia histórica de apenas ~4%.</p>
 
-        <div class="chart-title">Renta mensual por tipo de inmueble — Benito Juárez (2025)</div>
+        @if($zm)
+        <div class="chart-title">Renta por m²/mes — {{ $zoneLabel }} ({{ now()->year }})</div>
+        <div class="bar-chart">
+          @foreach(['nuevo' => 'Nuevo (0–10 años)', 'seminuevo' => 'Seminuevo (10–30 años)', 'antiguo' => 'Antiguo (+30 años)'] as $key => $label)
+            @php $snap = $zm[$key] ?? null; @endphp
+            @if($snap)
+            @php
+              $pct  = max(15, round(((float) $snap->price_m2_high / $maxHigh) * 100));
+              $isHl = $key === $hlBracket;
+            @endphp
+            <div class="bar-row">
+              <div class="bar-lbl {{ $isHl ? 'hl' : '' }}">{{ $label }}</div>
+              <div class="bar-track"><div class="bar-fill {{ $isHl ? 'hdv' : 'avg' }}" style="width:{{ $pct }}%;">${{ number_format($snap->price_m2_low) }} – ${{ number_format($snap->price_m2_high) }} /m²/mes</div></div>
+            </div>
+            @endif
+          @endforeach
+        </div>
+        <p class="chart-note">* Renta mensual por m², departamentos y casas en {{ $zoneLabel }}. Fuente: Observatorio de Precios HDV — actualizado {{ now()->locale('es')->isoFormat('MMMM YYYY') }}.</p>
+        @else
+        <div class="chart-title">Renta mensual por tipo de inmueble — Benito Juárez (referencia general)</div>
         <div class="bar-chart">
           <div class="bar-row">
-            <div class="bar-lbl hl">Casa 3 rec.</div>
-            <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$30,000 – $65,000 /mes</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl">Depto 3 rec.</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:87%;">$28,000 – $55,000 /mes</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl">Depto 2 rec.</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:72%;">$18,000 – $38,000 /mes</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl">Estudio / 1 rec.</div>
-            <div class="bar-track"><div class="bar-fill hi" style="width:50%;">$12,000 – $22,000 /mes</div></div>
+            <div class="bar-lbl hl">Benito Juárez</div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:85%;">$150 – $260 /m²/mes</div></div>
           </div>
         </div>
-        <p class="chart-note">* Rangos para inmuebles en buen estado en BJ. Fuente: Observatorio de Precios HDV 2025.</p>
+        <p class="chart-note">* Rango general de la alcaldía — todavía no tenemos suficientes datos del Observatorio para esta colonia en particular.</p>
+        @endif
 
         <div class="insight-box">
           <p><strong>Momento ideal:</strong> Con vacancia ~4% y candidatos registrados activos, los inmuebles bien presentados con precio competitivo se colocan en <strong>15–30 días</strong>. El precio de renta tiene margen al alza si el inmueble se prepara correctamente.</p>
@@ -408,26 +432,26 @@ strong { color: #1e293b; }
       @elseif($isConstructor)
         <p>Los predios en Benito Juárez con zonificación <strong>H5 y H6</strong> se han revalorizado <strong>22% en 3 años</strong>. La presión de desarrolladores sigue creciendo ante la escasez de predios disponibles con ZP favorable.</p>
 
-        <div class="chart-title">Valor de predio por m² de terreno — Colonias clave BJ (2025)</div>
+        <div class="chart-title">Valor de predio por m² de terreno — Benito Juárez (referencia general, 2025)</div>
         <div class="bar-chart">
           <div class="bar-row">
-            <div class="bar-lbl hl">Del Valle Sur</div>
+            <div class="bar-lbl hl">Zona premium H5/H6</div>
             <div class="bar-track"><div class="bar-fill hdv" style="width:100%;">$50,000 – $80,000 /m²</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Narvarte Pte.</div>
+            <div class="bar-lbl">Zona consolidada</div>
             <div class="bar-track"><div class="bar-fill avg" style="width:86%;">$44,000 – $68,000 /m²</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Nápoles</div>
+            <div class="bar-lbl">Zona intermedia</div>
             <div class="bar-track"><div class="bar-fill avg" style="width:73%;">$36,000 – $57,000 /m²</div></div>
           </div>
           <div class="bar-row">
-            <div class="bar-lbl">Insurgentes Sur</div>
+            <div class="bar-lbl">Zona en desarrollo</div>
             <div class="bar-track"><div class="bar-fill hi" style="width:60%;">$30,000 – $48,000 /m²</div></div>
           </div>
         </div>
-        <p class="chart-note">* Valores para predios con H5/H6 sin construcción relevante. Fuente: Observatorio HDV 2025.</p>
+        <p class="chart-note">* Rangos generales de la alcaldía para predios con H5/H6 sin construcción relevante — el Observatorio aún no mide precio de terreno por colonia. Fuente: Observatorio HDV 2025.</p>
 
         <div class="insight-box">
           <p><strong>Por qué ahora:</strong> Hay <strong>30+ desarrolladores activos</strong> buscando predios en BJ con poco inventario disponible. Las múltiples ofertas simultáneas que generamos elevan el precio final. La escasez de predios con ZP favorable en BJ es <em>estructural</em> — no coyuntural.</p>
@@ -478,32 +502,52 @@ strong { color: #1e293b; }
 
       {{-- ═══ VENTA RESIDENCIAL (default) ═══════════════════════════ --}}
       @else
-        <p>Los inmuebles residenciales en <strong>Benito Juárez</strong> tienen la demanda activa más alta de la CDMX. Del Valle mantiene precios con tendencia alcista sólida, impulsados por la escasez de oferta nueva y la demanda sostenida de compradores calificados.</p>
+        @php
+          $zm        = $zonaMercado ?? null;
+          $zoneLabel = $zonaNombre ?? 'Benito Juárez';
+          $propYear  = $captacion->property?->year_built;
+          $propAgeCat = null;
+          if ($propYear) {
+              $ageYears   = now()->year - (int) $propYear;
+              $propAgeCat = $ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo');
+          }
+          $hlBracket = $propAgeCat ?? 'seminuevo';
+          $maxHigh   = $zm ? max(
+              (float) ($zm['nuevo']->price_m2_high ?? 0),
+              (float) ($zm['seminuevo']->price_m2_high ?? 0),
+              (float) ($zm['antiguo']->price_m2_high ?? 0)
+          ) ?: 1 : 1;
+        @endphp
+        <p>Los inmuebles residenciales en <strong>Benito Juárez</strong> tienen la demanda activa más alta de la CDMX. {{ $zoneLabel }} mantiene precios con tendencia alcista sólida, impulsados por la escasez de oferta nueva y la demanda sostenida de compradores calificados.</p>
 
-        <div class="chart-title">Precio de venta promedio por m² — Colonias de referencia BJ (2025)</div>
+        @if($zm)
+        <div class="chart-title">Precio de venta por m² — {{ $zoneLabel }} ({{ now()->year }})</div>
+        <div class="bar-chart">
+          @foreach(['nuevo' => 'Nuevo (0–10 años)', 'seminuevo' => 'Seminuevo (10–30 años)', 'antiguo' => 'Antiguo (+30 años)'] as $key => $label)
+            @php $snap = $zm[$key] ?? null; @endphp
+            @if($snap)
+            @php
+              $pct  = max(15, round(((float) $snap->price_m2_high / $maxHigh) * 100));
+              $isHl = $key === $hlBracket;
+            @endphp
+            <div class="bar-row">
+              <div class="bar-lbl {{ $isHl ? 'hl' : '' }}">{{ $label }}</div>
+              <div class="bar-track"><div class="bar-fill {{ $isHl ? 'hdv' : 'avg' }}" style="width:{{ $pct }}%;">${{ number_format($snap->price_m2_low) }} – ${{ number_format($snap->price_m2_high) }} /m²</div></div>
+            </div>
+            @endif
+          @endforeach
+        </div>
+        <p class="chart-note">* Precio de venta por m², departamentos y casas en {{ $zoneLabel }}. Fuente: Observatorio de Precios HDV — actualizado {{ now()->locale('es')->isoFormat('MMMM YYYY') }}.</p>
+        @else
+        <div class="chart-title">Precio de venta promedio por m² — Benito Juárez (referencia general)</div>
         <div class="bar-chart">
           <div class="bar-row">
-            <div class="bar-lbl hl">Del Valle</div>
-            <div class="bar-track"><div class="bar-fill hdv" style="width:90%;">$65,000 – $90,000 /m²</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl">Narvarte Ote.</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:80%;">$58,000 – $78,000 /m²</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl">Nápoles</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:72%;">$52,000 – $70,000 /m²</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl">Insurgentes Sur</div>
-            <div class="bar-track"><div class="bar-fill avg" style="width:63%;">$45,000 – $62,000 /m²</div></div>
-          </div>
-          <div class="bar-row">
-            <div class="bar-lbl hi">Roma / Condesa</div>
-            <div class="bar-track"><div class="bar-fill hi" style="width:100%;">$75,000 – $110,000 /m²</div></div>
+            <div class="bar-lbl hl">Benito Juárez</div>
+            <div class="bar-track"><div class="bar-fill hdv" style="width:85%;">$45,000 – $90,000 /m²</div></div>
           </div>
         </div>
-        <p class="chart-note">* Casas y departamentos usados en buen estado. Fuente: Observatorio de Precios HDV 2025.</p>
+        <p class="chart-note">* Rango general de la alcaldía — todavía no tenemos suficientes datos del Observatorio para esta colonia en particular.</p>
+        @endif
 
         <div class="insight-box">
           <p><strong>Momento favorable:</strong> El mercado de BJ tiene <strong>35% menos oferta disponible</strong> que hace 2 años. Las propiedades bien posicionadas con precio correcto reciben <strong>3–6 propuestas serias en los primeros 30 días</strong>.</p>
