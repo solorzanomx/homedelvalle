@@ -221,13 +221,17 @@ class ValuationEngine
     {
         $years = $v->input_age_years;
 
+        // Curva más suave que la anterior (llegaba a -40% de golpe a partir de 46
+        // años y se quedaba ahí sin importar si el edificio tiene 46 u 80 años —
+        // no se estila un castigo tan fuerte en la práctica). El estado físico ya
+        // se captura aparte en "Estado del edificio"/"Estado del departamento",
+        // así que este factor es solo por antigüedad cronológica, con techo.
         [$value, $desc] = match(true) {
             $years <= 5  => [0.00,  'Inmueble nuevo (0–5 años). Sin depreciación.'],
-            $years <= 10 => [-0.05, "Inmueble de {$years} años. Depreciación leve."],
-            $years <= 20 => [-0.12, "Inmueble de {$years} años. Depreciación moderada."],
-            $years <= 30 => [-0.22, "Inmueble de {$years} años. Depreciación significativa."],
-            $years <= 45 => [-0.32, "Inmueble de {$years} años. Depreciación alta."],
-            default      => [-0.40, "Inmueble de {$years} años. Depreciación muy alta."],
+            $years <= 15 => [-0.05, "Inmueble de {$years} años. Depreciación leve."],
+            $years <= 25 => [-0.10, "Inmueble de {$years} años. Depreciación moderada."],
+            $years <= 40 => [-0.15, "Inmueble de {$years} años. Depreciación considerable."],
+            default      => [-0.18, "Inmueble de {$years} años. Depreciación por antigüedad (con techo — el estado de conservación se evalúa aparte)."],
         };
 
         return [
