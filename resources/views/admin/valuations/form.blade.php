@@ -533,7 +533,7 @@
                     </a>
                     @endif
                     <p style="font-size:.76rem;color:#9ca3af;line-height:1.5;">
-                        El cálculo usa el último precio de mercado registrado para la colonia seleccionada.
+                        El cálculo usa el último precio de mercado registrado para la zona de la colonia seleccionada.
                     </p>
                 </div>
             </div>
@@ -542,9 +542,10 @@
             <div class="card" style="background:#f8fafc;">
                 <div class="card-body" style="font-size:.8rem;color:#6b7280;line-height:1.6;">
                     <strong style="color:#374151;display:block;margin-bottom:.4rem;">¿Cómo funciona?</strong>
-                    Se toma el precio base por m² de la colonia, luego se aplican ajustes por:
+                    El precio base combina el promedio de comparables de la misma antigüedad y el techo de obra nueva en la zona, luego se aplican ajustes por:
                     <ul style="margin:.4rem 0 0 1rem;display:flex;flex-direction:column;gap:.15rem;">
                         <li>Antigüedad y conservación</li>
+                        <li>Remodelación reciente</li>
                         <li>Baños completos y medios</li>
                         <li>Piso y elevador</li>
                         <li>Estacionamiento (tipo)</li>

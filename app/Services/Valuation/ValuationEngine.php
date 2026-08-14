@@ -17,9 +17,24 @@ class ValuationEngine
      */
     public function calculate(PropertyValuation $valuation): ValuationResult
     {
-        // 1. Resolver precio base desde snapshots de mercado
-        $snapshot  = $this->resolveSnapshot($valuation);
-        $basePrice = $snapshot ? (float) $snapshot->price_m2_avg : 0.0;
+        // 1. Resolver precio base: promedio entre el comparable de la misma edad
+        // (como antes) y el techo de obra nueva de la zona — así el precio base
+        // ya refleja "hacia dónde jala" lo nuevo sin dejar de estar anclado a lo
+        // que realmente compite contra este inmueble.
+        $peerSnapshot = $this->resolveSnapshot($valuation);
+        $newSnapshot  = $this->resolveSnapshot($valuation, 'new');
+
+        $peerAvg = $peerSnapshot ? (float) $peerSnapshot->price_m2_avg : null;
+        $newHigh = $newSnapshot  ? (float) $newSnapshot->price_m2_high : null;
+
+        $basePrice = match(true) {
+            $peerAvg !== null && $newHigh !== null => round(($peerAvg + $newHigh) / 2, 2),
+            $newHigh !== null => $newHigh,
+            $peerAvg !== null => $peerAvg,
+            default => 0.0,
+        };
+
+        $snapshot = $peerSnapshot ?? $newSnapshot;
 
         if ($basePrice === 0.0) {
             // Limpiar adjustments obsoletos para no mostrar labels con valores de un cálculo anterior
@@ -116,15 +131,19 @@ class ValuationEngine
      *  2. MarketZoneSnapshot mismo zona, cualquier edad (fallback de edad)
      *  3. MarketPriceSnapshot colonia exacta (legacy)
      *  4. MarketPriceSnapshot cualquier colonia de la zona (legacy)
+     *
+     * $ageCategoryOverride permite forzar la categoría de edad consultada (p.ej.
+     * 'new' para obtener el techo de obra nueva) en vez de la propia del inmueble
+     * — se usa para armar el precio base como promedio de ambas referencias.
      */
-    protected function resolveSnapshot(PropertyValuation $v): ?object
+    protected function resolveSnapshot(PropertyValuation $v, ?string $ageCategoryOverride = null): ?object
     {
         if (! $v->input_colonia_id) {
             return null;
         }
 
         $type        = $v->input_type;
-        $ageCategory = $v->age_category; // accessor del model
+        $ageCategory = $ageCategoryOverride ?? $v->age_category; // accessor del model
 
         $colonia = MarketColonia::find($v->input_colonia_id);
         $zoneId  = $colonia?->market_zone_id;
@@ -199,6 +218,7 @@ class ValuationEngine
     {
         return array_filter([
             $this->factorAge($v),
+            $this->factorRenovation($v),
             $this->factorBuildingCondition($v),
             $this->factorBathrooms($v),
             $this->factorCondition($v),
@@ -237,6 +257,35 @@ class ValuationEngine
         return [
             'key'         => 'age_depreciation',
             'label'       => "Antigüedad ({$years} años)",
+            'value'       => $value,
+            'explanation' => $desc,
+        ];
+    }
+
+    /**
+     * Compensa la depreciación por antigüedad cuando el inmueble fue remodelado
+     * recientemente — antes este dato (input_renovation_year) se capturaba y se
+     * mostraba en la narrativa de IA, pero nunca entraba al cálculo numérico.
+     */
+    protected function factorRenovation(PropertyValuation $v): ?array
+    {
+        if (! $v->input_renovation_year) return null;
+
+        $years = now()->year - (int) $v->input_renovation_year;
+        if ($years < 0) $years = 0;
+
+        [$value, $desc] = match(true) {
+            $years <= 3  => [+0.06, "Remodelación reciente ({$v->input_renovation_year}). Acabados actuales, compensa parte de la depreciación por antigüedad."],
+            $years <= 7  => [+0.03, "Remodelación de hace {$years} años. Acabados todavía vigentes."],
+            $years <= 15 => [+0.01, "Remodelación de hace {$years} años. Compensación leve — ya no son acabados recientes."],
+            default      => [0.00,  ''],
+        };
+
+        if ($value === 0.0) return null;
+
+        return [
+            'key'         => 'renovation',
+            'label'       => "Remodelación reciente ({$v->input_renovation_year})",
             'value'       => $value,
             'explanation' => $desc,
         ];
