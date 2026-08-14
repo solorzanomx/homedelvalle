@@ -135,8 +135,14 @@ class ValuationEngine
         $zoneId  = $colonia?->market_zone_id;
 
         // ── Prioridad 1: MarketZoneSnapshot, tipo + edad exactos ──────────
+        // "Opinión de Valor" es exclusivamente valuación de VENTA — PropertyValuation
+        // no tiene concepto de renta, así que operation_type siempre debe filtrarse
+        // a 'sale'. Sin este filtro, un snapshot de renta (precio/m²/mes, un orden de
+        // magnitud menor) puede ganarle el orderByDesc('period') a uno de venta si
+        // ambos comparten el mismo período, arrastrando un precio absurdamente bajo.
         if ($zoneId) {
             $snap = MarketZoneSnapshot::where('market_zone_id', $zoneId)
+                ->where('operation_type', 'sale')
                 ->where('property_type', $type)
                 ->where('age_category', $ageCategory)
                 ->orderByDesc('period')
@@ -145,6 +151,7 @@ class ValuationEngine
 
             // ── Prioridad 2: MarketZoneSnapshot, tipo, cualquier edad ──────
             $snap = MarketZoneSnapshot::where('market_zone_id', $zoneId)
+                ->where('operation_type', 'sale')
                 ->where('property_type', $type)
                 ->orderByDesc('period')
                 ->first();
@@ -153,6 +160,7 @@ class ValuationEngine
             // ── Prioridad 3: MarketZoneSnapshot, zona, cualquier tipo ──────
             // (útil p. ej. si buscamos 'house' y solo hay 'apartment')
             $snap = MarketZoneSnapshot::where('market_zone_id', $zoneId)
+                ->where('operation_type', 'sale')
                 ->where('age_category', $ageCategory)
                 ->orderByDesc('period')
                 ->first();
@@ -161,6 +169,7 @@ class ValuationEngine
 
         // ── Prioridad 4: MarketPriceSnapshot legacy, colonia exacta ───────
         $snap = MarketPriceSnapshot::where('market_colonia_id', $v->input_colonia_id)
+            ->where('operation_type', 'sale')
             ->where('property_type', $type)
             ->where('age_category', $ageCategory)
             ->latest('period')
@@ -168,6 +177,7 @@ class ValuationEngine
         if ($snap) return $snap;
 
         $snap = MarketPriceSnapshot::where('market_colonia_id', $v->input_colonia_id)
+            ->where('operation_type', 'sale')
             ->where('property_type', $type)
             ->latest('period')
             ->first();
@@ -177,6 +187,7 @@ class ValuationEngine
         if ($zoneId) {
             $coloniaIds = MarketColonia::where('market_zone_id', $zoneId)->pluck('id');
             $snap = MarketPriceSnapshot::whereIn('market_colonia_id', $coloniaIds)
+                ->where('operation_type', 'sale')
                 ->where('property_type', $type)
                 ->where('age_category', $ageCategory)
                 ->latest('period')
