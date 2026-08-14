@@ -352,8 +352,11 @@ class ValuationEngine
                 ? "Piso {$floor} con elevador. Prima por altura y vista."
                 : "Piso {$floor} con elevador. Sin ajuste.";
         } else {
+            // Bug corregido: planta baja NO necesita elevador — es el piso más fácil
+            // de acceder sin uno, así que no debe penalizarse más que pisos altos
+            // (antes -8%, peor que pisos 2-4 con -4%, lo cual era ilógico).
             [$value, $desc] = match(true) {
-                $floor === 1     => [-0.08, "Planta baja sin elevador. Descuento por accesibilidad y privacidad."],
+                $floor === 1     => [0.00,  "Planta baja. No requiere elevador — sin descuento por accesibilidad."],
                 $floor <= 4      => [-0.04, "Piso {$floor} sin elevador. Descuento moderado."],
                 default          => [-0.12, "Piso {$floor} sin elevador. Descuento significativo por acceso."],
             };
