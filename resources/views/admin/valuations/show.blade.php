@@ -202,6 +202,13 @@
         @endif
 
         {{-- Análisis profesional IA --}}
+        @if(!$valuation->ai_narrative && $valuation->base_price_m2)
+        <div class="card" style="border-left:3px solid #f59e0b;">
+            <div class="card-body" style="padding:.9rem 1.1rem;">
+                <p style="font-size:.83rem;color:#92400e;margin:0;">⚠️ No se pudo generar el análisis profesional de IA (posible timeout). Los precios y ajustes de arriba son correctos — dale clic a <strong>🔄 Recalcular</strong> para intentar generarlo de nuevo.</p>
+            </div>
+        </div>
+        @endif
         @if($valuation->ai_narrative)
         @php $n = $valuation->ai_narrative; @endphp
         <div class="card" style="border-left:3px solid #2563eb;">

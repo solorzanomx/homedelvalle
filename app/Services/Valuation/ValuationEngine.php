@@ -97,7 +97,11 @@ class ValuationEngine
             snapshot:      $snapshot,
         );
 
-        // Generate AI professional narrative (non-blocking — fails silently)
+        // Generate AI professional narrative (non-blocking, pero SÍ visible si falla).
+        // Limpiar el análisis anterior antes de intentar: si la IA falla o truena
+        // (timeout, etc.), es preferible no mostrar nada a dejar un análisis viejo
+        // describiendo cifras que ya no corresponden al cálculo recién hecho.
+        $valuation->update(['ai_narrative' => null]);
         try {
             $this->narrative->generate($valuation->fresh(['adjustments', 'colonia.zone', 'snapshot']));
         } catch (\Throwable $e) {
