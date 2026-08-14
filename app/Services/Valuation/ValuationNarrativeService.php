@@ -178,6 +178,15 @@ SYSTEM;
                             "\n(Considera estas notas: pueden indicar remodelaciones recientes, contexto de negociación, características especiales, alertas o ventajas no capturadas en los datos cuantitativos.)";
         }
 
+        // Include the broker's justification for manually adjusting the final
+        // price, if present — often explains context the quantitative model
+        // can't capture (comparables reales, negociación, urgencia, etc.).
+        $overrideSection = '';
+        if (!empty(trim($valuation->price_override_notes ?? ''))) {
+            $overrideSection = "\nJUSTIFICACIÓN DEL ASESOR AL AJUSTAR EL PRECIO FINAL:\n" . trim($valuation->price_override_notes) .
+                               "\n(El asesor fijó el precio de presentación en \$" . number_format((int) ($valuation->price_override ?? 0)) . " MXN con esta justificación — incorpórala en tu análisis, especialmente en la recomendación comercial.)";
+        }
+
         return <<<PROMPT
 INMUEBLE A VALUAR:
 - Tipo: {$type}
@@ -209,12 +218,12 @@ RESULTADO DEL ANÁLISIS CUANTITATIVO (todas las cifras en pesos mexicanos, MXN �
 
 AJUSTES APLICADOS (waterfall):
 {$adjustmentsList}
-{$marketContext}{$notesSection}
+{$marketContext}{$notesSection}{$overrideSection}
 
 Genera un análisis narrativo profesional en español para este inmueble específico.
 Sé concreto: usa las cifras del análisis, nombra la colonia, menciona características específicas.
 NO uses frases genéricas como "el mercado inmobiliario es dinámico". Sé directo y útil.
-Si hay notas del asesor, incorpóralas en tu análisis cuando sean relevantes.
+Si hay notas del asesor o una justificación de ajuste de precio, incorpóralas en tu análisis cuando sean relevantes — especialmente en la recomendación comercial.
 IMPORTANTE: todas las cifras de precio están en pesos mexicanos (MXN). Nunca escribas "USD", "dólares" ni el símbolo de dólar como si fuera otra moneda — este negocio cotiza exclusivamente en MXN.
 
 Responde ÚNICAMENTE con este JSON exacto, sin texto adicional ni markdown:
