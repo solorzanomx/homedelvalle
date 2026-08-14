@@ -78,7 +78,12 @@ class ValuationEngine
         $low = (int) round($mid * 0.92);
         $hig = (int) round($mid * 1.08);
 
-        $diagnosis     = $this->diagnose($adjusted, $basePrice);
+        // El diagnóstico ("¿está caro o barato?") debe comparar contra lo que
+        // realmente compite con este inmueble — comparables de su misma edad —
+        // no contra el precio base combinado (que ya incluye el techo de obra
+        // nueva y por eso jala casi cualquier inmueble usado hacia "oportunidad"
+        // aunque esté a precio o caro frente a sus verdaderos comparables).
+        $diagnosis     = $this->diagnose($adjusted, $peerAvg ?? $basePrice);
         $suggested     = $this->suggestListPrice($mid, $diagnosis);
         $confidence    = $snapshot ? $snapshot->confidence : 'low';
 
