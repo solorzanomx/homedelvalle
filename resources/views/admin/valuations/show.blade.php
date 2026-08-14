@@ -219,7 +219,7 @@
                 @if($valuation->narrative_error)
                 <details style="margin-top:.5rem;">
                     <summary style="font-size:.72rem;color:#92400e;cursor:pointer;">Detalle técnico (solo staff)</summary>
-                    <pre style="font-size:.7rem;color:#78350f;white-space:pre-wrap;background:#fffbeb;padding:.5rem;border-radius:4px;margin-top:.3rem;">{{ $valuation->narrative_error }}</pre>
+                    <pre style="font-size:.7rem;color:#78350f;white-space:pre-wrap;background:#fffbeb;padding:.5rem;border-radius:4px;margin-top:.3rem;max-height:400px;overflow-y:auto;">{{ $valuation->narrative_error }}</pre>
                 </details>
                 @endif
             </div>

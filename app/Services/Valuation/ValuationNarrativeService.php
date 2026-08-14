@@ -41,7 +41,7 @@ SYSTEM;
         if (empty($narrative)) {
             $valuation->update([
                 'narrative_status' => 'failed',
-                'narrative_error'  => 'La IA respondió pero el JSON no era válido o le faltaban campos. Respuesta cruda (primeros 1500 caracteres): ' . substr($raw ?? '', 0, 1500),
+                'narrative_error'  => 'La IA respondió pero el JSON no era válido o le faltaban campos. Respuesta cruda completa (' . strlen($raw ?? '') . ' caracteres):' . "\n\n" . ($raw ?? ''),
             ]);
             return [];
         }
