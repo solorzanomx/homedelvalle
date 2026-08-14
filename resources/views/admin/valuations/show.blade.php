@@ -146,7 +146,11 @@
                     <tr style="background:#f8fafc;">
                         <td style="font-weight:600;color:#374151;">
                             Precio base zona
-                            @if($valuation->colonia)
+                            @if($valuation->input_base_price_override)
+                            <div style="font-size:.72rem;color:#b45309;font-weight:400;">
+                                ✎ Fijado manualmente
+                            </div>
+                            @elseif($valuation->colonia)
                             <div style="font-size:.72rem;color:#6b7280;font-weight:400;">
                                 {{ $valuation->colonia->name }}
                                 @if($valuation->snapshot_source === 'zone')

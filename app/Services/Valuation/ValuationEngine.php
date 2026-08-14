@@ -36,6 +36,14 @@ class ValuationEngine
 
         $snapshot = $peerSnapshot ?? $newSnapshot;
 
+        // Override manual: para casos donde el dato de zona más reciente no
+        // refleja bien el mercado actual (p.ej. volatilidad mes a mes en el
+        // scraping automático), se puede fijar el precio base a mano por
+        // valuación — no cambia el cálculo para las demás.
+        if ($valuation->input_base_price_override) {
+            $basePrice = (float) $valuation->input_base_price_override;
+        }
+
         if ($basePrice === 0.0) {
             // Limpiar adjustments obsoletos para no mostrar labels con valores de un cálculo anterior
             $valuation->adjustments()->delete();

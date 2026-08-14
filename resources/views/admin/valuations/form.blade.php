@@ -491,7 +491,16 @@
                                    min="1900" max="{{ date('Y') }}"
                                    value="{{ old('input_renovation_year', $valuation->input_renovation_year ?? '') }}"
                                    placeholder="Ej. 2019">
-                            <div class="form-hint">Opcional — se incluye en el análisis narrativo</div>
+                            <div class="form-hint">Opcional — compensa parte de la depreciación por antigüedad si es reciente</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Precio base m² — fijar manualmente</label>
+                            <input type="number" name="input_base_price_override" class="form-input"
+                                   min="0" max="9999999" step="100"
+                                   value="{{ old('input_base_price_override', $valuation->input_base_price_override ?? '') }}"
+                                   placeholder="Ej. 62000">
+                            <div class="form-hint">Opcional — solo si el precio automático de zona no refleja bien el mercado actual (ej. dato del mes con volatilidad). Deja vacío para que se calcule solo (promedio de comparables de la misma edad y techo de obra nueva).</div>
                         </div>
 
                     </div>
