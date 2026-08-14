@@ -34,12 +34,15 @@ SYSTEM;
                 'valuation_id' => $valuation->id,
                 'error'        => $e->getMessage(),
             ]);
-            $valuation->update(['narrative_status' => 'failed']);
+            $valuation->update(['narrative_status' => 'failed', 'narrative_error' => substr($e->getMessage(), 0, 2000)]);
             return [];
         }
 
         if (empty($narrative)) {
-            $valuation->update(['narrative_status' => 'failed']);
+            $valuation->update([
+                'narrative_status' => 'failed',
+                'narrative_error'  => 'La IA respondió pero el JSON no era válido o le faltaban campos. Respuesta cruda (primeros 1500 caracteres): ' . substr($raw ?? '', 0, 1500),
+            ]);
             return [];
         }
 
@@ -48,6 +51,7 @@ SYSTEM;
             'ai_narrative' => $narrative,
             'market_trend' => $narrative['market_trend_label'] ?? null,
             'narrative_status' => 'ready',
+            'narrative_error' => null,
         ]);
 
         $this->notify($valuation);

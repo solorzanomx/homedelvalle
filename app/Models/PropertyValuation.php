@@ -33,7 +33,7 @@ class PropertyValuation extends Model
         'used_perplexity', 'perplexity_query', 'perplexity_response',
         'status', 'delivered_at', 'pdf_path',
         'actual_sale_price', 'accuracy_pct', 'sale_recorded_at',
-        'ai_narrative', 'narrative_status',
+        'ai_narrative', 'narrative_status', 'narrative_error',
     ];
 
     protected $casts = [

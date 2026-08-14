@@ -123,7 +123,7 @@ class ValuationEngine
         // que el timeout de PHP y el request se corta a medias. Se marca "pending" y
         // un comando programado (valuations:generate-narratives) la procesa aparte,
         // mismo patrón ya usado para sugerencias de cláusulas de contratos.
-        $valuation->update(['ai_narrative' => null, 'narrative_status' => 'pending']);
+        $valuation->update(['ai_narrative' => null, 'narrative_status' => 'pending', 'narrative_error' => null]);
 
         return $result;
     }

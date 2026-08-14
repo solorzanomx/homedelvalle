@@ -216,6 +216,12 @@
         <div class="card" style="border-left:3px solid #f59e0b;">
             <div class="card-body" style="padding:.9rem 1.1rem;">
                 <p style="font-size:.83rem;color:#92400e;margin:0;">⚠️ No se pudo generar el análisis profesional de IA. Los precios y ajustes de arriba son correctos — dale clic a <strong>🔄 Recalcular</strong> para intentar generarlo de nuevo.</p>
+                @if($valuation->narrative_error)
+                <details style="margin-top:.5rem;">
+                    <summary style="font-size:.72rem;color:#92400e;cursor:pointer;">Detalle técnico (solo staff)</summary>
+                    <pre style="font-size:.7rem;color:#78350f;white-space:pre-wrap;background:#fffbeb;padding:.5rem;border-radius:4px;margin-top:.3rem;">{{ $valuation->narrative_error }}</pre>
+                </details>
+                @endif
             </div>
         </div>
         @endif
