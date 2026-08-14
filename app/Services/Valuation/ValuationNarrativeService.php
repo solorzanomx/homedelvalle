@@ -2,6 +2,7 @@
 
 namespace App\Services\Valuation;
 
+use App\Models\Notification;
 use App\Models\PropertyValuation;
 use App\Services\AI\AIManager;
 use Illuminate\Support\Facades\Log;
@@ -33,10 +34,12 @@ SYSTEM;
                 'valuation_id' => $valuation->id,
                 'error'        => $e->getMessage(),
             ]);
+            $valuation->update(['narrative_status' => 'failed']);
             return [];
         }
 
         if (empty($narrative)) {
+            $valuation->update(['narrative_status' => 'failed']);
             return [];
         }
 
@@ -44,9 +47,36 @@ SYSTEM;
         $valuation->update([
             'ai_narrative' => $narrative,
             'market_trend' => $narrative['market_trend_label'] ?? null,
+            'narrative_status' => 'ready',
         ]);
 
+        $this->notify($valuation);
+
         return $narrative;
+    }
+
+    protected function notify(PropertyValuation $valuation): void
+    {
+        if (!$valuation->created_by) {
+            return;
+        }
+
+        $alreadyNotifiedToday = Notification::where('type', 'valuation_narrative_ready')
+            ->where('data->valuation_id', $valuation->id)
+            ->where('created_at', '>=', now()->startOfDay())
+            ->exists();
+
+        if ($alreadyNotifiedToday) {
+            return;
+        }
+
+        Notification::create([
+            'user_id' => $valuation->created_by,
+            'type' => 'valuation_narrative_ready',
+            'title' => 'Análisis de IA listo',
+            'body' => 'El análisis profesional de "' . ($valuation->colonia?->name ?? 'la valuación') . '" ya está listo para revisar.',
+            'data' => ['url' => route('admin.valuations.show', $valuation->id), 'valuation_id' => $valuation->id],
+        ]);
     }
 
     private function buildPrompt(PropertyValuation $valuation): string

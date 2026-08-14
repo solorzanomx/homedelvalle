@@ -202,10 +202,16 @@
         @endif
 
         {{-- Análisis profesional IA --}}
-        @if(!$valuation->ai_narrative && $valuation->base_price_m2)
+        @if($valuation->narrative_status === 'pending')
+        <div class="card" style="border-left:3px solid #2563eb;">
+            <div class="card-body" style="padding:.9rem 1.1rem;">
+                <p style="font-size:.83rem;color:#1e3a8a;margin:0;">✨ Generando análisis profesional de IA… aparece aquí en uno o dos minutos, sin que tengas que hacer nada más (recarga la página para verlo).</p>
+            </div>
+        </div>
+        @elseif($valuation->narrative_status === 'failed')
         <div class="card" style="border-left:3px solid #f59e0b;">
             <div class="card-body" style="padding:.9rem 1.1rem;">
-                <p style="font-size:.83rem;color:#92400e;margin:0;">⚠️ No se pudo generar el análisis profesional de IA (posible timeout). Los precios y ajustes de arriba son correctos — dale clic a <strong>🔄 Recalcular</strong> para intentar generarlo de nuevo.</p>
+                <p style="font-size:.83rem;color:#92400e;margin:0;">⚠️ No se pudo generar el análisis profesional de IA. Los precios y ajustes de arriba son correctos — dale clic a <strong>🔄 Recalcular</strong> para intentar generarlo de nuevo.</p>
             </div>
         </div>
         @endif

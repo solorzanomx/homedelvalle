@@ -10,8 +10,6 @@ use App\Models\ValuationAdjustment;
 
 class ValuationEngine
 {
-    public function __construct(private ValuationNarrativeService $narrative) {}
-
     /**
      * Ejecuta el cálculo completo sobre un PropertyValuation parcialmente lleno.
      * Persiste el resultado (base_price_m2, adjusted_price_m2, totals, adjustments).
@@ -97,19 +95,12 @@ class ValuationEngine
             snapshot:      $snapshot,
         );
 
-        // Generate AI professional narrative (non-blocking, pero SÍ visible si falla).
-        // Limpiar el análisis anterior antes de intentar: si la IA falla o truena
-        // (timeout, etc.), es preferible no mostrar nada a dejar un análisis viejo
-        // describiendo cifras que ya no corresponden al cálculo recién hecho.
-        $valuation->update(['ai_narrative' => null]);
-        try {
-            $this->narrative->generate($valuation->fresh(['adjustments', 'colonia.zone', 'snapshot']));
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('ValuationEngine: narrative generation skipped', [
-                'valuation_id' => $valuation->id,
-                'error'        => $e->getMessage(),
-            ]);
-        }
+        // El análisis narrativo de IA ya NO se genera síncrono dentro del request de
+        // "Recalcular" — en hosting compartido la llamada a Claude puede tardar más
+        // que el timeout de PHP y el request se corta a medias. Se marca "pending" y
+        // un comando programado (valuations:generate-narratives) la procesa aparte,
+        // mismo patrón ya usado para sugerencias de cláusulas de contratos.
+        $valuation->update(['ai_narrative' => null, 'narrative_status' => 'pending']);
 
         return $result;
     }

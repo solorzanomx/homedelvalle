@@ -80,6 +80,8 @@ Schedule::command('app:send-broker-verification-emails')->dailyAt('10:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('app:send-broker-verification-emails scheduled run failed'));
 Schedule::command('contracts:process-clause-suggestions')->everyTwoMinutes()->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('contracts:process-clause-suggestions scheduled run failed'));
+Schedule::command('valuations:generate-narratives')->everyTwoMinutes()->withoutOverlapping()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('valuations:generate-narratives scheduled run failed'));
 Schedule::command('contracts:check-pending-signature')->dailyAt('09:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('contracts:check-pending-signature scheduled run failed'));
 
