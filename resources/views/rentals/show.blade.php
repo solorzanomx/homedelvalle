@@ -288,6 +288,56 @@
         <div class="tab-content" id="tab-investigacion">
         @php $inv = $rental->investigation; @endphp
 
+        {{-- Apartado --}}
+        <div class="card" style="margin-bottom:1.25rem;">
+            <div class="card-header"><h3>Apartado</h3></div>
+            <div class="card-body">
+                @if($rental->apartado_amount)
+                    @php $recibo = $rental->documents->where('category', 'recibo_apartado')->sortByDesc('created_at')->first(); @endphp
+                    <div style="display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:.75rem;">
+                        <div><div style="font-size:.72rem;color:var(--text-muted);">Monto</div><div style="font-weight:600;">${{ number_format($rental->apartado_amount, 2) }} MXN</div></div>
+                        <div><div style="font-size:.72rem;color:var(--text-muted);">Fecha</div><div style="font-weight:600;">{{ $rental->apartado_paid_at?->format('d/m/Y') }}</div></div>
+                        <div><div style="font-size:.72rem;color:var(--text-muted);">Forma de pago</div><div style="font-weight:600;">{{ \App\Models\RentalProcess::APARTADO_PAYMENT_METHODS[$rental->apartado_payment_method] ?? '—' }}</div></div>
+                    </div>
+                    @if($rental->apartado_notes)
+                    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">{{ $rental->apartado_notes }}</p>
+                    @endif
+                    @if($recibo)
+                    <a href="{{ route('documents.download', $recibo->id) }}" class="btn btn-sm btn-outline">📄 Ver recibo</a>
+                    @endif
+                @else
+                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">Registra el apartado que pagó el arrendatario para reservar la propiedad y generar el recibo antes de iniciar la investigación.</p>
+                    <form method="POST" action="{{ route('rentals.apartado.store', $rental->id) }}">
+                        @csrf
+                        <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:flex-end;">
+                            <div class="form-group" style="margin:0;min-width:140px;">
+                                <label class="form-label" style="font-size:.72rem;">Monto *</label>
+                                <input type="number" step="0.01" min="0" name="apartado_amount" class="form-input" required>
+                            </div>
+                            <div class="form-group" style="margin:0;min-width:150px;">
+                                <label class="form-label" style="font-size:.72rem;">Fecha *</label>
+                                <input type="date" name="apartado_paid_at" class="form-input" value="{{ now()->format('Y-m-d') }}" required>
+                            </div>
+                            <div class="form-group" style="margin:0;min-width:150px;">
+                                <label class="form-label" style="font-size:.72rem;">Forma de pago</label>
+                                <select name="apartado_payment_method" class="form-select">
+                                    <option value="">— Seleccionar —</option>
+                                    @foreach(\App\Models\RentalProcess::APARTADO_PAYMENT_METHODS as $key => $label)
+                                    <option value="{{ $key }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin:.65rem 0 0;">
+                            <label class="form-label" style="font-size:.72rem;">Notas (opcional)</label>
+                            <textarea name="apartado_notes" class="form-textarea" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top:.75rem;">Generar recibo de apartado</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+
         {{-- Estado actual --}}
         @if($inv)
         <div style="background:{{ $inv->visible_to_owner ? '#f0fdf4' : '#f8fafc' }};border:1px solid {{ $inv->visible_to_owner ? '#bbf7d0' : 'var(--border)' }};border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">

@@ -327,6 +327,42 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Investigación guardada.');
     }
 
+    /**
+     * Registra el apartado (pago de reserva previo a investigación/póliza)
+     * y genera el recibo en PDF, adjuntándolo como Document del trato —
+     * mismo patrón que OperationController::storePurchaseOffer() del lado
+     * de venta.
+     */
+    public function storeApartado(Request $request, string $id, \App\Services\RentalDepositReceiptGeneratorService $generator)
+    {
+        $rental = RentalProcess::with('tenantClient', 'property', 'user')->findOrFail($id);
+
+        $validated = $request->validate([
+            'apartado_amount' => 'required|numeric|min:0',
+            'apartado_paid_at' => 'required|date',
+            'apartado_payment_method' => 'nullable|in:efectivo,transferencia,cheque',
+            'apartado_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $rental->update($validated);
+
+        $path = $generator->generatePdf($rental->fresh(['tenantClient', 'property', 'user']));
+
+        \App\Models\Document::create([
+            'rental_process_id' => $rental->id,
+            'client_id' => $rental->tenant_client_id,
+            'uploaded_by' => Auth::id(),
+            'category' => 'recibo_apartado',
+            'label' => 'Recibo de Apartado — ' . now()->format('d/m/Y'),
+            'file_path' => $path,
+            'file_name' => 'RA-' . str_pad((string) $rental->id, 5, '0', STR_PAD_LEFT) . '.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => file_exists($path) ? filesize($path) : null,
+        ]);
+
+        return back()->with('success', 'Recibo de apartado generado.');
+    }
+
     public function toggleInvestigation(Request $request, string $id)
     {
         $rental = RentalProcess::with(['investigation', 'ownerClient.portalUser'])->findOrFail($id);

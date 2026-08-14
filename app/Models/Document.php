@@ -34,6 +34,7 @@ class Document extends Model
         'opinion_valor'       => 'Opinión de Valor PDF',
         'propuesta_servicios' => 'Propuesta de Servicios PDF',
         'oferta_compra'       => 'Carta Oferta de Compra',
+        'recibo_apartado'     => 'Recibo de Apartado',
         'contrato_exclusiva'  => 'Acuerdo de Representación',
         'contrato_compraventa' => 'Contrato de Compraventa',
         'adendum_comision' => 'Adéndum de Comisión Mercantil',
