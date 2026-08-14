@@ -165,11 +165,11 @@ INMUEBLE A VALUAR:
 - Estado legal: {$legalStatus}
 - Cuota de mantenimiento: {$maintenanceFee}
 
-RESULTADO DEL ANÁLISIS CUANTITATIVO:
-- Precio base de mercado: \${$base}/m²
-- Precio ajustado tras waterfall: \${$adjusted}/m²
-- Rango de valor total: \${$low} (mínimo) — \${$mid} (medio) — \${$high} (máximo)
-- Precio sugerido de salida: \${$suggested}
+RESULTADO DEL ANÁLISIS CUANTITATIVO (todas las cifras en pesos mexicanos, MXN — este negocio opera exclusivamente en MXN, nunca en USD):
+- Precio base de mercado: \${$base} MXN/m²
+- Precio ajustado tras waterfall: \${$adjusted} MXN/m²
+- Rango de valor total: \${$low} MXN (mínimo) — \${$mid} MXN (medio) — \${$high} MXN (máximo)
+- Precio sugerido de salida: \${$suggested} MXN
 - Diagnóstico: {$diagnosis}
 - Confianza del modelo: {$confidence}
 
@@ -181,6 +181,7 @@ Genera un análisis narrativo profesional en español para este inmueble especí
 Sé concreto: usa las cifras del análisis, nombra la colonia, menciona características específicas.
 NO uses frases genéricas como "el mercado inmobiliario es dinámico". Sé directo y útil.
 Si hay notas del asesor, incorpóralas en tu análisis cuando sean relevantes.
+IMPORTANTE: todas las cifras de precio están en pesos mexicanos (MXN). Nunca escribas "USD", "dólares" ni el símbolo de dólar como si fuera otra moneda — este negocio cotiza exclusivamente en MXN.
 
 Responde ÚNICAMENTE con este JSON exacto, sin texto adicional ni markdown:
 {
@@ -188,7 +189,7 @@ Responde ÚNICAMENTE con este JSON exacto, sin texto adicional ni markdown:
   "market_context": "2-3 oraciones sobre el mercado actual en {$colonia}: nivel de demanda, velocidad de absorción, tendencia de precios en los últimos 12 meses, comparativa con colonias vecinas de {$zone}.",
   "property_strengths": "1-2 oraciones sobre los factores específicos de ESTE inmueble que más suman a su valor, citando los ajustes positivos calculados.",
   "property_risks": "1 oración sobre el principal factor que limita el valor o puede frenar la venta.",
-  "recommendation": "2-3 oraciones de estrategia comercial concreta: precio de salida de \${$suggested}, estrategia de negociación (margen sugerido), tiempo estimado de colocación en días, perfil del comprador más probable.",
+  "recommendation": "2-3 oraciones de estrategia comercial concreta: precio de salida de \${$suggested} MXN, estrategia de negociación (margen sugerido), tiempo estimado de colocación en días, perfil del comprador más probable.",
   "key_factors": ["factor clave 1 con cifra", "factor clave 2 con cifra", "factor de riesgo con cifra"]
 }
 PROMPT;

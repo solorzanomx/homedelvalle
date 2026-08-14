@@ -387,13 +387,34 @@ class PerplexityMarketService
         $prices = $decoded['prices'] ?? [];
         $result = [];
 
+        // Rango de sanidad para $/m² en CDMX (pesos MXN). Cualquier valor fuera
+        // de esto es casi con certeza un error de unidades (ej. la IA reportó
+        // en USD sin convertir, o confundió precio total con precio/m²) — se
+        // descarta la categoría en vez de guardar un número que después se
+        // arrastra sin validar hasta el cálculo de la valuación y su narrativa.
+        $minM2 = 8000;
+        $maxM2 = 400000;
+
         foreach (['new', 'mid', 'old'] as $cat) {
             if (!isset($prices[$cat]['low'], $prices[$cat]['avg'], $prices[$cat]['high'])) {
                 continue;
             }
+
+            $avg = (int) $prices[$cat]['avg'];
+            if ($avg < $minM2 || $avg > $maxM2) {
+                Log::warning('PerplexityMarketService: precio/m² fuera de rango de sanidad, categoría descartada', [
+                    'colonia'  => $coloniaName,
+                    'tipo'     => $propertyType,
+                    'categoria'=> $cat,
+                    'avg'      => $avg,
+                    'rango_valido' => [$minM2, $maxM2],
+                ]);
+                continue;
+            }
+
             $result[$cat] = [
                 'low'  => (int) $prices[$cat]['low'],
-                'avg'  => (int) $prices[$cat]['avg'],
+                'avg'  => $avg,
                 'high' => (int) $prices[$cat]['high'],
             ];
         }

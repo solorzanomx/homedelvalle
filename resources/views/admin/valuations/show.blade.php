@@ -80,9 +80,9 @@
                     <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:1px;opacity:.65;margin-bottom:.4rem;">
                         Precio sugerido de salida
                     </div>
-                    <div class="price-main">${{ number_format($valuation->suggested_list_price) }}</div>
+                    <div class="price-main">${{ number_format($valuation->suggested_list_price) }} <span style="font-size:.55em;font-weight:600;opacity:.6;">MXN</span></div>
                     <div class="price-sub">
-                        ${{ number_format($valuation->adjusted_price_m2) }}/m²
+                        ${{ number_format($valuation->adjusted_price_m2) }}/m² MXN
                         · {{ number_format($valuation->input_m2_const ?? $valuation->input_m2_total) }}m²
                     </div>
                 </div>
