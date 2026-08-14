@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RentalProcess extends Model
 {
-    protected $fillable = ['operation_id', 'property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at', 'poliza_aseguradora', 'poliza_number', 'poliza_expiry', 'apartado_amount', 'apartado_paid_at', 'apartado_payment_method', 'apartado_notes'];
+    protected $fillable = ['operation_id', 'property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at', 'poliza_aseguradora', 'poliza_number', 'poliza_expiry', 'apartado_amount', 'apartado_paid_at', 'apartado_deadline', 'apartado_payment_method', 'apartado_notes'];
 
     const APARTADO_PAYMENT_METHODS = [
         'efectivo' => 'Efectivo',
@@ -80,6 +80,7 @@ class RentalProcess extends Model
             'poliza_expiry'      => 'date',
             'apartado_amount'    => 'decimal:2',
             'apartado_paid_at'   => 'date',
+            'apartado_deadline'  => 'date',
         ];
     }
 

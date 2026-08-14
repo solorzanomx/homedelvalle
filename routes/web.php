@@ -392,6 +392,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/documentos/oferta-compra/flash', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'flashStore'])->name('documentos.oferta-compra.flash.store');
     Route::get('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editOfertaCompra'])->name('documentos.oferta-compra.clausulas');
     Route::post('/documentos/oferta-compra/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateOfertaCompra'])->name('documentos.oferta-compra.clausulas.update');
+    Route::get('/documentos/recibo-apartado/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editRecibosApartado'])->name('documentos.recibo-apartado.clausulas');
+    Route::post('/documentos/recibo-apartado/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateRecibosApartado'])->name('documentos.recibo-apartado.clausulas.update');
     Route::get('/documentos/adendum-comision/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editAdendumComision'])->name('documentos.adendum-comision.clausulas');
     Route::post('/documentos/adendum-comision/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateAdendumComision'])->name('documentos.adendum-comision.clausulas.update');
     Route::get('/documentos/contrato-exclusiva/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoExclusiva'])->name('documentos.contrato-exclusiva.clausulas');

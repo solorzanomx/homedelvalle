@@ -340,6 +340,7 @@ class RentalProcessController extends Controller
         $validated = $request->validate([
             'apartado_amount' => 'required|numeric|min:0',
             'apartado_paid_at' => 'required|date',
+            'apartado_deadline' => 'required|date',
             'apartado_payment_method' => 'nullable|in:efectivo,transferencia,cheque',
             'apartado_notes' => 'nullable|string|max:1000',
         ]);

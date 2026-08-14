@@ -105,6 +105,17 @@ return [
         ],
     ],
 
+    'recibo_apartado' => [
+        'nombre' => 'Recibo de Apartado (Renta)',
+        'descripcion' => 'Recibo de depósito en garantía y reserva de inmueble para arrendamiento — se genera cuando un arrendatario paga un apartado antes de iniciar investigación y trámite de póliza jurídica.',
+        'archivo_fuente' => 'resources/views/pdf/recibo-apartado.blade.php',
+        'donde_generarlo' => 'Ficha de la Renta → pestaña Investigación → tarjeta Apartado → Generar recibo de apartado',
+        'editar_route' => 'admin.documentos.recibo-apartado.clausulas',
+        'changelog' => [
+            ['fecha' => '2026-08-13', 'resumen' => 'Creado — transcrito del recibo real usado con la clienta Brenda Valencia, con identidad de marca (mismo patrón que Carta Oferta de Compra) y cláusulas editables vía DocumentClause. La pena convencional se calcula dinámicamente como el monto del apartado (o el doble si el incumplimiento es del arrendador). Pendiente de revisión por un abogado antes de uso definitivo.'],
+        ],
+    ],
+
     'contrato_compraventa' => [
         'nombre' => 'Contrato de Compraventa',
         'descripcion' => 'Contrato de compraventa entre vendedor y comprador, firmado en la etapa "Contrato" del pipeline de venta.',

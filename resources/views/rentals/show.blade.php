@@ -298,6 +298,7 @@
                         <div><div style="font-size:.72rem;color:var(--text-muted);">Monto</div><div style="font-weight:600;">${{ number_format($rental->apartado_amount, 2) }} MXN</div></div>
                         <div><div style="font-size:.72rem;color:var(--text-muted);">Fecha</div><div style="font-weight:600;">{{ $rental->apartado_paid_at?->format('d/m/Y') }}</div></div>
                         <div><div style="font-size:.72rem;color:var(--text-muted);">Forma de pago</div><div style="font-weight:600;">{{ \App\Models\RentalProcess::APARTADO_PAYMENT_METHODS[$rental->apartado_payment_method] ?? '—' }}</div></div>
+                        <div><div style="font-size:.72rem;color:var(--text-muted);">Fecha límite para formalizar</div><div style="font-weight:600;">{{ $rental->apartado_deadline?->format('d/m/Y') ?? '—' }}</div></div>
                     </div>
                     @if($rental->apartado_notes)
                     <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">{{ $rental->apartado_notes }}</p>
@@ -317,6 +318,10 @@
                             <div class="form-group" style="margin:0;min-width:150px;">
                                 <label class="form-label" style="font-size:.72rem;">Fecha *</label>
                                 <input type="date" name="apartado_paid_at" class="form-input" value="{{ now()->format('Y-m-d') }}" required>
+                            </div>
+                            <div class="form-group" style="margin:0;min-width:150px;">
+                                <label class="form-label" style="font-size:.72rem;">Fecha límite para formalizar *</label>
+                                <input type="date" name="apartado_deadline" class="form-input" required>
                             </div>
                             <div class="form-group" style="margin:0;min-width:150px;">
                                 <label class="form-label" style="font-size:.72rem;">Forma de pago</label>
