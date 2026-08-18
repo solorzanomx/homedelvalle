@@ -446,6 +446,7 @@ class PresentationGeneratorService
             'precioSugerido'     => $overrides['price_suggested'] ?? ($property?->price && $property->price > 0 ? '$' . number_format($property->price, 0) . ' MXN' : null),
             'planMarketing'      => $overrides['marketing_plan'] ?? $captacion->marketing_plan ?? '',
             'nombreAgente'       => $agent?->name ?? 'Home del Valle',
+            'puestoAgente'       => $agent?->title ?: 'Agente',
             'telefonoAgente'     => $agent?->phone ?? '',
             'emailAgente'        => $agent?->email ?? '',
             'fechaPresentacion'  => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),

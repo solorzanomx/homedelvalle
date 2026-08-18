@@ -1012,7 +1012,7 @@ strong { color: #1e293b; }
         <div class="agent-av">{{ strtoupper(substr($nombreAgente, 0, 1)) }}</div>
         <div class="agent-info">
           <h3>{{ $nombreAgente }}</h3>
-          <p>Agente · Home del Valle Bienes Raíces</p>
+          <p>{{ $puestoAgente }} · Home del Valle Bienes Raíces</p>
           @if($telefonoAgente)<p>{{ $telefonoAgente }}</p>@endif
           @if($emailAgente)<p>{{ $emailAgente }}</p>@endif
         </div>
