@@ -40,9 +40,14 @@ class PresentationGeneratorService
      */
     public function renderHtml(Captacion $captacion, array $overrides = []): string
     {
-        $captacion->loadMissing(['client', 'property', 'createdBy']);
+        $captacion->loadMissing(['client.assignedUser', 'property', 'createdBy']);
 
-        $agent = $captacion->createdBy ?? User::find(1);
+        // El agente que aparece en la presentación es el asesor asignado al
+        // cliente (Client.assigned_user_id, editable en /clients/{id}/edit) —
+        // no necesariamente quien creó la captación ni quien generó el PDF.
+        // Así, si Alejandro genera la presentación de un cliente de Ana Laura,
+        // sigue saliendo el nombre de Ana Laura.
+        $agent = $captacion->client?->assignedUser ?? $captacion->createdBy ?? User::find(1);
 
         $vars = $this->buildVars($captacion, $agent, $overrides);
 

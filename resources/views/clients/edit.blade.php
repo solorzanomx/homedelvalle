@@ -118,10 +118,11 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label class="form-label">Asignado a</label>
-                    <div style="padding:0.55rem 0.8rem; background:var(--bg); border-radius:var(--radius); font-size:0.88rem; color:var(--text);">
-                        {{ $client->assignedUser?->name ?? Auth::user()->name }} {{ $client->assignedUser?->last_name ?? '' }}
-                    </div>
-                    <input type="hidden" name="assigned_user_id" value="{{ $client->assigned_user_id ?? Auth::id() }}">
+                    <select name="assigned_user_id" class="form-select">
+                        @foreach($agents as $agent)
+                            <option value="{{ $agent->id }}" {{ old('assigned_user_id', $client->assigned_user_id ?? Auth::id()) == $agent->id ? 'selected' : '' }}>{{ $agent->name }} {{ $agent->last_name }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Broker (opcional)</label>

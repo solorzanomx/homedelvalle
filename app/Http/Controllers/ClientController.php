@@ -471,7 +471,8 @@ class ClientController extends Controller
         $brokers = Broker::all();
         $channels = MarketingChannel::active()->ordered()->get();
         $campaigns = MarketingCampaign::active()->get();
-        return view('clients.edit', compact('client', 'brokers', 'channels', 'campaigns'));
+        $agents = User::where('is_active', true)->orderBy('name')->get();
+        return view('clients.edit', compact('client', 'brokers', 'channels', 'campaigns', 'agents'));
     }
 
     public function update(Request $request, string $id)
@@ -497,6 +498,7 @@ class ClientController extends Controller
             'budget_max'       => 'nullable|numeric',
             'property_type'    => 'nullable|string',
             'broker_id'        => 'nullable|exists:brokers,id',
+            'assigned_user_id' => 'nullable|exists:users,id',
             'photo'            => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'marketing_channel_id'  => 'nullable|exists:marketing_channels,id',
             'marketing_campaign_id' => 'nullable|exists:marketing_campaigns,id',
