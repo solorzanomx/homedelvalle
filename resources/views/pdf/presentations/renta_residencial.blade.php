@@ -2,13 +2,13 @@
 $proposicion = '
 <p>Rentar tu inmueble es mucho más que publicarlo en portales. Es <strong>encontrar al inquilino correcto</strong>, protegerte legalmente desde el primer día y asegurarte de que la relación sea rentable y libre de conflictos durante toda la vigencia del contrato.</p>
 
-<p>Nuestro proceso incluye calificación exhaustiva de candidatos, <strong>póliza jurídica incluida sin costo adicional para el propietario</strong> y administración mensual del cobro. Tú recibes la renta — nosotros manejamos la operación.</p>
+<p>Nuestro proceso incluye <strong>calificación exhaustiva de candidatos</strong> y un contrato de arrendamiento que te protege desde el primer día. Tú recibes la renta — nosotros manejamos la operación.</p>
 
 <ul class="blist">
     <li><strong>Calificación triple de candidatos</strong> — buró de crédito, ingresos comprobables mínimo 3× la renta y referencias personales verificadas.</li>
-    <li><strong>Póliza jurídica incluida</strong> — cobertura de hasta 18 meses de renta en caso de incumplimiento, sin costo adicional para el propietario.</li>
     <li><strong>Contrato de arrendamiento robusto</strong> con inventario fotográfico detallado, cláusulas de protección al propietario y penalidades por daños.</li>
-    <li><strong>Administración de cobro mensual</strong> — gestión del cobro, reporte de pagos puntual y acceso a tu portal 24/7.</li>
+    <li><strong>Póliza jurídica</strong> — esquema opcional, contratable aparte, con cobertura de hasta 18 meses de renta en caso de incumplimiento.</li>
+    <li><strong>Administración de cobro mensual</strong> — servicio opcional (10% mensual): gestión del cobro, reporte de pagos puntual y acceso a tu portal 24/7.</li>
     <li><strong>Inspección fotográfica de entrega y devolución</strong> — documentación completa que protege tu patrimonio al final del contrato.</li>
 </ul>
 

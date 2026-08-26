@@ -80,9 +80,19 @@ class CreateCaptacionFromCall extends Component
         'venta_comercial' =>
             "• Análisis de rentabilidad y cap rate del inmueble\n• Presentación a red de inversionistas y family offices activos\n• Valoración comparativa con transacciones recientes de la zona\n• Due diligence legal completo antes de la firma\n• Gestión completa hasta escrituración",
         'renta_residencial' =>
-            "• Calificación exhaustiva de candidatos (buró, comprobante, referencias)\n• Póliza jurídica que cubre hasta 18 meses de renta en caso de incumplimiento\n• Contrato de arrendamiento con cláusulas de protección al propietario\n• Administración de cobro mensual y reporte de pagos\n• Inspección de entrega y devolución documentada",
+            "• Calificación exhaustiva de candidatos (buró, comprobante, referencias)\n• Contrato de arrendamiento con cláusulas de protección al propietario\n• Póliza jurídica disponible como esquema opcional, contratable aparte\n• Administración de cobro mensual disponible como servicio opcional (10% mensual)\n• Inspección de entrega y devolución documentada",
         'renta_comercial' =>
-            "• Búsqueda segmentada de arrendatario según giro y perfil de riesgo\n• Contrato comercial con ajustes anuales y penalidades claras\n• Garantía corporativa o fianza afianzadora de primer nivel\n• Revisión de uso permitido y restricciones de operación\n• Seguimiento durante toda la vigencia del contrato",
+            "• Búsqueda segmentada de arrendatario según giro y perfil de riesgo\n• Contrato comercial con ajustes anuales y penalidades claras\n• Garantía corporativa o fianza afianzadora de primer nivel\n• Revisión de uso permitido y restricciones de operación\n• Administración de cobro mensual disponible como servicio opcional (10% mensual)\n• Seguimiento durante toda la vigencia del contrato",
+    ];
+
+    // ─── Defaults de comisión por intent — venta: % del valor; renta: meses de renta ──
+    private const COMMISSION_DEFAULTS = [
+        'general'           => '5',
+        'venta_constructor' => '5',
+        'venta_residencial' => '5',
+        'venta_comercial'   => '5',
+        'renta_residencial' => '1',
+        'renta_comercial'   => '1',
     ];
 
     public function mount(): void
@@ -215,7 +225,8 @@ class CreateCaptacionFromCall extends Component
 
     public function updatedIntent(string $value): void
     {
-        $this->marketing_plan = self::MARKETING_DEFAULTS[$value] ?? self::MARKETING_DEFAULTS['general'];
+        $this->marketing_plan  = self::MARKETING_DEFAULTS[$value] ?? self::MARKETING_DEFAULTS['general'];
+        $this->commission_pct  = self::COMMISSION_DEFAULTS[$value] ?? '5';
     }
 
     // ─── Guardar ─────────────────────────────────────────────────────────────

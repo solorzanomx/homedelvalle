@@ -867,25 +867,24 @@ strong { color: #1e293b; }
           <p>Buró de crédito, comprobante de ingresos 3× y referencias verificadas.</p>
         </div>
         <div class="svc-card">
-          <span class="svc-icon">⚖️</span>
-          <h4>Póliza jurídica</h4>
-          <p>Cobertura hasta 18 meses de renta en caso de incumplimiento del inquilino.</p>
-        </div>
-        <div class="svc-card">
           <span class="svc-icon">📋</span>
           <h4>Contrato de arrendamiento</h4>
           <p>Con cláusulas de protección al propietario e inventario fotográfico.</p>
         </div>
         <div class="svc-card">
-          <span class="svc-icon">💳</span>
-          <h4>Administración de cobro</h4>
-          <p>Gestión del cobro mensual y reporte de pagos puntual.</p>
+          <span class="svc-icon">📸</span>
+          <h4>Inspección de entrega</h4>
+          <p>Documentación fotográfica de entrega y devolución del inmueble.</p>
         </div>
         <div class="svc-card">
           <span class="svc-icon">📱</span>
           <h4>Portal del Propietario</h4>
           <p>Seguimiento 24/7: pagos, historial del inquilino y documentos.</p>
         </div>
+      </div>
+
+      <div class="insight-box">
+        <p><strong>Servicios opcionales, aparte de la comisión:</strong> si lo deseas, puedes contratar una <strong>póliza jurídica</strong> (cobertura hasta 18 meses de renta en caso de incumplimiento) y/o la <strong>administración de cobro mensual</strong> (10% de la renta, gestión del cobro y reporte de pagos puntual). Ninguno de los dos está incluido en la comisión de colocación.</p>
       </div>
       @else
       <div class="svc-grid">
