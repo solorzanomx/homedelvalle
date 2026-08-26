@@ -872,6 +872,11 @@ strong { color: #1e293b; }
           <p>Con cláusulas de protección al propietario e inventario fotográfico.</p>
         </div>
         <div class="svc-card">
+          <span class="svc-icon">⚖️</span>
+          <h4>Garantías del arrendamiento</h4>
+          <p>Pagarés, aval, obligado solidario o póliza jurídica: definimos contigo el esquema que mejor proteja tu patrimonio en cada caso.</p>
+        </div>
+        <div class="svc-card">
           <span class="svc-icon">📸</span>
           <h4>Inspección de entrega</h4>
           <p>Documentación fotográfica de entrega y devolución del inmueble.</p>
@@ -884,7 +889,7 @@ strong { color: #1e293b; }
       </div>
 
       <div class="insight-box">
-        <p><strong>Garantías incluidas, servicios opcionales aparte:</strong> las garantías del arrendamiento (pagarés, aval u obligado solidario) van incluidas en el servicio — manejamos todas las modalidades y siempre sugerimos la más indicada para tu caso. La <strong>póliza jurídica</strong> (cobertura hasta 18 meses de renta) y la <strong>administración de renta</strong> (10% mensual — cobro puntual, reporte de pagos, atención de incidencias con el inquilino y seguimiento durante toda la vigencia del contrato) sí son servicios opcionales aparte, no incluidos en la comisión de colocación.</p>
+        <p><strong>Administración de renta — servicio opcional (10% mensual):</strong> si prefieres no involucrarte en el día a día, nos hacemos cargo de la operación completa del arrendamiento: cobro y conciliación mensual, reporte puntual de pagos, atención y seguimiento de incidencias con el inquilino, y acompañamiento en la renovación o terminación del contrato. Es un servicio aparte de la comisión de colocación, pensado para el propietario que busca tranquilidad total.</p>
       </div>
       @else
       <div class="svc-grid">

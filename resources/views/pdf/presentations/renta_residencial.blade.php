@@ -1,15 +1,14 @@
 @php
 $proposicion = '
-<p>Rentar tu inmueble es mucho más que publicarlo en portales. Es <strong>encontrar al inquilino correcto</strong>, protegerte legalmente desde el primer día y asegurarte de que la relación sea rentable y libre de conflictos durante toda la vigencia del contrato.</p>
+<p>Rentar tu inmueble es mucho más que publicarlo en portales. Es <strong>encontrar al inquilino correcto</strong>, definir la garantía que mejor proteja tu patrimonio y acompañarte durante toda la vigencia del contrato para que la relación sea rentable y libre de conflictos.</p>
 
 <p>Nuestro proceso incluye <strong>calificación exhaustiva de candidatos</strong> y un contrato de arrendamiento que te protege desde el primer día. Tú recibes la renta — nosotros manejamos la operación.</p>
 
 <ul class="blist">
     <li><strong>Calificación triple de candidatos</strong> — buró de crédito, ingresos comprobables mínimo 3× la renta y referencias personales verificadas.</li>
     <li><strong>Contrato de arrendamiento robusto</strong> con inventario fotográfico detallado, cláusulas de protección al propietario y penalidades por daños.</li>
-    <li><strong>Garantías del arrendamiento</strong> — manejamos todas las modalidades (pagarés, aval, obligado solidario) según el perfil del inquilino; siempre sugerimos la más adecuada para proteger tu patrimonio.</li>
-    <li><strong>Póliza jurídica</strong> — esquema opcional, contratable aparte, con cobertura de hasta 18 meses de renta en caso de incumplimiento del inquilino.</li>
-    <li><strong>Administración de renta</strong> — servicio opcional (10% mensual) que cubre todo lo que se estila en la administración de un inmueble rentado: cobro puntual, reporte de pagos, atención de incidencias con el inquilino y seguimiento durante toda la vigencia del contrato.</li>
+    <li><strong>Garantías del arrendamiento</strong> — como especialistas, evaluamos contigo el esquema más sólido para tu caso: pagarés, aval, obligado solidario o una póliza jurídica con cobertura de hasta 18 meses de renta. Nos adaptamos al perfil del inquilino sin sacrificar tu seguridad patrimonial.</li>
+    <li><strong>Administración de renta</strong> — servicio opcional (10% mensual): nos hacemos cargo del cobro y conciliación mensual, el reporte puntual de pagos, la atención de incidencias con el inquilino y el seguimiento durante toda la vigencia del contrato.</li>
     <li><strong>Inspección fotográfica de entrega y devolución</strong> — documentación completa que protege tu patrimonio al final del contrato.</li>
 </ul>
 
