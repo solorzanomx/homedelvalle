@@ -10,6 +10,7 @@ use App\Models\MarketColonia;
 use App\Models\MarketPriceSnapshot;
 use App\Models\MarketZoneSnapshot;
 use App\Models\PresentationSend;
+use App\Models\Property;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
@@ -364,6 +365,48 @@ class PresentationGeneratorService
         return "{$pct}%";
     }
 
+    /**
+     * m² del inmueble × rango de precio de su bracket de edad (nuevo/seminuevo/
+     * antiguo) en $zonaMercado (ver getZoneMarketData) — el estimado real y
+     * personalizado para ESTE inmueble, no el rango genérico de la zona.
+     */
+    private function computeEstimadoInmueble(?Property $property, ?array $zonaMercado): ?array
+    {
+        $m2 = (float) ($property?->area ?? 0);
+        if ($m2 <= 0 || !$zonaMercado) return null;
+
+        $ageYears = $property?->year_built ? (now()->year - (int) $property->year_built) : null;
+        $bracket  = $ageYears === null ? 'seminuevo' : ($ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo'));
+        $snap     = $zonaMercado[$bracket] ?? null;
+        if (!$snap) return null;
+
+        return [
+            'm2'   => $m2,
+            'low'  => round($m2 * (float) $snap->price_m2_low),
+            'high' => round($m2 * (float) $snap->price_m2_high),
+        ];
+    }
+
+    /**
+     * Precio sugerido formateado para prellenar el campo del editor de
+     * presentación — misma fuente de verdad (Observatorio, vía
+     * computeEstimadoInmueble) que usa buildVars(), para que el broker vea de
+     * entrada el estimado real y no un Property.price capturado a mano.
+     */
+    public function formatEstimatedPrice(Captacion $captacion): ?string
+    {
+        $property    = $captacion->property;
+        $zonaMercado = $this->getZoneMarketData($captacion);
+        $estimado    = $this->computeEstimadoInmueble($property, $zonaMercado);
+
+        if ($estimado) {
+            $unit = str_starts_with($captacion->intent ?? '', 'renta_') ? '/mes' : '';
+            return '$' . number_format($estimado['low']) . ' – $' . number_format($estimado['high']) . ' MXN' . $unit;
+        }
+
+        return $property?->price > 0 ? '$' . number_format($property->price, 0) . ' MXN' : null;
+    }
+
     private function buildVars(Captacion $captacion, ?User $agent, array $overrides): array
     {
         $client   = $captacion->client;
@@ -438,20 +481,7 @@ class PresentationGeneratorService
         // bracket de edad (nuevo/seminuevo/antiguo), no solo el rango genérico de
         // la zona. Mismo corte de antigüedad (10/30 años) que usa el layout para
         // resaltar la barra correspondiente en la gráfica de "El mercado en tu zona".
-        $estimadoInmueble = null;
-        $m2 = (float) ($property?->area ?? 0);
-        if ($m2 > 0 && $zonaMercado) {
-            $ageYears = $property?->year_built ? (now()->year - (int) $property->year_built) : null;
-            $bracket  = $ageYears === null ? 'seminuevo' : ($ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo'));
-            $snap     = $zonaMercado[$bracket] ?? null;
-            if ($snap) {
-                $estimadoInmueble = [
-                    'm2'   => $m2,
-                    'low'  => round($m2 * (float) $snap->price_m2_low),
-                    'high' => round($m2 * (float) $snap->price_m2_high),
-                ];
-            }
-        }
+        $estimadoInmueble = $this->computeEstimadoInmueble($property, $zonaMercado);
 
         // Saludo — resolver Estimado/Estimada si el cliente tiene género capturado
         // (Client.gender: 'H'|'M'), neutro si no lo tenemos.
@@ -460,6 +490,27 @@ class PresentationGeneratorService
             'M'     => 'Estimada',
             default => null,
         };
+
+        // Precio sugerido — antes mostraba Property.price (lo que sea que se haya
+        // capturado a mano) etiquetado como "HDV Observatorio de Precios", lo cual
+        // podía contradecir el estimado real del Observatorio en la misma
+        // presentación. Ahora, si tenemos $estimadoInmueble (real, del Observatorio),
+        // es la fuente de verdad; Property.price solo se usa de último recurso y
+        // con una etiqueta honesta que no le atribuye origen al Observatorio.
+        $precioSugeridoLabel = 'Precio de referencia sugerido · HDV Observatorio de Precios';
+        if (isset($overrides['price_suggested'])) {
+            $precioSugerido = $overrides['price_suggested'];
+        } elseif ($estimadoInmueble) {
+            $unit = str_starts_with($intent, 'renta_') ? '/mes' : '';
+            $precioSugerido = '$' . number_format($estimadoInmueble['low']) . ' – $' . number_format($estimadoInmueble['high']) . ' MXN' . $unit;
+        } elseif ($property?->price && $property->price > 0) {
+            $precioSugerido = '$' . number_format($property->price, 0) . ' MXN';
+            $precioSugeridoLabel = 'Precio esperado por el propietario';
+        } else {
+            $precioSugerido = null;
+        }
+        // (formatEstimatedPrice() reproduce esta misma lógica para prellenar el
+        // campo del editor de presentación — ver PresentationEditor::mount())
 
         return [
             'nombrePropietario'  => $client?->name ?? '',
@@ -472,7 +523,8 @@ class PresentationGeneratorService
             'comisionLabel'      => $comisionFormatted,  // ej. "5%" o "1 mes de renta"
             'comisionPct'        => $comisionFormatted,  // alias para compatibilidad con templates existentes
             'esRenta'            => str_starts_with($intent, 'renta_'),
-            'precioSugerido'     => $overrides['price_suggested'] ?? ($property?->price && $property->price > 0 ? '$' . number_format($property->price, 0) . ' MXN' : null),
+            'precioSugerido'     => $precioSugerido,
+            'precioSugeridoLabel' => $precioSugeridoLabel,
             'planMarketing'      => $overrides['marketing_plan'] ?? $captacion->marketing_plan ?? '',
             'nombreAgente'       => $agent?->name ?? 'Home del Valle',
             'puestoAgente'       => $agent?->title ?: 'Agente',

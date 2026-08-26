@@ -739,7 +739,7 @@ strong { color: #1e293b; }
       @if(!empty($precioSugerido))
       <div class="price-box">
         <div>
-          <div class="price-label">Precio de referencia sugerido · HDV Observatorio de Precios</div>
+          <div class="price-label">{{ $precioSugeridoLabel ?? 'Precio de referencia sugerido · HDV Observatorio de Precios' }}</div>
           <div class="price-val">{{ $precioSugerido }}</div>
         </div>
       </div>

@@ -43,9 +43,11 @@ class PresentationEditor extends Component
         $this->intent          = $captacion->intent ?? 'general';
         $this->commission_pct  = (string)($captacion->commission_pct ?? ($this->isRenta() ? 1 : 5));
         $this->marketing_plan  = $captacion->marketing_plan ?? '';
-        $this->price_suggested = $captacion->property?->price > 0
-            ? '$' . number_format($captacion->property->price, 0) . ' MXN'
-            : '';
+        // Prellenar con el estimado real del Observatorio (m² × precio de su
+        // bracket de edad) cuando esté disponible — no con Property.price a
+        // secas, que puede ser un número viejo o capturado a mano y quedar
+        // desalineado del resto de la presentación.
+        $this->price_suggested = app(PresentationGeneratorService::class)->formatEstimatedPrice($captacion) ?? '';
 
         $this->latestToken = $captacion->sends()->latest()->first()?->tracking_token;
         $this->pdfUrl = route('admin.captaciones.presentation.pdf', $captacion->id);
