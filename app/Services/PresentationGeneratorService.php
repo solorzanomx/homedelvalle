@@ -434,12 +434,41 @@ class PresentationGeneratorService
 
         $zonaMercado = $this->getZoneMarketData($captacion);
 
+        // Estimado personalizado para ESTE inmueble — m² × rango de precio de su
+        // bracket de edad (nuevo/seminuevo/antiguo), no solo el rango genérico de
+        // la zona. Mismo corte de antigüedad (10/30 años) que usa el layout para
+        // resaltar la barra correspondiente en la gráfica de "El mercado en tu zona".
+        $estimadoInmueble = null;
+        $m2 = (float) ($property?->area ?? 0);
+        if ($m2 > 0 && $zonaMercado) {
+            $ageYears = $property?->year_built ? (now()->year - (int) $property->year_built) : null;
+            $bracket  = $ageYears === null ? 'seminuevo' : ($ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo'));
+            $snap     = $zonaMercado[$bracket] ?? null;
+            if ($snap) {
+                $estimadoInmueble = [
+                    'm2'   => $m2,
+                    'low'  => round($m2 * (float) $snap->price_m2_low),
+                    'high' => round($m2 * (float) $snap->price_m2_high),
+                ];
+            }
+        }
+
+        // Saludo — resolver Estimado/Estimada si el cliente tiene género capturado
+        // (Client.gender: 'H'|'M'), neutro si no lo tenemos.
+        $saludo = match ($client?->gender) {
+            'H'     => 'Estimado',
+            'M'     => 'Estimada',
+            default => null,
+        };
+
         return [
             'nombrePropietario'  => $client?->name ?? '',
+            'saludoPropietario'  => $saludo, // null => usar saludo neutro "Hola" en la vista
             'inmuebleTipo'       => $property ? ($property->property_type_label ?? $property->property_type) : '',
             'inmuebleColonia'    => $property?->colony ?? $captacion->property_address ?? '',
             'zonaMercado'        => $zonaMercado,                    // ['zona', 'nuevo', 'seminuevo', 'antiguo'] o null
             'zonaNombre'         => $zonaMercado['zona'] ?? null,    // ej. "Narvarte & Vértiz" — null si no se pudo resolver
+            'estimadoInmueble'   => $estimadoInmueble,               // ['m2','low','high'] o null
             'comisionLabel'      => $comisionFormatted,  // ej. "5%" o "1 mes de renta"
             'comisionPct'        => $comisionFormatted,  // alias para compatibilidad con templates existentes
             'esRenta'            => str_starts_with($intent, 'renta_'),

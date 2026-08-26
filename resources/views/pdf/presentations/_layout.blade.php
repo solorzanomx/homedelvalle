@@ -198,6 +198,9 @@ strong { color: #1e293b; }
 .obs-conf  { font-size: 8px; background: #dcfce7; border: 1px solid #86efac; border-radius: 10px; padding: 3px 9px; color: #166534; font-weight: 600; white-space: nowrap; }
 .obs-conf.medium { background: #fef9c3; border-color: #fde047; color: #713f12; }
 .obs-conf.low    { background: #f1f5f9; border-color: #cbd5e1; color: #64748b; }
+.obs-badge.blue  { background: #eff6ff; border-color: #bfdbfe; }
+.obs-badge.blue .obs-label { color: #1e40af; }
+.obs-badge.blue .obs-price { color: #1e3a8a; }
 
 /* ── KPI dark row ────────────────────────────────────────────────────────── */
 .dark-kpi-row { display: flex; gap: 8px; margin: 12px 0; }
@@ -418,10 +421,10 @@ strong { color: #1e293b; }
         @endif
 
         <div class="insight-box">
-          <p><strong>Momento ideal:</strong> Con vacancia ~4% y candidatos registrados activos, los inmuebles bien presentados con precio competitivo se colocan en <strong>15–30 días</strong>. El precio de renta tiene margen al alza si el inmueble se prepara correctamente.</p>
+          <p><strong>Momento ideal:</strong> Con vacancia ~4% y candidatos registrados activos, los inmuebles bien presentados con precio competitivo se colocan en <strong>15–30 días</strong>. El precio de renta tiene margen al alza si el inmueble se prepara correctamente. Este plazo es solo para <strong>colocar al inquilino calificado</strong>; el proceso completo — desde la firma de exclusiva hasta la firma del contrato de arrendamiento — toma <strong>30–45 días</strong>, e incluye la preparación del inmueble y la calificación final del candidato.</p>
         </div>
 
-        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Tendencia del mercado de renta BJ (2023 → 2025)</div>
+        <div class="chart-title" style="margin-top:14px;margin-bottom:8px;">Tendencia del mercado de renta BJ ({{ now()->subYears(2)->year }} → {{ now()->year }})</div>
         <div class="bar-chart">
           <div class="bar-row"><div class="bar-lbl">Precio de renta</div><div class="bar-track"><div class="bar-fill hi" style="width:60%;">+11% anual promedio</div></div></div>
           <div class="bar-row"><div class="bar-lbl">Demanda activa</div><div class="bar-track"><div class="bar-fill hdv" style="width:80%;">+22% más candidatos registrados</div></div></div>
@@ -563,6 +566,7 @@ strong { color: #1e293b; }
 
       {{-- Observatorio HDV — Precio real de tu colonia (si disponible) --}}
       @if(!empty($precioMercadoZona))
+      <p style="margin-top:10px;">Para tu zona específica, <strong>{{ $inmuebleColonia ?: 'tu colonia' }}</strong>, el rango {{ $isRenta ? 'de renta' : 'de venta' }} asciende a lo siguiente:</p>
       <div class="obs-badge">
         <div style="flex:1;">
           <div class="obs-label">📊 Observatorio HDV · {{ $inmuebleColonia ?: 'Tu colonia' }}</div>
@@ -571,6 +575,16 @@ strong { color: #1e293b; }
         @if($confLabel)
         <div class="obs-conf {{ $confClass }}">{{ $confLabel }}</div>
         @endif
+      </div>
+      @endif
+
+      {{-- Estimado personalizado para ESTE inmueble (m² real × rango de su zona/bracket de edad) --}}
+      @if($isRenta && !empty($estimadoInmueble))
+      <div class="obs-badge blue">
+        <div style="flex:1;">
+          <div class="obs-label">📐 Para tu inmueble de {{ number_format($estimadoInmueble['m2'], 0) }} m²</div>
+          <div class="obs-price">${{ number_format($estimadoInmueble['low']) }} – ${{ number_format($estimadoInmueble['high']) }} /mes</div>
+        </div>
       </div>
       @endif
 
@@ -603,7 +617,7 @@ strong { color: #1e293b; }
       <h2 class="section-h2">¿Por qué Home del Valle?</h2>
       <div class="accent-bar"></div>
 
-      <p>Estimado/a <strong>{{ $nombrePropietario }}</strong>, gracias por considerar a Home del Valle para su propiedad. Llevamos <strong>más de 30 años</strong> trabajando en Benito Juárez. No somos una agencia de volumen: seleccionamos cada caso para trabajarlo con el nivel de atención que merece.</p>
+      <p>{{ $saludoPropietario ?? 'Hola,' }} <strong>{{ $nombrePropietario }}</strong>, gracias por considerar a Home del Valle para su propiedad. Llevamos <strong>más de 30 años</strong> trabajando en Benito Juárez. No somos una agencia de volumen: seleccionamos cada caso para trabajarlo con el nivel de atención que merece.</p>
 
       <div class="stats-row">
         <div class="stat-box">
@@ -874,7 +888,7 @@ strong { color: #1e293b; }
         <div class="svc-card">
           <span class="svc-icon">⚖️</span>
           <h4>Garantías del arrendamiento</h4>
-          <p>Pagarés, aval, obligado solidario o póliza jurídica: definimos contigo el esquema que mejor proteja tu patrimonio en cada caso.</p>
+          <p>Aval, pagarés y pólizas de renta: definimos contigo el esquema que mejor proteja tu patrimonio en cada caso.</p>
         </div>
         <div class="svc-card">
           <span class="svc-icon">📸</span>
@@ -889,7 +903,7 @@ strong { color: #1e293b; }
       </div>
 
       <div class="insight-box">
-        <p><strong>Administración de renta — servicio opcional (10% mensual):</strong> si prefieres no involucrarte en el día a día, nos hacemos cargo de la operación completa del arrendamiento: cobro y conciliación mensual, reporte puntual de pagos, atención y seguimiento de incidencias con el inquilino, y acompañamiento en la renovación o terminación del contrato. Es un servicio aparte de la comisión de colocación, pensado para el propietario que busca tranquilidad total.</p>
+        <p><strong>¿Qué no está incluido?</strong> La <strong>administración de renta (10% mensual)</strong> es el único servicio aparte de la comisión de colocación — ver el detalle en la sección anterior. Todo lo demás en esta página, incluidas las garantías del arrendamiento, ya está cubierto por tu comisión de colocación.</p>
       </div>
       @else
       <div class="svc-grid">

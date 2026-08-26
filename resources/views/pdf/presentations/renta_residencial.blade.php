@@ -7,8 +7,8 @@ $proposicion = '
 <ul class="blist">
     <li><strong>Calificación triple de candidatos</strong> — buró de crédito, ingresos comprobables mínimo 3× la renta y referencias personales verificadas.</li>
     <li><strong>Contrato de arrendamiento robusto</strong> con inventario fotográfico detallado, cláusulas de protección al propietario y penalidades por daños.</li>
-    <li><strong>Garantías del arrendamiento</strong> — como especialistas, evaluamos contigo el esquema más sólido para tu caso: pagarés, aval, obligado solidario o una póliza jurídica con cobertura de hasta 18 meses de renta. Nos adaptamos al perfil del inquilino sin sacrificar tu seguridad patrimonial.</li>
-    <li><strong>Administración de renta</strong> — servicio opcional (10% mensual): nos hacemos cargo del cobro y conciliación mensual, el reporte puntual de pagos, la atención de incidencias con el inquilino y el seguimiento durante toda la vigencia del contrato.</li>
+    <li><strong>Garantías del arrendamiento</strong> — manejamos todas las modalidades: aval, pagarés y pólizas de renta. En cada caso analizamos el perfil del inquilino y te sugerimos la opción que mejor protege tu patrimonio, no una genérica para todos los casos.</li>
+    <li><strong>Administración de renta</strong> — servicio opcional (10% mensual) que incluye cobro puntual de la renta, reporte mensual de pagos, atención y seguimiento de incidencias con el inquilino, coordinación de mantenimiento cuando aplica, y acompañamiento durante toda la vigencia del contrato. Como plus, tienes acceso al Portal del Propietario, donde puedes ver en tiempo real el estado completo de tu arrendamiento — pagos, historial del inquilino y documentos — todo en un solo lugar. Por eso nuestro servicio es del 10%: no es solo cobro de renta, es administración completa con visibilidad total para ti.</li>
     <li><strong>Inspección fotográfica de entrega y devolución</strong> — documentación completa que protege tu patrimonio al final del contrato.</li>
 </ul>
 
@@ -31,6 +31,7 @@ $proposicion = '
             <div style="font-size:9px;color:#64748b;margin-top:2px;">Días promedio en BJ</div>
         </div>
     </div>
+    <div style="font-size:9px;color:#64748b;margin-top:8px;text-align:center;">Colocación = encontrar al inquilino calificado. El proceso completo, de la firma de exclusiva a la firma del contrato, toma 30–45 días.</div>
 </div>
 ';
 @endphp
