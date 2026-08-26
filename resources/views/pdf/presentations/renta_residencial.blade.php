@@ -7,8 +7,9 @@ $proposicion = '
 <ul class="blist">
     <li><strong>Calificación triple de candidatos</strong> — buró de crédito, ingresos comprobables mínimo 3× la renta y referencias personales verificadas.</li>
     <li><strong>Contrato de arrendamiento robusto</strong> con inventario fotográfico detallado, cláusulas de protección al propietario y penalidades por daños.</li>
-    <li><strong>Póliza jurídica</strong> — esquema opcional, contratable aparte, con cobertura de hasta 18 meses de renta en caso de incumplimiento.</li>
-    <li><strong>Administración de cobro mensual</strong> — servicio opcional (10% mensual): gestión del cobro, reporte de pagos puntual y acceso a tu portal 24/7.</li>
+    <li><strong>Garantías del arrendamiento</strong> — manejamos todas las modalidades (pagarés, aval, obligado solidario) según el perfil del inquilino; siempre sugerimos la más adecuada para proteger tu patrimonio.</li>
+    <li><strong>Póliza jurídica</strong> — esquema opcional, contratable aparte, con cobertura de hasta 18 meses de renta en caso de incumplimiento del inquilino.</li>
+    <li><strong>Administración de renta</strong> — servicio opcional (10% mensual) que cubre todo lo que se estila en la administración de un inmueble rentado: cobro puntual, reporte de pagos, atención de incidencias con el inquilino y seguimiento durante toda la vigencia del contrato.</li>
     <li><strong>Inspección fotográfica de entrega y devolución</strong> — documentación completa que protege tu patrimonio al final del contrato.</li>
 </ul>
 
