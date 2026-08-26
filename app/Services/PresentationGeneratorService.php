@@ -168,7 +168,7 @@ class PresentationGeneratorService
             variables: [
                 'NombrePropietario' => $captacion->client->name ?? '',
                 'NombreInmueble'    => $captacion->property_address_display,
-                'NombreAgente'      => $agent->name,
+                'NombreAgente'      => $agent->full_name,
                 'TrackingPixel'     => route('presentation.email.tracking', $send->tracking_token),
                 'PresentationUrl'   => route('presentation.public', $send->tracking_token),
             ],
@@ -209,7 +209,7 @@ class PresentationGeneratorService
         $message = sprintf(
             "Hola %s, soy %s de Home del Valle. Te comparto la presentación inicial para tu inmueble en %s.\n\nPuedes verla aquí: %s\n\nQuedo atento a tus comentarios.",
             $captacion->client->name ?? 'estimado/a',
-            $agent->name,
+            $agent->full_name,
             $captacion->property_address_display,
             $publicUrl,
         );
@@ -366,25 +366,44 @@ class PresentationGeneratorService
     }
 
     /**
-     * m² del inmueble × rango de precio de su bracket de edad (nuevo/seminuevo/
-     * antiguo) en $zonaMercado (ver getZoneMarketData) — el estimado real y
-     * personalizado para ESTE inmueble, no el rango genérico de la zona.
+     * m² del inmueble × precio/m² — el estimado real y personalizado para ESTE
+     * inmueble, no el rango genérico de la zona.
+     *
+     * Prioriza el snapshot EXACTO de la colonia ($marketSnapshot, el mismo dato
+     * que ya se muestra en el badge "Observatorio HDV · [colonia]" de la página
+     * de mercado) sobre el bracket de edad de la ZONA ($zonaMercado, que agrupa
+     * varias colonias) — si usáramos el bracket de zona aquí, el estimado podía
+     * salir más bajo que el número de colonia mostrado un renglón arriba, una
+     * contradicción visible en la misma página. Solo caemos al bracket de zona
+     * (nuevo/seminuevo/antiguo) cuando no hay snapshot de colonia.
      */
-    private function computeEstimadoInmueble(?Property $property, ?array $zonaMercado): ?array
+    private function computeEstimadoInmueble(?Property $property, ?MarketPriceSnapshot $marketSnapshot, ?array $zonaMercado): ?array
     {
         $m2 = (float) ($property?->area ?? 0);
-        if ($m2 <= 0 || !$zonaMercado) return null;
+        if ($m2 <= 0) return null;
 
-        $ageYears = $property?->year_built ? (now()->year - (int) $property->year_built) : null;
-        $bracket  = $ageYears === null ? 'seminuevo' : ($ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo'));
-        $snap     = $zonaMercado[$bracket] ?? null;
-        if (!$snap) return null;
+        if ($marketSnapshot) {
+            return [
+                'm2'   => $m2,
+                'low'  => round($m2 * (float) $marketSnapshot->price_m2_low),
+                'high' => round($m2 * (float) $marketSnapshot->price_m2_high),
+            ];
+        }
 
-        return [
-            'm2'   => $m2,
-            'low'  => round($m2 * (float) $snap->price_m2_low),
-            'high' => round($m2 * (float) $snap->price_m2_high),
-        ];
+        if ($zonaMercado) {
+            $ageYears = $property?->year_built ? (now()->year - (int) $property->year_built) : null;
+            $bracket  = $ageYears === null ? 'seminuevo' : ($ageYears <= 10 ? 'nuevo' : ($ageYears <= 30 ? 'seminuevo' : 'antiguo'));
+            $snap     = $zonaMercado[$bracket] ?? null;
+            if ($snap) {
+                return [
+                    'm2'   => $m2,
+                    'low'  => round($m2 * (float) $snap->price_m2_low),
+                    'high' => round($m2 * (float) $snap->price_m2_high),
+                ];
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -395,9 +414,10 @@ class PresentationGeneratorService
      */
     public function formatEstimatedPrice(Captacion $captacion): ?string
     {
-        $property    = $captacion->property;
-        $zonaMercado = $this->getZoneMarketData($captacion);
-        $estimado    = $this->computeEstimadoInmueble($property, $zonaMercado);
+        $property       = $captacion->property;
+        $marketSnapshot = $this->getMarketSnapshot($captacion);
+        $zonaMercado    = $this->getZoneMarketData($captacion);
+        $estimado       = $this->computeEstimadoInmueble($property, $marketSnapshot, $zonaMercado);
 
         if ($estimado) {
             $unit = str_starts_with($captacion->intent ?? '', 'renta_') ? '/mes' : '';
@@ -477,11 +497,9 @@ class PresentationGeneratorService
 
         $zonaMercado = $this->getZoneMarketData($captacion);
 
-        // Estimado personalizado para ESTE inmueble — m² × rango de precio de su
-        // bracket de edad (nuevo/seminuevo/antiguo), no solo el rango genérico de
-        // la zona. Mismo corte de antigüedad (10/30 años) que usa el layout para
-        // resaltar la barra correspondiente en la gráfica de "El mercado en tu zona".
-        $estimadoInmueble = $this->computeEstimadoInmueble($property, $zonaMercado);
+        // Estimado personalizado para ESTE inmueble — ver computeEstimadoInmueble()
+        // (prioriza el snapshot exacto de la colonia sobre el bracket de zona).
+        $estimadoInmueble = $this->computeEstimadoInmueble($property, $marketSnapshot, $zonaMercado);
 
         // Saludo — resolver Estimado/Estimada si el cliente tiene género capturado
         // (Client.gender: 'H'|'M'), neutro si no lo tenemos.
@@ -526,7 +544,7 @@ class PresentationGeneratorService
             'precioSugerido'     => $precioSugerido,
             'precioSugeridoLabel' => $precioSugeridoLabel,
             'planMarketing'      => $overrides['marketing_plan'] ?? $captacion->marketing_plan ?? '',
-            'nombreAgente'       => $agent?->name ?? 'Home del Valle',
+            'nombreAgente'       => $agent?->full_name ?: 'Home del Valle',
             'puestoAgente'       => $agent?->title ?: 'Agente',
             'telefonoAgente'     => $agent?->phone ?? '',
             'emailAgente'        => $agent?->email ?? '',
