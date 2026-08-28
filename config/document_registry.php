@@ -112,7 +112,9 @@ return [
         'archivo_fuente' => 'resources/views/pdf/acuerdo-representacion-renta.blade.php',
         'donde_generarlo' => 'Ficha de la Operation (renta) → pestaña Docs → Generar Acuerdo',
         'editar_route' => 'admin.documentos.contrato-exclusiva-renta.clausulas',
+        'imprimible_route' => 'admin.documentos.contrato-exclusiva-renta.imprimible',
         'changelog' => [
+            ['fecha' => '2026-08-28', 'resumen' => 'Versión imprimible agregada — para cuando el broker está con el propietario sin acceso a la computadora. Prellena opcionalmente Cliente/Property del CRM; identidad del propietario, escritura, folio real, notario, renta y fecha siempre quedan en blanco para llenarse a mano y capturarse después en el sistema.'],
             ['fecha' => '2026-08-28', 'resumen' => 'Creado — mismo patrón de marca/cláusulas editables que Acuerdo de Representación de venta, pero para Operation type=renta (no requiere Captacion). Novedad respecto al de venta: bloque de Declaraciones separado de las cláusulas, con la Declaración de Propiedad bajo protesta de decir verdad (folio real, número de escritura, notario) — requiere que Property tenga esos 5 campos capturados antes de poder generarse. Comisión pactada como un mes de renta, no porcentaje. Pendiente de revisión por un abogado antes de uso definitivo.'],
         ],
     ],

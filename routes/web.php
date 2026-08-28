@@ -405,6 +405,8 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/documentos/contrato-compraventa/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateContratoCompraventa'])->name('documentos.contrato-compraventa.clausulas.update');
     Route::get('/documentos/contrato-exclusiva-renta/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'editContratoExclusivaRenta'])->name('documentos.contrato-exclusiva-renta.clausulas');
     Route::post('/documentos/contrato-exclusiva-renta/clausulas', [\App\Http\Controllers\Admin\DocumentClauseController::class, 'updateContratoExclusivaRenta'])->name('documentos.contrato-exclusiva-renta.clausulas.update');
+    Route::get('/documentos/contrato-exclusiva-renta/imprimible', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'acuerdoRepresentacionRentaImprimibleForm'])->name('documentos.contrato-exclusiva-renta.imprimible');
+    Route::post('/documentos/contrato-exclusiva-renta/imprimible', [\App\Http\Controllers\Admin\DocumentRegistryController::class, 'acuerdoRepresentacionRentaImprimibleGenerate'])->name('documentos.contrato-exclusiva-renta.imprimible.generate');
 
     // Leads / Form Submissions
     Route::get('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'index'])->name('form-submissions.index');

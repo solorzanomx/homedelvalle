@@ -470,11 +470,14 @@
                 <div class="card-body" style="padding:0.85rem;">
                     <div style="display:flex;justify-content:space-between;align-items:center;{{ $arrDocs->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
                         <span style="font-size:0.82rem;font-weight:600;">&#128220; Acuerdo de Representación (Renta)</span>
-                        @if(!$arrMissing)
-                        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('arr-form').style.display = document.getElementById('arr-form').style.display === 'none' ? 'block' : 'none';">
-                            + Generar Acuerdo
-                        </button>
-                        @endif
+                        <div style="display:flex;gap:.4rem;">
+                            <a href="{{ route('admin.documentos.contrato-exclusiva-renta.imprimible') }}" target="_blank" class="btn btn-sm btn-outline" title="Para llenar a mano con el propietario y capturar después">Versión imprimible</a>
+                            @if(!$arrMissing)
+                            <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('arr-form').style.display = document.getElementById('arr-form').style.display === 'none' ? 'block' : 'none';">
+                                + Generar Acuerdo
+                            </button>
+                            @endif
+                        </div>
                     </div>
 
                     @if($arrMissing)

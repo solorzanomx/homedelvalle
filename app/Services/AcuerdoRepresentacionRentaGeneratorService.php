@@ -223,4 +223,69 @@ class AcuerdoRepresentacionRentaGeneratorService
 
         return $path;
     }
+
+    /**
+     * Versión imprimible en blanco — para cuando el broker está con el
+     * propietario sin acceso a la computadora (o el inmueble aún no tiene
+     * sus datos de escritura capturados). Puede opcionalmente prellenar
+     * Cliente y/o Property ya existentes en el CRM; los datos de escritura,
+     * identidad y comisión siempre quedan en blanco para llenarse a mano —
+     * es justamente la información que se está recabando en ese momento.
+     */
+    public function renderPrintableHtml(?Client $client = null, ?Property $property = null): string
+    {
+        $ownerName = self::tituloCase($client?->name) ?: self::tituloCase(trim(implode(' ', array_filter([
+            $client?->first_name,
+            $client?->last_name_paterno,
+            $client?->last_name_materno,
+        ])))) ?: null;
+
+        $ownerId = $client?->id_type && $client?->id_number ? "{$client->id_type} {$client->id_number}" : null;
+
+        $ownerCurpRfc = collect([
+            $client?->curp ? "CURP: {$client->curp}" : null,
+            $client?->rfc ? "RFC: {$client->rfc}" : null,
+        ])->filter()->implode(' · ') ?: null;
+
+        $ownerAddress = collect([
+            $client?->address_street, $client?->address_colony, $client?->address_municipality,
+            $client?->address_state, $client?->address_zip,
+        ])->filter()->implode(', ') ?: null;
+
+        $propertyAddress = self::tituloCase($property?->address ?: ($property ? ($property->colony . ', ' . $property->city) : null));
+        $propertyColony  = self::tituloCase($property?->colony);
+        $propertyColonyLabel = $propertyColony && !str_contains(mb_strtolower($propertyColony), 'colonia') ? "Colonia {$propertyColony}" : $propertyColony;
+        $propertyFull = collect([$propertyAddress, $propertyColonyLabel])->filter()->implode(', ') ?: null;
+
+        return view('pdf.acuerdo-representacion-renta-imprimible', compact(
+            'ownerName', 'ownerId', 'ownerCurpRfc', 'ownerAddress', 'propertyFull'
+        ))->render();
+    }
+
+    public function generatePrintablePdf(?Client $client = null, ?Property $property = null): string
+    {
+        set_time_limit(120);
+
+        $html = $this->renderPrintableHtml($client, $property);
+
+        $dir  = storage_path('app/acuerdo-representacion-renta-imprimible');
+        File::ensureDirectoryExists($dir);
+        $path = $dir . '/acuerdo-renta-imprimible-' . time() . '.pdf';
+
+        Browsershot::html($html)
+            ->setNodeBinary(config('browsershot.node_path', '/usr/bin/node'))
+            ->setChromePath(config('browsershot.chrome_path', '/usr/bin/google-chrome'))
+            ->noSandbox()
+            ->addChromiumArguments(['--disable-gpu', '--disable-dev-shm-usage', '--disable-extensions'])
+            ->windowSize(816, 1056)
+            ->paperSize(215.9, 279.4)
+            ->landscape(false)
+            ->margins(0, 0, 0, 0)
+            ->showBackground()
+            ->emulateMedia('screen')
+            ->timeout(90)
+            ->savePdf($path);
+
+        return $path;
+    }
 }
