@@ -133,7 +133,7 @@
                            style="margin-top:.15rem;flex-shrink:0;cursor:pointer;"
                            onclick="event.stopPropagation()">
                     <div style="flex:1;min-width:0;">
-                        <a href="{{ route('admin.rentas.gestion.show', $card['id']) }}"
+                        <a href="{{ route('operations.show', $card['id']) }}"
                            style="font-size:.78rem;font-weight:600;color:#0f172a;text-decoration:none;line-height:1.3;display:block;"
                            onclick="event.stopPropagation()">
                             {{ Str::limit($card['client_name'], 22) }}
