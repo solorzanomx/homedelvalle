@@ -461,7 +461,7 @@
         {{-- TAB: Documents --}}
         <div class="tab-content" id="tab-documents">
 
-            @if($operation->type === 'renta')
+            @if($operation->type === 'renta' || ($operation->type === 'captacion' && $operation->target_type === 'renta'))
             @php
                 $arrDocs = $operation->documents->where('category', 'contrato_exclusiva_renta')->sortByDesc('created_at');
                 $arrMissing = \App\Services\AcuerdoRepresentacionRentaGeneratorService::missingOwnershipFields($operation->property);
@@ -495,7 +495,7 @@
                                 <div><strong>{{ $doc->label }}</strong> <span style="color:var(--text-muted);"> &middot; {{ $doc->created_at->format('d/m/Y') }}</span></div>
                                 <div style="display:flex;align-items:center;gap:.5rem;">
                                     <a href="{{ route('operations.acuerdo-representacion-renta.pdf', $operation->id) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
-                                    @if($operation->stage === 'exclusiva')
+                                    @if($operation->type === 'renta' && $operation->stage === 'exclusiva')
                                     <form method="POST" action="{{ route('operations.acuerdo-representacion-renta.confirmar-firma', $operation->id) }}" style="display:inline;" onsubmit="return confirm('Marcar como firmado y avanzar a Mejoras?')">
                                         @csrf
                                         <button type="submit" class="btn btn-sm" style="background:#16a34a;color:#fff;">&#10003; Marcar firmado</button>
@@ -506,6 +506,9 @@
                         </div>
                         @endforeach
                     </div>
+                    @if($operation->type === 'captacion')
+                    <p style="font-size:0.76rem;color:var(--text-muted);margin-top:.5rem;">Ya generado — marca "Generar el Acuerdo de Representación en el sistema" y, cuando el propietario lo firme, "Obtener la firma del Acuerdo de Representación" en la pestaña <a href="#" onclick="switchTab('checklist', document.querySelector('.tab-btn[onclick*=\'checklist\']')); return false;" style="color:var(--primary);">Checklist</a> de esta etapa.</p>
+                    @endif
                     @endif
 
                     @if(!$arrMissing)

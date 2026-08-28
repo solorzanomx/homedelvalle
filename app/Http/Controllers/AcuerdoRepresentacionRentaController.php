@@ -14,8 +14,9 @@ class AcuerdoRepresentacionRentaController extends Controller
 {
     public function generar(Request $request, Operation $operation, AcuerdoRepresentacionRentaGeneratorService $generator)
     {
-        if ($operation->type !== 'renta') {
-            return back()->with('error', 'Esta Operation no es de tipo renta.');
+        $esRenta = $operation->type === 'renta' || ($operation->type === 'captacion' && $operation->target_type === 'renta');
+        if (!$esRenta) {
+            return back()->with('error', 'Esta Operation no es de renta.');
         }
 
         $missing = $generator::missingOwnershipFields($operation->property);
@@ -75,7 +76,13 @@ class AcuerdoRepresentacionRentaController extends Controller
             return back()->with('error', 'No hay Acuerdo de Representación (Renta) generado.');
         }
 
-        if ($operation->stage === 'exclusiva') {
+        // Solo aplica a Operation type=renta — en type=captacion el avance real
+        // pasa por el checklist de la etapa 'exclusiva' (incluye el ítem
+        // "Obtener la firma del Acuerdo de Representación"), que al completarse
+        // dispara OperationChecklistService::completeCaptacionAndSpawn(). Forzar
+        // el stage aquí para una captación lo dejaría en un stage ('mejoras')
+        // que ni siquiera existe en Operation::CAPTACION_STAGES.
+        if ($operation->type === 'renta' && $operation->stage === 'exclusiva') {
             $checklistService->changeStage($operation, 'mejoras', Auth::user(), 'Acuerdo de Representación (Renta) firmado (confirmación manual).');
         }
 
