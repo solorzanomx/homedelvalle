@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
 #[ObservedBy(PropertyObserver::class)]
 class Property extends Model
 {
-    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'market_colonia_id', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'is_featured', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'inmuebles24_ad_code', 'youtube_url'];
+    protected $fillable = ['title', 'description', 'price', 'city', 'colony', 'market_colonia_id', 'address', 'zipcode', 'area', 'construction_area', 'lot_area', 'parking', 'status', 'is_featured', 'bedrooms', 'bathrooms', 'half_bathrooms', 'floors', 'year_built', 'maintenance_fee', 'furnished', 'amenities', 'photo', 'property_type', 'operation_type', 'currency', 'broker_id', 'client_id', 'easybroker_id', 'easybroker_status', 'easybroker_published_at', 'easybroker_public_url', 'inmuebles24_ad_code', 'youtube_url', 'blog_campaign_id'];
 
     const PROPERTY_TYPES = [
         'House' => 'Casa',

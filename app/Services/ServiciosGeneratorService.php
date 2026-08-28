@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Browsershot\Browsershot;
 
+// PresentationGeneratorService is in the same namespace (App\Services),
+// so PHP resolves it automatically without a use statement.
+
 class ServiciosGeneratorService
 {
     /**
