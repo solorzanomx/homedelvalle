@@ -36,6 +36,7 @@ class Document extends Model
         'oferta_compra'       => 'Carta Oferta de Compra',
         'recibo_apartado'     => 'Recibo de Apartado',
         'contrato_exclusiva'  => 'Acuerdo de Representación',
+        'contrato_exclusiva_renta' => 'Acuerdo de Representación (Renta)',
         'contrato_compraventa' => 'Contrato de Compraventa',
         'adendum_comision' => 'Adéndum de Comisión Mercantil',
         // Expediente del cliente

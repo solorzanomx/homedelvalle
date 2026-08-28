@@ -641,6 +641,39 @@
                             <p class="form-hint">Inmuebles24 no tiene API — copia aquí el "Código de aviso" que aparece en el correo cuando alguien pregunta por esta propiedad, así el lead se vincula automáticamente a esta ficha.</p>
                             @error('inmuebles24_ad_code') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
                         </div>
+
+                        <div class="section-label" style="margin-top:1.5rem;">Escritura / Registro Público</div>
+                        <p class="form-hint" style="margin-bottom:0.6rem;">Necesarios para la Declaración de Propiedad del Acuerdo de Representación (Renta) — acredita que quien firma es el dueño real.</p>
+                        <div class="form-group">
+                            <label class="form-label">Folio Real Electrónico</label>
+                            <input type="text" name="folio_real" class="form-input" value="{{ old('folio_real', $property->folio_real) }}" placeholder="RPPyC CDMX">
+                            @error('folio_real') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Número de escritura</label>
+                            <input type="text" name="escritura_numero" class="form-input" value="{{ old('escritura_numero', $property->escritura_numero) }}">
+                            @error('escritura_numero') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Fecha de escritura</label>
+                            <input type="date" name="escritura_fecha" class="form-input" value="{{ old('escritura_fecha', optional($property->escritura_fecha)->format('Y-m-d')) }}">
+                            @error('escritura_fecha') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notario — nombre</label>
+                            <input type="text" name="notario_nombre" class="form-input" value="{{ old('notario_nombre', $property->notario_nombre) }}" placeholder="Sin 'Lic.'">
+                            @error('notario_nombre') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notario — número</label>
+                            <input type="text" name="notario_numero" class="form-input" value="{{ old('notario_numero', $property->notario_numero) }}">
+                            @error('notario_numero') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notario — plaza</label>
+                            <input type="text" name="notario_plaza" class="form-input" value="{{ old('notario_plaza', $property->notario_plaza) }}" placeholder="Ciudad de México">
+                            @error('notario_plaza') <p class="form-hint" style="color:var(--danger)">{{ $message }}</p> @enderror
+                        </div>
                     </div>
                 </div>
             </div>

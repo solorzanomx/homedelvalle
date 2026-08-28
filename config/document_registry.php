@@ -106,6 +106,17 @@ return [
         ],
     ],
 
+    'contrato_exclusiva_renta' => [
+        'nombre' => 'Acuerdo de Representación (Renta)',
+        'descripcion' => 'Acuerdo que firma el propietario para autorizar a Home del Valle a promocionar y colocar en arrendamiento su inmueble. Incluye Declaración de Propiedad (folio real, escritura, notario) bajo protesta de decir verdad. Alcance limitado a promoción y colocación — la administración continua de la renta es un adéndum aparte.',
+        'archivo_fuente' => 'resources/views/pdf/acuerdo-representacion-renta.blade.php',
+        'donde_generarlo' => 'Ficha de la Operation (renta) → pestaña Docs → Generar Acuerdo',
+        'editar_route' => 'admin.documentos.contrato-exclusiva-renta.clausulas',
+        'changelog' => [
+            ['fecha' => '2026-08-28', 'resumen' => 'Creado — mismo patrón de marca/cláusulas editables que Acuerdo de Representación de venta, pero para Operation type=renta (no requiere Captacion). Novedad respecto al de venta: bloque de Declaraciones separado de las cláusulas, con la Declaración de Propiedad bajo protesta de decir verdad (folio real, número de escritura, notario) — requiere que Property tenga esos 5 campos capturados antes de poder generarse. Comisión pactada como un mes de renta, no porcentaje. Pendiente de revisión por un abogado antes de uso definitivo.'],
+        ],
+    ],
+
     'recibo_apartado' => [
         'nombre' => 'Recibo de Apartado (Renta)',
         'descripcion' => 'Recibo de depósito en garantía y reserva de inmueble para arrendamiento — se genera cuando un arrendatario paga un apartado antes de iniciar investigación y trámite de póliza jurídica.',

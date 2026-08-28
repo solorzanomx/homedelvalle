@@ -226,4 +226,46 @@ class DocumentClauseController extends Controller
 
         return redirect()->route('admin.documentos.contrato-compraventa.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
     }
+
+    public function editContratoExclusivaRenta()
+    {
+        $documentTitle = 'Acuerdo de Representación (Renta)';
+        $updateRoute   = route('admin.documentos.contrato-exclusiva-renta.clausulas.update');
+        $legalHint     = 'Se recomienda que un abogado revise cualquier cambio a estas cláusulas antes de usarlas con propietarios reales — especialmente la Declaración de Propiedad y la de Comisión.';
+        $tokenHint     = null;
+
+        $clauses = collect(\App\Services\AcuerdoRepresentacionRentaGeneratorService::DEFAULT_CLAUSES)->map(function ($default, $key) {
+            return [
+                'key'     => $key,
+                'label'   => \App\Services\AcuerdoRepresentacionRentaGeneratorService::CLAUSE_LABELS[$key],
+                'default' => $default,
+                'value'   => DocumentClause::where('document_key', 'contrato_exclusiva_renta')->where('clause_key', $key)->value('value') ?? $default,
+            ];
+        });
+
+        $lastUpdated = DocumentClause::where('document_key', 'contrato_exclusiva_renta')
+            ->with('updatedBy')
+            ->latest('updated_at')
+            ->first();
+
+        return view('admin.documentos.clausulas', compact('clauses', 'lastUpdated', 'documentTitle', 'updateRoute', 'legalHint', 'tokenHint'));
+    }
+
+    public function updateContratoExclusivaRenta(Request $request)
+    {
+        $keys = array_keys(\App\Services\AcuerdoRepresentacionRentaGeneratorService::DEFAULT_CLAUSES);
+
+        $validated = $request->validate(
+            collect($keys)->mapWithKeys(fn ($key) => [$key => 'required|string|max:5000'])->all()
+        );
+
+        foreach ($validated as $clauseKey => $value) {
+            DocumentClause::updateOrCreate(
+                ['document_key' => 'contrato_exclusiva_renta', 'clause_key' => $clauseKey],
+                ['value' => $value, 'updated_by' => Auth::id()]
+            );
+        }
+
+        return redirect()->route('admin.documentos.contrato-exclusiva-renta.clausulas')->with('success', 'Cláusulas actualizadas correctamente.');
+    }
 }

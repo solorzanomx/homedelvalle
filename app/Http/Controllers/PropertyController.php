@@ -387,6 +387,12 @@ class PropertyController extends Controller
             'youtube_url' => 'nullable|url|max:500',
             'inmuebles24_ad_code' => 'nullable|string|max:50|unique:properties,inmuebles24_ad_code,' . $property->id,
             'easybroker_id' => 'nullable|string|max:50|unique:properties,easybroker_id,' . $property->id,
+            'folio_real' => 'nullable|string|max:80',
+            'escritura_numero' => 'nullable|string|max:60',
+            'escritura_fecha' => 'nullable|date',
+            'notario_nombre' => 'nullable|string|max:150',
+            'notario_numero' => 'nullable|string|max:20',
+            'notario_plaza' => 'nullable|string|max:100',
         ]);
 
         if ($request->hasFile('photo')) {

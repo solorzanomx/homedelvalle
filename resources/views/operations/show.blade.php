@@ -461,6 +461,66 @@
         {{-- TAB: Documents --}}
         <div class="tab-content" id="tab-documents">
 
+            @if($operation->type === 'renta')
+            @php
+                $arrDocs = $operation->documents->where('category', 'contrato_exclusiva_renta')->sortByDesc('created_at');
+                $arrMissing = \App\Services\AcuerdoRepresentacionRentaGeneratorService::missingOwnershipFields($operation->property);
+            @endphp
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-body" style="padding:0.85rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;{{ $arrDocs->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
+                        <span style="font-size:0.82rem;font-weight:600;">&#128220; Acuerdo de Representación (Renta)</span>
+                        @if(!$arrMissing)
+                        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('arr-form').style.display = document.getElementById('arr-form').style.display === 'none' ? 'block' : 'none';">
+                            + Generar Acuerdo
+                        </button>
+                        @endif
+                    </div>
+
+                    @if($arrMissing)
+                    <p style="font-size:0.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;">
+                        Completa en la ficha del inmueble los datos de escritura antes de generar el Acuerdo (Declaración de Propiedad): <strong>{{ implode(', ', $arrMissing) }}</strong>.
+                        @if($operation->property)<a href="{{ route('properties.edit', $operation->property_id) }}" target="_blank" style="color:var(--danger);text-decoration:underline;">Editar inmueble &rarr;</a>@endif
+                    </p>
+                    @endif
+
+                    @if($arrDocs->isNotEmpty())
+                    <div style="display:flex;flex-direction:column;gap:.4rem;">
+                        @foreach($arrDocs as $doc)
+                        <div style="padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div><strong>{{ $doc->label }}</strong> <span style="color:var(--text-muted);"> &middot; {{ $doc->created_at->format('d/m/Y') }}</span></div>
+                                <div style="display:flex;align-items:center;gap:.5rem;">
+                                    <a href="{{ route('operations.acuerdo-representacion-renta.pdf', $operation->id) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                                    @if($operation->stage === 'exclusiva')
+                                    <form method="POST" action="{{ route('operations.acuerdo-representacion-renta.confirmar-firma', $operation->id) }}" style="display:inline;" onsubmit="return confirm('Marcar como firmado y avanzar a Mejoras?')">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm" style="background:#16a34a;color:#fff;">&#10003; Marcar firmado</button>
+                                    </form>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @if(!$arrMissing)
+                    <form id="arr-form" method="POST" action="{{ route('operations.acuerdo-representacion-renta.generar', $operation->id) }}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
+                        @csrf
+                        <div style="display:flex;gap:.5rem;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Vigencia (días)</label>
+                                <input type="number" name="vigencia_dias" class="form-input" value="90" min="30" max="180">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
+                        </div>
+                    </form>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             @if($operation->type === 'venta')
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:0.85rem;">
