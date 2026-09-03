@@ -40,14 +40,15 @@ body {
 }
 .page:last-child { break-after: auto; page-break-after: auto; }
 .page-header-inner {
-    flex-shrink: 0; background: var(--hdv-navy); border-bottom: 4px solid var(--hdv-accent);
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--hdv-navy); border-bottom: 4px solid var(--hdv-accent);
     padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
 }
 .page-header-inner img { height: 18px; max-width: 140px; object-fit: contain; display: block; }
 .page-header-inner span.phi-text { font-size: 12px; font-weight: 700; color: #fff; }
 .page-header-inner .phi-tag { font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: rgba(199,210,254,.7); }
 .page-body  { flex: 1; display: flex; flex-direction: column; }
-.inner      { flex: 1; padding: 30px 52px 36px; display: flex; flex-direction: column; }
+.inner      { flex: 1; padding: 60px 52px 36px; display: flex; flex-direction: column; }
 .page-foot  {
     position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
     border-top: 1px solid #e2e8f0; padding: 8px 52px;
