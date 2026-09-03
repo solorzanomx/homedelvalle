@@ -40,15 +40,14 @@ body {
 }
 .page:last-child { break-after: auto; page-break-after: auto; }
 .page-header-inner {
-    position: fixed; top: 0; left: 0; right: 0;
-    background: var(--hdv-navy); border-bottom: 4px solid var(--hdv-accent);
+    flex-shrink: 0; background: var(--hdv-navy); border-bottom: 4px solid var(--hdv-accent);
     padding: 10px 52px; display: flex; align-items: center; justify-content: space-between;
 }
 .page-header-inner img { height: 18px; max-width: 140px; object-fit: contain; display: block; }
 .page-header-inner span.phi-text { font-size: 12px; font-weight: 700; color: #fff; }
 .page-header-inner .phi-tag { font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: rgba(199,210,254,.7); }
 .page-body  { flex: 1; display: flex; flex-direction: column; }
-.inner      { flex: 1; padding: 60px 52px 36px; display: flex; flex-direction: column; }
+.inner      { flex: 1; padding: 30px 52px 36px; display: flex; flex-direction: column; }
 .page-foot  {
     position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
     border-top: 1px solid #e2e8f0; padding: 8px 52px;
@@ -91,7 +90,7 @@ strong { color: #0f172a; }
 .terms-table tr:last-child td { border-bottom: none; }
 
 .clauses { counter-reset: clause; margin: 4px 0 10px; }
-.clause { counter-increment: clause; padding: 5px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; break-inside: avoid; page-break-inside: avoid; }
+.clause { counter-increment: clause; margin-top: 10px; padding: 5px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; break-inside: avoid; page-break-inside: avoid; }
 .clause:last-child { border-bottom: none; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
