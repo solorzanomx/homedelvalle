@@ -90,9 +90,9 @@ strong { color: #0f172a; }
 .terms-table tr:last-child td { border-bottom: none; }
 
 .clauses { counter-reset: clause; margin: 4px 0 10px; }
-.clause { counter-increment: clause; padding: 18px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; break-inside: avoid; page-break-inside: avoid; }
+.clause { counter-increment: clause; padding: 26px 0 20px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; break-inside: avoid; page-break-inside: avoid; }
 .clause:last-child { border-bottom: none; }
-.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 18px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
+.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 26px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
 .sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 8px; }
