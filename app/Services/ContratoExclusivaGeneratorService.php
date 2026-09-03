@@ -48,14 +48,12 @@ class ContratoExclusivaGeneratorService
     /** Datos del propietario (nombre, identificación, CURP/RFC, domicilio), en formato título. */
     private static function ownerInfo(?Client $client): array
     {
-        // Client.name se captura siempre desde el primer contacto (nombre completo);
-        // los campos divididos se llenan después, si acaso — misma prioridad que
-        // en PurchaseOfferGeneratorService, ver esa clase para el porqué.
-        $ownerName = self::tituloCase($client?->name) ?: self::tituloCase(trim(implode(' ', array_filter([
-            $client?->first_name,
-            $client?->last_name_paterno,
-            $client?->last_name_materno,
-        ])))) ?: '—';
+        // full_name (accessor de Client) prioriza los campos de Datos Legales
+        // cuando están completos (first_name + last_name_paterno) y solo cae a
+        // name si la ficha legal aún no se ha llenado — evita tanto firmar con
+        // el nombre de trato en vez del legal, como truncar el nombre si solo
+        // hay first_name capturado sin apellidos divididos.
+        $ownerName = self::tituloCase($client?->full_name) ?: '—';
 
         $ownerId = $client?->id_type && $client?->id_number
             ? "{$client->id_type} {$client->id_number}"

@@ -86,11 +86,10 @@ class AcuerdoRepresentacionRentaGeneratorService
     /** Datos del propietario (nombre, identificación, CURP/RFC, domicilio, estado civil), en formato título. */
     private static function ownerInfo(?Client $client): array
     {
-        $ownerName = self::tituloCase($client?->name) ?: self::tituloCase(trim(implode(' ', array_filter([
-            $client?->first_name,
-            $client?->last_name_paterno,
-            $client?->last_name_materno,
-        ])))) ?: '—';
+        // full_name prioriza los campos de Datos Legales (first_name/last_name_*)
+        // y solo cae a name (alias común) si no hay ficha legal capturada — un
+        // documento legal debe firmarse con el nombre legal, no el de trato.
+        $ownerName = self::tituloCase($client?->full_name) ?: '—';
 
         $ownerId = $client?->id_type && $client?->id_number
             ? "{$client->id_type} {$client->id_number}"
@@ -236,11 +235,7 @@ class AcuerdoRepresentacionRentaGeneratorService
      */
     public function renderPrintableHtml(?Client $client = null, ?Property $property = null): string
     {
-        $ownerName = self::tituloCase($client?->name) ?: self::tituloCase(trim(implode(' ', array_filter([
-            $client?->first_name,
-            $client?->last_name_paterno,
-            $client?->last_name_materno,
-        ])))) ?: null;
+        $ownerName = self::tituloCase($client?->full_name) ?: null;
 
         $ownerId = $client?->id_type && $client?->id_number ? "{$client->id_type} {$client->id_number}" : null;
 
