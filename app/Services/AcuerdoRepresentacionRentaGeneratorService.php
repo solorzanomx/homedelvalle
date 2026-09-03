@@ -19,6 +19,10 @@ use Spatie\Browsershot\Browsershot;
  */
 class AcuerdoRepresentacionRentaGeneratorService
 {
+    /** Quien firma el Acuerdo a nombre de Home del Valle — la persona con facultades para representar legalmente a la empresa, no el broker asignado al trato. */
+    const REPRESENTANTE_NOMBRE = 'Ana Laura Monsivais Flores';
+    const REPRESENTANTE_CARGO = 'Directora General';
+
     /**
      * Texto por defecto de las cláusulas legales — editable desde
      * /admin/documentos/contrato-exclusiva-renta/clausulas (App\Models\DocumentClause).

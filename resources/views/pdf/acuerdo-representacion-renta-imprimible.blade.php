@@ -119,7 +119,7 @@ strong { color: #0f172a; }
 
     <p class="meta-line"><strong>HOME DEL VALLE BIENES RAÍCES</strong><br>P R E S E N T E. —</p>
 
-    <p>Por medio del presente, el/la propietario(a) que suscribe designa a <strong>Home del Valle Bienes Raíces</strong> como su representante para la promoción y colocación en arrendamiento del inmueble ubicado en
+    <p>Por medio del presente, el/la propietario(a) que suscribe designa a <strong>Home del Valle Bienes Raíces</strong> —representada en este acto por <strong>{{ \App\Services\AcuerdoRepresentacionRentaGeneratorService::REPRESENTANTE_NOMBRE }}</strong>, {{ \App\Services\AcuerdoRepresentacionRentaGeneratorService::REPRESENTANTE_CARGO }}— como su representante para la promoción y colocación en arrendamiento del inmueble ubicado en
       @if($propertyFull)<strong>{{ $propertyFull }}</strong>@else<span class="fill lg">&nbsp;</span>@endif
       , sujeto a los términos y condiciones establecidos en este documento:</p>
 
@@ -172,7 +172,7 @@ strong { color: #0f172a; }
         <div class="sign-line">Nombre y firma del propietario</div>
       </div>
       <div class="sign-col">
-        <div class="sign-line">Nombre y firma del representante — Home del Valle</div>
+        <div class="sign-line"><strong>{{ \App\Services\AcuerdoRepresentacionRentaGeneratorService::REPRESENTANTE_NOMBRE }}</strong><br>{{ \App\Services\AcuerdoRepresentacionRentaGeneratorService::REPRESENTANTE_CARGO }} · Home del Valle<br>Nombre y firma del representante</div>
       </div>
     </div>
 
