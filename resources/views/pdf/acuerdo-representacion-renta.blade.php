@@ -88,7 +88,6 @@ strong { color: #0f172a; }
 .clauses { counter-reset: clause; margin: 4px 0 10px; }
 .clause { counter-increment: clause; padding: 5px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; break-inside: avoid; page-break-inside: avoid; }
 .clause:last-child { border-bottom: none; }
-.clause[data-clause="obligaciones_hdv"] { break-before: page; page-break-before: always; }
 .clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
