@@ -237,6 +237,7 @@ Route::middleware('auth')->group(function () {
     Route::post('clients/{client}/interactions/{interaction}/send-confirmation', [ClientController::class, 'resendConfirmation'])->name('clients.interaction.send-confirmation');
     Route::post('clients/{client}/interactions/{interaction}/send-feedback', [ClientController::class, 'sendFeedbackRequest'])->name('clients.interaction.send-feedback');
     Route::post('clients/{client}/create-portal', [ClientController::class, 'createPortalAccount'])->name('clients.create-portal');
+    Route::post('clients/{client}/send-tenant-checklist', [ClientController::class, 'sendTenantChecklist'])->name('clients.send-tenant-checklist');
     Route::patch('clients/{client}/toggle-portal', [ClientController::class, 'togglePortalAccess'])->name('clients.toggle-portal');
     Route::delete('clients/{client}/delete-portal', [ClientController::class, 'deletePortalAccess'])->name('clients.delete-portal');
     Route::post('clients/{client}/reset-portal-password', [ClientController::class, 'resetPortalPassword'])->name('clients.reset-portal-password');
@@ -415,6 +416,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::patch('/form-submissions/{formSubmission}/status', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateStatus'])->name('form-submissions.status');
     Route::patch('/form-submissions/{formSubmission}/notes', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateNotes'])->name('form-submissions.notes');
     Route::post('/form-submissions/{formSubmission}/convert-client', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'convertToClient'])->name('form-submissions.convert-client');
+    Route::post('/form-submissions/{formSubmission}/send-tenant-checklist', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'sendTenantChecklist'])->name('form-submissions.send-tenant-checklist');
     Route::post('/form-submissions/{formSubmission}/schedule-visit', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'scheduleVisit'])->name('form-submissions.schedule-visit');
     Route::post('/form-submissions/{formSubmission}/visits/{interaction}/send-confirmation', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'resendVisitConfirmation'])->name('form-submissions.visit.send-confirmation');
     Route::post('/form-submissions/{formSubmission}/visits/{interaction}/send-feedback', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'sendVisitFeedbackRequest'])->name('form-submissions.visit.send-feedback');

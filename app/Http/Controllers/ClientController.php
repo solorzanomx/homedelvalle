@@ -790,6 +790,17 @@ class ClientController extends Controller
         return back()->with('success', $message);
     }
 
+    public function sendTenantChecklist(Client $client)
+    {
+        if (!$client->email) {
+            return back()->with('error', 'El cliente necesita un email para mandarle el checklist.');
+        }
+
+        app(\App\Services\TenantChecklistService::class)->send($client);
+
+        return back()->with('success', 'Checklist de requisitos enviado a ' . $client->email . '.');
+    }
+
     public function togglePortalAccess(Client $client)
     {
         if (!$client->user_id) {

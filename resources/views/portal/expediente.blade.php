@@ -704,7 +704,29 @@
             {{-- Documentos de ingresos --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
                 <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Comprobantes de ingresos</div>
-                @foreach(['nomina'=>'Recibos de Nómina (últimos 3)','estado_cuenta'=>'Estado de Cuenta (últimos 3 meses)','cfdi_honorarios'=>'CFDI de Honorarios','proof_of_income'=>'Otro comprobante de ingresos'] as $cat => $label)
+                @foreach(\App\Support\TenantDocumentChecklist::INGRESOS as $cat => $label)
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);">
+                    <span style="font-size:.82rem;">
+                        {{ $documents->has($cat) ? '✅' : '○' }} {{ $label }}
+                    </span>
+                    @if(!$documents->has($cat))
+                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;">
+                        @csrf
+                        @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
+                        <input type="hidden" name="category" value="{{ $cat }}">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
+                    </form>
+                    @else
+                    <span style="font-size:.72rem;color:var(--text-muted);">Subido ✓</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+
+            {{-- Referencias personales + Buró de Crédito --}}
+            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Referencias y buró de crédito</div>
+                @foreach(\App\Support\TenantDocumentChecklist::REFERENCIAS + \App\Support\TenantDocumentChecklist::CREDITO as $cat => $label)
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);">
                     <span style="font-size:.82rem;">
                         {{ $documents->has($cat) ? '✅' : '○' }} {{ $label }}

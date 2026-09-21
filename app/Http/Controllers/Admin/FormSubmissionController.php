@@ -197,44 +197,17 @@ class FormSubmissionController extends Controller
             return back()->with('success', 'Este lead ya tiene un cliente asociado.');
         }
 
-        // client_type se re-deriva de interest_types en vez de copiarse tal
-        // cual del FormSubmission — mismo bug ya corregido en
-        // FormSubmissionsTable::convertToClient() (auditoría 2026-07-04).
-        $data = [
-            'name'             => $formSubmission->full_name,
-            'phone'            => $formSubmission->phone,
-            'whatsapp'         => $formSubmission->phone,
-            'client_type'      => \App\Models\Client::deriveClientType($formSubmission->interest_types ?? []) ?? $formSubmission->client_type,
-            'lead_temperature' => $formSubmission->lead_temperature ?? 'warm',
-            'budget_min'       => $formSubmission->budget_min,
-            'budget_max'       => $formSubmission->budget_max,
-            'property_type'    => $formSubmission->property_type,
-            'interest_types'   => $formSubmission->interest_types,
-            'utm_source'       => $formSubmission->utm_source,
-            'utm_medium'       => $formSubmission->utm_medium,
-            'utm_campaign'     => $formSubmission->utm_campaign,
-            'lead_source'      => 'form_' . $formSubmission->form_type,
-            'initial_notes'    => $formSubmission->payload['mensaje'] ?? null,
-        ];
+        $wasExisting = Client::where('email', $formSubmission->email)->exists();
+        $client = $this->resolveOrCreateClientFromLead($formSubmission);
 
-        // Si ya existe un cliente con ese email, vincularlo sin duplicar
-        $existing = Client::where('email', $formSubmission->email)->first();
-
-        if ($existing) {
-            $formSubmission->update(['client_id' => $existing->id]);
-            $this->reparentVisits($formSubmission, $existing);
-
+        if ($wasExisting) {
             if ($goesToCaptacion) {
                 return redirect()
-                    ->route('admin.captaciones.create-from-call', ['client_id' => $existing->id, 'form_submission_id' => $formSubmission->id])
-                    ->with('success', "Lead vinculado al cliente existente «{$existing->name}».");
+                    ->route('admin.captaciones.create-from-call', ['client_id' => $client->id, 'form_submission_id' => $formSubmission->id])
+                    ->with('success', "Lead vinculado al cliente existente «{$client->name}».");
             }
-            return back()->with('success', "Lead vinculado al cliente existente «{$existing->name}».");
+            return back()->with('success', "Lead vinculado al cliente existente «{$client->name}».");
         }
-
-        $client = Client::create(array_merge($data, ['email' => $formSubmission->email]));
-        $formSubmission->update(['client_id' => $client->id]);
-        $this->reparentVisits($formSubmission, $client);
 
         // La conversión ES el nacimiento del cliente (política de
         // seguimiento): aquí se disparan las automatizaciones de cliente
@@ -265,6 +238,80 @@ class FormSubmissionController extends Controller
         \App\Models\Interaction::where('form_submission_id', $formSubmission->id)
             ->whereNull('client_id')
             ->update(['client_id' => $client->id]);
+    }
+
+    /**
+     * Encuentra o crea el Client de un lead — misma lógica que usaba
+     * convertToClient() inline, extraída para que sendTenantChecklist()
+     * (2026-09-21) también pueda convertir el lead en un solo paso sin
+     * duplicar el criterio de client_type/interest_types.
+     */
+    private function resolveOrCreateClientFromLead(FormSubmission $formSubmission): Client
+    {
+        if ($formSubmission->client_id) {
+            return Client::findOrFail($formSubmission->client_id);
+        }
+
+        $existing = Client::where('email', $formSubmission->email)->first();
+        if ($existing) {
+            $formSubmission->update(['client_id' => $existing->id]);
+            $this->reparentVisits($formSubmission, $existing);
+            return $existing;
+        }
+
+        // client_type se re-deriva de interest_types en vez de copiarse tal
+        // cual del FormSubmission — mismo bug ya corregido en
+        // FormSubmissionsTable::convertToClient() (auditoría 2026-07-04).
+        $data = [
+            'name'             => $formSubmission->full_name,
+            'email'            => $formSubmission->email,
+            'phone'            => $formSubmission->phone,
+            'whatsapp'         => $formSubmission->phone,
+            'client_type'      => Client::deriveClientType($formSubmission->interest_types ?? []) ?? $formSubmission->client_type,
+            'lead_temperature' => $formSubmission->lead_temperature ?? 'warm',
+            'budget_min'       => $formSubmission->budget_min,
+            'budget_max'       => $formSubmission->budget_max,
+            'property_type'    => $formSubmission->property_type,
+            'interest_types'   => $formSubmission->interest_types,
+            'utm_source'       => $formSubmission->utm_source,
+            'utm_medium'       => $formSubmission->utm_medium,
+            'utm_campaign'     => $formSubmission->utm_campaign,
+            'lead_source'      => 'form_' . $formSubmission->form_type,
+            'initial_notes'    => $formSubmission->payload['mensaje'] ?? null,
+        ];
+
+        $client = Client::create($data);
+        $formSubmission->update(['client_id' => $client->id]);
+        $this->reparentVisits($formSubmission, $client);
+
+        return $client;
+    }
+
+    /**
+     * "Enviar checklist de requisitos" desde la ficha del lead — convierte a
+     * Client (si aún no lo es) Y manda el checklist en un solo paso, para no
+     * obligar al broker a pasar primero por "Convertir a cliente" (2026-09-21).
+     */
+    public function sendTenantChecklist(FormSubmission $formSubmission)
+    {
+        if (!$formSubmission->email) {
+            return back()->with('error', 'El lead necesita un email para mandarle el checklist.');
+        }
+
+        $isNewClient = !$formSubmission->client_id && !Client::where('email', $formSubmission->email)->exists();
+        $client = $this->resolveOrCreateClientFromLead($formSubmission);
+
+        if ($isNewClient) {
+            try {
+                app(\App\Services\AutomationEngine::class)->processNewClient($client);
+            } catch (\Throwable $e) {
+                \Log::warning('sendTenantChecklist: processNewClient falló', ['error' => $e->getMessage()]);
+            }
+        }
+
+        app(\App\Services\TenantChecklistService::class)->send($client);
+
+        return back()->with('success', "Checklist de requisitos enviado a {$client->email}.");
     }
 
     /**

@@ -290,14 +290,17 @@ class PortalExpedienteController extends Controller
         $idFilled = collect($idFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['identificacion'] = ['filled' => $idFilled, 'total' => count($idFields), 'pct' => round($idFilled / count($idFields) * 100)];
 
-        // Ingresos (arrendatario)
+        // Ingresos (arrendatario) — incluye comprobante de ingresos, referencias
+        // personales y buró de crédito (checklist real del cuestionario en
+        // papel, ver App\Support\TenantDocumentChecklist).
         if ($isArrendatario) {
             $incomeFields = ['income_type','income_amount'];
             $incomeFilled = collect($incomeFields)->filter(fn($f) => !empty($client->$f))->count();
-            // + comprobante documento
-            $hasIncomeDoc = $documents->has('proof_of_income') || $documents->has('nomina') || $documents->has('estado_cuenta') || $documents->has('cfdi_honorarios');
-            $incomeFilled += $hasIncomeDoc ? 1 : 0;
-            $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => 3, 'pct' => round($incomeFilled / 3 * 100)];
+            $hasIncomeDoc = collect(array_keys(\App\Support\TenantDocumentChecklist::INGRESOS))->contains(fn($k) => $documents->has($k));
+            $hasReferences = $documents->has('references');
+            $hasCreditReport = $documents->has('credit_report');
+            $incomeFilled += ($hasIncomeDoc ? 1 : 0) + ($hasReferences ? 1 : 0) + ($hasCreditReport ? 1 : 0);
+            $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => 5, 'pct' => round($incomeFilled / 5 * 100)];
         }
 
         // Garantía (arrendatario)
