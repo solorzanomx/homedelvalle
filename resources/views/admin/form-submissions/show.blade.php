@@ -492,15 +492,17 @@
             @endif
         </div>
 
-        {{-- Enviar checklist de requisitos (inquilino) — convierte a cliente
-             y manda el checklist en un solo paso si aún no es cliente. --}}
+        {{-- Enviar checklist de requisitos (inquilino) — solo informativo,
+             NO convierte a cliente ni crea acceso al portal. Eso queda para
+             "Convertir a cliente" cuando decidas avanzar con este prospecto. --}}
         @if(in_array('renta_inquilino', $submission->interest_types ?? []))
-        <form method="POST" action="{{ route('admin.form-submissions.send-tenant-checklist', $submission) }}" style="margin-bottom:1rem">
+        <form method="POST" action="{{ route('admin.form-submissions.send-tenant-checklist', $submission) }}" style="margin-bottom:0.4rem">
             @csrf
             <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#7c3aed;border-color:#7c3aed">
                 📋 Enviar checklist de requisitos
             </button>
         </form>
+        <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 1rem;line-height:1.4;">Solo informa qué documentos se piden — no lo convierte a cliente ni abre su portal. Eso es "Convertir a cliente", cuando decidas avanzar con él.</p>
         @endif
 
         {{-- Convertir a cliente --}}

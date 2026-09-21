@@ -288,9 +288,11 @@ class FormSubmissionController extends Controller
     }
 
     /**
-     * "Enviar checklist de requisitos" desde la ficha del lead — convierte a
-     * Client (si aún no lo es) Y manda el checklist en un solo paso, para no
-     * obligar al broker a pasar primero por "Convertir a cliente" (2026-09-21).
+     * "Enviar checklist de requisitos" desde la ficha del lead — puramente
+     * informativo, NO convierte a Client (decisión confirmada 2026-09-21:
+     * la conversión y el acceso al portal quedan para cuando el broker
+     * decida avanzar con ese prospecto e iniciar la investigación; mandar
+     * el checklist a todos los interesados no debe comprometer nada).
      */
     public function sendTenantChecklist(FormSubmission $formSubmission)
     {
@@ -298,20 +300,16 @@ class FormSubmissionController extends Controller
             return back()->with('error', 'El lead necesita un email para mandarle el checklist.');
         }
 
-        $isNewClient = !$formSubmission->client_id && !Client::where('email', $formSubmission->email)->exists();
-        $client = $this->resolveOrCreateClientFromLead($formSubmission);
-
-        if ($isNewClient) {
-            try {
-                app(\App\Services\AutomationEngine::class)->processNewClient($client);
-            } catch (\Throwable $e) {
-                \Log::warning('sendTenantChecklist: processNewClient falló', ['error' => $e->getMessage()]);
-            }
+        try {
+            \Illuminate\Support\Facades\Mail::to($formSubmission->email)->send(
+                new \App\Mail\V4\Mailables\TenantChecklistInvitationMail(nombre: $formSubmission->full_name)
+            );
+        } catch (\Exception $e) {
+            \Log::warning('sendTenantChecklist (lead): envío falló', ['error' => $e->getMessage()]);
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
         }
 
-        app(\App\Services\TenantChecklistService::class)->send($client);
-
-        return back()->with('success', "Checklist de requisitos enviado a {$client->email}.");
+        return back()->with('success', "Checklist de requisitos enviado a {$formSubmission->email}.");
     }
 
     /**

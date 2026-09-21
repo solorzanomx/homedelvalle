@@ -11,11 +11,18 @@ use Illuminate\Queue\SerializesModels;
 
 /**
  * "Enviar checklist de requisitos para rentar" — botón en la ficha del
- * cliente/lead (2026-09-21). Manda la lista de documentos que se piden
- * para calificar como inquilino (App\Support\TenantDocumentChecklist) junto
- * con el link al portal, donde suben cada documento y ven su avance. Al
- * entrar por primera vez, el portal les exige aceptar el Aviso de
- * Privacidad y el Acuerdo de Confidencialidad antes de continuar.
+ * cliente/lead (2026-09-21). Manda la lista de documentos que se piden para
+ * calificar como inquilino (App\Support\TenantDocumentChecklist).
+ *
+ * Dos modos, según si ya se decidió avanzar (2026-09-21, corrección: NO
+ * convertir a cliente solo por mandar el checklist):
+ * - $portalUrl null → solo informativo, para un lead que todavía no se
+ *   convierte a Client (para que vaya preparando documentos, sin crear
+ *   cuenta de portal ni arrancar la investigación).
+ * - $portalUrl con valor → ya es Client y se decidió avanzar; incluye el
+ *   link real al portal (activación o login) donde sube todo. Al entrar
+ *   por primera vez, el portal exige aceptar el Aviso de Privacidad y el
+ *   Acuerdo de Confidencialidad antes de continuar.
  */
 class TenantChecklistInvitationMail extends Mailable
 {
@@ -23,8 +30,8 @@ class TenantChecklistInvitationMail extends Mailable
 
     public function __construct(
         public readonly string $nombre,
-        public readonly string $portalUrl,
-        public readonly bool $isNewAccount,
+        public readonly ?string $portalUrl = null,
+        public readonly bool $isNewAccount = false,
     ) {}
 
     public function envelope(): Envelope

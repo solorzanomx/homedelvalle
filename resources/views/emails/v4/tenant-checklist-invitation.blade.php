@@ -41,7 +41,11 @@ a{text-decoration:none}
         <td class="px" style="padding:34px 34px 0;">
             <h1 style="font-size:24px;font-weight:800;color:#0E304B;margin:0;letter-spacing:-.5px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">Hola {{ $firstName }}</h1>
             <p style="font-size:14.5px;color:#5a6573;margin:12px 0 0;line-height:1.6;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
+                @if($portalUrl)
                 Para avanzar tu proceso de renta necesitamos que nos compartas los siguientes documentos. Puedes subirlos directamente en tu portal, donde también verás tu avance.
+                @else
+                Estos son los documentos que se piden para calificar como inquilino — ve preparándolos. En cuanto confirmemos que avanzamos juntos, te mandaremos acceso a tu portal para subirlos.
+                @endif
             </p>
         </td>
     </tr>
@@ -63,6 +67,7 @@ a{text-decoration:none}
         </td>
     </tr>
 
+    @if($portalUrl)
     <tr>
         <td class="px" style="padding:28px 34px 34px;">
             <a href="{{ $portalUrl }}"
@@ -76,6 +81,15 @@ a{text-decoration:none}
             @endif
         </td>
     </tr>
+    @else
+    <tr>
+        <td class="px" style="padding:28px 34px 34px;">
+            <p style="font-size:13.5px;color:#5a6573;margin:0;line-height:1.6;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
+                Cualquier duda sobre estos requisitos, responde este correo o escríbenos por WhatsApp — con gusto te ayudamos.
+            </p>
+        </td>
+    </tr>
+    @endif
 
     <tr>
         <td align="center" style="background:#0E304B;padding:22px 34px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
