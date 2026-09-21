@@ -421,6 +421,11 @@ class ClientController extends Controller
 
         $timeline = $timeline->sortByDesc('date')->values();
 
+        // Solicitudes de firma de Confidencialidad por Google Docs YA EN CURSO
+        // (creadas antes de 2026-09-21) — el flujo de creación de nuevas se
+        // retiró (ahora se acepta por clic dentro del portal, ver
+        // EnsurePortalLegalAcceptance), pero las que ya estaban en draft/pending
+        // siguen necesitando poder avanzarse desde aquí hasta que se resuelvan.
         $confidencialidadRequest = \App\Models\GoogleSignatureRequest::where('contacto_id', $client->id)
             ->where('tipo', 'confidencialidad')
             ->latest()

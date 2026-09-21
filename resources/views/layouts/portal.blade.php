@@ -798,32 +798,59 @@
     </script>
 
     @if($showLegalModal ?? false)
+    @php $legalDocs = $pendingLegalDocs ?? collect(); @endphp
     <div id="legal-modal" style="position:fixed;inset:0;background:rgba(15,23,42,.72);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;">
         <div style="background:#fff;border-radius:16px;max-width:680px;width:100%;height:82vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.3);overflow:hidden;">
-            <div style="padding:1.1rem 1.5rem;border-bottom:1px solid #e5e7eb;flex-shrink:0;display:flex;align-items:center;gap:.75rem;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <div>
-                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;">Antes de continuar</div>
-                    <div style="font-size:1rem;font-weight:700;color:#1e293b;line-height:1.2;">Aviso de Privacidad</div>
+            <div style="padding:1.1rem 1.5rem;border-bottom:1px solid #e5e7eb;flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:.75rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <div>
+                        <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#94a3b8;">Antes de continuar</div>
+                        <div style="font-size:1rem;font-weight:700;color:#1e293b;line-height:1.2;">Documentos legales</div>
+                    </div>
                 </div>
+                @if($legalDocs->count() > 1)
+                <div style="display:flex;gap:.4rem;margin-top:.9rem;">
+                    @foreach($legalDocs as $i => $doc)
+                    <button type="button" onclick="legalModalShowTab({{ $i }})" id="legal-tab-btn-{{ $i }}"
+                        style="flex:1;padding:.5rem .6rem;border-radius:8px;border:1px solid {{ $i === 0 ? '#667eea' : '#e5e7eb' }};background:{{ $i === 0 ? '#eef2ff' : '#fff' }};color:{{ $i === 0 ? '#4338ca' : '#64748b' }};font-size:.78rem;font-weight:700;cursor:pointer;">
+                        {{ $doc->title }}
+                    </button>
+                    @endforeach
+                </div>
+                @endif
             </div>
+            @foreach($legalDocs as $i => $doc)
             <iframe
-                src="{{ url('/legal/aviso-de-privacidad?embed=1') }}"
-                style="flex:1;border:none;width:100%;"
-                title="Aviso de Privacidad"
+                id="legal-tab-frame-{{ $i }}"
+                src="{{ url('/legal/' . $doc->slug . '?embed=1') }}"
+                style="flex:1;border:none;width:100%;{{ $i === 0 ? '' : 'display:none;' }}"
+                title="{{ $doc->title }}"
                 loading="eager"
             ></iframe>
+            @endforeach
             <div style="padding:1rem 1.5rem;border-top:1px solid #e5e7eb;flex-shrink:0;background:#f8fafc;">
                 <form method="POST" action="{{ route('portal.terminos.aceptar') }}">
                     @csrf
                     <button type="submit" style="width:100%;padding:.8rem 1.5rem;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.2px;">
-                        He leído y acepto el Aviso de Privacidad &mdash; Continuar &rarr;
+                        He leído y acepto {{ $legalDocs->count() > 1 ? 'estos documentos' : 'este documento' }} &mdash; Continuar &rarr;
                     </button>
                 </form>
             </div>
         </div>
     </div>
-    <script>document.body.style.overflow='hidden';</script>
+    <script>
+    document.body.style.overflow='hidden';
+    function legalModalShowTab(idx) {
+        document.querySelectorAll('[id^="legal-tab-frame-"]').forEach(f => f.style.display = 'none');
+        document.getElementById('legal-tab-frame-' + idx).style.display = 'block';
+        document.querySelectorAll('[id^="legal-tab-btn-"]').forEach(b => {
+            b.style.borderColor = '#e5e7eb'; b.style.background = '#fff'; b.style.color = '#64748b';
+        });
+        const active = document.getElementById('legal-tab-btn-' + idx);
+        active.style.borderColor = '#667eea'; active.style.background = '#eef2ff'; active.style.color = '#4338ca';
+    }
+    </script>
     @endif
     @livewireScripts
     @stack('scripts')

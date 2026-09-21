@@ -756,7 +756,10 @@
                 @else
                     <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">Sin acceso al portal</div>
 
-                    {{-- Contrato de confidencialidad --}}
+                    {{-- Solicitudes de firma de Confidencialidad por Google Docs YA EN
+                         CURSO (de antes de 2026-09-21) — ya no se crean nuevas (ver
+                         nota abajo), pero estas 3 siguen necesitando poder avanzarse
+                         hasta resolverse. --}}
                     @if($confidencialidadRequest && $confidencialidadRequest->status === 'draft')
                         <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.4rem;">
                             Contrato generado —
@@ -779,28 +782,18 @@
                             @csrf
                             <button class="btn btn-sm btn-primary" style="width:100%;">Confirmar firma recibida</button>
                         </form>
-
-                    @elseif($confidencialidadRequest && in_array($confidencialidadRequest->status, ['completed', 'declined']))
-                        @php
-                            $badgeColor = $confidencialidadRequest->status === 'completed' ? 'var(--success)' : 'var(--danger)';
-                            $badgeLabel = $confidencialidadRequest->status === 'completed' ? 'Firmado' : 'Rechazado';
-                        @endphp
-                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem;">
-                            <span style="width:8px; height:8px; border-radius:50%; background:{{ $badgeColor }};"></span>
-                            <span style="font-size:0.78rem; color:var(--text-muted);">Confidencialidad: {{ $badgeLabel }}</span>
-                        </div>
-
-                    @else
-                        <form method="POST" action="{{ route('admin.clients.contrato-generar', $client) }}" style="margin-bottom:0.5rem;">
-                            @csrf
-                            <button class="btn btn-sm btn-outline" style="width:100%;">Generar Contrato de Confidencialidad</button>
-                        </form>
                     @endif
 
+                    {{-- El Acuerdo de Confidencialidad ya no se firma por Google Docs
+                         para clientes nuevos (2026-09-21): al crear el acceso, el
+                         portal exige aceptarlo (junto con el Aviso de Privacidad)
+                         por clic en el primer login — ver
+                         EnsurePortalLegalAcceptance / config/portal.php. --}}
                     <form method="POST" action="{{ route('clients.create-portal', $client) }}">
                         @csrf
                         <button class="btn btn-sm btn-primary" style="width:100%;">Crear acceso y enviar link de activación</button>
                     </form>
+                    <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Al entrar por primera vez, el portal le pedirá aceptar el Aviso de Privacidad y el Acuerdo de Confidencialidad antes de continuar.</p>
                 @endif
             </div>
         </div>

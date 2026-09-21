@@ -4,34 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Actions\Contracts\ConfirmarFirmaManualAction;
 use App\Actions\Contracts\EnviarContratoConfidencialidadAction;
-use App\Actions\Contracts\GenerarContratoConfidencialidadAction;
-use App\Models\Client;
 use App\Models\GoogleSignatureRequest;
 use Illuminate\Http\RedirectResponse;
 
+/**
+ * Solo queda para avanzar las solicitudes de firma de Confidencialidad por
+ * Google Docs que ya estaban en curso antes de 2026-09-21 (draft/pending) —
+ * la creación de nuevas (generar()) se retiró: ahora se acepta por clic
+ * dentro del portal (ver EnsurePortalLegalAcceptance / config/portal.php).
+ */
 class ClientContratoController extends Controller
 {
-    public function generar(Client $client): RedirectResponse
-    {
-        $this->authorize('view', $client);
-
-        $existing = GoogleSignatureRequest::where('contacto_id', $client->id)
-            ->where('tipo', 'confidencialidad')
-            ->whereIn('status', ['draft', 'pending'])
-            ->latest()->first();
-
-        if ($existing) {
-            return redirect()->back()->with('error', 'Ya existe un contrato en proceso para este cliente.');
-        }
-
-        try {
-            app(GenerarContratoConfidencialidadAction::class)->execute($client);
-            return redirect()->back()->with('success', 'Contrato generado. Revísalo en Drive antes de enviarlo al cliente.');
-        } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Error al generar contrato: ' . $e->getMessage());
-        }
-    }
-
     public function enviar(GoogleSignatureRequest $signatureRequest): RedirectResponse
     {
         $this->authorize('view', $signatureRequest->contacto);

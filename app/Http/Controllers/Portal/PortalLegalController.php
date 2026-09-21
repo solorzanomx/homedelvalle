@@ -25,40 +25,29 @@ class PortalLegalController extends Controller
             : null;
         View::share('portalCaptacion', $portalCaptacion);
 
-        $aviso = LegalDocument::where('type', 'aviso_privacidad')
-            ->where('status', 'published')
-            ->with('currentVersion')
-            ->first();
+        $pendingDocs = LegalDocument::pendingRequiredForPortal(Auth::user()->email);
 
-        // If already accepted, go to dashboard
-        if ($aviso) {
-            $accepted = LegalAcceptance::where('legal_document_id', $aviso->id)
-                ->where('email', Auth::user()->email)
-                ->exists();
-
-            if ($accepted) {
-                return redirect()->route('portal.dashboard');
-            }
+        // Ya aceptó todo lo requerido → seguir al portal
+        if ($pendingDocs->isEmpty()) {
+            return redirect()->route('portal.dashboard');
         }
 
-        return view('portal.terminos', compact('aviso'));
+        return view('portal.terminos', ['pendingDocs' => $pendingDocs]);
     }
 
     public function aceptar(Request $request)
     {
-        $aviso = LegalDocument::where('type', 'aviso_privacidad')
-            ->where('status', 'published')
-            ->with('currentVersion')
-            ->first();
+        $user = Auth::user();
+        $pendingDocs = LegalDocument::pendingRequiredForPortal($user->email);
 
-        if ($aviso && $aviso->currentVersion) {
+        foreach ($pendingDocs as $doc) {
             LegalAcceptance::record(
-                $aviso->id,
-                $aviso->currentVersion->id,
-                Auth::user()->email,
+                $doc->id,
+                $doc->currentVersion->id,
+                $user->email,
                 $request,
                 'portal',
-                ['user_id' => Auth::id()]
+                ['user_id' => $user->id]
             );
         }
 

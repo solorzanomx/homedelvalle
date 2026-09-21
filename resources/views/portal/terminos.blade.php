@@ -1,5 +1,5 @@
 @extends('layouts.portal')
-@section('title', 'Aviso de Privacidad')
+@section('title', 'Documentos legales')
 
 @section('styles')
 <style>
@@ -20,12 +20,20 @@
     color: var(--text-muted);
     font-size: 0.88rem;
 }
+.terminos-doc-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+}
 .terminos-doc {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 2rem;
-    max-height: 460px;
+    max-height: 380px;
     overflow-y: auto;
     font-size: 0.85rem;
     line-height: 1.7;
@@ -62,37 +70,28 @@
 @section('content')
 <div class="terminos-wrap">
     <div class="terminos-header">
-        <h2>Aviso de Privacidad</h2>
-        <p>Antes de continuar, lee y acepta nuestro aviso de privacidad.</p>
+        <h2>Antes de continuar</h2>
+        <p>Lee y acepta los siguientes documentos para usar tu portal.</p>
     </div>
 
+    @foreach($pendingDocs as $doc)
+    <div class="terminos-doc-title">{{ $doc->title }}</div>
     <div class="terminos-doc">
-        @if($aviso && $aviso->currentVersion)
-            {!! $aviso->currentVersion->content !!}
-        @else
-            <p style="text-align:center; color:var(--text-muted); padding:2rem 0;">
-                El aviso de privacidad aún no está disponible. Contacta a tu asesor.
-            </p>
-        @endif
+        {!! $doc->currentVersion->content !!}
     </div>
+    @endforeach
 
-    @if($aviso && $aviso->currentVersion)
     <form method="POST" action="{{ route('portal.terminos.aceptar') }}" id="acceptForm">
         @csrf
         <div class="terminos-accept">
             <label>
                 <input type="checkbox" id="acceptCheck" required onchange="document.getElementById('acceptBtn').disabled = !this.checked;">
-                He leído y acepto el Aviso de Privacidad de Home del Valle Bienes Raíces.
+                He leído y acepto {{ $pendingDocs->count() > 1 ? 'estos documentos' : 'este documento' }} de Home del Valle Bienes Raíces.
             </label>
             <button type="submit" id="acceptBtn" class="btn btn-primary" disabled>
                 Continuar al portal →
             </button>
         </div>
     </form>
-    @else
-    <div style="text-align:center; padding:1rem;">
-        <a href="{{ route('portal.dashboard') }}" class="btn btn-outline">Continuar al portal</a>
-    </div>
-    @endif
 </div>
 @endsection

@@ -240,7 +240,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('clients/{client}/toggle-portal', [ClientController::class, 'togglePortalAccess'])->name('clients.toggle-portal');
     Route::delete('clients/{client}/delete-portal', [ClientController::class, 'deletePortalAccess'])->name('clients.delete-portal');
     Route::post('clients/{client}/reset-portal-password', [ClientController::class, 'resetPortalPassword'])->name('clients.reset-portal-password');
-    Route::post('clients/{client}/contrato-generar', [\App\Http\Controllers\ClientContratoController::class, 'generar'])->name('admin.clients.contrato-generar');
     Route::post('google-signature/{signatureRequest}/enviar', [\App\Http\Controllers\ClientContratoController::class, 'enviar'])->name('admin.contrato.enviar');
     Route::post('google-signature/{signatureRequest}/confirmar', [\App\Http\Controllers\ClientContratoController::class, 'confirmar'])->name('admin.contrato.confirmar');
     Route::resource('brokers', BrokerController::class);

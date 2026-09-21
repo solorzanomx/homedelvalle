@@ -66,6 +66,27 @@ class LegalDocument extends Model
     // ─── Methods ────────────────────────────────────────
 
     /**
+     * Documentos requeridos para usar el Portal (config('portal.required_legal_documents'))
+     * que este email todavía NO ha aceptado — fuente única para el candado
+     * (EnsurePortalLegalAcceptance), la página /portal/terminos y el modal
+     * de layouts/portal.blade.php, para no duplicar el criterio en 3 lugares.
+     */
+    public static function pendingRequiredForPortal(string $email): \Illuminate\Support\Collection
+    {
+        $slugs = config('portal.required_legal_documents', ['aviso-de-privacidad']);
+
+        return self::published()
+            ->whereIn('slug', $slugs)
+            ->whereNotNull('current_version_id')
+            ->with('currentVersion')
+            ->get()
+            ->reject(fn (self $doc) => LegalAcceptance::where('legal_document_id', $doc->id)
+                ->where('email', $email)
+                ->exists())
+            ->values();
+    }
+
+    /**
      * Create a new version for this document.
      * Deactivates all previous versions, creates the new one as active,
      * and updates the document's current_version_id.

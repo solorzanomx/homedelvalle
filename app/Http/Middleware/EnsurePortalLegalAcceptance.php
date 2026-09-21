@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Models\Captacion;
 use App\Models\Client;
-use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
 use App\Models\Operation;
 use Closure;
@@ -54,24 +53,14 @@ class EnsurePortalLegalAcceptance
             : null;
         View::share('portalBuyerOperation', $portalBuyerOperation);
 
-        // Find published aviso de privacidad
-        $aviso = LegalDocument::where('type', 'aviso_privacidad')
-            ->where('status', 'published')
-            ->with('currentVersion')
-            ->first();
+        // Documentos legales requeridos (Aviso de Privacidad + Acuerdo de
+        // Confidencialidad, ver config/portal.php) que este usuario aún no
+        // ha aceptado — se bloquean TODOS en un solo modal, no uno a la vez.
+        $pendingDocs = LegalDocument::pendingRequiredForPortal($user->email);
 
-        // If no aviso exists yet, skip the gate
-        if (!$aviso || !$aviso->currentVersion) {
-            return $next($request);
-        }
-
-        $accepted = LegalAcceptance::where('legal_document_id', $aviso->id)
-            ->where('email', $user->email)
-            ->exists();
-
-        if (!$accepted) {
+        if ($pendingDocs->isNotEmpty()) {
             View::share('showLegalModal', true);
-            View::share('legalAviso', $aviso);
+            View::share('pendingLegalDocs', $pendingDocs);
         }
 
         return $next($request);
