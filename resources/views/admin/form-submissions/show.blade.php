@@ -494,8 +494,12 @@
 
         {{-- Enviar checklist de requisitos (inquilino) — solo informativo,
              NO convierte a cliente ni crea acceso al portal. Eso queda para
-             "Convertir a cliente" cuando decidas avanzar con este prospecto. --}}
-        @if(in_array('renta_inquilino', $submission->interest_types ?? []))
+             "Convertir a cliente" cuando decidas avanzar con este prospecto.
+             Mismo criterio de "es inquilino" que usa convertToClient()
+             (interest_types del formulario del sitio, o client_type directo
+             — los leads de EasyBroker/clasificados por IA no traen
+             interest_types, solo client_type='renter'). --}}
+        @if((\App\Models\Client::deriveClientType($submission->interest_types ?? []) ?? $submission->client_type) === 'renter')
         <form method="POST" action="{{ route('admin.form-submissions.send-tenant-checklist', $submission) }}" style="margin-bottom:0.4rem">
             @csrf
             <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#7c3aed;border-color:#7c3aed">
