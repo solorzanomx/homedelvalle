@@ -53,17 +53,18 @@ a{text-decoration:none}
     <tr>
         <td class="px" style="padding:22px 34px 0;">
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #E6EAF1;border-radius:16px;overflow:hidden;">
-                @foreach($checklist as $label)
                 <tr>
-                    <td style="padding:13px 20px;{{ !$loop->last ? 'border-bottom:1px solid #F1F4F8;' : '' }}font-size:14px;color:#0E304B;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
-                        <span style="color:#94a3b8;margin-right:8px;">○</span>{{ $label }}
+                    <td style="padding:22px 24px;text-align:center;">
+                        <p style="font-size:13.5px;color:#5a6573;margin:0 0 16px;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
+                            Identificación · Comprobante de ingresos · Referencias · Buró de Crédito · Garantía (aval o pagarés)
+                        </p>
+                        <a href="{{ $requisitosUrl }}"
+                           style="display:inline-block;background:#0E304B;border-radius:10px;color:#FFFFFF;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;font-size:14.5px;font-weight:700;padding:13px 26px;text-decoration:none;">
+                            Ver requisitos completos →
+                        </a>
                     </td>
                 </tr>
-                @endforeach
             </table>
-            <p style="font-size:12.5px;color:#94a3b8;margin:12px 0 0;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;">
-                Además, tu asesor te indicará si tu garantía será con aval o con pagarés — esa sección se activa en tu portal en cuanto se defina.
-            </p>
         </td>
     </tr>
 

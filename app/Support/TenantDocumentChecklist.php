@@ -59,22 +59,18 @@ class TenantDocumentChecklist
     }
 
     /**
-     * Texto plano del checklist para WhatsApp (2026-09-21) — mismo contenido
-     * que el correo, como alternativa cuando se prefiere mandarlo por
-     * WhatsApp en vez de (o además de) correo. Sin integración real de
-     * WhatsApp Business conectada: es un link wa.me con el mensaje
-     * precargado, igual que el resto de los WhatsApp del CRM.
+     * Mensaje de WhatsApp con el checklist (2026-09-21) — en vez de mandar
+     * la lista completa como texto plano, enlaza a la página pública con la
+     * marca de Home del Valle (public.requisitos-renta) para que se vea
+     * presentable. Sin integración real de WhatsApp Business conectada: es
+     * un link wa.me con el mensaje precargado, igual que el resto del CRM.
      */
     public static function whatsappMessage(string $nombre, ?string $portalUrl = null): string
     {
         $firstName = explode(' ', trim($nombre))[0] ?: 'Hola';
-        $items = collect(self::clientFacing())
-            ->map(fn ($label) => "• {$label}")
-            ->implode("\n");
+        $requisitosUrl = route('landing.rentar.requisitos');
 
-        $mensaje = "Hola {$firstName}, soy de Home del Valle. Para avanzar tu proceso de renta necesitamos estos documentos:\n\n"
-            . $items
-            . "\n\nTu asesor te indicará si la garantía será con aval o con pagarés.";
+        $mensaje = "Hola {$firstName}, soy de Home del Valle. Aquí están los requisitos para avanzar tu proceso de renta: {$requisitosUrl}";
 
         $mensaje .= $portalUrl
             ? "\n\nSúbelos directamente en tu portal: {$portalUrl}"

@@ -170,6 +170,19 @@ class LandingController extends Controller
     }
 
     /**
+     * Página pública con la marca de Home del Valle mostrando el checklist
+     * de requisitos para rentar (2026-09-21) — a esta se enlaza el correo y
+     * el WhatsApp de "Enviar checklist de requisitos" en vez de mandar la
+     * lista como texto plano.
+     */
+    public function requisitosRenta(Request $request)
+    {
+        return view('public.requisitos-renta', [
+            'checklist' => \App\Support\TenantDocumentChecklist::clientFacing(),
+        ]);
+    }
+
+    /**
      * Show the rental owner landing page.
      */
     public function rentaTuPropiedad(Request $request)

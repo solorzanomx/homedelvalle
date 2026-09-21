@@ -2,7 +2,6 @@
 
 namespace App\Mail\V4\Mailables;
 
-use App\Support\TenantDocumentChecklist;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -43,7 +42,7 @@ class TenantChecklistInvitationMail extends Mailable
     {
         return new Content(
             view: 'emails.v4.tenant-checklist-invitation',
-            with: ['checklist' => TenantDocumentChecklist::clientFacing()],
+            with: ['requisitosUrl' => route('landing.rentar.requisitos')],
         );
     }
 }
