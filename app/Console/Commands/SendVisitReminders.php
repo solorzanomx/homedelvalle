@@ -19,7 +19,7 @@ class SendVisitReminders extends Command
         $todayStart = Carbon::today();
         $todayEnd   = Carbon::today()->endOfDay();
 
-        $visits = Interaction::with(['client', 'property', 'user'])
+        $visits = Interaction::with(['client', 'formSubmission', 'property', 'user'])
             ->where('type', 'visit')
             ->whereBetween('scheduled_at', [$todayStart, $todayEnd])
             ->whereNull('reminder_sent_at')
@@ -29,8 +29,8 @@ class SendVisitReminders extends Command
         $sent = 0;
 
         foreach ($visits as $interaction) {
-            $client = $interaction->client;
-            if (!$client?->email) {
+            $email = $interaction->contactEmail();
+            if (!$email) {
                 continue;
             }
 
@@ -38,11 +38,11 @@ class SendVisitReminders extends Command
             $asesor    = $interaction->user?->name ?? 'Tu asesor';
 
             try {
-                Mail::to($client->email)->send(
+                Mail::to($email)->send(
                     new RecordatorioCitaMail(
                         new RecordatorioCitaData(
-                            email: $client->email,
-                            nombre: $client->name,
+                            email: $email,
+                            nombre: $interaction->contactName() ?? 'Cliente',
                             dia_semana: $scheduled->locale('es')->dayName,
                             dia: (string) $scheduled->day,
                             mes: $scheduled->locale('es')->monthName,
@@ -61,9 +61,9 @@ class SendVisitReminders extends Command
 
                 $interaction->update(['reminder_sent_at' => now()]);
                 $sent++;
-                $this->info("Reminder sent to {$client->email}");
+                $this->info("Reminder sent to {$email}");
             } catch (\Exception $e) {
-                $this->error("Failed for {$client->email}: {$e->getMessage()}");
+                $this->error("Failed for {$email}: {$e->getMessage()}");
             }
         }
 

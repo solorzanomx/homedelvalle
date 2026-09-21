@@ -25,7 +25,7 @@ a{text-decoration:none}
 <body style="margin:0;padding:0;background:#F1F4F8;">
 
 @php
-    $nombre      = $client->name ?? 'Hola';
+    $nombre      = $client->name ?? $client->full_name ?? 'Hola';
     $firstName   = explode(' ', trim($nombre))[0];
     $addr        = $propertyAddress ?: 'el inmueble que visitaste';
     $scheduled   = $interaction->scheduled_at;

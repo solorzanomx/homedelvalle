@@ -111,6 +111,11 @@ class FormSubmission extends Model implements HasMedia
         return $this->belongsTo(Form::class);
     }
 
+    public function visits(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Interaction::class)->where('type', 'visit')->latest('scheduled_at');
+    }
+
     public function messages(): MorphMany
     {
         return $this->morphMany(Message::class, 'trackable');

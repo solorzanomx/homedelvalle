@@ -191,6 +191,144 @@
         </div>
         @endif
 
+        {{-- Visitas: agendar manualmente (sin auto-agendado público, decision
+             2026-09-21), confirmación, y calificación de la visita — el
+             lead no necesita convertirse a Client para pasar por este flujo. --}}
+        <div class="card">
+            <div class="card-header"><h3>Visitas</h3></div>
+            <div class="card-body">
+                @forelse($visits as $visit)
+                <div style="padding:0.9rem 0;{{ !$loop->last ? 'border-bottom:1px solid var(--border);' : '' }}">
+                    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;align-items:flex-start">
+                        <div>
+                            @if($visit->scheduled_at)
+                            <p style="margin:0;font-size:0.85rem;font-weight:600">📅 {{ $visit->scheduled_at->format('d/m/Y · H:i') }} h</p>
+                            @endif
+                            @if($visit->property)
+                            <p style="margin:0.2rem 0 0;font-size:0.82rem;color:var(--text-muted)">🏠 {{ $visit->property->address }}{{ $visit->property->colony ? ', '.$visit->property->colony : '' }}</p>
+                            @endif
+                        </div>
+                        @if($visit->confirmed_at)
+                        <span class="badge" style="background:#d1fae5;color:#065f46">✓ Confirmada · {{ $visit->confirmed_at->format('d/m H:i') }}</span>
+                        @elseif($visit->reschedule_requested_at)
+                        <span class="badge" style="background:#fef3c7;color:#92400e">↩ Pidió reagendar</span>
+                        @elseif($visit->scheduled_at?->isFuture())
+                        <span class="badge" style="background:#eff6ff;color:#1d4ed8">⏳ Pendiente de confirmar</span>
+                        @endif
+                    </div>
+
+                    @if($visit->reschedule_message)
+                    <p style="margin:0.5rem 0 0;font-size:0.82rem;color:var(--text-muted);background:#fffbeb;padding:0.5rem 0.7rem;border-radius:6px;border-left:3px solid #f59e0b">"{{ $visit->reschedule_message }}"</p>
+                    @endif
+
+                    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.6rem">
+                        {{-- Paso 1: confirmación --}}
+                        @if(!$visit->confirmed_at)
+                            <form method="POST" action="{{ route('admin.form-submissions.visit.send-confirmation', [$submission, $visit]) }}">
+                                @csrf
+                                <button type="submit" class="btn btn-outline" style="font-size:0.78rem">
+                                    {{ $visit->reminder_sent_at ? '↩ Reenviar confirmación' : '📤 Enviar confirmación' }}
+                                </button>
+                            </form>
+                        @endif
+
+                        {{-- Paso 2: opinión — visible cuando ya confirmó o ya pasó la fecha,
+                             igual que en clients/show (fix 2026-07-03, misma razón aplica aquí). --}}
+                        @if($visit->confirmed_at || $visit->scheduled_at?->isPast())
+                            @if($visit->feedback_submitted_at)
+                                @php
+                                    $reactionMeta = match($visit->visitor_reaction) {
+                                        'liked' => ['👍 Le gustó', '#d1fae5', '#065f46'],
+                                        'neutral' => ['🤔 Tiene dudas', '#fef3c7', '#92400e'],
+                                        'disliked' => ['❌ No cumplió', '#fee2e2', '#991b1b'],
+                                        default => null,
+                                    };
+                                    $priceMeta = match($visit->price_perception) {
+                                        'fair' => ['✅ Precio justo', '#d1fae5', '#065f46'],
+                                        'negotiable' => ['💬 Negociable', '#fef3c7', '#92400e'],
+                                        'high' => ['💸 Precio alto', '#fee2e2', '#991b1b'],
+                                        default => null,
+                                    };
+                                @endphp
+                                @if($reactionMeta)
+                                <span class="badge" style="background:{{ $reactionMeta[1] }};color:{{ $reactionMeta[2] }}">{{ $reactionMeta[0] }}</span>
+                                @endif
+                                @if($priceMeta)
+                                <span class="badge" style="background:{{ $priceMeta[1] }};color:{{ $priceMeta[2] }}">{{ $priceMeta[0] }}</span>
+                                @endif
+                                @if($visit->advisor_rating)
+                                <span class="badge" style="background:#fefce8;color:#92400e" title="Calificación del asesor">{{ str_repeat('★', $visit->advisor_rating) }}{{ str_repeat('☆', 5 - $visit->advisor_rating) }}</span>
+                                @endif
+                                @if($visit->visitor_comment)
+                                <p style="width:100%;margin:0.4rem 0 0;font-size:0.82rem;color:var(--text-muted);font-style:italic">"{{ $visit->visitor_comment }}"</p>
+                                @endif
+                            @else
+                                <form method="POST" action="{{ route('admin.form-submissions.visit.send-feedback', [$submission, $visit]) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-outline" style="font-size:0.78rem;border-color:#ddd6fe;color:#7c3aed">💬 Solicitar opinión</button>
+                                </form>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+                @empty
+                <p style="color:var(--text-muted);font-size:0.85rem;margin:0 0 1rem">Aún no se ha agendado ninguna visita.</p>
+                @endforelse
+
+                {{-- Agendar visita nueva --}}
+                <details style="{{ $visits->isNotEmpty() ? 'margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid var(--border)' : '' }}">
+                    <summary style="cursor:pointer;font-size:0.85rem;font-weight:600;color:var(--primary)">+ Agendar visita</summary>
+                    <form method="POST" action="{{ route('admin.form-submissions.schedule-visit', $submission) }}" style="margin-top:0.75rem">
+                        @csrf
+                        <div class="form-group">
+                            <label class="form-label">Inmueble a visitar</label>
+                            <select name="property_id" class="form-select">
+                                <option value="">— Sin inmueble específico —</option>
+                                @foreach($properties as $prop)
+                                <option value="{{ $prop->id }}" {{ ($propiedadLocal && $propiedadLocal->id === $prop->id) ? 'selected' : '' }}>
+                                    {{ $prop->address }}{{ $prop->colony ? ' — '.$prop->colony : '' }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+                            <div class="form-group">
+                                <label class="form-label">Fecha</label>
+                                <input type="date" name="scheduled_at_date" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Hora</label>
+                                <input type="time" name="scheduled_at_time" class="form-input" value="10:00" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Duración</label>
+                                <select name="duracion" class="form-select">
+                                    <option value="30">30 min</option>
+                                    <option value="60">1 hora</option>
+                                    <option value="90">1:30 h</option>
+                                    <option value="120">2 horas</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Asesor que acompaña</label>
+                                <select name="asesor_id" class="form-select">
+                                    <option value="">— Sin asesor —</option>
+                                    @foreach($users as $u)
+                                    <option value="{{ $u->id }}" {{ $u->id === auth()->id() ? 'selected' : '' }}>{{ $u->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin:0.5rem 0 0.75rem">
+                            <input type="checkbox" name="send_confirmation_email" id="send_confirmation_email" value="1" checked>
+                            <label for="send_confirmation_email" style="font-size:0.82rem">Enviar correo de confirmación al lead</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Agendar visita</button>
+                    </form>
+                </details>
+            </div>
+        </div>
+
         @if($submission->form_type === 'inmuebles24')
         <div class="card">
             <div class="card-header"><h3>Aviso que consultó</h3></div>

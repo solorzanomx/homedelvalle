@@ -3,6 +3,7 @@
 namespace App\Mail\V4\Mailables;
 
 use App\Models\Client;
+use App\Models\FormSubmission;
 use App\Models\Interaction;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -14,9 +15,10 @@ class VisitFeedbackRequestMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    /** $client puede ser un Client ya convertido o un FormSubmission (lead sin convertir todavia). */
     public function __construct(
         public readonly Interaction $interaction,
-        public readonly Client $client,
+        public readonly Client|FormSubmission $client,
         public readonly string $propertyAddress = '',
     ) {}
 

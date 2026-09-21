@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="x-apple-disable-message-reformatting">
-<title>Solicitud de reagendamiento — {{ $interaction->client?->name ?? 'Cliente' }}</title>
+<title>Solicitud de reagendamiento — {{ $interaction->contactName() ?? 'Cliente' }}</title>
 <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -26,10 +26,12 @@ a{text-decoration:none}
 
 @php
     $client   = $interaction->client;
-    $name     = $client?->name ?? 'El cliente';
+    $lead     = $interaction->formSubmission;
+    $name     = $client?->name ?? $lead?->full_name ?? 'El cliente';
     $words    = preg_split('/\s+/', trim($name));
     $iniciales = strtoupper(substr($words[0] ?? 'C', 0, 1) . substr($words[1] ?? '', 0, 1));
-    $clientUrl = $client ? route('clients.show', $client) : url('/admin');
+    $clientUrl = $client ? route('clients.show', $client) : ($lead ? route('admin.form-submissions.show', $lead) : url('/admin'));
+    $phone     = $client?->phone ?? $lead?->phone;
     $scheduled = $interaction->scheduled_at;
 @endphp
 
@@ -176,12 +178,12 @@ a{text-decoration:none}
                         <!--<![endif]-->
                     </td>
 
-                    @if($client?->phone)
+                    @if($phone)
                     <td class="btnh" width="12" style="width:12px;">&nbsp;</td>
                     <td class="stack" valign="top">
-                        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $client->phone) }}" style="height:52px;v-text-anchor:middle;width:240px;" arcsize="24%" strokecolor="#25D366" strokeweight="1.5px" fillcolor="#FFFFFF"><w:anchorlock/><center style="color:#25D366;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">WhatsApp</center></v:roundrect><![endif]-->
+                        <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $phone) }}" style="height:52px;v-text-anchor:middle;width:240px;" arcsize="24%" strokecolor="#25D366" strokeweight="1.5px" fillcolor="#FFFFFF"><w:anchorlock/><center style="color:#25D366;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;">WhatsApp</center></v:roundrect><![endif]-->
                         <!--[if !mso]><!-->
-                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $client->phone) }}"
+                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $phone) }}"
                            style="display:block;background:#FFFFFF;border:1.5px solid #25D366;border-radius:12px;color:#25D366;font-family:'Plus Jakarta Sans',-apple-system,'Segoe UI',Arial,sans-serif;font-size:15px;font-weight:700;line-height:50px;text-align:center;text-decoration:none;">
                             WhatsApp
                         </a>

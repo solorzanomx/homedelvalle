@@ -24,7 +24,7 @@ class VisitResponseController extends Controller
 
         $interaction->update(['confirmed_at' => now()]);
 
-        // Lead scoring
+        // Lead scoring — solo si ya es Client; un lead sin convertir no puntua todavia
         if ($interaction->client_id) {
             app(\App\Services\LeadScoringService::class)->processEvent(
                 $interaction->client_id,
@@ -33,17 +33,28 @@ class VisitResponseController extends Controller
             );
         }
 
+        // Confirmar asistencia es contacto real: si el lead seguia "new",
+        // se sube a "contacted" (sin bajar de un estado mas avanzado).
+        if ($interaction->formSubmission && $interaction->formSubmission->status === 'new') {
+            $interaction->formSubmission->update([
+                'status'       => 'contacted',
+                'contacted_at' => $interaction->formSubmission->contacted_at ?? now(),
+            ]);
+        }
+
         // Notify broker: bell notification + custom HDV email
         if ($interaction->user_id) {
             $client = $interaction->client;
-            $name   = $client?->name ?? 'El cliente';
+            $lead   = $interaction->formSubmission;
+            $name   = $interaction->contactName() ?? 'El cliente';
+            $url    = $client ? route('clients.show', $client) : ($lead ? route('admin.form-submissions.show', $lead) : null);
 
             Notification::create([
                 'user_id' => $interaction->user_id,
                 'type'    => 'system',
                 'title'   => 'Visita confirmada',
                 'body'    => "{$name} confirmó su asistencia para hoy a las " . ($interaction->scheduled_at?->format('H:i') ?? '—') . '.',
-                'data'    => ['url' => $client ? route('clients.show', $client) : null, 'interaction_id' => $interaction->id],
+                'data'    => ['url' => $url, 'interaction_id' => $interaction->id],
             ]);
 
             if ($interaction->user?->email) {
@@ -105,14 +116,16 @@ class VisitResponseController extends Controller
         // Notify broker: bell notification + custom HDV email
         if ($interaction->user_id) {
             $client = $interaction->client;
-            $name   = $client?->name ?? 'El cliente';
+            $lead   = $interaction->formSubmission;
+            $name   = $interaction->contactName() ?? 'El cliente';
+            $url    = $client ? route('clients.show', $client) : ($lead ? route('admin.form-submissions.show', $lead) : null);
 
             Notification::create([
                 'user_id' => $interaction->user_id,
                 'type'    => 'system',
                 'title'   => 'Solicitud de reagendamiento',
                 'body'    => "{$name} quiere reagendar su visita. Mensaje: " . ($interaction->reschedule_message ?? ''),
-                'data'    => ['url' => $client ? route('clients.show', $client) : null, 'interaction_id' => $interaction->id],
+                'data'    => ['url' => $url, 'interaction_id' => $interaction->id],
             ]);
 
             if ($interaction->user?->email) {
@@ -167,6 +180,34 @@ class VisitResponseController extends Controller
             'advisor_rating'        => $request->advisor_rating,
             'feedback_submitted_at' => now(),
         ]);
+
+        // Alerta al broker si la calificación pide atención inmediata —
+        // sensibilización del dueño no puede esperar a que alguien revise
+        // el timeline a mano.
+        $needsAlert = $interaction->visitor_reaction === 'disliked' || $interaction->price_perception === 'high';
+        if ($needsAlert && $interaction->user_id) {
+            $client = $interaction->client;
+            $lead   = $interaction->formSubmission;
+            $name   = $interaction->contactName() ?? 'El visitante';
+            $url    = $client ? route('clients.show', $client) : ($lead ? route('admin.form-submissions.show', $lead) : null);
+
+            Notification::create([
+                'user_id' => $interaction->user_id,
+                'type'    => 'system',
+                'title'   => 'Calificación a revisar',
+                'body'    => "{$name} calificó su visita — revisa el detalle para hablar con el dueño.",
+                'data'    => ['url' => $url, 'interaction_id' => $interaction->id],
+            ]);
+
+            if ($interaction->user?->email) {
+                try {
+                    Mail::to($interaction->user->email)
+                        ->send(new \App\Mail\V4\Mailables\VisitFeedbackAlertMail($interaction));
+                } catch (\Exception $e) {
+                    Log::warning('VisitFeedbackAlertMail failed: ' . $e->getMessage());
+                }
+            }
+        }
 
         return view('visit-response.feedback-sent', compact('interaction'));
     }

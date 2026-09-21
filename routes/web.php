@@ -416,6 +416,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::patch('/form-submissions/{formSubmission}/status', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateStatus'])->name('form-submissions.status');
     Route::patch('/form-submissions/{formSubmission}/notes', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'updateNotes'])->name('form-submissions.notes');
     Route::post('/form-submissions/{formSubmission}/convert-client', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'convertToClient'])->name('form-submissions.convert-client');
+    Route::post('/form-submissions/{formSubmission}/schedule-visit', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'scheduleVisit'])->name('form-submissions.schedule-visit');
+    Route::post('/form-submissions/{formSubmission}/visits/{interaction}/send-confirmation', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'resendVisitConfirmation'])->name('form-submissions.visit.send-confirmation');
+    Route::post('/form-submissions/{formSubmission}/visits/{interaction}/send-feedback', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'sendVisitFeedbackRequest'])->name('form-submissions.visit.send-feedback');
     Route::post('/form-submissions/{formSubmission}/convert-broker', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'convertToBroker'])->name('form-submissions.convert-broker');
     Route::post('/form-submissions/{formSubmission}/reject-broker', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'rejectBroker'])->name('form-submissions.reject-broker');
     Route::post('/form-submissions/{formSubmission}/ai-suggest', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'aiSuggest'])->name('form-submissions.ai-suggest');

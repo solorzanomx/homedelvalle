@@ -142,7 +142,24 @@ class FormSubmissionController extends Controller
             $formSubmission->update(['seen_at' => now()]);
         }
         $messages = $formSubmission->messages()->with('user')->latest()->get();
-        return view('admin.form-submissions.show', ['submission' => $formSubmission, 'messages' => $messages]);
+        $visits = $formSubmission->visits()->with(['property', 'user'])->get();
+
+        // Inventario para el selector de "agendar visita" — si el lead ya
+        // tiene una propiedad de interés detectada, va primero.
+        $properties = \App\Models\Property::where('status', 'available')
+            ->orderBy('address')
+            ->select('id', 'address', 'colony')
+            ->limit(200)
+            ->get();
+        $users = \App\Models\User::where('is_active', true)->orderBy('name')->select('id', 'name')->get();
+
+        return view('admin.form-submissions.show', [
+            'submission' => $formSubmission,
+            'messages'   => $messages,
+            'visits'     => $visits,
+            'properties' => $properties,
+            'users'      => $users,
+        ]);
     }
 
     public function updateStatus(Request $request, FormSubmission $formSubmission)
@@ -205,6 +222,7 @@ class FormSubmissionController extends Controller
 
         if ($existing) {
             $formSubmission->update(['client_id' => $existing->id]);
+            $this->reparentVisits($formSubmission, $existing);
 
             if ($goesToCaptacion) {
                 return redirect()
@@ -216,6 +234,7 @@ class FormSubmissionController extends Controller
 
         $client = Client::create(array_merge($data, ['email' => $formSubmission->email]));
         $formSubmission->update(['client_id' => $client->id]);
+        $this->reparentVisits($formSubmission, $client);
 
         // La conversión ES el nacimiento del cliente (política de
         // seguimiento): aquí se disparan las automatizaciones de cliente
@@ -232,6 +251,127 @@ class FormSubmissionController extends Controller
                 ->with('success', "Cliente «{$client->name}» creado exitosamente.");
         }
         return back()->with('success', "Cliente «{$client->name}» creado exitosamente.");
+    }
+
+    /**
+     * Al convertir un lead con visitas ya agendadas/calificadas (registradas
+     * con form_submission_id porque todavia no existia el Client), el
+     * historial se "adopta": se les pone client_id sin borrar
+     * form_submission_id, para que el timeline del cliente nuevo lo muestre
+     * de inmediato sin duplicar filas.
+     */
+    private function reparentVisits(FormSubmission $formSubmission, Client $client): void
+    {
+        \App\Models\Interaction::where('form_submission_id', $formSubmission->id)
+            ->whereNull('client_id')
+            ->update(['client_id' => $client->id]);
+    }
+
+    /**
+     * Agendar visita para un lead que todavia no se convierte a Client — el
+     * broker la agenda a mano (sin auto-agendado publico, decision
+     * confirmada 2026-09-21). Espejo de ClientController::storeInteraction
+     * para type=visit, pero contra VisitSchedulingService::createVisitForLead().
+     */
+    public function scheduleVisit(Request $request, FormSubmission $formSubmission)
+    {
+        $validated = $request->validate([
+            'scheduled_at_date'       => 'required|date',
+            'scheduled_at_time'       => 'required|date_format:H:i',
+            'duracion'                => 'nullable|integer|in:30,60,90,120',
+            'asesor_id'               => 'nullable|exists:users,id',
+            'property_id'             => 'nullable|exists:properties,id',
+            'description'             => 'nullable|string|max:1000',
+            'send_confirmation_email' => 'nullable|boolean',
+        ]);
+
+        $scheduledAt = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $validated['scheduled_at_time']);
+        $property    = !empty($validated['property_id']) ? \App\Models\Property::find($validated['property_id']) : null;
+        $asesorUser  = !empty($validated['asesor_id']) ? \App\Models\User::find($validated['asesor_id']) : null;
+
+        app(\App\Services\VisitSchedulingService::class)->createVisitForLead(
+            lead: $formSubmission,
+            property: $property,
+            broker: \Illuminate\Support\Facades\Auth::user(),
+            scheduledAt: $scheduledAt,
+            sendConfirmationEmail: $request->boolean('send_confirmation_email', true),
+            description: $validated['description'] ?? null,
+            asesorForEmail: $asesorUser,
+            duracionMinutos: (string) ($validated['duracion'] ?? '30'),
+        );
+
+        return back()->with('success', 'Visita agendada. Se envió la confirmación a ' . $formSubmission->email . '.');
+    }
+
+    public function resendVisitConfirmation(FormSubmission $formSubmission, \App\Models\Interaction $interaction)
+    {
+        if (!$interaction->visit_token || !$formSubmission->email) {
+            return back()->with('error', 'No se puede enviar la confirmación para esta visita.');
+        }
+
+        try {
+            $scheduled = $interaction->scheduled_at;
+            $prop      = $interaction->property;
+            $asesor    = $interaction->user;
+
+            $addressParts = array_filter([
+                $prop?->address ?? '',
+                $prop?->colony  ?? '',
+                $prop?->city    ?? 'CDMX',
+            ]);
+            $mapsUrl = $addressParts
+                ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode(implode(', ', $addressParts))
+                : '';
+
+            \Illuminate\Support\Facades\Mail::to($formSubmission->email)->send(
+                new \App\Mail\V4\Mailables\RecordatorioCitaMail(
+                    new \App\Mail\V4\Data\RecordatorioCitaData(
+                        email:        $formSubmission->email,
+                        nombre:       $formSubmission->full_name,
+                        dia_semana:   $scheduled?->locale('es')->dayName ?? '',
+                        dia:          (string) ($scheduled?->day ?? ''),
+                        mes:          $scheduled?->locale('es')->monthName ?? '',
+                        anio:         (string) ($scheduled?->year ?? ''),
+                        hora:         $scheduled?->format('g:i A') ?? '',
+                        duracion:     (string) ($interaction->duracion ?? '30'),
+                        direccion:    $prop?->address ?? 'A coordinar',
+                        colonia:      $prop?->colony  ?? '',
+                        asesor:       $asesor?->name  ?? '',
+                        visit_token:  $interaction->visit_token,
+                        maps_url:     $mapsUrl,
+                        asesor_email: $asesor?->email ?? '',
+                        asesor_phone: $asesor?->phone ?? $asesor?->whatsapp ?? '',
+                    )
+                )
+            );
+            $interaction->update(['reminder_sent_at' => now()]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('resendVisitConfirmation failed: ' . $e->getMessage());
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Recordatorio de confirmación enviado a ' . $formSubmission->email . '.');
+    }
+
+    public function sendVisitFeedbackRequest(FormSubmission $formSubmission, \App\Models\Interaction $interaction)
+    {
+        if (!$interaction->visit_token || !$formSubmission->email || $interaction->feedback_submitted_at) {
+            return back()->with('error', 'No se puede solicitar feedback para esta visita.');
+        }
+
+        try {
+            $interaction->loadMissing(['property.photos', 'user']);
+            $addr = collect([$interaction->property?->address, $interaction->property?->colony])->filter()->implode(', ');
+
+            \Illuminate\Support\Facades\Mail::to($formSubmission->email)->send(
+                new \App\Mail\V4\Mailables\VisitFeedbackRequestMail($interaction, $formSubmission, $addr)
+            );
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('sendVisitFeedbackRequest failed: ' . $e->getMessage());
+            return back()->with('error', 'Error al enviar el correo: ' . $e->getMessage());
+        }
+
+        return back()->with('success', 'Solicitud de opinión enviada a ' . $formSubmission->email . '.');
     }
 
     /**

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Interaction extends Model
 {
     protected $fillable = [
-        'client_id', 'property_id', 'valuation_id', 'user_id', 'type', 'description',
+        'client_id', 'form_submission_id', 'property_id', 'valuation_id', 'user_id', 'type', 'description',
         'scheduled_at', 'completed_at',
         'visit_token', 'confirmed_at', 'reminder_sent_at',
         'reschedule_requested_at', 'reschedule_message', 'send_confirmation_email',
@@ -36,7 +36,24 @@ class Interaction extends Model
         return $this->type === 'visit';
     }
 
+    /** Nombre del cliente si ya existe, o del lead (form_submission) si aun no se convierte. */
+    public function contactName(): ?string
+    {
+        return $this->client?->name ?? $this->formSubmission?->full_name;
+    }
+
+    public function contactEmail(): ?string
+    {
+        return $this->client?->email ?? $this->formSubmission?->email;
+    }
+
+    public function contactPhone(): ?string
+    {
+        return $this->client?->phone ?? $this->formSubmission?->phone;
+    }
+
     public function client() { return $this->belongsTo(Client::class); }
+    public function formSubmission() { return $this->belongsTo(FormSubmission::class); }
     public function property() { return $this->belongsTo(Property::class); }
     public function valuation() { return $this->belongsTo(PropertyValuation::class, 'valuation_id'); }
     public function user() { return $this->belongsTo(User::class); }

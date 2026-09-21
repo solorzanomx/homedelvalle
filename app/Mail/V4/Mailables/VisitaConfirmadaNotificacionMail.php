@@ -17,7 +17,7 @@ class VisitaConfirmadaNotificacionMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $name = $this->interaction->client?->name ?? 'El cliente';
+        $name = $this->interaction->contactName() ?? 'El cliente';
         return new Envelope(subject: "✓ Visita confirmada: {$name}");
     }
 
