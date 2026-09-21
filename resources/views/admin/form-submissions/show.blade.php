@@ -230,6 +230,9 @@
                                     {{ $visit->reminder_sent_at ? '↩ Reenviar confirmación' : '📤 Enviar confirmación' }}
                                 </button>
                             </form>
+                            @if($waUrl = $visit->whatsappConfirmationUrl())
+                            <a href="{{ $waUrl }}" target="_blank" rel="noopener" class="btn btn-outline" style="font-size:0.78rem;border-color:#bbf7d0;color:#166534">💬 WhatsApp</a>
+                            @endif
                         @endif
 
                         {{-- Paso 2: opinión — visible cuando ya confirmó o ya pasó la fecha,

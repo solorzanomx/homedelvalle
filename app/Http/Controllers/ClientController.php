@@ -311,6 +311,12 @@ class ClientController extends Controller
                             . '<button type="submit" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:inherit;">📤 Enviar confirmación</button>'
                             . '</form>';
                     }
+                    // WhatsApp: abre wa.me con el mismo mensaje de confirmación
+                    // precargado (no hay integración real de WhatsApp Business
+                    // conectada — ver Interaction::whatsappConfirmationUrl()).
+                    if ($waUrl = $interaction->whatsappConfirmationUrl()) {
+                        $actionsHtml .= '<a href="' . e($waUrl) . '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:4px 10px;font-size:.75rem;font-weight:600;text-decoration:none;margin-top:8px;margin-right:6px;">💬 WhatsApp</a>';
+                    }
                 } else {
                     // Confirmada: mostrar badge verde
                     $actionsHtml .= '<span style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:6px;padding:4px 9px;font-size:.75rem;font-weight:600;display:inline-flex;align-items:center;gap:4px;margin-top:8px;margin-right:6px;">✅ Asistencia confirmada</span>';
