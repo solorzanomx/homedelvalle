@@ -24,8 +24,16 @@ class DashboardController extends Controller
         $monthStart = now()->startOfMonth();
 
         // ── URGENT: Clients without contact in 24h+ ──
+        // "Sin contactar" = ni una Interaction registrada, ni una Task
+        // completada, ni una Operation (captacion/renta/venta) ya abierta
+        // para ese cliente. En la practica casi nadie usa "Registrar
+        // interaccion" en la ficha del cliente: el avance real se ve en que
+        // ya tiene una Operation, asi que un cliente con Operation ya fue
+        // contactado aunque nunca se haya logueado una interaccion formal.
         $staleClients = Client::where('created_at', '<', now()->subHours(24))
             ->whereDoesntHave('interactions')
+            ->whereDoesntHave('tasks', fn ($q) => $q->where('status', 'completed'))
+            ->whereDoesntHave('operations')
             ->latest()
             ->take(10)
             ->get();

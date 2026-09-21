@@ -121,6 +121,11 @@ class Client extends Model
         return $this->hasMany(Interaction::class);
     }
 
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
