@@ -801,6 +801,27 @@ class ClientController extends Controller
         return back()->with('success', 'Checklist de requisitos enviado a ' . $client->email . '.');
     }
 
+    /**
+     * Igual que sendTenantChecklist() pero por WhatsApp — crea (o reusa) el
+     * acceso al portal igual que la versión por correo, arma el link real
+     * de activación/login, y redirige a wa.me con todo precargado (no hay
+     * integración real de WhatsApp Business conectada).
+     */
+    public function sendTenantChecklistWhatsApp(Client $client)
+    {
+        $digits = \App\Support\TenantDocumentChecklist::normalizedPhone($client->phone);
+        if (!$digits) {
+            return back()->with('error', 'El cliente necesita un teléfono válido para mandarle el checklist por WhatsApp.');
+        }
+
+        $service = app(\App\Services\TenantChecklistService::class);
+        ['portalUrl' => $portalUrl] = $service->resolvePortalUrl($client);
+
+        $message = \App\Support\TenantDocumentChecklist::whatsappMessage($client->name, $portalUrl);
+
+        return redirect()->away('https://wa.me/' . $digits . '?text=' . urlencode($message));
+    }
+
     public function togglePortalAccess(Client $client)
     {
         if (!$client->user_id) {

@@ -500,12 +500,19 @@
              — los leads de EasyBroker/clasificados por IA no traen
              interest_types, solo client_type='renter'). --}}
         @if((\App\Models\Client::deriveClientType($submission->interest_types ?? []) ?? $submission->client_type) === 'renter')
-        <form method="POST" action="{{ route('admin.form-submissions.send-tenant-checklist', $submission) }}" style="margin-bottom:0.4rem">
-            @csrf
-            <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#7c3aed;border-color:#7c3aed">
-                📋 Enviar checklist de requisitos
-            </button>
-        </form>
+        <div style="display:flex;gap:0.4rem;margin-bottom:0.4rem;">
+            <form method="POST" action="{{ route('admin.form-submissions.send-tenant-checklist', $submission) }}" style="flex:1;">
+                @csrf
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#7c3aed;border-color:#7c3aed">
+                    ✉️ Checklist por correo
+                </button>
+            </form>
+            @if($waChecklistUrl = \App\Support\TenantDocumentChecklist::whatsappUrl($submission->phone, $submission->full_name))
+            <a href="{{ $waChecklistUrl }}" target="_blank" rel="noopener" class="btn btn-outline" style="flex:1;justify-content:center;border-color:#25D366;color:#128C4A;">
+                💬 Por WhatsApp
+            </a>
+            @endif
+        </div>
         <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 1rem;line-height:1.4;">Solo informa qué documentos se piden — no lo convierte a cliente ni abre su portal. Eso es "Convertir a cliente", cuando decidas avanzar con él.</p>
         @endif
 

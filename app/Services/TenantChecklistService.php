@@ -18,7 +18,13 @@ class TenantChecklistService
 {
     public function __construct(private ClientPortalService $portalService) {}
 
-    public function send(Client $client): void
+    /**
+     * Crea (o reusa) el acceso al portal y devuelve la URL correspondiente —
+     * activación si la cuenta es nueva, login directo si ya existía. Se
+     * comparte entre el envío por correo y por WhatsApp para no duplicar el
+     * criterio de "cuenta nueva vs. existente".
+     */
+    public function resolvePortalUrl(Client $client): array
     {
         $isNewAccount = !$client->user_id;
 
@@ -28,6 +34,13 @@ class TenantChecklistService
         $portalUrl = $isNewAccount
             ? rtrim(config('portal.url'), '/') . '/activar/' . $this->portalService->generateInvitationToken($user)
             : config('portal.url');
+
+        return ['portalUrl' => $portalUrl, 'isNewAccount' => $isNewAccount];
+    }
+
+    public function send(Client $client): void
+    {
+        ['portalUrl' => $portalUrl, 'isNewAccount' => $isNewAccount] = $this->resolvePortalUrl($client);
 
         try {
             Mail::to($client->email)->send(

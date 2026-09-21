@@ -57,4 +57,49 @@ class TenantDocumentChecklist
     {
         return self::IDENTIFICACION + self::INGRESOS + self::REFERENCIAS + self::CREDITO;
     }
+
+    /**
+     * Texto plano del checklist para WhatsApp (2026-09-21) — mismo contenido
+     * que el correo, como alternativa cuando se prefiere mandarlo por
+     * WhatsApp en vez de (o además de) correo. Sin integración real de
+     * WhatsApp Business conectada: es un link wa.me con el mensaje
+     * precargado, igual que el resto de los WhatsApp del CRM.
+     */
+    public static function whatsappMessage(string $nombre, ?string $portalUrl = null): string
+    {
+        $firstName = explode(' ', trim($nombre))[0] ?: 'Hola';
+        $items = collect(self::clientFacing())
+            ->map(fn ($label) => "• {$label}")
+            ->implode("\n");
+
+        $mensaje = "Hola {$firstName}, soy de Home del Valle. Para avanzar tu proceso de renta necesitamos estos documentos:\n\n"
+            . $items
+            . "\n\nTu asesor te indicará si la garantía será con aval o con pagarés.";
+
+        $mensaje .= $portalUrl
+            ? "\n\nSúbelos directamente en tu portal: {$portalUrl}"
+            : "\n\nCualquier duda, con gusto te ayudamos.";
+
+        return $mensaje;
+    }
+
+    /** URL wa.me lista para usar, o null si el teléfono no es válido. */
+    public static function whatsappUrl(?string $phone, string $nombre, ?string $portalUrl = null): ?string
+    {
+        $digits = self::normalizedPhone($phone);
+        if (!$digits) {
+            return null;
+        }
+
+        return 'https://wa.me/' . $digits . '?text=' . urlencode(self::whatsappMessage($nombre, $portalUrl));
+    }
+
+    public static function normalizedPhone(?string $phone): ?string
+    {
+        if (!$phone) {
+            return null;
+        }
+        $digits = preg_replace('/[^0-9]/', '', $phone);
+        return strlen($digits) >= 10 ? $digits : null;
+    }
 }

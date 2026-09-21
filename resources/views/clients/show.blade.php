@@ -732,11 +732,17 @@
             <div class="side-card-header">Portal del Cliente</div>
             <div class="side-card-body">
                 @if(in_array('renta_inquilino', $client->interest_types ?? []))
-                <form method="POST" action="{{ route('clients.send-tenant-checklist', $client) }}" style="margin-bottom:0.75rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">
-                    @csrf
-                    <button class="btn btn-sm btn-primary" style="width:100%;background:#7c3aed;border-color:#7c3aed;">📋 Enviar checklist de requisitos</button>
-                </form>
-                <p style="font-size:0.72rem;color:var(--text-muted);margin:-0.5rem 0 0.75rem;line-height:1.4;">
+                <div style="display:flex;gap:0.4rem;margin-bottom:0.4rem;">
+                    <form method="POST" action="{{ route('clients.send-tenant-checklist', $client) }}" style="flex:1;">
+                        @csrf
+                        <button class="btn btn-sm btn-primary" style="width:100%;background:#7c3aed;border-color:#7c3aed;">✉️ Checklist</button>
+                    </form>
+                    <form method="POST" action="{{ route('clients.send-tenant-checklist-whatsapp', $client) }}" style="flex:1;" target="_blank">
+                        @csrf
+                        <button class="btn btn-sm btn-outline" style="width:100%;border-color:#25D366;color:#128C4A;">💬 WhatsApp</button>
+                    </form>
+                </div>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin:0 0 0.75rem;line-height:1.4;padding-bottom:0.75rem;border-bottom:1px solid var(--border);">
                     {{ $client->user_id ? 'Ya tiene portal — le reenvía la lista de documentos con el link de acceso.' : 'Crea su acceso al portal y le manda la lista de documentos que necesita subir.' }}
                 </p>
                 @endif
