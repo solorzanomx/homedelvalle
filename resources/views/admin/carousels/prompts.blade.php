@@ -72,7 +72,7 @@
 
 <div x-data="promptEditor()" x-init="init()">
 
-<form method="POST" action="{{ route('admin.carousels.prompts.update') }}" @submit.prevent="save($el)">
+<form id="prompts-form" method="POST" action="{{ route('admin.carousels.prompts.update') }}" @submit.prevent="save($el)">
     @csrf
 
     {{-- ══ REGLAS GLOBALES ══ --}}
@@ -134,7 +134,16 @@
         </template>
     </div>
 
-    {{-- ══ ACTIONS ══ --}}
+</form>
+
+    {{-- ══ ACTIONS ══ — fuera del <form> de arriba a propósito: el <form>
+         de "Restaurar predeterminados" quedaba anidado dentro del <form>
+         principal (HTML inválido), el navegador fusionaba sus campos y esa
+         acción terminaba disparando @submit.prevent="save($el)" del form
+         principal en vez de resetear — ni confirmaba, ni restauraba nada
+         (mismo tipo de bug real encontrado en rentals/edit, 2026-09-22).
+         "Guardar cambios" usa form="prompts-form" para seguir mandando el
+         <form> de arriba aunque esté fuera de su árbol DOM. --}}
     <div style="position:sticky;bottom:0;background:#fff;border-top:1px solid #e5e7eb;padding:.85rem 0;margin-top:1.5rem;display:flex;justify-content:space-between;align-items:center;">
         <form method="POST" action="{{ route('admin.carousels.prompts.reset') }}" style="display:inline;"
               onsubmit="return confirm('¿Restaurar todos los prompts a los valores predeterminados?')">
@@ -146,14 +155,12 @@
 
         <div style="display:flex;gap:.75rem;align-items:center;">
             <span x-show="saved" style="font-size:.8rem;color:#10b981;font-weight:500;">✓ Guardado</span>
-            <button type="submit" class="btn btn-primary" :disabled="saving">
+            <button type="submit" form="prompts-form" class="btn btn-primary" :disabled="saving">
                 <span x-show="!saving">Guardar cambios</span>
                 <span x-show="saving"><span class="spin">⟳</span> Guardando…</span>
             </button>
         </div>
     </div>
-
-</form>
 
 </div>
 @endsection

@@ -114,15 +114,21 @@
         </div>
     </div>
 
+    </form>
+
+    {{-- Fuera del <form> de arriba a propósito: un <form> anidado
+         (Eliminar) es HTML inválido — el navegador fusiona sus campos,
+         incl. _method=DELETE, con el externo, y "Guardar Cambios" terminaría
+         borrando el documento legal (y todas sus versiones/aceptaciones) en
+         vez de guardar (bug real encontrado en rentals/edit, 2026-09-22). --}}
     <div class="form-actions">
         <form method="POST" action="{{ route('admin.legal.destroy', $document) }}" onsubmit="return confirm('Eliminar este documento legal y todas sus versiones?')" style="margin-right:auto;">
             @csrf @method('DELETE')
             <button type="submit" class="btn btn-danger">Eliminar</button>
         </form>
         <a href="{{ route('admin.legal.index') }}" class="btn btn-outline">Cancelar</a>
-        <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Cambios</button>
+        <button type="submit" form="legalEditForm" class="btn btn-primary" id="submitBtn">Guardar Cambios</button>
     </div>
-</form>
 
 {{-- Version History --}}
 <div class="card" style="margin-top:1.5rem;">

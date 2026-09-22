@@ -37,7 +37,7 @@
     </div>
 @endif
 
-<form action="{{ route('admin.contract-templates.update', $contract_template) }}" method="POST">
+<form id="ct-edit-form" action="{{ route('admin.contract-templates.update', $contract_template) }}" method="POST">
     @csrf @method('PUT')
     <div class="editor-wrap">
         <div>
@@ -101,13 +101,19 @@
                 </div>
             </div>
 
+            </form>
+            {{-- form-actions fuera del <form> a propósito: un <form> anidado
+                 (el de Eliminar) dentro de otro es HTML inválido y el
+                 navegador fusiona sus campos, incl. _method=DELETE — "Guardar
+                 Cambios" terminaría borrando en vez de actualizar (mismo bug
+                 real encontrado en rentals/edit, 2026-09-22). --}}
             <div class="form-actions">
                 <form method="POST" action="{{ route('admin.contract-templates.destroy', $contract_template) }}" onsubmit="return confirm('Eliminar esta plantilla?')" style="margin-right:auto;">
                     @csrf @method('DELETE')
                     <button type="submit" class="btn btn-danger">Eliminar</button>
                 </form>
                 <a href="{{ route('admin.contract-templates.index') }}" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                <button type="submit" form="ct-edit-form" class="btn btn-primary">Guardar Cambios</button>
             </div>
         </div>
 
@@ -135,7 +141,6 @@
             </div>
         </div>
     </div>
-</form>
 @endsection
 
 @section('scripts')

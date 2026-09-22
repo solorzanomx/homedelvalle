@@ -57,7 +57,7 @@
             </div>
         @endif
 
-        <form action="{{ isset($transaction) ? route('admin.finance.transactions.update', $transaction->id) : route('admin.finance.transactions.store') }}" method="POST">
+        <form id="transaction-form" action="{{ isset($transaction) ? route('admin.finance.transactions.update', $transaction->id) : route('admin.finance.transactions.store') }}" method="POST">
             @csrf
             @if(isset($transaction)) @method('PUT') @endif
 
@@ -170,19 +170,25 @@
                 <textarea name="notes" class="form-textarea" rows="3" placeholder="Notas adicionales...">{{ old('notes', $transaction->notes ?? '') }}</textarea>
             </div>
 
-            <div class="form-actions">
-                @if(isset($transaction))
-                    <form method="POST" action="{{ route('admin.finance.transactions.destroy', $transaction->id) }}" onsubmit="return confirm('Eliminar esta transaccion?')" style="margin-right:auto;">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                @endif
-                <a href="{{ route('admin.finance.transactions') }}" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary">
-                    {{ isset($transaction) ? 'Actualizar' : 'Registrar' }}
-                </button>
-            </div>
         </form>
+
+        {{-- Fuera del <form> de arriba a propósito: un <form> anidado
+             (Eliminar) es HTML inválido — el navegador fusiona sus campos,
+             incl. _method=DELETE, con el externo, y "Actualizar" terminaría
+             borrando la transacción en vez de guardar (bug real encontrado
+             en rentals/edit, 2026-09-22). --}}
+        <div class="form-actions">
+            @if(isset($transaction))
+                <form method="POST" action="{{ route('admin.finance.transactions.destroy', $transaction->id) }}" onsubmit="return confirm('Eliminar esta transaccion?')" style="margin-right:auto;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            @endif
+            <a href="{{ route('admin.finance.transactions') }}" class="btn btn-outline">Cancelar</a>
+            <button type="submit" form="transaction-form" class="btn btn-primary">
+                {{ isset($transaction) ? 'Actualizar' : 'Registrar' }}
+            </button>
+        </div>
     </div>
 </div>
 @endsection

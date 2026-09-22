@@ -81,7 +81,7 @@
             </div>
         @endif
 
-        <form action="{{ route('tasks.update', $task) }}" method="POST">
+        <form id="task-edit-form" action="{{ route('tasks.update', $task) }}" method="POST">
             @csrf @method('PUT')
 
             <div class="form-group">
@@ -163,15 +163,20 @@
                 </div>
             </div>
 
-            <div class="form-actions">
-                <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('Eliminar esta tarea?')" style="margin-right:auto;">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Eliminar</button>
-                </form>
-                <a href="{{ route('tasks.index') }}" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar</button>
-            </div>
         </form>
+
+        {{-- Fuera del <form> de edición: un <form> anidado es HTML inválido
+             y el navegador fusiona sus campos (incl. _method=DELETE) con el
+             formulario externo, causando que "Guardar" borre el registro
+             en vez de actualizarlo (bug real en rentals/edit, 2026-09-22). --}}
+        <div class="form-actions">
+            <form method="POST" action="{{ route('tasks.destroy', $task) }}" onsubmit="return confirm('Eliminar esta tarea?')" style="margin-right:auto;">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+            </form>
+            <a href="{{ route('tasks.index') }}" class="btn btn-outline">Cancelar</a>
+            <button type="submit" form="task-edit-form" class="btn btn-primary">Guardar</button>
+        </div>
     </div>
 </div>
 @endsection

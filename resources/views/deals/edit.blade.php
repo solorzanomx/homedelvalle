@@ -26,7 +26,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('deals.update', $deal->id) }}" method="POST">
+            <form id="deal-edit-form" action="{{ route('deals.update', $deal->id) }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -108,15 +108,21 @@
                     </div>
                 </div>
 
-                <div class="form-actions">
-                    <form method="POST" action="{{ route('deals.destroy', $deal->id) }}" onsubmit="return confirm('Eliminar este deal?')" style="margin-right:auto;">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                    <a href="{{ route('deals.index') }}" class="btn btn-outline">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                </div>
             </form>
+
+            {{-- Fuera del <form> de arriba a propósito: un <form> anidado
+                 (Eliminar) es HTML inválido — el navegador fusiona sus
+                 campos, incl. _method=DELETE, con el externo, y "Guardar
+                 Cambios" terminaría borrando el deal en vez de guardar (bug
+                 real encontrado en rentals/edit, 2026-09-22). --}}
+            <div class="form-actions">
+                <form method="POST" action="{{ route('deals.destroy', $deal->id) }}" onsubmit="return confirm('Eliminar este deal?')" style="margin-right:auto;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+                <a href="{{ route('deals.index') }}" class="btn btn-outline">Cancelar</a>
+                <button type="submit" form="deal-edit-form" class="btn btn-primary">Guardar Cambios</button>
+            </div>
         </div>
     </div>
 </div>

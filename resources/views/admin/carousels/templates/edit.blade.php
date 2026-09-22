@@ -10,7 +10,7 @@
     <a href="{{ route('admin.carousels.templates.index') }}" class="btn btn-outline">← Volver</a>
 </div>
 
-<form method="POST" action="{{ route('admin.carousels.templates.update', $template) }}">
+<form id="tpl-edit-form" method="POST" action="{{ route('admin.carousels.templates.update', $template) }}">
 @csrf @method('PUT')
 
 <div style="display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; align-items: start;">
@@ -101,25 +101,31 @@
 
         <div class="card">
             <div class="card-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Guardar cambios</button>
+                <button type="submit" form="tpl-edit-form" class="btn btn-primary" style="width: 100%;">Guardar cambios</button>
                 <a href="{{ route('admin.carousels.templates.index') }}" class="btn btn-outline" style="width: 100%; text-align: center;">Cancelar</a>
-            </div>
-        </div>
-
-        <div class="card" style="border-color: #fecaca;">
-            <div class="card-body">
-                <p style="font-size: 0.82rem; color: #6b7280; margin-bottom: 0.75rem;">
-                    Esta plantilla tiene <strong>{{ $template->posts()->count() }}</strong> carrusel(es).
-                </p>
-                <form method="POST" action="{{ route('admin.carousels.templates.destroy', $template) }}"
-                      onsubmit="return confirm('¿Eliminar esta plantilla?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger-outline" style="width: 100%;">Eliminar plantilla</button>
-                </form>
             </div>
         </div>
 
     </div>
 </div>
 </form>
+{{-- Fuera del <form> de edición a propósito: un <form> anidado (este de
+     Eliminar) es HTML inválido — el navegador fusiona sus campos, incl.
+     _method=DELETE, con el <form> externo, y CUALQUIER botón (incluido
+     "Guardar cambios") terminaría borrando la plantilla en vez de guardar
+     (bug real encontrado en rentals/edit, 2026-09-22). --}}
+<div style="max-width: 300px; margin-left: auto;">
+    <div class="card" style="border-color: #fecaca;">
+        <div class="card-body">
+            <p style="font-size: 0.82rem; color: #6b7280; margin-bottom: 0.75rem;">
+                Esta plantilla tiene <strong>{{ $template->posts()->count() }}</strong> carrusel(es).
+            </p>
+            <form method="POST" action="{{ route('admin.carousels.templates.destroy', $template) }}"
+                  onsubmit="return confirm('¿Eliminar esta plantilla?')">
+                @csrf @method('DELETE')
+                <button type="submit" class="btn btn-sm btn-danger-outline" style="width: 100%;">Eliminar plantilla</button>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

@@ -109,7 +109,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('rentals.update', $rental) }}" method="POST">
+            <form id="rental-edit-form" action="{{ route('rentals.update', $rental) }}" method="POST">
                 @csrf @method('PUT')
 
                 {{-- ① Partes --}}
@@ -359,16 +359,26 @@
                     @if($rental->completed_at) &nbsp;·&nbsp; Completado: {{ $rental->completed_at->format('d/m/Y H:i') }} @endif
                 </div>
 
-                <div class="form-actions">
-                    <form method="POST" action="{{ route('rentals.destroy', $rental) }}"
-                          onsubmit="return confirm('¿Eliminar este proceso de renta?')" style="margin-right:auto;">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                    <a href="{{ route('rentals.show', $rental) }}" class="btn btn-outline">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                </div>
             </form>
+
+            {{-- Fuera del <form> de edición a propósito — un <form> anidado
+                 dentro de otro es HTML inválido: el navegador fusiona los
+                 campos del formulario interno (incluido _method=DELETE) con
+                 los del externo, así que un click en "Guardar Cambios"
+                 terminaba mandando _method=DELETE y borrando el proceso
+                 completo en vez de actualizarlo (bug real reportado
+                 2026-09-22 — "modifiqué el valor de la renta y se borró el
+                 trato"). El botón "Guardar Cambios" usa form="rental-edit-form"
+                 para seguir mandando el <form> de arriba aunque esté fuera. --}}
+            <div class="form-actions">
+                <form method="POST" action="{{ route('rentals.destroy', $rental) }}"
+                      onsubmit="return confirm('¿Eliminar este proceso de renta?')" style="margin-right:auto;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+                <a href="{{ route('rentals.show', $rental) }}" class="btn btn-outline">Cancelar</a>
+                <button type="submit" form="rental-edit-form" class="btn btn-primary">Guardar Cambios</button>
+            </div>
         </div>
     </div>
 </div>

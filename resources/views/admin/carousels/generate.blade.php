@@ -185,8 +185,13 @@
             ✦ Generar carrusel con IA
         </button>
     </div>
-
-    {{-- Sidebar --}}
+    </form>
+    {{-- Sidebar fuera del <form> de arriba a propósito — el mini-form de
+         "Regenerar caption" que trae abajo quedaría anidado dentro del
+         <form> principal, HTML inválido: el navegador fusiona los campos y
+         el botón "Regenerar caption" terminaría enviando el POST del <form>
+         principal (regenera todo el carrusel) en vez del suyo propio (mismo
+         tipo de bug real encontrado en rentals/edit, 2026-09-22). --}}
     <div style="display:flex;flex-direction:column;gap:1.5rem;">
         <div class="card">
             <div class="card-header"><h3 class="card-title">¿Cómo funciona?</h3></div>
@@ -232,7 +237,6 @@
     </div>
 
 </div>{{-- /grid --}}
-</form>
 
 @endsection
 

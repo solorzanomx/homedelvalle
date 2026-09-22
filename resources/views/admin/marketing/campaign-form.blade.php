@@ -66,7 +66,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ $campaign ? route('admin.marketing.campaigns.update', $campaign) : route('admin.marketing.campaigns.store') }}">
+        <form id="campaign-form" method="POST" action="{{ $campaign ? route('admin.marketing.campaigns.update', $campaign) : route('admin.marketing.campaigns.store') }}">
             @csrf
             @if($campaign) @method('PUT') @endif
 
@@ -147,17 +147,23 @@
                 <textarea name="notes" class="form-textarea" rows="3" placeholder="Notas sobre la campana...">{{ old('notes', $campaign->notes ?? '') }}</textarea>
             </div>
 
-            <div class="form-actions">
-                @if($campaign)
-                    <form method="POST" action="{{ route('admin.marketing.campaigns.destroy', $campaign) }}" onsubmit="return confirm('Eliminar esta campana?')" style="margin-right:auto;">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Eliminar</button>
-                    </form>
-                @endif
-                <a href="{{ route('admin.marketing.campaigns') }}" class="btn btn-outline">Cancelar</a>
-                <button type="submit" class="btn btn-primary">{{ $campaign ? 'Actualizar' : 'Crear Campana' }}</button>
-            </div>
         </form>
+
+        {{-- Fuera del <form> de arriba a propósito: un <form> anidado
+             (Eliminar) es HTML inválido — el navegador fusiona sus campos,
+             incl. _method=DELETE, con el externo, y "Actualizar" terminaría
+             borrando la campaña en vez de guardar (bug real encontrado en
+             rentals/edit, 2026-09-22). --}}
+        <div class="form-actions">
+            @if($campaign)
+                <form method="POST" action="{{ route('admin.marketing.campaigns.destroy', $campaign) }}" onsubmit="return confirm('Eliminar esta campana?')" style="margin-right:auto;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            @endif
+            <a href="{{ route('admin.marketing.campaigns') }}" class="btn btn-outline">Cancelar</a>
+            <button type="submit" form="campaign-form" class="btn btn-primary">{{ $campaign ? 'Actualizar' : 'Crear Campana' }}</button>
+        </div>
     </div>
 </div>
 @endsection
