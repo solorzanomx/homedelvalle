@@ -150,7 +150,12 @@ class EmailInboxProcessor
 
     private function handleInmuebles24($imapMessage, string $messageId, array &$stats, ?string $fromEmail = null): void
     {
-        $subject = (string) ($imapMessage->getSubject() ?? '');
+        // getSubject() regresa el header crudo: los fragmentos con acentos/
+        // emoji vienen codificados RFC 2047 (=?UTF-8?Q?...?=) mezclados con
+        // texto plano en el mismo asunto — sin decodificar, "titulo_aviso"
+        // salia con ese codigo en vez del texto real (bug real 2026-09-22,
+        // visible en "Aviso que consulto" de la ficha del lead).
+        $subject = mb_decode_mimeheader((string) ($imapMessage->getSubject() ?? ''));
         $html = (string) ($imapMessage->getHTMLBody() ?: '');
 
         $parsed = $this->i24Importer->parse($subject, $html);
