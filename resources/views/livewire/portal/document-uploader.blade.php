@@ -75,6 +75,11 @@
             </button>
             @endif
         </div>
+        @if($isIdCategory)
+        <p style="font-size:.7rem;color:#94a3b8;margin-top:.35rem;">
+            💡 Mejor usa "Usar cámara" — encuadra la identificación sola, sin espacio alrededor, para que se lea bien.
+        </p>
+        @endif
 
         @if($isIdCategory)
         {{-- Modal de cámara guiada — se abre/cierra por JS, vive oculto en el DOM.
@@ -86,9 +91,11 @@
             <canvas id="cam-canvas-{{ $singleCategory }}" style="display:none;"></canvas>
             <img id="cam-preview-{{ $singleCategory }}" style="display:none;flex:1;width:100%;height:100%;object-fit:contain;background:#000;">
 
-            {{-- Recuadro guía, proporción de una credencial (85.6x54mm) --}}
+            {{-- Recuadro guía, proporción de una credencial (85.6x54mm) —
+                 id-{{ $singleCategory }} porque idCamCapture() recorta la
+                 foto a exactamente esta caja, no manda la pantalla completa. --}}
             <div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
-                <div style="width:min(88vw, 560px);aspect-ratio:1.586;border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);"></div>
+                <div id="cam-guidebox-{{ $singleCategory }}" style="width:min(88vw, 560px);aspect-ratio:1.586;border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);"></div>
             </div>
 
             <div style="position:absolute;top:0;left:0;right:0;padding:1rem 1.25rem;padding-top:calc(1rem + env(safe-area-inset-top, 0px));background:linear-gradient(rgba(0,0,0,.55),transparent);display:flex;align-items:center;justify-content:space-between;">

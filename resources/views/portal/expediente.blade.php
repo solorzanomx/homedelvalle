@@ -1252,15 +1252,51 @@ function idCamShowError(category, msg) {
     if (err) { err.hidden = false; err.textContent = msg; }
 }
 
-function idCamCapture(category) {
-    var video  = document.getElementById('cam-video-' + category);
-    var canvas = document.getElementById('cam-canvas-' + category);
-    var preview = document.getElementById('cam-preview-' + category);
-    if (!video || !canvas || !preview || !video.videoWidth) return;
+// Mapea el recuadro guía (en pantalla) a coordenadas de pixel reales del
+// video, tomando en cuenta que el <video> usa object-fit:cover (se recorta
+// simétricamente para llenar el contenedor manteniendo proporción).
+function idCamGuideToVideoRect(video, guideBox) {
+    var containerRect = video.getBoundingClientRect();
+    var guideRect = guideBox.getBoundingClientRect();
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    var vw = video.videoWidth, vh = video.videoHeight;
+    var cw = containerRect.width, ch = containerRect.height;
+    var scale = Math.max(cw / vw, ch / vh);
+    var renderedW = vw * scale, renderedH = vh * scale;
+    var offsetX = (cw - renderedW) / 2;
+    var offsetY = (ch - renderedH) / 2;
+
+    var gx = guideRect.left - containerRect.left;
+    var gy = guideRect.top - containerRect.top;
+
+    var sx = (gx - offsetX) / scale;
+    var sy = (gy - offsetY) / scale;
+    var sw = guideRect.width / scale;
+    var sh = guideRect.height / scale;
+
+    sx = Math.max(0, Math.min(sx, vw));
+    sy = Math.max(0, Math.min(sy, vh));
+    sw = Math.min(sw, vw - sx);
+    sh = Math.min(sh, vh - sy);
+
+    return { sx: sx, sy: sy, sw: sw, sh: sh };
+}
+
+function idCamCapture(category) {
+    var video   = document.getElementById('cam-video-' + category);
+    var canvas  = document.getElementById('cam-canvas-' + category);
+    var preview = document.getElementById('cam-preview-' + category);
+    var guideBox = document.getElementById('cam-guidebox-' + category);
+    if (!video || !canvas || !preview || !guideBox || !video.videoWidth) return;
+
+    // Recorta EXACTAMENTE lo que se ve dentro del recuadro guía — la foto
+    // que se sube es la credencial sola, no la pantalla completa con espacio
+    // alrededor (eso era lo que hacía que la IA leyera mal los datos).
+    var crop = idCamGuideToVideoRect(video, guideBox);
+    var outW = 1013, outH = Math.round(outW / 1.586); // resolución fija, buena para lectura OCR
+    canvas.width = outW;
+    canvas.height = outH;
+    canvas.getContext('2d').drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, outW, outH);
 
     preview.src = canvas.toDataURL('image/jpeg', 0.92);
     video.style.display = 'none';

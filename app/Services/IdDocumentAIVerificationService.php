@@ -63,6 +63,20 @@ class IdDocumentAIVerificationService
                 return;
             }
 
+            // Foto tipo "hoja completa con la credencial chiquita en medio" —
+            // el modelo puede leer los datos igual, pero con menos
+            // confianza que una foto encuadrada. Se marca para que el
+            // asesor lo sepa, en vez de dar por buena una lectura al
+            // límite de lo legible.
+            if (array_key_exists('documento_ocupa_mayoria_imagen', $extracted) && $extracted['documento_ocupa_mayoria_imagen'] === false) {
+                $document->update([
+                    'ai_extracted_data'      => $extracted,
+                    'ai_verification_status' => 'unreadable',
+                    'ai_verification_notes'  => 'La identificación se ve muy pequeña dentro de la foto (parece tener mucho espacio alrededor). Pide una foto donde la identificación llene el encuadre — con el botón "Usar cámara" del Portal queda bien de una vez.',
+                ]);
+                return;
+            }
+
             [$status, $notes] = $this->compare($extracted, $client);
 
             $document->update([
@@ -97,6 +111,7 @@ Esta imagen es una identificación oficial mexicana (INE/IFE, pasaporte, o cédu
 
 {
   "legible": true|false,
+  "documento_ocupa_mayoria_imagen": true|false,
   "tipo_documento": "INE" | "pasaporte" | "cedula_profesional" | "otro" | null,
   "nombre_completo": "string o null",
   "curp": "string (18 caracteres) o null",
@@ -107,6 +122,7 @@ Esta imagen es una identificación oficial mexicana (INE/IFE, pasaporte, o cédu
 
 Reglas:
 - "legible" es false si la imagen está borrosa, incompleta, o no es una identificación oficial — en ese caso los demás campos van null.
+- "documento_ocupa_mayoria_imagen" es false si la identificación se ve chica dentro de la foto (por ejemplo, una hoja tamaño carta fotografiada completa con la credencial en el centro, dejando mucho fondo/mesa/mano alrededor). Es true solo si la identificación llena la mayor parte del encuadre, con poco margen alrededor.
 - El INE normalmente solo muestra mes y año de vigencia (no día) — usa exactamente eso.
 - Si el documento es una identificación mexicana pero no trae CURP visible (ej. pasaporte), deja curp en null, no lo inventes.
 - No agregues explicación, comentarios ni texto fuera del JSON.
