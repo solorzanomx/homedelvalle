@@ -8,17 +8,27 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Unica conexion IMAP por corrida del scheduler (comando email:check-replies,
- * cada 5 min). Recorre correos recientes de la bandeja y, por cada uno no
- * procesado todavia (ledger imap_processed_messages, por Message-ID — no
- * usamos el flag \Seen de IMAP porque la libreria hace fetch en modo PEEK
- * por defecto y ademas ensuciaria el Gmail real del dueno de la cuenta),
- * decide a donde va:
- *   1. Viene de usuarios.inmuebles24.com  -> Inmuebles24LeadImporter
+ * cada 5 min). Recorre correos recientes de INBOX y de Spam (Gmail suele
+ * marcar como spam los correos de leads-notifier de Inmuebles24 — pedido
+ * real de Alejandro 2026-09-22 tras confirmar que se le fueron leads ahi) y,
+ * por cada uno no procesado todavia (ledger imap_processed_messages, por
+ * Message-ID — no usamos el flag \Seen de IMAP porque la libreria hace
+ * fetch en modo PEEK por defecto y ademas ensuciaria el Gmail real del
+ * dueno de la cuenta), decide a donde va:
+ *   1. Viene de usuarios.inmuebles24.com/usuarios.vivanuncios.com.mx -> Inmuebles24LeadImporter
  *   2. Viene del email de un Client conocido -> EmailReplyChecker (respuesta)
  *   3. Cualquier otra cosa -> se marca 'skipped' para no reevaluarla siempre
  */
 class EmailInboxProcessor
 {
+    /**
+     * "[Gmail]/Spam" es el path real confirmado para esta cuenta (Gmail con
+     * UI en espanol) via $client->getFolders(false) — los nombres de las
+     * carpetas especiales de Gmail se localizan segun el idioma de la
+     * cuenta, no son un estandar IMAP fijo.
+     */
+    private const FOLDERS = ['INBOX', '[Gmail]/Spam'];
+
     public function __construct(
         private EmailReplyChecker $replyChecker,
         private Inmuebles24LeadImporter $i24Importer,
@@ -40,50 +50,23 @@ class EmailInboxProcessor
             $client = $this->replyChecker->makeClient($settings);
             $client->connect();
 
-            $inbox = $client->getFolder('INBOX');
-            // Ultimos 14 dias: suficiente para no perder nada, acotado para
-            // no recorrer toda la bandeja historica en cada corrida.
-            $messages = $inbox->query()->since(now()->subDays(14))->leaveUnread()->get();
-
-            foreach ($messages as $imapMessage) {
-                $messageId = null;
+            foreach (self::FOLDERS as $folderPath) {
                 try {
-                    $messageId = (string) ($imapMessage->getMessageId() ?? '');
-                    if ($messageId === '' || ImapProcessedMessage::where('message_id', $messageId)->exists()) {
+                    $folder = $client->getFolder($folderPath);
+                    if (!$folder) {
                         continue;
                     }
+                    // Ultimos 14 dias: suficiente para no perder nada, acotado para
+                    // no recorrer toda la bandeja historica en cada corrida.
+                    $messages = $folder->query()->since(now()->subDays(14))->leaveUnread()->get();
 
-                    $stats['checked']++;
-
-                    $fromEmail = $this->firstFromEmail($imapMessage->getFrom());
-
-                    if ($fromEmail && $this->i24Importer->looksLikeInmuebles24Lead($fromEmail)) {
-                        $this->handleInmuebles24($imapMessage, $messageId, $stats, $fromEmail);
-                        continue;
+                    foreach ($messages as $imapMessage) {
+                        $this->processMessage($imapMessage, $stats);
                     }
-
-                    $clientModel = $fromEmail ? $this->replyChecker->findClientByEmail($fromEmail) : null;
-
-                    if ($clientModel) {
-                        $this->replyChecker->recordReply($clientModel, $imapMessage);
-                        ImapProcessedMessage::create(['message_id' => $messageId, 'type' => 'client_reply']);
-                        $stats['client_replies']++;
-                        continue;
-                    }
-
-                    ImapProcessedMessage::create(['message_id' => $messageId, 'type' => 'skipped']);
-                    $stats['skipped']++;
                 } catch (\Throwable $e) {
-                    // Un correo individual con formato raro (encabezado "De:"
-                    // que la libreria no pudo parsear como direccion RFC,
-                    // adjunto corrupto, etc.) ya NO tumba la corrida completa
-                    // (bug real 2026-09-21: un solo mensaje asi dejaba en cero
-                    // TODA la importacion, incluidos los leads de Inmuebles24
-                    // que si venian bien formados en el mismo lote).
-                    Log::error('EmailInboxProcessor: fallo procesando un mensaje, se omite y se sigue con el resto: ' . $e->getMessage(), [
-                        'message_id' => $messageId,
-                    ]);
-                    $stats['message_errors'] = ($stats['message_errors'] ?? 0) + 1;
+                    // Que Spam no exista o falle no debe tumbar el procesado
+                    // de INBOX (ni viceversa) — cada carpeta es independiente.
+                    Log::error("EmailInboxProcessor: fallo revisando la carpeta {$folderPath}: " . $e->getMessage());
                 }
             }
 
@@ -95,6 +78,49 @@ class EmailInboxProcessor
         }
 
         return $stats;
+    }
+
+    private function processMessage($imapMessage, array &$stats): void
+    {
+        $messageId = null;
+        try {
+            $messageId = (string) ($imapMessage->getMessageId() ?? '');
+            if ($messageId === '' || ImapProcessedMessage::where('message_id', $messageId)->exists()) {
+                return;
+            }
+
+            $stats['checked']++;
+
+            $fromEmail = $this->firstFromEmail($imapMessage->getFrom());
+
+            if ($fromEmail && $this->i24Importer->looksLikeInmuebles24Lead($fromEmail)) {
+                $this->handleInmuebles24($imapMessage, $messageId, $stats, $fromEmail);
+                return;
+            }
+
+            $clientModel = $fromEmail ? $this->replyChecker->findClientByEmail($fromEmail) : null;
+
+            if ($clientModel) {
+                $this->replyChecker->recordReply($clientModel, $imapMessage);
+                ImapProcessedMessage::create(['message_id' => $messageId, 'type' => 'client_reply']);
+                $stats['client_replies']++;
+                return;
+            }
+
+            ImapProcessedMessage::create(['message_id' => $messageId, 'type' => 'skipped']);
+            $stats['skipped']++;
+        } catch (\Throwable $e) {
+            // Un correo individual con formato raro (encabezado "De:"
+            // que la libreria no pudo parsear como direccion RFC,
+            // adjunto corrupto, etc.) ya NO tumba la corrida completa
+            // (bug real 2026-09-21: un solo mensaje asi dejaba en cero
+            // TODA la importacion, incluidos los leads de Inmuebles24
+            // que si venian bien formados en el mismo lote).
+            Log::error('EmailInboxProcessor: fallo procesando un mensaje, se omite y se sigue con el resto: ' . $e->getMessage(), [
+                'message_id' => $messageId,
+            ]);
+            $stats['message_errors'] = ($stats['message_errors'] ?? 0) + 1;
+        }
     }
 
     /**
