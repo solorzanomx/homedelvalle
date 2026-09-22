@@ -53,11 +53,16 @@ class Document extends Model
         // Aval
         'aval_ine_frente'       => 'INE Aval — Frente',
         'aval_ine_reverso'      => 'INE Aval — Reverso',
+        'aval_comprobante_domicilio' => 'Comprobante de Domicilio (Aval)',
         'aval_escritura'        => 'Escritura del Inmueble (Aval)',
         'aval_predial'          => 'Predial del Inmueble (Aval)',
         'aval_libertad_gravamen'=> 'Libertad de Gravamen (Aval)',
+        'aval_acta_matrimonio'  => 'Acta de Matrimonio (Aval)',
+        'aval_id_conyuge'       => 'Identificación Oficial del Cónyuge (Aval)',
         // Pagarés
         'pagare'                => 'Pagaré',
+        // Cuota de investigación (requisito general, no depende de la garantía)
+        'comprobante_pago_investigacion' => 'Comprobante de Pago de Investigación',
         // Expediente del Vendedor — checklist real de la notaría (2026-07-07),
         // ver App\Support\SellerDocumentChecklist
         'documento_migratorio'   => 'Documento Migratorio',

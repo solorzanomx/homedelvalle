@@ -22,6 +22,11 @@
             'title' => 'Referencias y Buró de Crédito',
             'items' => \App\Support\TenantDocumentChecklist::REFERENCIAS + \App\Support\TenantDocumentChecklist::CREDITO,
         ],
+        [
+            'title' => 'Cuota de investigación',
+            'items' => \App\Support\TenantDocumentChecklist::PAGO_INVESTIGACION,
+            'note' => 'Costo por investigación: $3,500 MXN en CDMX, no reembolsable.',
+        ],
     ];
 @endphp
 

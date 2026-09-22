@@ -40,22 +40,37 @@ class TenantDocumentChecklist
     ];
 
     // Garantía — depende de qué tipo defina el asesor (RentalProcess::guarantee_type).
+    // Lista oficial (formulario "Lista de documentos" del cuestionario en papel,
+    // 2026-09-22): identificación, comprobante de domicilio, boleta predial
+    // fehaciente, escritura pública con sello de RPP, y — condicionales —
+    // acta de matrimonio (si aparece casado en la escritura) e identificación
+    // del cónyuge (si el inmueble es de bienes mancomunados).
     const AVAL = [
         'aval_ine_frente' => 'INE Aval — Frente',
         'aval_ine_reverso' => 'INE Aval — Reverso',
-        'aval_escritura' => 'Escritura del Inmueble en Garantía',
-        'aval_predial' => 'Predial del Inmueble en Garantía',
+        'aval_comprobante_domicilio' => 'Comprobante de Domicilio (Aval)',
+        'aval_escritura' => 'Escritura Pública con Sello de RPP',
+        'aval_predial' => 'Boleta Predial del Inmueble en Garantía (Fehaciente)',
         'aval_libertad_gravamen' => 'Libertad de Gravamen del Inmueble en Garantía',
+        'aval_acta_matrimonio' => 'Acta de Matrimonio (si aparece casado en la escritura)',
+        'aval_id_conyuge' => 'Identificación Oficial del Cónyuge (si bienes mancomunados)',
     ];
 
     const PAGARE = [
         'pagare' => 'Pagaré',
     ];
 
+    // Cuota de investigación — requisito general del expediente, no depende
+    // del tipo de garantía (lista oficial, 2026-09-22): $3,500 MXN CDMX, no
+    // reembolsables.
+    const PAGO_INVESTIGACION = [
+        'comprobante_pago_investigacion' => 'Comprobante de Pago de Investigación ($3,500 MXN, no reembolsable)',
+    ];
+
     /** Documentos que se le piden subir al inquilino, sin importar el tipo de garantía. */
     public static function clientFacing(): array
     {
-        return self::IDENTIFICACION + self::INGRESOS + self::REFERENCIAS + self::CREDITO;
+        return self::IDENTIFICACION + self::INGRESOS + self::REFERENCIAS + self::CREDITO + self::PAGO_INVESTIGACION;
     }
 
     /**

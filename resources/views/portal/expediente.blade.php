@@ -844,6 +844,28 @@
                 </div>
                 @endforeach
             </div>
+
+            {{-- Cuota de investigación --}}
+            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Cuota de investigación</div>
+                @foreach(\App\Support\TenantDocumentChecklist::PAGO_INVESTIGACION as $cat => $label)
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);">
+                    <span style="font-size:.82rem;">
+                        {{ $documents->has($cat) ? '✅' : '○' }} {{ $label }}
+                    </span>
+                    @if(!$documents->has($cat))
+                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;">
+                        @csrf
+                        @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
+                        <input type="hidden" name="category" value="{{ $cat }}">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
+                    </form>
+                    @else
+                    <span style="font-size:.72rem;color:var(--text-muted);">Subido ✓</span>
+                    @endif
+                </div>
+                @endforeach
+            </div>
         </div>
     </div>
 </div>
@@ -962,7 +984,7 @@
                 {{-- Docs del aval --}}
                 <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);">
                     <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem;">Documentos del aval</div>
-                    @foreach(['aval_ine_frente'=>'INE Aval (frente)','aval_ine_reverso'=>'INE Aval (reverso)','aval_escritura'=>'Escritura del inmueble','aval_predial'=>'Predial','aval_libertad_gravamen'=>'Libertad de gravamen'] as $cat => $label)
+                    @foreach(\App\Support\TenantDocumentChecklist::AVAL as $cat => $label)
                     <div style="display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);">
                         <span style="font-size:.82rem;">{{ $documents->has($cat)?'✅':'○' }} {{ $label }}</span>
                         @if(!$documents->has($cat))
