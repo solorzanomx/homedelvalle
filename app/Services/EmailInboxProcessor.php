@@ -58,7 +58,7 @@ class EmailInboxProcessor
                     $fromEmail = $this->firstFromEmail($imapMessage->getFrom());
 
                     if ($fromEmail && $this->i24Importer->looksLikeInmuebles24Lead($fromEmail)) {
-                        $this->handleInmuebles24($imapMessage, $messageId, $stats);
+                        $this->handleInmuebles24($imapMessage, $messageId, $stats, $fromEmail);
                         continue;
                     }
 
@@ -122,7 +122,7 @@ class EmailInboxProcessor
         return isset($first->mail) ? strtolower(trim((string) $first->mail)) : null;
     }
 
-    private function handleInmuebles24($imapMessage, string $messageId, array &$stats): void
+    private function handleInmuebles24($imapMessage, string $messageId, array &$stats, ?string $fromEmail = null): void
     {
         $subject = (string) ($imapMessage->getSubject() ?? '');
         $html = (string) ($imapMessage->getHTMLBody() ?: '');
@@ -140,7 +140,7 @@ class EmailInboxProcessor
             return;
         }
 
-        $this->i24Importer->import($parsed);
+        $this->i24Importer->import($parsed, $fromEmail);
         ImapProcessedMessage::create(['message_id' => $messageId, 'type' => 'inmuebles24_lead']);
         $stats['inmuebles24_leads']++;
     }

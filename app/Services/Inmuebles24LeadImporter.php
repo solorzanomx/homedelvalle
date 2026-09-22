@@ -6,21 +6,53 @@ use App\Models\FormSubmission;
 use App\Models\Property;
 
 /**
- * Inmuebles24 no tiene API — los leads llegan por correo cada vez que
- * alguien consulta el WhatsApp/formulario de un aviso publicado. Este
- * parser convierte ese HTML (siempre la misma plantilla de Navent) en un
- * FormSubmission, igual que SyncEasyBrokerLeads hace con la API de EB.
+ * Inmuebles24 (y Vivanuncios, mismo grupo Navent, misma plantilla exacta —
+ * confirmado 2026-09-21 contra correos reales, hasta el remitente sigue
+ * diciendo "mediante Inmuebles24" aunque el dominio sea de Vivanuncios) no
+ * tienen API — los leads llegan por correo cada vez que alguien consulta el
+ * WhatsApp/formulario de un aviso publicado. Este parser convierte ese HTML
+ * en un FormSubmission, igual que SyncEasyBrokerLeads hace con la API de EB.
  *
- * form_type 'inmuebles24' — sin acuse automatico (Alejandro decidio 2026-08-06
- * que el contacto real es por WhatsApp, no por correo, igual que EasyBroker).
+ * form_type sigue siendo 'inmuebles24' para AMBOS portales (asi no se rompe
+ * el bloque "Aviso que consultó" del panel de leads, que filtra por ese
+ * valor) — el portal real de origen queda en utm_source/lead_tag.
+ * Sin acuse automatico (Alejandro decidio 2026-08-06 que el contacto real
+ * es por WhatsApp, no por correo, igual que EasyBroker).
  */
 class Inmuebles24LeadImporter
 {
-    public const FROM_DOMAIN = 'usuarios.inmuebles24.com';
+    /** dominio del remitente => nombre del portal (usado en utm_source/lead_tag) */
+    public const FROM_DOMAINS = [
+        'usuarios.inmuebles24.com'    => 'inmuebles24',
+        'usuarios.vivanuncios.com.mx' => 'vivanuncios',
+    ];
 
     public function looksLikeInmuebles24Lead(?string $fromAddress): bool
     {
-        return $fromAddress && str_ends_with(strtolower($fromAddress), '@' . self::FROM_DOMAIN);
+        if (!$fromAddress) {
+            return false;
+        }
+        $fromAddress = strtolower($fromAddress);
+        foreach (array_keys(self::FROM_DOMAINS) as $domain) {
+            if (str_ends_with($fromAddress, '@' . $domain)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Nombre del portal (inmuebles24/vivanuncios) segun el dominio del remitente. */
+    public function portalFor(?string $fromAddress): string
+    {
+        if ($fromAddress) {
+            $fromAddress = strtolower($fromAddress);
+            foreach (self::FROM_DOMAINS as $domain => $portal) {
+                if (str_ends_with($fromAddress, '@' . $domain)) {
+                    return $portal;
+                }
+            }
+        }
+        return 'inmuebles24';
     }
 
     /**
@@ -86,7 +118,7 @@ class Inmuebles24LeadImporter
             ->exists();
     }
 
-    public function import(array $data): FormSubmission
+    public function import(array $data, ?string $fromEmail = null): FormSubmission
     {
         // Inmuebles24 no manda mensaje de texto libre en esta notificacion
         // (solo metadata del aviso) — sin mensaje, la IA no tiene nada que
@@ -98,6 +130,7 @@ class Inmuebles24LeadImporter
         $clientType = str_contains(mb_strtolower($data['tipo_operacion'] ?? ''), 'renta') ? 'renter' : 'buyer';
         $temperatura = 'hot';
         [$budgetMin, $budgetMax] = $this->parseBudgetRange($data['busca_presupuesto'] ?? null);
+        $portal = $this->portalFor($fromEmail);
 
         // Vincula al aviso local si el codigo coincide con una Property que
         // Alejandro ya anoto a mano (Inmuebles24 no tiene API para hacerlo
@@ -113,16 +146,20 @@ class Inmuebles24LeadImporter
         // real con estos leads es por WhatsApp), asi que no se dispara
         // FormSubmitted (SendAcuseMail/NotifyAdminsNewLead/etc.).
         return FormSubmission::withoutEvents(fn () => FormSubmission::create([
+            // form_type se queda 'inmuebles24' para AMBOS portales — el bloque
+            // "Aviso que consultó" del panel de leads filtra por este valor,
+            // y la plantilla de correo es identica para los dos. El portal
+            // real de origen queda en utm_source/lead_tag.
             'form_type'        => 'inmuebles24',
-            'source_page'      => 'inmuebles24:' . ($data['codigo_aviso'] ?? 'sin-codigo'),
+            'source_page'      => $portal . ':' . ($data['codigo_aviso'] ?? 'sin-codigo'),
             'full_name'        => $data['nombre'],
             'email'            => $data['email'] ?: 'i24-' . ($data['ref'] ?? uniqid()) . '@sin-correo.inmuebles24',
             'phone'            => $data['telefono'] ?: 'sin teléfono',
-            'lead_tag'         => 'LEAD_INMUEBLES24',
+            'lead_tag'         => 'LEAD_' . strtoupper($portal),
             'client_type'      => $clientType,
             'lead_temperature' => $temperatura,
             'status'           => 'new',
-            'utm_source'       => 'inmuebles24',
+            'utm_source'       => $portal,
             'utm_medium'       => 'email_lead',
             'budget_min'       => $budgetMin,
             'budget_max'       => $budgetMax,
@@ -190,8 +227,10 @@ class Inmuebles24LeadImporter
     private function extractPropertyLocation(string $text): ?string
     {
         // La colonia/ubicacion vive en el span de descripcion junto al precio,
-        // con la forma "...color:#7C98A7;...">Colonia, Alcaldía</span>
-        if (preg_match('/color:#7C98A7[^>]*>([^<]{4,80})<\/span>/u', $text, $m)) {
+        // con la forma "...color:#7c98a7;...">Colonia, Alcaldía</span> — el
+        // correo real usa el hex en minusculas (bug real 2026-09-21: el
+        // regex original solo aceptaba mayusculas y nunca hacia match).
+        if (preg_match('/color:#7c98a7[^>]*>([^<]{4,80})<\/span>/ui', $text, $m)) {
             $value = trim($m[1]);
             if ($value !== '' && !str_contains($value, 'MN') && !str_contains($value, 'Mantenimiento')) {
                 return $value;
@@ -218,12 +257,15 @@ class Inmuebles24LeadImporter
     /**
      * Zonas de interes: badges con un estilo especifico y distinto del badge
      * "Venta | Departamento" del aviso consultado (ese usa border-radius:23px,
-     * las zonas usan border-radius:4px con este padding exacto).
+     * las zonas usan border-radius:4px con este padding exacto). El correo
+     * real usa el hex en minusculas y SIN el punto y coma final antes del
+     * cierre de comillas (bug real 2026-09-21: nunca hacia match con ninguno
+     * de los dos, asi que "busca_zonas" siempre salia vacio).
      */
     private function extractZonasInteres(string $text): array
     {
         preg_match_all(
-            '/border:\s*1px solid #EDEDED;border-radius:4px;padding:2px 8px 2px 8px;margin-bottom:4px;margin-top:8px;">([^<]+)<\/span>/u',
+            '/border:\s*1px solid #ededed;border-radius:4px;padding:2px 8px 2px 8px;margin-bottom:4px;margin-top:8px;?">([^<]+)<\/span>/ui',
             $text,
             $matches
         );
