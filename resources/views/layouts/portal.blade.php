@@ -410,6 +410,7 @@
     $isVenta        = !empty(array_intersect(['venta','venta_propietario'], $interests));
     $isRenta        = !empty(array_intersect(['renta_propietario', 'renta_inquilino'], $interests));
     $isArrendatario = in_array('renta_inquilino', $interests);
+    $isArrendador   = in_array('renta_propietario', $interests);
     $isComprador    = in_array('compra', $interests);
 
     // Etiqueta del rol — antes decía "Portal del Propietario" fijo sin
@@ -554,7 +555,7 @@
         </div>
         @elseif($activeRental?->property)
         <div class="sb-property">
-            <div class="sb-property-label">Tu inmueble en renta</div>
+            <div class="sb-property-label">{{ $isArrendatario ? 'Estás rentando' : 'Tu inmueble en renta' }}</div>
             <div class="sb-property-addr">{{ $activeRental->property->address ?? 'Inmueble en proceso' }}</div>
             @if($activeRental->property->colony)
             <div class="sb-property-colonia">{{ $activeRental->property->colony }}</div>
@@ -662,7 +663,10 @@
         <div class="sb-section">
             <div class="sb-section-label">Mi proceso de renta</div>
 
-            @if($activeRental)
+            @if($activeRental && $isArrendador)
+            {{-- Pipeline completo — solo tiene sentido para quien pone su
+                 inmueble en renta (Captación, Publicación, Búsqueda de
+                 Arrendatario, etc. son etapas del LADO del propietario). --}}
             @php
                 $rentalStages = \App\Models\RentalProcess::STAGES;
                 $stageKeys    = array_keys($rentalStages);
@@ -694,6 +698,16 @@
                 <span style="margin-left:auto;width:8px;height:8px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></span>
             </a>
             @endif
+
+            @elseif($activeRental)
+            {{-- Arrendatario (o interés de renta sin rol claro): un solo
+                 link a su renta — el detalle de etapa/estado ya se ve
+                 dentro de portal.rentals.show con lenguaje de inquilino. --}}
+            <a href="{{ route('portal.rentals.show', $activeRental->id) }}"
+               class="sb-item {{ request()->routeIs('portal.rentals.show') ? 'active' : '' }}">
+                <span>&#128273;</span>
+                Mi Renta
+            </a>
 
             @else
             <a href="{{ route('portal.rentals.index') }}"
@@ -729,7 +743,10 @@
 
         {{-- Bottom links --}}
         <div style="padding:.5rem 0;">
-            @if($isVenta || $isRenta)
+            {{-- "Mi Inmueble" son métricas del inmueble PROPIO (vistas,
+                 visitas agendadas, etc.) — no aplica a quien está buscando
+                 rentar, solo a quien pone un inmueble en renta o venta. --}}
+            @if($isVenta || $isArrendador)
             <a href="{{ route('portal.mi-inmueble') }}"
                class="sb-item {{ $onMiInmueble ? 'active' : '' }}">
                 <span>📊</span>
