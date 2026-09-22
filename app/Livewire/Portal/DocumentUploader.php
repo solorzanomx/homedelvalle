@@ -44,7 +44,12 @@ class DocumentUploader extends Component
         $query = Document::query();
 
         if ($this->rentalProcessId) {
-            $query->where('rental_process_id', $this->rentalProcessId);
+            // Sin filtrar por client_id aquí, el propietario y el arrendatario
+            // de la MISMA renta veían los documentos del otro (escritura del
+            // dueño visible al inquilino, INE/buró de crédito del inquilino
+            // visible al dueño) — cada quien solo ve lo que él mismo subió.
+            $query->where('rental_process_id', $this->rentalProcessId)
+                  ->where('client_id', $client->id);
         } else {
             $query->where('client_id', $client->id)
                   ->whereNull('rental_process_id')

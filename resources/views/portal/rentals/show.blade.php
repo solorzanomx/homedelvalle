@@ -227,7 +227,9 @@
     <div class="section-body">
         @livewire('portal.document-uploader', [
             'rentalProcessId'   => $rental->id,
-            'allowedCategories' => ['identificacion','comprobante_domicilio','proof_of_income','credit_report','references','rental_contract','other'],
+            'allowedCategories' => $role === 'propietario'
+                ? ['identificacion','comprobante_domicilio','escritura','predial','libertad_gravamen','reglamento_condominio','rental_contract','other']
+                : ['identificacion','comprobante_domicilio','proof_of_income','credit_report','references','rental_contract','other'],
         ])
     </div>
 </div>
@@ -275,7 +277,9 @@
                     <span style="color:#64748b;">{{ \App\Models\RentalProcess::STAGES[$log->from_stage] ?? $log->from_stage }}</span>
                     &nbsp;→&nbsp;<strong>{{ \App\Models\RentalProcess::STAGES[$log->to_stage] ?? $log->to_stage }}</strong>
                 </p>
-                @if($log->notes)<p style="font-size:.72rem;color:#64748b;margin-top:.1rem;">{{ $log->notes }}</p>@endif
+                {{-- $log->notes es la nota interna que el asesor escribe al
+                     avanzar de etapa en el CRM — no está pensada para el
+                     cliente, no se muestra aquí. --}}
                 <p style="font-size:.68rem;color:#94a3b8;margin-top:.15rem;">{{ $log->created_at->format('d/m/Y H:i') }}</p>
             </div>
         </div>
