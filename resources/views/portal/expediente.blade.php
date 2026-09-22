@@ -362,6 +362,58 @@
             </div>
             <form method="POST" action="{{ route('portal.expediente.datos') }}">
                 @csrf
+
+                {{-- PASO 1: Tipo de Identificación — decide qué casilla de subida
+                     aparece justo abajo. --}}
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label class="form-label">1. Tipo de Identificación</label>
+                    <select name="id_type" id="exp_id_type" class="form-select"
+                            onchange="document.querySelectorAll('.idtype-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
+                        <option value="">Seleccionar</option>
+                        <option value="INE"              {{ old('id_type',$client->id_type)==='INE'?'selected':'' }}>INE / IFE</option>
+                        <option value="pasaporte"        {{ old('id_type',$client->id_type)==='pasaporte'?'selected':'' }}>Pasaporte</option>
+                        <option value="cedula_profesional" {{ old('id_type',$client->id_type)==='cedula_profesional'?'selected':'' }}>Cédula Profesional</option>
+                        <option value="otro"             {{ old('id_type',$client->id_type)==='otro'?'selected':'' }}>Otro</option>
+                    </select>
+                    <p class="form-hint">Elige tu tipo de identificación para poder subir el documento correcto abajo.</p>
+                </div>
+
+                {{-- PASO 2: casilla(s) de subida, justo debajo del tipo elegido.
+                     INE abre 2 (frente/reverso), pasaporte abre 1 con el
+                     formato de la carátula, cédula/otro abre 1 genérica. Sube
+                     directo sin recargar la página; INE y pasaporte además se
+                     leen automáticamente y llenan CURP/RFC/vigencia abajo. --}}
+                @php $curIdType = old('id_type', $client->id_type); @endphp
+                <div style="margin-bottom:1.25rem;">
+                    <div class="idtype-slot" data-type="INE" {{ $curIdType !== 'INE' ? 'hidden' : '' }}>
+                        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">INE — Frente</div>
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['ine_frente']], key('exp-id-ine_frente'))
+                        <div style="font-size:.78rem;color:var(--text-muted);margin:.75rem 0 .35rem;">INE — Reverso</div>
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['ine_reverso']], key('exp-id-ine_reverso'))
+                    </div>
+
+                    <div class="idtype-slot" data-type="pasaporte" {{ $curIdType !== 'pasaporte' ? 'hidden' : '' }}>
+                        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Página de datos del pasaporte</div>
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['pasaporte']], key('exp-id-pasaporte'))
+                    </div>
+
+                    <div class="idtype-slot" data-type="cedula_profesional" {{ $curIdType !== 'cedula_profesional' ? 'hidden' : '' }}>
+                        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Cédula Profesional</div>
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion']], key('exp-id-cedula'))
+                    </div>
+
+                    <div class="idtype-slot" data-type="otro" {{ $curIdType !== 'otro' ? 'hidden' : '' }}>
+                        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Identificación</div>
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion']], key('exp-id-otro'))
+                    </div>
+
+                    @if(!$curIdType)
+                    <p style="font-size:.82rem;color:var(--text-muted);">Elige tu tipo de identificación arriba para poder subir el documento.</p>
+                    @endif
+                </div>
+
+                {{-- PASO 3: CURP/RFC — se llenan solos al subir INE/pasaporte,
+                     pero se pueden corregir a mano. --}}
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">CURP</label>
@@ -372,18 +424,6 @@
                         <label class="form-label">RFC</label>
                         <input type="text" name="rfc" class="form-input" value="{{ old('rfc',$client->rfc) }}" maxlength="13" style="text-transform:uppercase;" placeholder="XXXX000000XXX">
                         @if($client->rfc_verified_at)<p class="form-hint" style="color:#166534;">✓ Verificado</p>@endif
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tipo de Identificación</label>
-                        <select name="id_type" id="exp_id_type" class="form-select"
-                                onchange="document.querySelectorAll('.idtype-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
-                            <option value="">Seleccionar</option>
-                            <option value="INE"              {{ old('id_type',$client->id_type)==='INE'?'selected':'' }}>INE / IFE</option>
-                            <option value="pasaporte"        {{ old('id_type',$client->id_type)==='pasaporte'?'selected':'' }}>Pasaporte</option>
-                            <option value="cedula_profesional" {{ old('id_type',$client->id_type)==='cedula_profesional'?'selected':'' }}>Cédula Profesional</option>
-                            <option value="otro"             {{ old('id_type',$client->id_type)==='otro'?'selected':'' }}>Otro</option>
-                        </select>
-                        <p class="form-hint">Elige tu tipo de identificación para poder subir el documento correcto abajo.</p>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Número de Identificación</label>
@@ -439,79 +479,40 @@
                         <label class="form-label">Código Postal</label>
                         <input type="text" name="address_zip" class="form-input" value="{{ old('address_zip',$client->address_zip) }}" maxlength="5" placeholder="03100">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">¿Qué comprobante de domicilio vas a subir?</label>
-                        <select name="domicilio_proof_type" id="exp_domicilio_proof_type" class="form-select"
-                                onchange="document.querySelectorAll('.domicilio-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
-                            <option value="">Seleccionar</option>
-                            @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $val => $lbl)
-                            <option value="{{ $val }}" {{ old('domicilio_proof_type',$client->domicilio_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
-                            @endforeach
-                        </select>
-                        <p class="form-hint">Solo se acepta agua, luz o gas — no mayor a 3 meses.</p>
+                </div>
+
+                {{-- ¿Qué comprobante de domicilio vas a subir? — decide qué
+                     casilla de subida aparece justo abajo, mismo patrón que
+                     el tipo de identificación arriba. --}}
+                <div class="form-group" style="margin-top:.75rem;">
+                    <label class="form-label">¿Qué comprobante de domicilio vas a subir?</label>
+                    <select name="domicilio_proof_type" id="exp_domicilio_proof_type" class="form-select"
+                            onchange="document.querySelectorAll('.domicilio-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
+                        <option value="">Seleccionar</option>
+                        @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $val => $lbl)
+                        <option value="{{ $val }}" {{ old('domicilio_proof_type',$client->domicilio_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                    <p class="form-hint">Solo se acepta agua, luz o gas — no mayor a 3 meses.</p>
+                </div>
+
+                @php $curDomicilioType = old('domicilio_proof_type', $client->domicilio_proof_type); @endphp
+                <div style="margin-top:.75rem;">
+                    @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $type => $label)
+                    <div class="domicilio-slot" data-type="{{ $type }}" {{ $curDomicilioType !== $type ? 'hidden' : '' }}>
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$type]], key('exp-domicilio-'.$type))
                     </div>
+                    @endforeach
+
+                    @if(!$curDomicilioType)
+                    <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba qué comprobante vas a subir (agua, luz o gas).</p>
+                    @endif
                 </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar identificación y domicilio</button>
                 </div>
             </form>
-
-            {{-- Documento de identificación — cuál casilla se muestra depende
-                 del "Tipo de Identificación" elegido arriba: INE abre 2
-                 casillas (frente/reverso), pasaporte abre 1 con el formato
-                 de la carátula, cédula/otro abre 1 genérica. Sube directo,
-                 sin recargar la página; INE y pasaporte además se leen
-                 automáticamente y se comparan contra los datos de arriba. --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Documento de identificación</div>
-
-                @php $curIdType = old('id_type', $client->id_type); @endphp
-
-                <div class="idtype-slot" data-type="INE" {{ $curIdType !== 'INE' ? 'hidden' : '' }}>
-                    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">INE — Frente</div>
-                    @livewire('portal.document-uploader', ['allowedCategories' => ['ine_frente']], key('exp-id-ine_frente'))
-                    <div style="font-size:.78rem;color:var(--text-muted);margin:.75rem 0 .35rem;">INE — Reverso</div>
-                    @livewire('portal.document-uploader', ['allowedCategories' => ['ine_reverso']], key('exp-id-ine_reverso'))
-                </div>
-
-                <div class="idtype-slot" data-type="pasaporte" {{ $curIdType !== 'pasaporte' ? 'hidden' : '' }}>
-                    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Página de datos del pasaporte</div>
-                    @livewire('portal.document-uploader', ['allowedCategories' => ['pasaporte']], key('exp-id-pasaporte'))
-                </div>
-
-                <div class="idtype-slot" data-type="cedula_profesional" {{ $curIdType !== 'cedula_profesional' ? 'hidden' : '' }}>
-                    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Cédula Profesional</div>
-                    @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion']], key('exp-id-cedula'))
-                </div>
-
-                <div class="idtype-slot" data-type="otro" {{ $curIdType !== 'otro' ? 'hidden' : '' }}>
-                    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Identificación</div>
-                    @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion']], key('exp-id-otro'))
-                </div>
-
-                @if(!$curIdType)
-                <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba tu tipo de identificación para poder subir el documento.</p>
-                @endif
-            </div>
-
-            {{-- Comprobante de domicilio — cuál casilla se muestra depende de
-                 "¿Qué comprobante de domicilio vas a subir?" arriba. --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Comprobante de domicilio</div>
-
-                @php $curDomicilioType = old('domicilio_proof_type', $client->domicilio_proof_type); @endphp
-
-                @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $type => $label)
-                <div class="domicilio-slot" data-type="{{ $type }}" {{ $curDomicilioType !== $type ? 'hidden' : '' }}>
-                    @livewire('portal.document-uploader', ['allowedCategories' => [$type]], key('exp-domicilio-'.$type))
-                </div>
-                @endforeach
-
-                @if(!$curDomicilioType)
-                <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba qué comprobante vas a subir (agua, luz o gas).</p>
-                @endif
-            </div>
 
             {{-- Acta de Nacimiento — no depende del tipo de identificación --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">

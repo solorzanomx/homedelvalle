@@ -178,7 +178,7 @@
                 style="padding:.5rem 1rem;font-size:.82rem;color:#64748b;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;">
             Cancelar
         </button>
-        <button wire:click="upload" wire:loading.attr="disabled" wire:target="upload"
+        <button type="button" wire:click="upload" wire:loading.attr="disabled" wire:target="upload"
                 style="padding:.5rem 1.25rem;font-size:.82rem;font-weight:600;background:#1D4ED8;color:#fff;border:none;border-radius:8px;cursor:pointer;">
             <span wire:loading.remove wire:target="upload">Subir documento</span>
             <span wire:loading wire:target="upload">Subiendo...</span>
