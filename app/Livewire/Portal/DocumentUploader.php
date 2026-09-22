@@ -178,6 +178,16 @@ class DocumentUploader extends Component
 
         if (app(IdDocumentAIVerificationService::class)->shouldVerify($document)) {
             app(IdDocumentAIVerificationService::class)->verify($document, $client);
+            $document->refresh();
+
+            // Si la IA logró leer el documento, ofrece llenar el formulario
+            // de Datos personales / Identificación con lo que dice la
+            // identificación en vez de que el cliente lo vuelva a escribir
+            // a mano (y para corregir de una vez si lo que había escrito
+            // no coincidía).
+            if (!empty($document->ai_extracted_data['legible'])) {
+                $this->dispatch('id-data-extracted', data: $document->ai_extracted_data);
+            }
         }
 
         $this->reset(['file', 'label']);

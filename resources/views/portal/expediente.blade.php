@@ -1351,5 +1351,54 @@ document.addEventListener('id-photo-captured', function (e) {
         }, 350);
     }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// Al leer la identificación por IA, llena Datos personales/Identificación
+// con lo que dice el documento — el cliente no tiene que volver a
+// escribirlo, y si algo no coincidía (por eso la IA marcó "no coincide"),
+// esto lo corrige con lo que de verdad dice su identificación.
+// Solo llena los campos del formulario (no guarda solo) — el cliente
+// revisa y le da "Guardar" él mismo.
+// ═══════════════════════════════════════════════════════════════
+function idSetFieldValue(name, value) {
+    if (!value) return;
+    var el = document.querySelector('[name="' + name + '"]');
+    if (el) el.value = value;
+}
+
+function idShowFillToast(msg) {
+    var t = document.createElement('div');
+    t.textContent = msg;
+    t.style.cssText = 'position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:.75rem 1.25rem;border-radius:10px;font-size:.85rem;font-weight:600;z-index:99999;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90vw;text-align:center;';
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 4500);
+}
+
+window.addEventListener('id-data-extracted', function (e) {
+    var data = e.detail ? e.detail.data : null;
+    if (!data) return;
+
+    idSetFieldValue('curp', data.curp);
+    idSetFieldValue('id_expiry_month', data.vigencia_mes);
+    idSetFieldValue('id_expiry_year', data.vigencia_anio);
+    if (data.fecha_nacimiento) idSetFieldValue('birth_date', data.fecha_nacimiento);
+
+    var typeMap = { 'INE': 'INE', 'pasaporte': 'pasaporte', 'cedula_profesional': 'cedula_profesional' };
+    if (data.tipo_documento && typeMap[data.tipo_documento]) idSetFieldValue('id_type', typeMap[data.tipo_documento]);
+
+    if (data.nombre_completo) {
+        var parts = data.nombre_completo.trim().split(/\s+/).filter(Boolean);
+        if (parts.length >= 2) {
+            var materno = parts.length >= 3 ? parts.pop() : '';
+            var paterno = parts.pop();
+            var nombres = parts.join(' ');
+            idSetFieldValue('first_name', nombres);
+            idSetFieldValue('last_name_paterno', paterno);
+            idSetFieldValue('last_name_materno', materno);
+        }
+    }
+
+    idShowFillToast('✓ Llenamos Datos personales e Identificación con lo que leímos de tu identificación. Revisa y da clic en Guardar.');
+});
 </script>
 @endsection
