@@ -95,7 +95,7 @@
                  id-{{ $singleCategory }} porque idCamCapture() recorta la
                  foto a exactamente esta caja, no manda la pantalla completa. --}}
             <div style="position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
-                <div id="cam-guidebox-{{ $singleCategory }}" style="width:min(88vw, 560px);aspect-ratio:1.586;border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);"></div>
+                <div id="cam-guidebox-{{ $singleCategory }}" style="width:min(88vw, 560px);aspect-ratio:{{ $cameraAspectRatio }};border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);"></div>
             </div>
 
             <div style="position:absolute;top:0;left:0;right:0;padding:1rem 1.25rem;padding-top:calc(1rem + env(safe-area-inset-top, 0px));background:linear-gradient(rgba(0,0,0,.55),transparent);display:flex;align-items:center;justify-content:space-between;">

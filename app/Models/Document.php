@@ -53,6 +53,8 @@ class Document extends Model
         'pasaporte'             => 'Pasaporte',
         'libertad_gravamen'     => 'Certificado de Libertad de Gravamen',
         'agua'                  => 'Boleta de Agua',
+        'luz'                   => 'Recibo de Luz (CFE)',
+        'gas'                   => 'Recibo de Gas',
         'acta_nacimiento'       => 'Acta de Nacimiento',
         'estado_cuenta'         => 'Estado de Cuenta Bancario',
         'carta_preautorizacion' => 'Carta de Preautorización (Crédito)',

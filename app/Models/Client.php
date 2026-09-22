@@ -54,6 +54,14 @@ class Client extends Model
         'id_expiry_month', 'id_expiry_year',
         // Cómo comprueba ingresos + mascotas
         'income_proof_type', 'pets',
+        // Qué comprobante de domicilio va a subir
+        'domicilio_proof_type',
+    ];
+
+    const DOMICILIO_PROOF_TYPES = [
+        'agua' => 'Recibo de Agua',
+        'luz'  => 'Recibo de Luz (CFE)',
+        'gas'  => 'Recibo de Gas',
     ];
 
     const INCOME_PROOF_TYPES = [

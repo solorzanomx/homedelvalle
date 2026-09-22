@@ -110,6 +110,7 @@ class PortalExpedienteController extends Controller
             'address_municipality' => 'nullable|string|max:100',
             'address_state'        => 'nullable|string|max:60',
             'address_zip'          => 'nullable|string|max:5',
+            'domicilio_proof_type' => 'nullable|in:' . implode(',', array_keys(\App\Models\Client::DOMICILIO_PROOF_TYPES)),
         ]);
 
         // Sync name field if full name parts provided

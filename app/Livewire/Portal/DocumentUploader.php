@@ -86,6 +86,12 @@ class DocumentUploader extends Component
         };
     }
 
+    /** Proporción del recuadro guía — credencial vs. página de pasaporte. */
+    public function cameraAspectRatio(): string
+    {
+        return $this->allowedCategories[0] === 'pasaporte' ? '1.42' : '1.586';
+    }
+
     public function loadDocuments(): void
     {
         $client = $this->getClient();
@@ -263,6 +269,7 @@ class DocumentUploader extends Component
             'availableCategories' => $this->getAvailableCategoriesProperty(),
             'isIdCategory'        => $this->isIdCategory(),
             'cameraSideLabel'     => $this->cameraSideLabel(),
+            'cameraAspectRatio'   => $this->cameraAspectRatio(),
             'singleCategory'      => $this->allowedCategories[0] ?? null,
         ]);
     }
