@@ -396,7 +396,7 @@
     @livewireStyles
 </head>
 <body>
-@if(session('impersonating_as'))
+@if(session('impersonating_as') && config('portal.impersonation_banner', true))
 <div style="position:sticky;top:0;z-index:9999;background:#7C3AED;color:#fff;padding:.6rem 1rem;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:.75rem;flex-wrap:wrap;">
     <span>&#128065; Estás viendo el portal como <strong>{{ Auth::user()->name }}</strong> — vista previa de asesor.</span>
     <form method="POST" action="{{ route('portal.preview.exit') }}" style="margin:0;">
