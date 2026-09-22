@@ -27,6 +27,7 @@ class RentalAval extends Model
         'property_state',
         'property_zip',
         'property_folio_real',
+        'escritura_numero',
         'property_value',
         'property_has_mortgage',
         'property_free_of_liens',

@@ -65,14 +65,17 @@ class PortalExpedienteController extends Controller
             ? $rentalAsInquilino->avales->first()
             : RentalAval::where('client_id', $client->id)->latest()->first();
 
+        // Referencias personales ya capturadas (arrendatario)
+        $references = $client->references;
+
         // Calcular completitud por sección
-        $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents);
+        $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents, $references);
 
         return view('portal.expediente', compact(
             'client', 'sections',
             'isArrendador', 'isArrendatario', 'isComprador', 'isVendedor',
             'rentalAsInquilino', 'rentalAsOwner',
-            'documents', 'aval',
+            'documents', 'aval', 'references',
         ));
     }
 
@@ -122,7 +125,7 @@ class PortalExpedienteController extends Controller
         return back()->with('success', 'Datos personales actualizados correctamente.');
     }
 
-    /** Guardar ingresos (arrendatario) */
+    /** Guardar ingresos + datos laborales + arrendador anterior (arrendatario) */
     public function saveIngresos(Request $request)
     {
         $user   = Auth::user();
@@ -132,10 +135,58 @@ class PortalExpedienteController extends Controller
         $validated = $request->validate([
             'income_type'   => 'nullable|in:empleado,independiente,empresario,otro',
             'income_amount' => 'nullable|numeric|min:0',
+            // Cuestionario — número de personas y datos laborales
+            'occupants_count'          => 'nullable|integer|min:0|max:20',
+            'employer_name'            => 'nullable|string|max:150',
+            'employer_address'         => 'nullable|string|max:200',
+            'employer_phone'           => 'nullable|string|max:30',
+            'job_seniority'            => 'nullable|string|max:60',
+            'other_income_amount'      => 'nullable|numeric|min:0',
+            'other_income_description' => 'nullable|string|max:200',
+            // Cuestionario — arrendador anterior
+            'previous_landlord_name'   => 'nullable|string|max:150',
+            'previous_landlord_phone'  => 'nullable|string|max:30',
+            'previous_landlord_mobile' => 'nullable|string|max:30',
+            'previous_landlord_email'  => 'nullable|email|max:150',
+            'previous_landlord_years'  => 'nullable|string|max:60',
         ]);
 
         $client->update($validated);
         return back()->with('success', 'Información de ingresos guardada.');
+    }
+
+    /** Guardar referencias personales (arrendatario) — hasta 3, estructuradas */
+    public function saveReferencias(Request $request)
+    {
+        $user   = Auth::user();
+        $client = $this->portalService->getClientForUser($user);
+        if (!$client) abort(403);
+
+        $validated = $request->validate([
+            'references'                  => 'nullable|array|max:3',
+            'references.*.name'           => 'nullable|string|max:150',
+            'references.*.address'        => 'nullable|string|max:200',
+            'references.*.mobile_phone'   => 'nullable|string|max:30',
+            'references.*.landline_phone' => 'nullable|string|max:30',
+            'references.*.email'          => 'nullable|email|max:150',
+        ]);
+
+        foreach ($validated['references'] ?? [] as $i => $ref) {
+            if (empty($ref['name'])) continue;
+
+            $client->references()->updateOrCreate(
+                ['sort_order' => $i + 1],
+                [
+                    'name'            => $ref['name'],
+                    'address'         => $ref['address'] ?? null,
+                    'mobile_phone'    => $ref['mobile_phone'] ?? null,
+                    'landline_phone'  => $ref['landline_phone'] ?? null,
+                    'email'           => $ref['email'] ?? null,
+                ]
+            );
+        }
+
+        return back()->with('success', 'Referencias personales guardadas.');
     }
 
     /** Guardar financiamiento (comprador) */
@@ -179,6 +230,7 @@ class PortalExpedienteController extends Controller
             'property_state'        => 'nullable|string|max:60',
             'property_zip'          => 'nullable|string|max:5',
             'property_folio_real'   => 'nullable|string|max:80',
+            'escritura_numero'      => 'nullable|string|max:80',
             'property_value'        => 'nullable|numeric|min:0',
             'property_has_mortgage' => 'nullable|boolean',
             'property_free_of_liens'=> 'nullable|boolean',
@@ -276,9 +328,10 @@ class PortalExpedienteController extends Controller
     }
 
     /** Calcular completitud por sección */
-    private function calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rental, $documents): array
+    private function calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rental, $documents, $references = null): array
     {
         $sections = [];
+        $references = $references ?? collect();
 
         // Datos personales (todos)
         $personalFields = ['first_name','last_name_paterno','last_name_materno','birth_date','birth_state','gender','nationality','marital_status','curp','rfc'];
@@ -290,17 +343,26 @@ class PortalExpedienteController extends Controller
         $idFilled = collect($idFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['identificacion'] = ['filled' => $idFilled, 'total' => count($idFields), 'pct' => round($idFilled / count($idFields) * 100)];
 
-        // Ingresos (arrendatario) — incluye comprobante de ingresos, referencias
-        // personales y buró de crédito (checklist real del cuestionario en
-        // papel, ver App\Support\TenantDocumentChecklist).
+        // Ingresos (arrendatario) — incluye datos laborales, otros ingresos,
+        // número de personas que habitarán el inmueble, arrendador anterior,
+        // comprobante de ingresos y buró de crédito (checklist real del
+        // cuestionario en papel, ver App\Support\TenantDocumentChecklist).
         if ($isArrendatario) {
-            $incomeFields = ['income_type','income_amount'];
+            $incomeFields = [
+                'income_type', 'income_amount', 'occupants_count',
+                'employer_name', 'employer_phone', 'job_seniority',
+                'previous_landlord_name', 'previous_landlord_phone',
+            ];
             $incomeFilled = collect($incomeFields)->filter(fn($f) => !empty($client->$f))->count();
             $hasIncomeDoc = collect(array_keys(\App\Support\TenantDocumentChecklist::INGRESOS))->contains(fn($k) => $documents->has($k));
-            $hasReferences = $documents->has('references');
             $hasCreditReport = $documents->has('credit_report');
-            $incomeFilled += ($hasIncomeDoc ? 1 : 0) + ($hasReferences ? 1 : 0) + ($hasCreditReport ? 1 : 0);
-            $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => 5, 'pct' => round($incomeFilled / 5 * 100)];
+            $incomeFilled += ($hasIncomeDoc ? 1 : 0) + ($hasCreditReport ? 1 : 0);
+            $incomeTotal = count($incomeFields) + 2;
+            $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => $incomeTotal, 'pct' => round($incomeFilled / $incomeTotal * 100)];
+
+            // Referencias personales — 3 contactos estructurados
+            $refFilled = min($references->count(), 3);
+            $sections['referencias'] = ['filled' => $refFilled, 'total' => 3, 'pct' => round($refFilled / 3 * 100)];
         }
 
         // Garantía (arrendatario)
@@ -312,7 +374,7 @@ class PortalExpedienteController extends Controller
 
             $gFilled = 0; $gTotal = 1;
             if ($hasAval && $aval) {
-                $avalFields = ['name','curp','phone','property_address','property_state'];
+                $avalFields = ['name','curp','phone','property_address','property_state','escritura_numero'];
                 $avalFilled = collect($avalFields)->filter(fn($f) => !empty($aval->$f))->count();
                 $gFilled = $avalFilled; $gTotal = count($avalFields);
             } elseif ($hasPagares && $rental?->pagares->count()) {

@@ -81,6 +81,7 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     Route::post('/mi-expediente/ingresos',            [PortalExpedienteController::class, 'saveIngresos'])->name('expediente.ingresos');
     Route::post('/mi-expediente/financiamiento',      [PortalExpedienteController::class, 'saveFinanciamiento'])->name('expediente.financiamiento');
     Route::post('/mi-expediente/aval',                [PortalExpedienteController::class, 'saveAval'])->name('expediente.aval');
+    Route::post('/mi-expediente/referencias',         [PortalExpedienteController::class, 'saveReferencias'])->name('expediente.referencias');
     Route::post('/mi-expediente/documentos',          [PortalExpedienteController::class, 'uploadDocument'])->name('expediente.upload');
 
     // Preferencias de notificación

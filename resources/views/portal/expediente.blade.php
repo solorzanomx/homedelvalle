@@ -695,11 +695,111 @@
                         <input type="number" name="income_amount" class="form-input" value="{{ old('income_amount',$client->income_amount) }}" placeholder="0.00" step="0.01" min="0">
                         <p class="form-hint">Este dato es confidencial y solo lo ve tu asesor.</p>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Otros ingresos (monto)</label>
+                        <input type="number" name="other_income_amount" class="form-input" value="{{ old('other_income_amount',$client->other_income_amount) }}" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Otros ingresos (de dónde)</label>
+                        <input type="text" name="other_income_description" class="form-input" value="{{ old('other_income_description',$client->other_income_description) }}" placeholder="Renta de un inmueble, efectivo...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Personas que habitarán el inmueble</label>
+                        <input type="number" name="occupants_count" class="form-input" value="{{ old('occupants_count',$client->occupants_count) }}" min="0" max="20">
+                    </div>
                 </div>
+
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Datos laborales</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre de la empresa</label>
+                        <input type="text" name="employer_name" class="form-input" value="{{ old('employer_name',$client->employer_name) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono de la empresa</label>
+                        <input type="tel" name="employer_phone" class="form-input" value="{{ old('employer_phone',$client->employer_phone) }}">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección de la empresa</label>
+                        <input type="text" name="employer_address" class="form-input" value="{{ old('employer_address',$client->employer_address) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Antigüedad en la empresa</label>
+                        <input type="text" name="job_seniority" class="form-input" value="{{ old('job_seniority',$client->job_seniority) }}" placeholder="Ej. 14 años">
+                    </div>
+                </div>
+
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Arrendador anterior</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="previous_landlord_name" class="form-input" value="{{ old('previous_landlord_name',$client->previous_landlord_name) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" name="previous_landlord_phone" class="form-input" value="{{ old('previous_landlord_phone',$client->previous_landlord_phone) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Celular</label>
+                        <input type="tel" name="previous_landlord_mobile" class="form-input" value="{{ old('previous_landlord_mobile',$client->previous_landlord_mobile) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="previous_landlord_email" class="form-input" value="{{ old('previous_landlord_email',$client->previous_landlord_email) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tiempo de arrendamiento</label>
+                        <input type="text" name="previous_landlord_years" class="form-input" value="{{ old('previous_landlord_years',$client->previous_landlord_years) }}" placeholder="Ej. 3 años">
+                    </div>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar ingresos</button>
                 </div>
             </form>
+
+            {{-- Referencias personales (3, estructuradas) --}}
+            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+                @php $sr = $sections['referencias'] ?? ['filled'=>0,'total'=>3,'pct'=>0]; @endphp
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
+                    <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;">Referencias personales</div>
+                    <span style="font-size:.72rem;color:var(--text-muted);">{{ $sr['filled'] }}/{{ $sr['total'] }}</span>
+                </div>
+                <form method="POST" action="{{ route('portal.expediente.referencias') }}">
+                    @csrf
+                    @for($i = 0; $i < 3; $i++)
+                        @php $r = $references->get($i); @endphp
+                        <div style="border:1px solid var(--border);border-radius:8px;padding:.85rem;margin-bottom:.75rem;">
+                            <div style="font-size:.78rem;font-weight:700;margin-bottom:.5rem;">Referencia {{ $i + 1 }}</div>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Nombre completo</label>
+                                    <input type="text" name="references[{{ $i }}][name]" class="form-input" value="{{ old("references.$i.name", $r?->name) }}">
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Dirección</label>
+                                    <input type="text" name="references[{{ $i }}][address]" class="form-input" value="{{ old("references.$i.address", $r?->address) }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Celular</label>
+                                    <input type="tel" name="references[{{ $i }}][mobile_phone]" class="form-input" value="{{ old("references.$i.mobile_phone", $r?->mobile_phone) }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Teléfono fijo</label>
+                                    <input type="tel" name="references[{{ $i }}][landline_phone]" class="form-input" value="{{ old("references.$i.landline_phone", $r?->landline_phone) }}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" name="references[{{ $i }}][email]" class="form-input" value="{{ old("references.$i.email", $r?->email) }}">
+                                </div>
+                            </div>
+                        </div>
+                    @endfor
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Guardar referencias</button>
+                    </div>
+                </form>
+            </div>
 
             {{-- Documentos de ingresos --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
@@ -835,6 +935,10 @@
                         <div class="form-group">
                             <label class="form-label">Folio registral</label>
                             <input type="text" name="property_folio_real" class="form-input" value="{{ old('property_folio_real',$aval?->property_folio_real) }}" placeholder="Número de folio">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Número de escritura</label>
+                            <input type="text" name="escritura_numero" class="form-input" value="{{ old('escritura_numero',$aval?->escritura_numero) }}">
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="margin-bottom:.5rem;">Estado del inmueble</label>

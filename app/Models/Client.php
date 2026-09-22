@@ -42,6 +42,14 @@ class Client extends Model
         'income_type', 'income_amount',
         // Financiamiento (comprador)
         'financing_type', 'financing_preauth_amount', 'nss', 'infonavit_balance',
+        // Cuestionario de arrendamiento — datos que no se cubrían con lo de arriba
+        // (ver App\Support\TenantDocumentChecklist, basado en el cuestionario en
+        // papel "Persona Física")
+        'occupants_count',
+        'employer_name', 'employer_address', 'employer_phone', 'job_seniority',
+        'other_income_amount', 'other_income_description',
+        'previous_landlord_name', 'previous_landlord_phone', 'previous_landlord_mobile',
+        'previous_landlord_email', 'previous_landlord_years',
     ];
 
     protected $casts = [
@@ -57,6 +65,7 @@ class Client extends Model
         'income_amount'           => 'decimal:2',
         'financing_preauth_amount'=> 'decimal:2',
         'infonavit_balance'       => 'decimal:2',
+        'other_income_amount'     => 'decimal:2',
     ];
 
     /**
@@ -124,6 +133,11 @@ class Client extends Model
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function references(): HasMany
+    {
+        return $this->hasMany(ClientReference::class)->orderBy('sort_order');
     }
 
     public function assignedUser(): BelongsTo
