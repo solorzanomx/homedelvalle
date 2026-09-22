@@ -518,12 +518,6 @@
                 </div>
             </form>
 
-            {{-- Acta de Nacimiento — no depende del tipo de identificación --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Acta de Nacimiento</div>
-                @livewire('portal.document-uploader', ['allowedCategories' => ['acta_nacimiento']], key('exp-id-acta_nacimiento'))
-            </div>
-
             {{-- Documentos personales del vendedor (checklist real de la notaría, 2026-07-07).
                  comprobante_domicilio se excluye aquí a propósito — ya se pide arriba
                  en "Documentos de identificación", mismo category key, no duplicar la fila. --}}
