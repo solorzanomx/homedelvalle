@@ -75,7 +75,17 @@ class PortalDashboardController extends Controller
     {
         $user = Auth::user();
         $notifPrefs = \App\Models\PortalNotificationPreference::forUser($user->id);
-        return view('portal.account', compact('user', 'notifPrefs'));
+
+        // Los toggles de "visita agendada/confirmada/reagendada" solo
+        // aplican a quien tiene un inmueble propio recibiendo visitas
+        // (VisitResponseController solo le manda esos correos al
+        // property->owner) — mostrárselos a un arrendatario o comprador
+        // no tenía sentido, esos correos nunca le iban a llegar.
+        $client = $this->portalService->getClientForUser($user);
+        $interests = $client?->interest_types ?? [];
+        $isPropietario = !empty(array_intersect(['venta', 'renta_propietario'], $interests));
+
+        return view('portal.account', compact('user', 'notifPrefs', 'isPropietario'));
     }
 
     public function updateNotifications(\Illuminate\Http\Request $request)

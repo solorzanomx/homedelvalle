@@ -81,7 +81,7 @@
         <div class="card-header">
             <div>
                 <h3>Notificaciones por email</h3>
-                <p class="text-muted" style="font-size:.78rem;margin-top:2px;">Elige cuándo quieres recibir correos sobre tu inmueble</p>
+                <p class="text-muted" style="font-size:.78rem;margin-top:2px;">{{ $isPropietario ? 'Elige cuándo quieres recibir correos sobre tu inmueble' : 'Elige cuándo quieres recibir correos sobre tu proceso' }}</p>
             </div>
         </div>
         <div class="card-body">
@@ -89,12 +89,16 @@
                 @csrf @method('PUT')
 
                 <div style="display:flex;flex-direction:column;gap:0;">
-                    @foreach([
-                        ['key' => 'notify_visit_scheduled',   'label' => 'Nueva visita agendada',               'desc' => 'Cuando un interesado agenda una visita a tu inmueble'],
-                        ['key' => 'notify_visit_confirmed',   'label' => 'Visita confirmada por el interesado',  'desc' => 'Cuando el visitante confirma que asistirá'],
-                        ['key' => 'notify_visit_rescheduled', 'label' => 'Visita reagendada o cancelada',        'desc' => 'Cuando un visitante solicita cambiar la fecha'],
-                        ['key' => 'notify_process_updates',   'label' => 'Avance en mi proceso',                 'desc' => 'Documentos aprobados, cambios de etapa, etc.'],
-                    ] as $pref)
+                    @php
+                        $notifOptions = [];
+                        if ($isPropietario) {
+                            $notifOptions[] = ['key' => 'notify_visit_scheduled',   'label' => 'Nueva visita agendada',               'desc' => 'Cuando un interesado agenda una visita a tu inmueble'];
+                            $notifOptions[] = ['key' => 'notify_visit_confirmed',   'label' => 'Visita confirmada por el interesado',  'desc' => 'Cuando el visitante confirma que asistirá'];
+                            $notifOptions[] = ['key' => 'notify_visit_rescheduled', 'label' => 'Visita reagendada o cancelada',        'desc' => 'Cuando un visitante solicita cambiar la fecha'];
+                        }
+                        $notifOptions[] = ['key' => 'notify_process_updates', 'label' => 'Avance en mi proceso', 'desc' => 'Documentos aprobados, cambios de etapa, etc.'];
+                    @endphp
+                    @foreach($notifOptions as $pref)
                     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--border);">
                         <div>
                             <div style="font-weight:600;font-size:.88rem;">{{ $pref['label'] }}</div>
