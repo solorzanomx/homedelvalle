@@ -453,6 +453,38 @@
                 </div>
 
                 <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Domicilio para contratos</div>
+
+                {{-- PASO 1: ¿Qué comprobante de domicilio vas a subir? — decide
+                     qué casilla de subida aparece justo abajo. --}}
+                <div class="form-group" style="margin-bottom:1rem;">
+                    <label class="form-label">1. ¿Qué comprobante de domicilio vas a subir?</label>
+                    <select name="domicilio_proof_type" id="exp_domicilio_proof_type" class="form-select"
+                            onchange="document.querySelectorAll('.domicilio-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
+                        <option value="">Seleccionar</option>
+                        @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $val => $lbl)
+                        <option value="{{ $val }}" {{ old('domicilio_proof_type',$client->domicilio_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                    <p class="form-hint">Solo se acepta agua, luz o gas — no mayor a 3 meses.</p>
+                </div>
+
+                {{-- PASO 2: casilla de subida, justo debajo. Al leerla, llena
+                     la dirección de abajo sola. --}}
+                @php $curDomicilioType = old('domicilio_proof_type', $client->domicilio_proof_type); @endphp
+                <div style="margin-bottom:1.25rem;">
+                    @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $type => $label)
+                    <div class="domicilio-slot" data-type="{{ $type }}" {{ $curDomicilioType !== $type ? 'hidden' : '' }}>
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$type]], key('exp-domicilio-'.$type))
+                    </div>
+                    @endforeach
+
+                    @if(!$curDomicilioType)
+                    <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba qué comprobante vas a subir (agua, luz o gas).</p>
+                    @endif
+                </div>
+
+                {{-- PASO 3: dirección — se llena sola al subir el comprobante,
+                     pero se puede corregir a mano. --}}
                 <div class="form-grid">
                     <div class="form-group full-width">
                         <label class="form-label">Calle y Número</label>
@@ -479,34 +511,6 @@
                         <label class="form-label">Código Postal</label>
                         <input type="text" name="address_zip" class="form-input" value="{{ old('address_zip',$client->address_zip) }}" maxlength="5" placeholder="03100">
                     </div>
-                </div>
-
-                {{-- ¿Qué comprobante de domicilio vas a subir? — decide qué
-                     casilla de subida aparece justo abajo, mismo patrón que
-                     el tipo de identificación arriba. --}}
-                <div class="form-group" style="margin-top:.75rem;">
-                    <label class="form-label">¿Qué comprobante de domicilio vas a subir?</label>
-                    <select name="domicilio_proof_type" id="exp_domicilio_proof_type" class="form-select"
-                            onchange="document.querySelectorAll('.domicilio-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
-                        <option value="">Seleccionar</option>
-                        @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $val => $lbl)
-                        <option value="{{ $val }}" {{ old('domicilio_proof_type',$client->domicilio_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
-                        @endforeach
-                    </select>
-                    <p class="form-hint">Solo se acepta agua, luz o gas — no mayor a 3 meses.</p>
-                </div>
-
-                @php $curDomicilioType = old('domicilio_proof_type', $client->domicilio_proof_type); @endphp
-                <div style="margin-top:.75rem;">
-                    @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $type => $label)
-                    <div class="domicilio-slot" data-type="{{ $type }}" {{ $curDomicilioType !== $type ? 'hidden' : '' }}>
-                        @livewire('portal.document-uploader', ['allowedCategories' => [$type]], key('exp-domicilio-'.$type))
-                    </div>
-                    @endforeach
-
-                    @if(!$curDomicilioType)
-                    <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba qué comprobante vas a subir (agua, luz o gas).</p>
-                    @endif
                 </div>
 
                 <div class="form-actions">
@@ -1464,6 +1468,19 @@ window.addEventListener('id-data-extracted', function (e) {
     }
 
     idShowFillToast('✓ Llenamos Datos personales e Identificación con lo que leímos de tu identificación. Revisa y da clic en Guardar.');
+});
+
+window.addEventListener('address-data-extracted', function (e) {
+    var data = e.detail ? e.detail.data : null;
+    if (!data) return;
+
+    idSetFieldValue('address_street', data.calle_numero);
+    idSetFieldValue('address_colony', data.colonia);
+    idSetFieldValue('address_municipality', data.alcaldia_municipio);
+    idSetFieldValue('address_zip', data.codigo_postal);
+    if (data.estado) idSetFieldValue('address_state', data.estado);
+
+    idShowFillToast('✓ Llenamos el Domicilio con lo que leímos de tu comprobante. Revisa y da clic en Guardar.');
 });
 </script>
 @endsection

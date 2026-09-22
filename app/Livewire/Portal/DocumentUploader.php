@@ -6,6 +6,7 @@ use App\Models\Captacion;
 use App\Models\Document;
 use App\Models\Notification;
 use App\Models\Property;
+use App\Services\AddressDocumentAIExtractionService;
 use App\Services\ClientPortalService;
 use App\Services\IdDocumentAIVerificationService;
 use Illuminate\Support\Facades\Auth;
@@ -193,6 +194,18 @@ class DocumentUploader extends Component
             // no coincidía).
             if (!empty($document->ai_extracted_data['legible'])) {
                 $this->dispatch('id-data-extracted', data: $document->ai_extracted_data);
+            }
+        }
+
+        if (app(AddressDocumentAIExtractionService::class)->shouldExtract($document)) {
+            app(AddressDocumentAIExtractionService::class)->extract($document);
+            $document->refresh();
+
+            // Igual que con la identificación: si se pudo leer el recibo,
+            // llena el formulario de Domicilio en vez de que el cliente
+            // vuelva a escribir la dirección a mano.
+            if (!empty($document->ai_extracted_data['legible'])) {
+                $this->dispatch('address-data-extracted', data: $document->ai_extracted_data);
             }
         }
 
