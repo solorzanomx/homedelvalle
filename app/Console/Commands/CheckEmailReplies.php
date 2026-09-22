@@ -25,7 +25,8 @@ class CheckEmailReplies extends Command
 
         $this->info(
             "Revisados: {$stats['checked']} | Respuestas de clientes: {$stats['client_replies']} | "
-            . "Leads Inmuebles24: {$stats['inmuebles24_leads']} | Sin relacion: {$stats['skipped']}"
+            . "Leads Inmuebles24: {$stats['inmuebles24_leads']} | Sin relacion: {$stats['skipped']} | "
+            . "Errores por mensaje: " . ($stats['message_errors'] ?? 0)
         );
         return self::SUCCESS;
     }
