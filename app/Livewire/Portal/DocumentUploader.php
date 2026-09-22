@@ -68,6 +68,24 @@ class DocumentUploader extends Component
         return count($this->allowedCategories) === 1;
     }
 
+    /** Categorías de identificación donde vale la pena ofrecer cámara guiada. */
+    public function isIdCategory(): bool
+    {
+        return $this->isSingleSlot()
+            && in_array($this->allowedCategories[0], \App\Services\IdDocumentAIVerificationService::ID_CATEGORIES, true);
+    }
+
+    /** Etiqueta del lado a mostrar en el recuadro guía de la cámara. */
+    public function cameraSideLabel(): string
+    {
+        return match ($this->allowedCategories[0] ?? '') {
+            'ine_frente', 'aval_ine_frente' => 'Frente de la identificación',
+            'ine_reverso', 'aval_ine_reverso' => 'Reverso de la identificación',
+            'pasaporte' => 'Página de datos del pasaporte',
+            default => 'Identificación',
+        };
+    }
+
     public function loadDocuments(): void
     {
         $client = $this->getClient();
@@ -233,6 +251,9 @@ class DocumentUploader extends Component
     {
         return view('livewire.portal.document-uploader', [
             'availableCategories' => $this->getAvailableCategoriesProperty(),
+            'isIdCategory'        => $this->isIdCategory(),
+            'cameraSideLabel'     => $this->cameraSideLabel(),
+            'singleCategory'      => $this->allowedCategories[0] ?? null,
         ]);
     }
 }
