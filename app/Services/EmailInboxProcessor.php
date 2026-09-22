@@ -98,12 +98,14 @@ class EmailInboxProcessor
     }
 
     /**
-     * getFrom() de webklex/php-imap normalmente regresa una coleccion
-     * Countable de direcciones — pero cuando el encabezado "From" no se
-     * pudo parsear como direccion RFC estandar (formato raro de un
-     * remitente automatizado), regresa un solo objeto Attribute que NO es
-     * Countable. El count($from) original tronaba con un TypeError ahi,
-     * tumbando la corrida completa (bug real detectado 2026-09-21).
+     * getFrom() de webklex/php-imap SIEMPRE regresa un Webklex\PHPIMAP\Attribute
+     * (verificado en produccion 2026-09-21) — implementa ArrayAccess (se
+     * indexa con $from[0]) pero NO Countable ni es un array plano. La
+     * primera version de este fix asumia que a veces era una coleccion
+     * Countable y a veces un objeto suelto con ->mail directo — ninguna de
+     * las dos ramas aplicaba nunca, asi que TODOS los correos (no solo los
+     * de encabezado raro) se marcaban 'skipped' sin extraer el remitente,
+     * silenciosamente. El fix real: indexar via ArrayAccess, nunca contar.
      */
     private function firstFromEmail($from): ?string
     {
@@ -111,10 +113,10 @@ class EmailInboxProcessor
             return null;
         }
 
-        if ($from instanceof \Countable || is_array($from)) {
-            $first = count($from) > 0 ? $from[0] : null;
-        } else {
-            $first = $from;
+        try {
+            $first = $from instanceof \ArrayAccess ? ($from[0] ?? null) : $from;
+        } catch (\Throwable $e) {
+            $first = null;
         }
 
         return isset($first->mail) ? strtolower(trim((string) $first->mail)) : null;
