@@ -128,6 +128,14 @@ class Inmuebles24LeadImporter
         // por heuristica directa, y el rol se deriva del tipo de operacion
         // (venta -> comprador, renta -> inquilino) en vez de la IA.
         $clientType = str_contains(mb_strtolower($data['tipo_operacion'] ?? ''), 'renta') ? 'renter' : 'buyer';
+        // interest_types es lo que de verdad usa el Portal del Cliente para
+        // decidir qué le muestra (Mi Expediente, sidebar, checklist de
+        // documentos) — sin esto, FormSubmissionController::convertToClient()
+        // copiaba interest_types vacío y el cliente convertido quedaba sin
+        // rol aunque client_type sí saliera bien (ej. un inquilino real
+        // entrando al portal y viéndose tratado como si no tuviera ningún
+        // rol asignado, o cayendo en las secciones por default).
+        $interestTypes = $clientType === 'renter' ? ['renta_inquilino'] : ['compra'];
         $temperatura = 'hot';
         [$budgetMin, $budgetMax] = $this->parseBudgetRange($data['busca_presupuesto'] ?? null);
         $portal = $this->portalFor($fromEmail);
@@ -157,6 +165,7 @@ class Inmuebles24LeadImporter
             'phone'            => $data['telefono'] ?: 'sin teléfono',
             'lead_tag'         => 'LEAD_' . strtoupper($portal),
             'client_type'      => $clientType,
+            'interest_types'   => $interestTypes,
             'lead_temperature' => $temperatura,
             'status'           => 'new',
             'utm_source'       => $portal,

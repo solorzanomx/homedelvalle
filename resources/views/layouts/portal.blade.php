@@ -406,10 +406,22 @@
 </div>
 @endif
 @php
-    $interests   = $portalClient->interest_types ?? [];
-    $isVenta     = !empty(array_intersect(['venta','venta_propietario'], $interests));
-    $isRenta     = !empty(array_intersect(['renta_propietario', 'renta_inquilino'], $interests));
-    $isComprador = in_array('compra', $interests);
+    $interests      = $portalClient->interest_types ?? [];
+    $isVenta        = !empty(array_intersect(['venta','venta_propietario'], $interests));
+    $isRenta        = !empty(array_intersect(['renta_propietario', 'renta_inquilino'], $interests));
+    $isArrendatario = in_array('renta_inquilino', $interests);
+    $isComprador    = in_array('compra', $interests);
+
+    // Etiqueta del rol — antes decía "Portal del Propietario" fijo sin
+    // importar quién entrara (un arrendatario veía esto y parecía que el
+    // portal lo trataba como dueño).
+    $portalRoleLabel = match(true) {
+        $isArrendatario => 'Portal del Arrendatario',
+        $isVenta        => 'Portal del Propietario',
+        $isComprador    => 'Portal del Comprador',
+        default         => 'Portal del Cliente',
+    };
+
     $etapa       = $portalCaptacion->portal_etapa ?? 0;
     $etapa4Done  = $portalCaptacion ? $portalCaptacion->isEtapa4Complete() : false;
 
@@ -528,7 +540,7 @@
                     <div class="sb-logo-mark">H</div>
                     <div>
                         <span class="sb-logo-text">{{ $siteSettings->site_name ?? 'Home del Valle' }}</span>
-                        <span class="sb-logo-sub">Portal del Propietario</span>
+                        <span class="sb-logo-sub">{{ $portalRoleLabel }}</span>
                     </div>
                 @endif
             </a>
@@ -764,7 +776,7 @@
                 <div class="sb-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
                 <div class="sb-user-meta">
                     <div class="sb-user-name">{{ Auth::user()->name }}</div>
-                    <div class="sb-user-role">Portal del Propietario</div>
+                    <div class="sb-user-role">{{ $portalRoleLabel }}</div>
                 </div>
             </div>
             <div class="sb-footer-actions">
