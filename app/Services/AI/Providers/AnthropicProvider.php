@@ -68,6 +68,55 @@ class AnthropicProvider implements AIProviderContract
         return $response->json('content.0.text') ?? '';
     }
 
+    /**
+     * Completion con una imagen adjunta (lectura de identificaciones, etc.)
+     * No es parte de AIProviderContract — es específico de Anthropic, los
+     * llamadores que la necesiten deben pedir este provider directamente.
+     */
+    public function completeVision(string $imageBase64, string $mediaType, string $prompt, ?string $system = null, array $options = []): string
+    {
+        if (empty($this->apiKey)) {
+            throw new RuntimeException('ANTHROPIC_API_KEY no configurada.');
+        }
+
+        $payload = [
+            'model'      => $options['model']     ?? $this->model,
+            'max_tokens' => $options['max_tokens'] ?? $this->maxTokens,
+            'messages'   => [[
+                'role'    => 'user',
+                'content' => [
+                    ['type' => 'image', 'source' => ['type' => 'base64', 'media_type' => $mediaType, 'data' => $imageBase64]],
+                    ['type' => 'text', 'text' => $prompt],
+                ],
+            ]],
+        ];
+
+        if ($system) {
+            $payload['system'] = $system;
+        }
+        $payload['temperature'] = $options['temperature'] ?? 0; // determinístico para extracción de datos
+
+        $response = Http::withHeaders([
+            'x-api-key'         => $this->apiKey,
+            'anthropic-version' => '2023-06-01',
+            'content-type'      => 'application/json',
+        ])->timeout(120)->post('https://api.anthropic.com/v1/messages', $payload);
+
+        if ($response->failed()) {
+            throw new RuntimeException('Anthropic API error: ' . $response->body());
+        }
+
+        AiUsageLogger::record(
+            $options['_service'] ?? 'unknown',
+            'anthropic',
+            $payload['model'],
+            (int) $response->json('usage.input_tokens', 0),
+            (int) $response->json('usage.output_tokens', 0),
+        );
+
+        return $response->json('content.0.text') ?? '';
+    }
+
     public function supportsWebSearch(): bool
     {
         return false;

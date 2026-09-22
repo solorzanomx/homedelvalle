@@ -50,7 +50,31 @@ class Client extends Model
         'other_income_amount', 'other_income_description',
         'previous_landlord_name', 'previous_landlord_phone', 'previous_landlord_mobile',
         'previous_landlord_email', 'previous_landlord_years',
+        // Vigencia de identificación (mes/año, como viene en el INE)
+        'id_expiry_month', 'id_expiry_year',
+        // Cómo comprueba ingresos + mascotas
+        'income_proof_type', 'pets',
     ];
+
+    const INCOME_PROOF_TYPES = [
+        'nomina'                => 'Recibos de Nómina',
+        'estado_cuenta'         => 'Estados de Cuenta Bancarios',
+        'declaracion_impuestos' => 'Declaración de Impuestos',
+        'cfdi_honorarios'       => 'CFDI de Honorarios',
+        'otro'                  => 'Otro comprobante',
+    ];
+
+    // category de Document que corresponde a cada income_proof_type
+    const INCOME_PROOF_CATEGORY = [
+        'nomina'                => 'nomina',
+        'estado_cuenta'         => 'estado_cuenta',
+        'declaracion_impuestos' => 'proof_of_income',
+        'cfdi_honorarios'       => 'cfdi_honorarios',
+        'otro'                  => 'proof_of_income',
+    ];
+
+    const PET_TYPES = ['perro' => 'Perro', 'gato' => 'Gato'];
+    const PET_SIZES = ['chico' => 'Chico', 'mediano' => 'Mediano', 'grande' => 'Grande'];
 
     protected $casts = [
         'budget_min'   => 'decimal:2',
@@ -66,6 +90,7 @@ class Client extends Model
         'financing_preauth_amount'=> 'decimal:2',
         'infonavit_balance'       => 'decimal:2',
         'other_income_amount'     => 'decimal:2',
+        'pets'                    => 'array',
     ];
 
     /**
@@ -221,9 +246,18 @@ class Client extends Model
             'first_name', 'last_name_paterno', 'last_name_materno',
             'birth_date', 'birth_state', 'gender', 'nationality', 'marital_status',
             'curp', 'rfc',
-            'id_type', 'id_number',
+            'id_type', 'id_number', 'id_expiry_month', 'id_expiry_year',
             'address_street', 'address_colony', 'address_municipality', 'address_state', 'address_zip',
         ];
+
+        $interests = $this->interest_types ?? [];
+        if (in_array('renta_inquilino', $interests)) {
+            $fields = array_merge($fields, ['occupants_count', 'income_proof_type', 'employer_name', 'previous_landlord_name']);
+        }
+        if (in_array('compra', $interests)) {
+            $fields[] = 'financing_type';
+        }
+
         $filled = collect($fields)->filter(fn($f) => !empty($this->$f))->count();
         return (int) round(($filled / count($fields)) * 100);
     }

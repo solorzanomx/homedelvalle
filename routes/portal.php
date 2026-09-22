@@ -82,6 +82,7 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     Route::get('/mi-expediente',                      [PortalExpedienteController::class, 'show'])->name('expediente');
     Route::post('/mi-expediente/datos',               [PortalExpedienteController::class, 'saveDatos'])->name('expediente.datos');
     Route::post('/mi-expediente/ingresos',            [PortalExpedienteController::class, 'saveIngresos'])->name('expediente.ingresos');
+    Route::post('/mi-expediente/hogar',               [PortalExpedienteController::class, 'saveHogar'])->name('expediente.hogar');
     Route::post('/mi-expediente/financiamiento',      [PortalExpedienteController::class, 'saveFinanciamiento'])->name('expediente.financiamiento');
     Route::post('/mi-expediente/aval',                [PortalExpedienteController::class, 'saveAval'])->name('expediente.aval');
     Route::post('/mi-expediente/referencias',         [PortalExpedienteController::class, 'saveReferencias'])->name('expediente.referencias');

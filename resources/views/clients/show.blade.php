@@ -603,6 +603,12 @@
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $doc->label ?? $doc->file_name }}</div>
                     <div style="font-size:.72rem;color:var(--text-muted);">{{ $allDocCategories[$doc->category] ?? $doc->category }} &middot; {{ $doc->created_at->format('d/m/Y') }}@if($doc->uploader) &middot; {{ $doc->uploader->name }}@endif</div>
+                    @if($doc->ai_verification_status)
+                    @php $aiColor = match($doc->ai_verification_status) { 'match' => '#10b981', 'mismatch', 'expired' => '#ef4444', default => '#94a3b8' }; @endphp
+                    <div style="font-size:.72rem;color:{{ $aiColor }};margin-top:.15rem;" title="{{ $doc->ai_verification_notes }}">
+                        🤖 {{ $doc->ai_verification_status_label }}@if($doc->ai_verification_notes) — {{ Str::limit($doc->ai_verification_notes, 80) }}@endif
+                    </div>
+                    @endif
                 </div>
                 <span class="badge" style="background:{{ $sc }}20;color:{{ $sc }};flex-shrink:0;">{{ $sl }}</span>
                 <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" style="flex-shrink:0;">&#8615;</a>

@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 #[ObservedBy(DocumentObserver::class)]
 class Document extends Model
 {
-    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'valuation_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by',];
+    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'valuation_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by', 'ai_extracted_data', 'ai_verification_status', 'ai_verification_notes',];
+
+    const AI_VERIFICATION_STATUSES = [
+        'match'      => 'Coincide',
+        'mismatch'   => 'No coincide',
+        'expired'    => 'Vencida',
+        'unreadable' => 'No se pudo leer',
+        'error'      => 'Error al verificar',
+    ];
     const CATEGORIES = [
         'commission_contract' => 'Contrato de Comision',
         'escritura' => 'Escritura',
@@ -89,6 +97,7 @@ class Document extends Model
     {
         return [
             'verified_at' => 'datetime',
+            'ai_extracted_data' => 'array',
         ];
     }
 
@@ -109,6 +118,11 @@ class Document extends Model
     public function getStatusLabelAttribute(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
+    }
+
+    public function getAiVerificationStatusLabelAttribute(): ?string
+    {
+        return $this->ai_verification_status ? (self::AI_VERIFICATION_STATUSES[$this->ai_verification_status] ?? $this->ai_verification_status) : null;
     }
 
     public function getFileSizeFormattedAttribute(): string

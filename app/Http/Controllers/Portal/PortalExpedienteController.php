@@ -103,7 +103,8 @@ class PortalExpedienteController extends Controller
             'rfc'               => 'nullable|string|max:13',
             'id_type'           => 'nullable|in:INE,pasaporte,cedula_profesional,otro',
             'id_number'         => 'nullable|string|max:60',
-            'id_expiry'         => 'nullable|date',
+            'id_expiry_month'   => 'nullable|integer|min:1|max:12',
+            'id_expiry_year'    => 'nullable|integer|min:2000|max:2100',
             'address_street'       => 'nullable|string|max:200',
             'address_colony'       => 'nullable|string|max:100',
             'address_municipality' => 'nullable|string|max:100',
@@ -133,10 +134,10 @@ class PortalExpedienteController extends Controller
         if (!$client) abort(403);
 
         $validated = $request->validate([
-            'income_type'   => 'nullable|in:empleado,independiente,empresario,otro',
-            'income_amount' => 'nullable|numeric|min:0',
-            // Cuestionario — número de personas y datos laborales
-            'occupants_count'          => 'nullable|integer|min:0|max:20',
+            'income_type'       => 'nullable|in:empleado,independiente,empresario,otro',
+            'income_amount'     => 'nullable|numeric|min:0',
+            'income_proof_type' => 'nullable|in:' . implode(',', array_keys(\App\Models\Client::INCOME_PROOF_TYPES)),
+            // Cuestionario — datos laborales
             'employer_name'            => 'nullable|string|max:150',
             'employer_address'         => 'nullable|string|max:200',
             'employer_phone'           => 'nullable|string|max:30',
@@ -153,6 +154,33 @@ class PortalExpedienteController extends Controller
 
         $client->update($validated);
         return back()->with('success', 'Información de ingresos guardada.');
+    }
+
+    /** Guardar información del hogar (arrendatario) — ocupantes y mascotas */
+    public function saveHogar(Request $request)
+    {
+        $user   = Auth::user();
+        $client = $this->portalService->getClientForUser($user);
+        if (!$client) abort(403);
+
+        $validated = $request->validate([
+            'occupants_count' => 'nullable|integer|min:0|max:20',
+            'pets'                => 'nullable|array',
+            'pets.*.type'         => 'nullable|in:' . implode(',', array_keys(\App\Models\Client::PET_TYPES)),
+            'pets.*.size'         => 'nullable|in:' . implode(',', array_keys(\App\Models\Client::PET_SIZES)),
+        ]);
+
+        $pets = collect($validated['pets'] ?? [])
+            ->filter(fn($p) => !empty($p['type']))
+            ->values()
+            ->all();
+
+        $client->update([
+            'occupants_count' => $validated['occupants_count'] ?? null,
+            'pets'            => $pets,
+        ]);
+
+        return back()->with('success', 'Información del hogar guardada.');
     }
 
     /** Guardar referencias personales (arrendatario) — hasta 3, estructuradas */
@@ -339,22 +367,30 @@ class PortalExpedienteController extends Controller
         $sections['datos'] = ['filled' => $personalFilled, 'total' => count($personalFields), 'pct' => round($personalFilled / count($personalFields) * 100)];
 
         // Identificación (todos)
-        $idFields = ['id_type','id_number','address_street','address_colony','address_municipality','address_state','address_zip'];
+        $idFields = ['id_type','id_number','id_expiry_month','id_expiry_year','address_street','address_colony','address_municipality','address_state','address_zip'];
         $idFilled = collect($idFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['identificacion'] = ['filled' => $idFilled, 'total' => count($idFields), 'pct' => round($idFilled / count($idFields) * 100)];
 
+        // Información del hogar (arrendatario) — ocupantes + mascotas (las
+        // mascotas no suman "obligatorio", solo cuentan si se declararon).
+        if ($isArrendatario) {
+            $hogarFilled = !empty($client->occupants_count) ? 1 : 0;
+            $sections['hogar'] = ['filled' => $hogarFilled, 'total' => 1, 'pct' => round($hogarFilled / 1 * 100)];
+        }
+
         // Ingresos (arrendatario) — incluye datos laborales, otros ingresos,
-        // número de personas que habitarán el inmueble, arrendador anterior,
-        // comprobante de ingresos y buró de crédito (checklist real del
-        // cuestionario en papel, ver App\Support\TenantDocumentChecklist).
+        // arrendador anterior, comprobante de ingresos (según el tipo que
+        // elija) y buró de crédito (checklist real del cuestionario en
+        // papel, ver App\Support\TenantDocumentChecklist).
         if ($isArrendatario) {
             $incomeFields = [
-                'income_type', 'income_amount', 'occupants_count',
+                'income_type', 'income_amount', 'income_proof_type',
                 'employer_name', 'employer_phone', 'job_seniority',
                 'previous_landlord_name', 'previous_landlord_phone',
             ];
             $incomeFilled = collect($incomeFields)->filter(fn($f) => !empty($client->$f))->count();
-            $hasIncomeDoc = collect(array_keys(\App\Support\TenantDocumentChecklist::INGRESOS))->contains(fn($k) => $documents->has($k));
+            $incomeProofCat = \App\Models\Client::INCOME_PROOF_CATEGORY[$client->income_proof_type] ?? null;
+            $hasIncomeDoc = $incomeProofCat && $documents->has($incomeProofCat);
             $hasCreditReport = $documents->has('credit_report');
             $incomeFilled += ($hasIncomeDoc ? 1 : 0) + ($hasCreditReport ? 1 : 0);
             $incomeTotal = count($incomeFields) + 2;

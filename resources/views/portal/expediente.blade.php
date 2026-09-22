@@ -218,6 +218,10 @@
     </button>
     @endif
     @if($isArrendatario)
+    <button class="exp-tab" onclick="showSection('hogar',this)">
+        🏡 Información del Hogar
+        <span class="tab-badge">{{ $sections['hogar']['pct'] ?? 0 }}%</span>
+    </button>
     <button class="exp-tab" onclick="showSection('ingresos',this)">
         💰 Ingresos
         <span class="tab-badge">{{ $sections['ingresos']['pct'] ?? 0 }}%</span>
@@ -306,7 +310,10 @@
                     </div>
                 </div>
 
-                {{-- Cónyuge (condicional) --}}
+                {{-- Cónyuge (condicional) — no aplica a un arrendatario, renta
+                     una sola persona; esto es para venta/compra donde el
+                     régimen patrimonial sí afecta la titularidad. --}}
+                @if(!$isArrendatario)
                 <div id="exp-spouse" style="display:{{ in_array($client->marital_status,['casado','union_libre'])?'block':'none' }};">
                     <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Datos del Cónyuge</div>
                     <div class="form-grid">
@@ -328,6 +335,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar datos personales</button>
@@ -381,8 +389,24 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Vigencia</label>
-                        <input type="date" name="id_expiry" class="form-input" value="{{ old('id_expiry',$client->id_expiry?->format('Y-m-d')) }}">
-                        @if($client->id_expiry?->isPast())<p class="form-hint" style="color:var(--danger);">⚠ Identificación vencida</p>@endif
+                        <div style="display:flex;gap:.4rem;">
+                            <select name="id_expiry_month" class="form-select">
+                                <option value="">Mes</option>
+                                @foreach(['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as $i => $m)
+                                <option value="{{ $i + 1 }}" {{ old('id_expiry_month',$client->id_expiry_month)==$i+1?'selected':'' }}>{{ $m }}</option>
+                                @endforeach
+                            </select>
+                            <select name="id_expiry_year" class="form-select">
+                                <option value="">Año</option>
+                                @for($y = now()->year - 5; $y <= now()->year + 15; $y++)
+                                <option value="{{ $y }}" {{ old('id_expiry_year',$client->id_expiry_year)==$y?'selected':'' }}>{{ $y }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <p class="form-hint">El INE normalmente solo muestra mes y año, no día.</p>
+                        @if($client->id_expiry_month && $client->id_expiry_year && \Carbon\Carbon::create($client->id_expiry_year,$client->id_expiry_month,1)->endOfMonth()->isPast())
+                        <p class="form-hint" style="color:var(--danger);">⚠ Identificación vencida</p>
+                        @endif
                     </div>
                 </div>
 
@@ -420,28 +444,16 @@
                 </div>
             </form>
 
-            {{-- Documentos de identificación --}}
+            {{-- Documentos de identificación — sube directo, sin recargar la
+                 página; INE frente/reverso además se leen automáticamente
+                 y se comparan contra los datos de arriba (nombre, CURP,
+                 vigencia). --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
                 <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Documentos de identificación</div>
                 @foreach(['ine_frente'=>'INE — Frente','ine_reverso'=>'INE — Reverso','comprobante_domicilio'=>'Comprobante de Domicilio','acta_nacimiento'=>'Acta de Nacimiento'] as $cat => $label)
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border);">
-                    <span style="font-size:.82rem;">
-                        @if($documents->has($cat))
-                        <span style="color:#166534;">✅</span>
-                        @else
-                        <span style="color:var(--text-muted);">○</span>
-                        @endif
-                        {{ $label }}
-                    </span>
-                    @if($documents->has($cat))
-                    <span style="font-size:.72rem;color:var(--text-muted);">Subido</span>
-                    @else
-                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;align-items:center;">
-                        @csrf
-                        <input type="hidden" name="category" value="{{ $cat }}">
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
-                    </form>
-                    @endif
+                <div style="padding:.5rem 0;border-bottom:1px solid var(--border);">
+                    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">{{ $label }}</div>
+                    @livewire('portal.document-uploader', ['allowedCategories' => [$cat]], key('exp-id-'.$cat))
                 </div>
                 @endforeach
             </div>
@@ -662,6 +674,64 @@
 @endif
 
 {{-- ══════════════════════════════════════════════════════════
+     SECCIÓN: INFORMACIÓN DEL HOGAR (arrendatario)
+════════════════════════════════════════════════════════════ --}}
+@if($isArrendatario)
+<div class="exp-section" id="sec-hogar">
+    <div class="card">
+        <div class="card-header"><span style="font-size:.85rem;font-weight:700;">Información del hogar</span></div>
+        <div class="card-body">
+            @php $sh = $sections['hogar'] ?? ['filled'=>0,'total'=>1,'pct'=>0]; @endphp
+            <div class="section-progress">
+                <span style="font-size:.78rem;color:var(--text-muted);white-space:nowrap;">{{ $sh['filled'] }}/{{ $sh['total'] }}</span>
+                <div class="section-progress-bar-bg">
+                    <div class="section-progress-bar-fill" style="width:{{ $sh['pct'] }}%;background:{{ $sh['pct']>=80?'#22C55E':($sh['pct']>=40?'#F59E0B':'#EF4444') }};"></div>
+                </div>
+                <span style="font-size:.78rem;font-weight:700;white-space:nowrap;">{{ $sh['pct'] }}%</span>
+            </div>
+            <form method="POST" action="{{ route('portal.expediente.hogar') }}">
+                @csrf
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Personas que habitarán el inmueble</label>
+                        <input type="number" name="occupants_count" class="form-input" value="{{ old('occupants_count',$client->occupants_count) }}" min="0" max="20">
+                    </div>
+                </div>
+
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Mascotas</div>
+                <div id="pets-rows">
+                    @php $existingPets = old('pets', $client->pets ?? []); @endphp
+                    @forelse($existingPets as $i => $pet)
+                    <div class="pet-row" style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem;">
+                        <select name="pets[{{ $i }}][type]" class="form-select" style="max-width:140px;">
+                            <option value="">Tipo</option>
+                            @foreach(\App\Models\Client::PET_TYPES as $val => $lbl)
+                            <option value="{{ $val }}" {{ ($pet['type'] ?? '')===$val?'selected':'' }}>{{ $lbl }}</option>
+                            @endforeach
+                        </select>
+                        <select name="pets[{{ $i }}][size]" class="form-select" style="max-width:140px;">
+                            <option value="">Tamaño</option>
+                            @foreach(\App\Models\Client::PET_SIZES as $val => $lbl)
+                            <option value="{{ $val }}" {{ ($pet['size'] ?? '')===$val?'selected':'' }}>{{ $lbl }}</option>
+                            @endforeach
+                        </select>
+                        <button type="button" onclick="this.closest('.pet-row').remove()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--danger);cursor:pointer;padding:.4rem .6rem;">✕</button>
+                    </div>
+                    @empty
+                    @endforelse
+                </div>
+                <button type="button" id="add-pet-btn" class="btn btn-sm btn-outline" style="margin-bottom:1rem;">+ Agregar mascota</button>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar información del hogar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
+{{-- ══════════════════════════════════════════════════════════
      SECCIÓN 5: INGRESOS (arrendatario)
 ════════════════════════════════════════════════════════════ --}}
 @if($isArrendatario)
@@ -704,8 +774,13 @@
                         <input type="text" name="other_income_description" class="form-input" value="{{ old('other_income_description',$client->other_income_description) }}" placeholder="Renta de un inmueble, efectivo...">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Personas que habitarán el inmueble</label>
-                        <input type="number" name="occupants_count" class="form-input" value="{{ old('occupants_count',$client->occupants_count) }}" min="0" max="20">
+                        <label class="form-label">¿Cómo vas a comprobar tus ingresos?</label>
+                        <select name="income_proof_type" class="form-select" id="exp_income_proof_type" onchange="document.querySelectorAll('.income-proof-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
+                            <option value="">Seleccionar</option>
+                            @foreach(\App\Models\Client::INCOME_PROOF_TYPES as $val => $lbl)
+                            <option value="{{ $val }}" {{ old('income_proof_type',$client->income_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -801,27 +876,20 @@
                 </form>
             </div>
 
-            {{-- Documentos de ingresos --}}
+            {{-- Comprobante de ingresos — un solo documento, según lo que
+                 elegiste arriba en "¿Cómo vas a comprobar tus ingresos?" --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Comprobantes de ingresos</div>
-                @foreach(\App\Support\TenantDocumentChecklist::INGRESOS as $cat => $label)
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);">
-                    <span style="font-size:.82rem;">
-                        {{ $documents->has($cat) ? '✅' : '○' }} {{ $label }}
-                    </span>
-                    @if(!$documents->has($cat))
-                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;">
-                        @csrf
-                        @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
-                        <input type="hidden" name="category" value="{{ $cat }}">
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
-                    </form>
-                    @else
-                    <span style="font-size:.72rem;color:var(--text-muted);">Subido ✓</span>
-                    @endif
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Comprobante de ingresos</div>
+                @if(!$client->income_proof_type)
+                <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba cómo vas a comprobar tus ingresos para poder subir el documento.</p>
+                @endif
+                @foreach(\App\Models\Client::INCOME_PROOF_CATEGORY as $type => $cat)
+                <div class="income-proof-slot" data-type="{{ $type }}" {{ $client->income_proof_type !== $type ? 'hidden' : '' }}>
+                    @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-income-'.$type))
                 </div>
                 @endforeach
             </div>
+
 
             {{-- Referencias personales + Buró de Crédito --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
@@ -1105,5 +1173,32 @@ document.querySelectorAll('input[name="financing_type"]').forEach(function(r){
 @if(session('success'))
 // Default stay on first tab
 @endif
+
+// Agregar fila de mascota (sin backend, se manda como pets[i][type/size] al guardar)
+var addPetBtn = document.getElementById('add-pet-btn');
+if (addPetBtn) {
+    addPetBtn.addEventListener('click', function () {
+        var rows = document.getElementById('pets-rows');
+        var i = rows.querySelectorAll('.pet-row').length;
+        var row = document.createElement('div');
+        row.className = 'pet-row';
+        row.style.cssText = 'display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem;';
+        row.innerHTML =
+            '<select name="pets[' + i + '][type]" class="form-select" style="max-width:140px;">' +
+                '<option value="">Tipo</option>' +
+                @foreach(\App\Models\Client::PET_TYPES as $val => $lbl)
+                '<option value="{{ $val }}">{{ $lbl }}</option>' +
+                @endforeach
+            '</select>' +
+            '<select name="pets[' + i + '][size]" class="form-select" style="max-width:140px;">' +
+                '<option value="">Tamaño</option>' +
+                @foreach(\App\Models\Client::PET_SIZES as $val => $lbl)
+                '<option value="{{ $val }}">{{ $lbl }}</option>' +
+                @endforeach
+            '</select>' +
+            '<button type="button" onclick="this.closest(\'.pet-row\').remove()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--danger);cursor:pointer;padding:.4rem .6rem;">✕</button>';
+        rows.appendChild(row);
+    });
+}
 </script>
 @endsection
