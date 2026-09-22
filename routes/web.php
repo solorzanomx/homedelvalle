@@ -238,6 +238,8 @@ Route::middleware('auth')->group(function () {
     Route::post('clients/{client}/interactions/{interaction}/send-confirmation', [ClientController::class, 'resendConfirmation'])->name('clients.interaction.send-confirmation');
     Route::post('clients/{client}/interactions/{interaction}/send-feedback', [ClientController::class, 'sendFeedbackRequest'])->name('clients.interaction.send-feedback');
     Route::post('clients/{client}/create-portal', [ClientController::class, 'createPortalAccount'])->name('clients.create-portal');
+    Route::post('clients/{client}/preview-portal', [ClientController::class, 'previewPortal'])->name('clients.preview-portal');
+    Route::post('clients/{client}/resend-invitation', [ClientController::class, 'resendInvitation'])->name('clients.resend-invitation');
     Route::post('clients/{client}/send-tenant-checklist', [ClientController::class, 'sendTenantChecklist'])->name('clients.send-tenant-checklist');
     Route::post('clients/{client}/send-tenant-checklist-whatsapp', [ClientController::class, 'sendTenantChecklistWhatsApp'])->name('clients.send-tenant-checklist-whatsapp');
     Route::patch('clients/{client}/toggle-portal', [ClientController::class, 'togglePortalAccess'])->name('clients.toggle-portal');

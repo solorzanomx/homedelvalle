@@ -760,6 +760,11 @@
                             <button class="btn btn-sm btn-danger">Eliminar</button>
                         </form>
                     </div>
+                    <form method="POST" action="{{ route('clients.preview-portal', $client) }}" style="margin-top:0.4rem;" target="_blank">
+                        @csrf
+                        <button class="btn btn-sm btn-outline" style="width:100%;">&#128065; Ver portal como {{ $client->name }}</button>
+                    </form>
+                    <p style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;">No manda ningún correo — entras tú a su sesión para revisar cómo lo ve él.</p>
                     <div class="portal-section" style="margin-top:0.75rem;">
                         <div style="font-size:0.78rem; font-weight:500; margin-bottom:0.35rem;">Resetear contrasena</div>
                         <form method="POST" action="{{ route('clients.reset-portal-password', $client) }}" style="display:flex; gap:0.35rem;">
@@ -768,6 +773,10 @@
                             <button class="btn btn-sm btn-outline">Reset</button>
                         </form>
                     </div>
+                    <form method="POST" action="{{ route('clients.resend-invitation', $client) }}" style="margin-top:0.5rem;">
+                        @csrf
+                        <button class="btn btn-sm btn-outline" style="width:100%;">Enviar link de activación por correo</button>
+                    </form>
                 @else
                     <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">Sin acceso al portal</div>
 
@@ -809,6 +818,12 @@
                         <button class="btn btn-sm btn-primary" style="width:100%;">Crear acceso y enviar link de activación</button>
                     </form>
                     <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Al entrar por primera vez, el portal le pedirá aceptar el Aviso de Privacidad y el Acuerdo de Confidencialidad antes de continuar.</p>
+
+                    <form method="POST" action="{{ route('clients.preview-portal', $client) }}" style="margin-top:0.5rem;" target="_blank">
+                        @csrf
+                        <button class="btn btn-sm btn-outline" style="width:100%;">&#128065; Activar y ver portal (sin enviar correo)</button>
+                    </form>
+                    <p style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;">Crea el acceso en silencio y entras tú a revisarlo. El cliente no se entera hasta que le mandes el link de activación por separado.</p>
                 @endif
             </div>
         </div>

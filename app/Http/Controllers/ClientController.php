@@ -790,6 +790,28 @@ class ClientController extends Controller
         return back()->with('success', $message);
     }
 
+    /**
+     * Vista previa del Portal como el cliente la vería — activa el acceso
+     * si no existe (sin mandar el correo de bienvenida, a diferencia de
+     * createPortalAccount()) e impersona al asesor como ese cliente.
+     */
+    public function previewPortal(Request $request, Client $client)
+    {
+        if (!$client->email) {
+            return back()->with('error', 'El cliente necesita un email para poder previsualizar el portal.');
+        }
+
+        $service = app(ClientPortalService::class);
+        $result  = $service->createPortalAccount($client);
+
+        // Para poder regresar a esta ficha exacta al salir de la vista previa.
+        session(['portal_preview_return' => route('clients.show', $client)]);
+
+        $service->impersonate(Auth::user(), $result['user'], $request);
+
+        return redirect('https://miportal.homedelvalle.mx/inicio');
+    }
+
     public function sendTenantChecklist(Client $client)
     {
         if (!$client->email) {
@@ -837,6 +859,27 @@ class ClientController extends Controller
 
         $status = $user->is_active ? 'activado' : 'desactivado';
         return back()->with('success', "Acceso al portal {$status}.");
+    }
+
+    /**
+     * Manda (o reenvía) el correo de bienvenida a un cliente que ya tiene
+     * cuenta de portal — necesario para clientes activados en silencio vía
+     * previewPortal(), que no reciben nada hasta que el asesor lo pide.
+     */
+    public function resendInvitation(Client $client)
+    {
+        if (!$client->user_id) {
+            return back()->with('error', 'Este cliente no tiene cuenta de portal.');
+        }
+
+        $user = \App\Models\User::find($client->user_id);
+        if (!$user) {
+            return back()->with('error', 'Usuario de portal no encontrado.');
+        }
+
+        app(ClientPortalService::class)->sendWelcomeInvitation($user);
+
+        return back()->with('success', 'Correo de bienvenida enviado a ' . $client->email . '.');
     }
 
     public function deletePortalAccess(Client $client)

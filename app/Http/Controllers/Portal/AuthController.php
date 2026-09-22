@@ -89,6 +89,20 @@ class AuthController extends Controller
         return redirect()->route('portal.login');
     }
 
+    /** Termina la vista previa del asesor y regresa a su propia sesión en el CRM. */
+    public function exitPreview(Request $request)
+    {
+        if (!session('impersonating_as')) {
+            return redirect()->route('portal.dashboard');
+        }
+
+        $this->portal->endImpersonation($request);
+
+        $returnTo = session()->pull('portal_preview_return');
+
+        return redirect($returnTo ?: 'https://homedelvalle.mx/clients');
+    }
+
     // ── Recuperar contraseña ─────────────────────────────────────────────────
 
     public function recover(Request $request)

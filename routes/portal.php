@@ -32,6 +32,9 @@ Route::name('portal.')->group(function () {
 // ── Logout (autenticado) ─────────────────────────────────────────────────────
 Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->name('portal.logout');
 
+// ── Salir de vista previa de asesor (autenticado, sin gate legal) ────────────
+Route::middleware('auth')->post('/vista-previa/salir', [AuthController::class, 'exitPreview'])->name('portal.preview.exit');
+
 // ── Aceptación de términos (autenticado, sin gate legal) ─────────────────────
 Route::middleware(['auth', 'client'])->name('portal.')->group(function () {
     Route::get('/terminos',         [\App\Http\Controllers\Portal\PortalLegalController::class, 'show'])->name('terminos');

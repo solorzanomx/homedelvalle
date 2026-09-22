@@ -396,6 +396,15 @@
     @livewireStyles
 </head>
 <body>
+@if(session('impersonating_as'))
+<div style="position:sticky;top:0;z-index:9999;background:#7C3AED;color:#fff;padding:.6rem 1rem;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:.75rem;flex-wrap:wrap;">
+    <span>&#128065; Estás viendo el portal como <strong>{{ Auth::user()->name }}</strong> — vista previa de asesor.</span>
+    <form method="POST" action="{{ route('portal.preview.exit') }}" style="margin:0;">
+        @csrf
+        <button type="submit" style="background:#fff;color:#7C3AED;border:none;border-radius:6px;padding:.25rem .75rem;font-size:.78rem;font-weight:700;cursor:pointer;">Salir de la vista previa</button>
+    </form>
+</div>
+@endif
 @php
     $interests   = $portalClient->interest_types ?? [];
     $isVenta     = !empty(array_intersect(['venta','venta_propietario'], $interests));
