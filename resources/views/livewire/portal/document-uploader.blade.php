@@ -122,7 +122,6 @@
             <div id="cam-error-{{ $singleCategory }}" hidden style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;color:#fff;font-size:.85rem;"></div>
         </div>
         @endif
-    @endif
 @else
 {{-- ═══════════ MODO LISTA (varias categorías, como antes) ═══════════ --}}
 
