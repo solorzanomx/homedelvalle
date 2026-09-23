@@ -392,9 +392,8 @@ class PortalExpedienteController extends Controller
             $incomeFilled = collect($incomeFields)->filter(fn($f) => !empty($client->$f))->count();
             $incomeProofCat = \App\Models\Client::INCOME_PROOF_CATEGORY[$client->income_proof_type] ?? null;
             $hasIncomeDoc = $incomeProofCat && $documents->has($incomeProofCat);
-            $hasCreditReport = $documents->has('credit_report');
-            $incomeFilled += ($hasIncomeDoc ? 1 : 0) + ($hasCreditReport ? 1 : 0);
-            $incomeTotal = count($incomeFields) + 2;
+            $incomeFilled += $hasIncomeDoc ? 1 : 0;
+            $incomeTotal = count($incomeFields) + 1;
             $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => $incomeTotal, 'pct' => round($incomeFilled / $incomeTotal * 100)];
 
             // Referencias personales — 3 contactos estructurados

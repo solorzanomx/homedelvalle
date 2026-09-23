@@ -786,112 +786,6 @@
                     <button type="submit" class="btn btn-primary">Guardar información del hogar</button>
                 </div>
             </form>
-        </div>
-    </div>
-</div>
-@endif
-
-{{-- ══════════════════════════════════════════════════════════
-     SECCIÓN 5: INGRESOS (arrendatario)
-════════════════════════════════════════════════════════════ --}}
-@if($isArrendatario)
-<div class="exp-section" id="sec-ingresos">
-    <div class="card">
-        <div class="card-header"><span style="font-size:.85rem;font-weight:700;">Comprobación de ingresos</span></div>
-        <div class="card-body">
-            @php $s = $sections['ingresos'] ?? ['filled'=>0,'total'=>3,'pct'=>0]; @endphp
-            <div class="section-progress">
-                <span style="font-size:.78rem;color:var(--text-muted);white-space:nowrap;">{{ $s['filled'] }}/{{ $s['total'] }} elementos</span>
-                <div class="section-progress-bar-bg">
-                    <div class="section-progress-bar-fill" style="width:{{ $s['pct'] }}%;background:{{ $s['pct']>=80?'#22C55E':($s['pct']>=40?'#F59E0B':'#EF4444') }};"></div>
-                </div>
-                <span style="font-size:.78rem;font-weight:700;white-space:nowrap;">{{ $s['pct'] }}%</span>
-            </div>
-            <form method="POST" action="{{ route('portal.expediente.ingresos') }}">
-                @csrf
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Tipo de ingresos</label>
-                        <select name="income_type" class="form-select">
-                            <option value="">Seleccionar</option>
-                            <option value="empleado"      {{ old('income_type',$client->income_type)==='empleado'?'selected':'' }}>Empleado (nómina)</option>
-                            <option value="independiente" {{ old('income_type',$client->income_type)==='independiente'?'selected':'' }}>Independiente / Honorarios</option>
-                            <option value="empresario"    {{ old('income_type',$client->income_type)==='empresario'?'selected':'' }}>Empresario / Sociedad</option>
-                            <option value="otro"          {{ old('income_type',$client->income_type)==='otro'?'selected':'' }}>Otro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Ingreso mensual promedio</label>
-                        <input type="number" name="income_amount" class="form-input" value="{{ old('income_amount',$client->income_amount) }}" placeholder="0.00" step="0.01" min="0">
-                        <p class="form-hint">Este dato es confidencial y solo lo ve tu asesor.</p>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Otros ingresos (monto)</label>
-                        <input type="number" name="other_income_amount" class="form-input" value="{{ old('other_income_amount',$client->other_income_amount) }}" placeholder="0.00" step="0.01" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Otros ingresos (de dónde)</label>
-                        <input type="text" name="other_income_description" class="form-input" value="{{ old('other_income_description',$client->other_income_description) }}" placeholder="Renta de un inmueble, efectivo...">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">¿Cómo vas a comprobar tus ingresos?</label>
-                        <select name="income_proof_type" class="form-select" id="exp_income_proof_type" onchange="document.querySelectorAll('.income-proof-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
-                            <option value="">Seleccionar</option>
-                            @foreach(\App\Models\Client::INCOME_PROOF_TYPES as $val => $lbl)
-                            <option value="{{ $val }}" {{ old('income_proof_type',$client->income_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Datos laborales</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Nombre de la empresa</label>
-                        <input type="text" name="employer_name" class="form-input" value="{{ old('employer_name',$client->employer_name) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Teléfono de la empresa</label>
-                        <input type="tel" name="employer_phone" class="form-input" value="{{ old('employer_phone',$client->employer_phone) }}">
-                    </div>
-                    <div class="form-group full-width">
-                        <label class="form-label">Dirección de la empresa</label>
-                        <input type="text" name="employer_address" class="form-input" value="{{ old('employer_address',$client->employer_address) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Antigüedad en la empresa</label>
-                        <input type="text" name="job_seniority" class="form-input" value="{{ old('job_seniority',$client->job_seniority) }}" placeholder="Ej. 14 años">
-                    </div>
-                </div>
-
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Arrendador anterior</div>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" name="previous_landlord_name" class="form-input" value="{{ old('previous_landlord_name',$client->previous_landlord_name) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Teléfono</label>
-                        <input type="tel" name="previous_landlord_phone" class="form-input" value="{{ old('previous_landlord_phone',$client->previous_landlord_phone) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Celular</label>
-                        <input type="tel" name="previous_landlord_mobile" class="form-input" value="{{ old('previous_landlord_mobile',$client->previous_landlord_mobile) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="previous_landlord_email" class="form-input" value="{{ old('previous_landlord_email',$client->previous_landlord_email) }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Tiempo de arrendamiento</label>
-                        <input type="text" name="previous_landlord_years" class="form-input" value="{{ old('previous_landlord_years',$client->previous_landlord_years) }}" placeholder="Ej. 3 años">
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Guardar ingresos</button>
-                </div>
-            </form>
 
             {{-- Referencias personales (3, estructuradas) --}}
             <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
@@ -935,65 +829,126 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+@endif
 
-            {{-- Comprobante de ingresos — un solo documento, según lo que
-                 elegiste arriba en "¿Cómo vas a comprobar tus ingresos?" --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Comprobante de ingresos</div>
-                @if(!$client->income_proof_type)
-                <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba cómo vas a comprobar tus ingresos para poder subir el documento.</p>
-                @endif
-                @foreach(\App\Models\Client::INCOME_PROOF_CATEGORY as $type => $cat)
-                <div class="income-proof-slot" data-type="{{ $type }}" {{ $client->income_proof_type !== $type ? 'hidden' : '' }}>
-                    @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-income-'.$type))
+{{-- ══════════════════════════════════════════════════════════
+     SECCIÓN 5: INGRESOS (arrendatario)
+════════════════════════════════════════════════════════════ --}}
+@if($isArrendatario)
+<div class="exp-section" id="sec-ingresos">
+    <div class="card">
+        <div class="card-header"><span style="font-size:.85rem;font-weight:700;">Comprobación de ingresos</span></div>
+        <div class="card-body">
+            @php $s = $sections['ingresos'] ?? ['filled'=>0,'total'=>3,'pct'=>0]; @endphp
+            <div class="section-progress">
+                <span style="font-size:.78rem;color:var(--text-muted);white-space:nowrap;">{{ $s['filled'] }}/{{ $s['total'] }} elementos</span>
+                <div class="section-progress-bar-bg">
+                    <div class="section-progress-bar-fill" style="width:{{ $s['pct'] }}%;background:{{ $s['pct']>=80?'#22C55E':($s['pct']>=40?'#F59E0B':'#EF4444') }};"></div>
                 </div>
-                @endforeach
+                <span style="font-size:.78rem;font-weight:700;white-space:nowrap;">{{ $s['pct'] }}%</span>
             </div>
+            <form method="POST" action="{{ route('portal.expediente.ingresos') }}">
+                @csrf
 
+                {{-- PASO 1: Datos laborales — primero, por lógica: de aquí
+                     sale con qué comprobar los ingresos. --}}
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.6rem;">1. Datos laborales</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre de la empresa</label>
+                        <input type="text" name="employer_name" class="form-input" value="{{ old('employer_name',$client->employer_name) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono de la empresa</label>
+                        <input type="tel" name="employer_phone" class="form-input" value="{{ old('employer_phone',$client->employer_phone) }}">
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección de la empresa</label>
+                        <input type="text" name="employer_address" class="form-input" value="{{ old('employer_address',$client->employer_address) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Antigüedad en la empresa</label>
+                        <input type="text" name="job_seniority" class="form-input" value="{{ old('job_seniority',$client->job_seniority) }}" placeholder="Ej. 14 años">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de ingresos</label>
+                        <select name="income_type" class="form-select">
+                            <option value="">Seleccionar</option>
+                            <option value="empleado"      {{ old('income_type',$client->income_type)==='empleado'?'selected':'' }}>Empleado (nómina)</option>
+                            <option value="independiente" {{ old('income_type',$client->income_type)==='independiente'?'selected':'' }}>Independiente / Honorarios</option>
+                            <option value="empresario"    {{ old('income_type',$client->income_type)==='empresario'?'selected':'' }}>Empresario / Sociedad</option>
+                            <option value="otro"          {{ old('income_type',$client->income_type)==='otro'?'selected':'' }}>Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Ingreso mensual promedio</label>
+                        <input type="number" name="income_amount" class="form-input" value="{{ old('income_amount',$client->income_amount) }}" placeholder="0.00" step="0.01" min="0">
+                        <p class="form-hint">Este dato es confidencial y solo lo ve tu asesor.</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Otros ingresos (monto)</label>
+                        <input type="number" name="other_income_amount" class="form-input" value="{{ old('other_income_amount',$client->other_income_amount) }}" placeholder="0.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Otros ingresos (de dónde)</label>
+                        <input type="text" name="other_income_description" class="form-input" value="{{ old('other_income_description',$client->other_income_description) }}" placeholder="Renta de un inmueble, efectivo...">
+                    </div>
+                </div>
 
-            {{-- Referencias personales + Buró de Crédito --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Referencias y buró de crédito</div>
-                @foreach(\App\Support\TenantDocumentChecklist::REFERENCIAS + \App\Support\TenantDocumentChecklist::CREDITO as $cat => $label)
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);">
-                    <span style="font-size:.82rem;">
-                        {{ $documents->has($cat) ? '✅' : '○' }} {{ $label }}
-                    </span>
-                    @if(!$documents->has($cat))
-                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;">
-                        @csrf
-                        @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
-                        <input type="hidden" name="category" value="{{ $cat }}">
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
-                    </form>
-                    @else
-                    <span style="font-size:.72rem;color:var(--text-muted);">Subido ✓</span>
+                {{-- PASO 2: ¿Cómo vas a comprobar tus ingresos? — decide qué
+                     casilla de subida aparece justo abajo. --}}
+                <div class="form-group" style="margin-top:1rem;">
+                    <label class="form-label">2. ¿Cómo vas a comprobar tus ingresos?</label>
+                    <select name="income_proof_type" class="form-select" id="exp_income_proof_type" onchange="document.querySelectorAll('.income-proof-slot').forEach(el => el.hidden = el.dataset.type !== this.value)">
+                        <option value="">Seleccionar</option>
+                        @foreach(\App\Models\Client::INCOME_PROOF_TYPES as $val => $lbl)
+                        <option value="{{ $val }}" {{ old('income_proof_type',$client->income_proof_type)===$val?'selected':'' }}>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div style="margin-top:.75rem;margin-bottom:1.25rem;">
+                    @if(!$client->income_proof_type)
+                    <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba cómo vas a comprobar tus ingresos para poder subir el documento.</p>
                     @endif
+                    @foreach(\App\Models\Client::INCOME_PROOF_CATEGORY as $type => $cat)
+                    <div class="income-proof-slot" data-type="{{ $type }}" {{ $client->income_proof_type !== $type ? 'hidden' : '' }}>
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-income-'.$type))
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
 
-            {{-- Cuota de investigación --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Cuota de investigación</div>
-                @foreach(\App\Support\TenantDocumentChecklist::PAGO_INVESTIGACION as $cat => $label)
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);">
-                    <span style="font-size:.82rem;">
-                        {{ $documents->has($cat) ? '✅' : '○' }} {{ $label }}
-                    </span>
-                    @if(!$documents->has($cat))
-                    <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;">
-                        @csrf
-                        @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
-                        <input type="hidden" name="category" value="{{ $cat }}">
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
-                    </form>
-                    @else
-                    <span style="font-size:.72rem;color:var(--text-muted);">Subido ✓</span>
-                    @endif
+                <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Arrendador anterior</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="previous_landlord_name" class="form-input" value="{{ old('previous_landlord_name',$client->previous_landlord_name) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" name="previous_landlord_phone" class="form-input" value="{{ old('previous_landlord_phone',$client->previous_landlord_phone) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Celular</label>
+                        <input type="tel" name="previous_landlord_mobile" class="form-input" value="{{ old('previous_landlord_mobile',$client->previous_landlord_mobile) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="previous_landlord_email" class="form-input" value="{{ old('previous_landlord_email',$client->previous_landlord_email) }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tiempo de arrendamiento</label>
+                        <input type="text" name="previous_landlord_years" class="form-input" value="{{ old('previous_landlord_years',$client->previous_landlord_years) }}" placeholder="Ej. 3 años">
+                    </div>
                 </div>
-                @endforeach
-            </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar ingresos</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -1005,6 +960,27 @@
     <div class="card">
         <div class="card-header"><span style="font-size:.85rem;font-weight:700;">Tipo de garantía</span></div>
         <div class="card-body">
+
+            {{-- Cuota de investigación — la confirma tu asesor al recibir el
+                 depósito; en cuanto queda confirmada, aparece el recibo. --}}
+            <div style="margin-bottom:1.25rem;padding:1rem 1.1rem;border:1px solid var(--border);border-radius:10px;background:{{ $rentalAsInquilino?->investigacion_paid_at ? '#F0FDF4' : '#FFFBEB' }};">
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
+                    <div>
+                        <div style="font-size:.85rem;font-weight:700;color:var(--text);">💳 Cuota de investigación</div>
+                        @if($rentalAsInquilino?->investigacion_paid_at)
+                        <div style="font-size:.78rem;color:#166534;margin-top:.2rem;">✓ Pagada el {{ $rentalAsInquilino->investigacion_paid_at->format('d/m/Y') }} — ${{ number_format($rentalAsInquilino->investigacion_amount, 2) }} MXN</div>
+                        @else
+                        <div style="font-size:.78rem;color:#92400e;margin-top:.2rem;">Pendiente de confirmar — pídele a tu asesor la forma de pago.</div>
+                        @endif
+                    </div>
+                    @if($rentalAsInquilino?->investigacion_paid_at)
+                        @php $reciboInvestigacion = $documents->get('recibo_investigacion')?->sortByDesc('created_at')->first(); @endphp
+                        @if($reciboInvestigacion)
+                        <a href="{{ route('portal.documents.download', $reciboInvestigacion->id) }}" class="btn btn-sm btn-primary">📄 Descargar recibo</a>
+                        @endif
+                    @endif
+                </div>
+            </div>
 
             {{-- Tipo de garantía definida por asesor --}}
             @if($guaranteeType)

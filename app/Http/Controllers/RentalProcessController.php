@@ -364,6 +364,39 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Recibo de apartado generado.');
     }
 
+    public function storeInvestigacionPago(Request $request, string $id, \App\Services\InvestigacionReceiptGeneratorService $generator)
+    {
+        $rental = RentalProcess::with('tenantClient', 'property')->findOrFail($id);
+
+        $validated = $request->validate([
+            'investigacion_amount' => 'required|numeric|min:0',
+            'investigacion_paid_at' => 'required|date',
+            'investigacion_payment_method' => 'nullable|in:efectivo,transferencia,cheque',
+            'investigacion_notes' => 'nullable|string|max:1000',
+        ]);
+
+        $rental->update($validated);
+
+        $path = $generator->generatePdf($rental->fresh(['tenantClient', 'property']));
+
+        \App\Models\Document::create([
+            'rental_process_id' => $rental->id,
+            'client_id' => $rental->tenant_client_id,
+            'uploaded_by' => Auth::id(),
+            'category' => 'recibo_investigacion',
+            'label' => 'Recibo de Cuota de Investigación — ' . now()->format('d/m/Y'),
+            'file_path' => $path,
+            'file_name' => 'RI-' . str_pad((string) $rental->id, 5, '0', STR_PAD_LEFT) . '.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => file_exists($path) ? filesize($path) : null,
+            'status' => 'verified',
+            'verified_at' => now(),
+            'verified_by' => Auth::id(),
+        ]);
+
+        return back()->with('success', 'Recibo de cuota de investigación generado.');
+    }
+
     public function toggleInvestigation(Request $request, string $id)
     {
         $rental = RentalProcess::with(['investigation', 'ownerClient.portalUser'])->findOrFail($id);

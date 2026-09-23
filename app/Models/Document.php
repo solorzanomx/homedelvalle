@@ -43,6 +43,7 @@ class Document extends Model
         'propuesta_servicios' => 'Propuesta de Servicios PDF',
         'oferta_compra'       => 'Carta Oferta de Compra',
         'recibo_apartado'     => 'Recibo de Apartado',
+        'recibo_investigacion' => 'Recibo de Cuota de Investigación',
         'contrato_exclusiva'  => 'Acuerdo de Representación',
         'contrato_exclusiva_renta' => 'Acuerdo de Representación (Renta)',
         'contrato_compraventa' => 'Contrato de Compraventa',
