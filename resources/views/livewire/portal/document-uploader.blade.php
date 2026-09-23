@@ -20,37 +20,43 @@
 @endif
 @error('file') <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:.65rem 1rem;margin-bottom:1rem;font-size:.82rem;color:#991b1b;">⚠ {{ $message }}</div> @enderror
 
-{{-- ═══════════ MODO CASILLA ÚNICA (una sola categoría) ═══════════ --}}
+{{-- ═══════════ MODO CASILLA ÚNICA (una sola categoría, hasta $maxSlots) ═══════════ --}}
 @if($this->isSingleSlot())
-    @php $existing = collect($documents)->first(); @endphp
-    @if($existing)
-        {{-- Ya hay un documento subido: mostrar miniatura/estado --}}
-        <div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:#fff;border:1px solid #e2e8f0;border-radius:9px;">
-            @if($existing['thumbUrl'])
-                <img src="{{ $existing['thumbUrl'] }}" style="width:44px;height:44px;object-fit:cover;border-radius:7px;border:1px solid #e2e8f0;flex-shrink:0;">
-            @else
-                <div style="width:44px;height:44px;border-radius:7px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">📄</div>
+    {{-- Ya subidos (puede haber varios si $maxSlots > 1, ej. últimos 3 comprobantes) --}}
+    @foreach($documents as $existing)
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.65rem .85rem;background:#fff;border:1px solid #e2e8f0;border-radius:9px;margin-bottom:.5rem;">
+        @if($existing['thumbUrl'])
+            <img src="{{ $existing['thumbUrl'] }}" style="width:44px;height:44px;object-fit:cover;border-radius:7px;border:1px solid #e2e8f0;flex-shrink:0;">
+        @else
+            <div style="width:44px;height:44px;border-radius:7px;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">📄</div>
+        @endif
+        <div style="flex:1;min-width:0;">
+            <p style="font-weight:600;font-size:.83rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $existing['label'] }}</p>
+            <p style="font-size:.7rem;color:#64748b;">{{ $existing['size'] }} &middot; {{ $existing['date'] }}</p>
+            @if($existing['aiStatus'])
+            @php $aiColor = match($existing['aiStatus']) { 'match'=>'#10b981', 'mismatch'=>'#ef4444', 'expired'=>'#ef4444', default=>'#94a3b8' }; @endphp
+            <p style="font-size:.68rem;color:{{ $aiColor }};margin-top:.15rem;" title="{{ $existing['aiNotes'] }}">
+                🤖 {{ $existing['aiStatusLabel'] }}
+            </p>
             @endif
-            <div style="flex:1;min-width:0;">
-                <p style="font-weight:600;font-size:.83rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $existing['label'] }}</p>
-                <p style="font-size:.7rem;color:#64748b;">{{ $existing['size'] }} &middot; {{ $existing['date'] }}</p>
-                @if($existing['aiStatus'])
-                @php $aiColor = match($existing['aiStatus']) { 'match'=>'#10b981', 'mismatch'=>'#ef4444', 'expired'=>'#ef4444', default=>'#94a3b8' }; @endphp
-                <p style="font-size:.68rem;color:{{ $aiColor }};margin-top:.15rem;" title="{{ $existing['aiNotes'] }}">
-                    🤖 {{ $existing['aiStatusLabel'] }}
-                </p>
-                @endif
-            </div>
-            <span style="flex-shrink:0;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:{{ match($existing['status']){'verified'=>'#10b98120','rejected'=>'#ef444420','received'=>'#3b82f620',default=>'#f59e0b20'} }};color:{{ match($existing['status']){'verified'=>'#10b981','rejected'=>'#ef4444','received'=>'#3b82f6',default=>'#f59e0b'} }};">{{ $existing['statusLabel'] }}</span>
-            <div style="display:flex;gap:.3rem;flex-shrink:0;">
-                <a href="{{ route('portal.documents.download', $existing['id']) }}" style="padding:.3rem .6rem;border:1px solid #e2e8f0;border-radius:6px;font-size:.72rem;font-weight:600;color:#64748b;text-decoration:none;">↓</a>
-                @if($existing['canDelete'])
-                <button wire:click="deleteDocument({{ $existing['id'] }})" onclick="return confirm('¿Eliminar y volver a subir?')" style="padding:.3rem .5rem;border:1px solid #fecaca;border-radius:6px;font-size:.72rem;color:#ef4444;background:none;cursor:pointer;">✕</button>
-                @endif
-            </div>
         </div>
-    @else
-        {{-- Sin documento: dropzone directo, sube al soltar/seleccionar --}}
+        <span style="flex-shrink:0;font-size:.65rem;font-weight:700;padding:.2rem .55rem;border-radius:9999px;background:{{ match($existing['status']){'verified'=>'#10b98120','rejected'=>'#ef444420','received'=>'#3b82f620',default=>'#f59e0b20'} }};color:{{ match($existing['status']){'verified'=>'#10b981','rejected'=>'#ef4444','received'=>'#3b82f6',default=>'#f59e0b'} }};">{{ $existing['statusLabel'] }}</span>
+        <div style="display:flex;gap:.3rem;flex-shrink:0;">
+            <a href="{{ route('portal.documents.download', $existing['id']) }}" style="padding:.3rem .6rem;border:1px solid #e2e8f0;border-radius:6px;font-size:.72rem;font-weight:600;color:#64748b;text-decoration:none;">↓</a>
+            @if($existing['canDelete'])
+            <button wire:click="deleteDocument({{ $existing['id'] }})" onclick="return confirm('¿Eliminar este documento?')" style="padding:.3rem .5rem;border:1px solid #fecaca;border-radius:6px;font-size:.72rem;color:#ef4444;background:none;cursor:pointer;">✕</button>
+            @endif
+        </div>
+    </div>
+    @endforeach
+
+    @if($remainingSlots > 0)
+        {{-- Casilla para subir la siguiente --}}
+        @if($maxSlots > 1)
+        <p style="font-size:.72rem;color:#64748b;margin-bottom:.35rem;">
+            {{ count($documents) > 0 ? 'Sube el comprobante ' . (count($documents) + 1) . ' de ' . $maxSlots : 'Sube los últimos ' . $maxSlots . ' comprobantes' }}
+        </p>
+        @endif
         <div style="display:flex;gap:.5rem;align-items:stretch;">
             <label style="display:block;flex:1;">
                 <div id="slot-dz-{{ $this->getId() }}"
@@ -80,6 +86,7 @@
             💡 Mejor usa "Usar cámara" — encuadra la identificación sola, sin espacio alrededor, para que se lea bien.
         </p>
         @endif
+    @endif
 
         @if($isIdCategory)
         {{-- Modal de cámara guiada — se abre/cierra por JS, vive oculto en el DOM.

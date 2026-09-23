@@ -34,16 +34,19 @@ class DocumentUploader extends Component
     public string $successMsg        = '';
     public string $errorMsg          = '';
     public array  $documents         = [];
+    /** Cuántas casillas de la MISMA categoría se permiten (ej. 3 = "últimos 3 comprobantes"). Solo aplica en modo casilla única. */
+    public int   $maxSlots           = 1;
 
     public $file = null;
     public string $category = '';
     public string $label    = '';
     public bool  $uploading = false;
 
-    public function mount(?int $rentalProcessId = null, array $allowedCategories = [])
+    public function mount(?int $rentalProcessId = null, array $allowedCategories = [], int $maxSlots = 1)
     {
         $this->rentalProcessId  = $rentalProcessId;
         $this->allowedCategories = $allowedCategories;
+        $this->maxSlots = max(1, $maxSlots);
 
         if (count($allowedCategories) === 1) {
             $this->category = $allowedCategories[0];
@@ -59,7 +62,7 @@ class DocumentUploader extends Component
     /** En modo casilla única no hay botón "Subir" — se sube en cuanto se elige el archivo. */
     public function updatedFile(): void
     {
-        if ($this->isSingleSlot() && $this->file) {
+        if ($this->isSingleSlot() && $this->file && $this->remainingSlots() > 0) {
             $this->upload();
         }
     }
@@ -67,6 +70,12 @@ class DocumentUploader extends Component
     public function isSingleSlot(): bool
     {
         return count($this->allowedCategories) === 1;
+    }
+
+    /** Cuántas casillas más se pueden llenar (0 = ya se llenaron todas). */
+    public function remainingSlots(): int
+    {
+        return max(0, $this->maxSlots - count($this->documents));
     }
 
     /** Categorías de identificación donde vale la pena ofrecer cámara guiada. */
@@ -138,6 +147,12 @@ class DocumentUploader extends Component
 
     public function upload(): void
     {
+        if ($this->isSingleSlot() && $this->remainingSlots() <= 0) {
+            $this->errorMsg = 'Ya subiste el máximo de documentos permitidos aquí.';
+            $this->reset(['file']);
+            return;
+        }
+
         $this->uploading = true;
 
         $rules = [
@@ -284,6 +299,8 @@ class DocumentUploader extends Component
             'cameraSideLabel'     => $this->cameraSideLabel(),
             'cameraAspectRatio'   => $this->cameraAspectRatio(),
             'singleCategory'      => $this->allowedCategories[0] ?? null,
+            'remainingSlots'      => $this->remainingSlots(),
+            'maxSlots'            => $this->maxSlots,
         ]);
     }
 }

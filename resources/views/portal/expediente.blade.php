@@ -916,7 +916,7 @@
                     @endif
                     @foreach(\App\Models\Client::INCOME_PROOF_CATEGORY as $type => $cat)
                     <div class="income-proof-slot" data-type="{{ $type }}" {{ $client->income_proof_type !== $type ? 'hidden' : '' }}>
-                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-income-'.$type))
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rentalAsInquilino?->id, 'maxSlots' => 3], key('exp-income-'.$type))
                     </div>
                     @endforeach
                 </div>
