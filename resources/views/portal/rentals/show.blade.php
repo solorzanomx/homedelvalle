@@ -154,8 +154,11 @@
 @endif
 
 {{-- Pipeline — el detalle de etapas (Captación, Publicación, Búsqueda de
-     Arrendatario...) es el proceso del LADO del propietario; al inquilino
-     solo le mostramos en qué va en una palabra, no el pipeline completo. --}}
+     Arrendatario...) es el proceso del LADO del propietario. La etiqueta
+     de etapa (ej. "Búsqueda de Arrendatario") también está redactada
+     desde ese lado y no le hace sentido al inquilino — toda la tarjeta
+     se oculta para él, no solo el detalle del pipeline. --}}
+@if($role === 'propietario')
 <div class="section-wrap">
     <div class="section-hd">
         <span class="section-hd-title">Estado del proceso</span>
@@ -163,7 +166,6 @@
             {{ $rental->stage_label }}
         </span>
     </div>
-    @if($role === 'propietario')
     <div style="padding:1.25rem 1.5rem;">
         <div class="stage-pipeline">
             <div class="stage-pip-progress" style="width:{{ $lineWidthPct }};"></div>
@@ -176,8 +178,8 @@
             @endforeach
         </div>
     </div>
-    @endif
 </div>
+@endif
 
 {{-- Info grid --}}
 <div class="info-grid">
@@ -287,8 +289,10 @@
 </div>
 @endif
 
-{{-- Historial --}}
-@if($rental->stageLogs->isNotEmpty())
+{{-- Historial — las etapas (Captación, Búsqueda de Arrendatario, etc.) son
+     el proceso del lado del propietario, igual que "Estado del proceso"
+     de arriba. Solo para él. --}}
+@if($role === 'propietario' && $rental->stageLogs->isNotEmpty())
 <div class="section-wrap">
     <div class="section-hd"><span class="section-hd-title">🕐 Historial del proceso</span></div>
     <div style="padding:0 1.25rem;">
