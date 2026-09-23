@@ -32,7 +32,7 @@ class PortalRentalController extends Controller
     {
         $client = $this->portalService->getClientForUser(Auth::user());
         $rental = RentalProcess::with([
-            'property', 'ownerClient', 'tenantClient', 'broker',
+            'property.photos', 'ownerClient', 'tenantClient', 'broker',
             'documents', 'contracts.template', 'stageLogs',
         ])->findOrFail($id);
 

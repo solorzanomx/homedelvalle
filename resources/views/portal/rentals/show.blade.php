@@ -134,7 +134,28 @@
     </div>
 </div>
 
-{{-- Pipeline --}}
+{{-- Anuncio del inmueble — para que el inquilino vea fotos y la
+     descripción real de lo que está rentando, no solo datos sueltos. --}}
+@if($rental->property)
+<div class="section-wrap" style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;">
+    @if($rental->property->cover_photo_url)
+    <img src="{{ $rental->property->cover_photo_url }}" alt="{{ $rental->property->address }}"
+         style="width:84px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;">
+    @else
+    <div style="width:84px;height:64px;border-radius:8px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🏠</div>
+    @endif
+    <div style="flex:1;min-width:0;">
+        <div style="font-size:.85rem;font-weight:700;color:#0f172a;">{{ $rental->property->address ?? 'Inmueble' }}</div>
+        <div style="font-size:.78rem;color:#64748b;">{{ $rental->property->colony }}{{ $rental->property->city ? ' · ' . $rental->property->city : '' }}</div>
+    </div>
+    <a href="{{ route('propiedades.show', ['id' => $rental->property->id, 'slug' => $rental->property->slug]) }}" target="_blank"
+       style="font-size:.75rem;font-weight:600;padding:.5rem 1rem;flex-shrink:0;background:#1D4ED8;color:#fff;border-radius:8px;text-decoration:none;white-space:nowrap;">Ver anuncio completo →</a>
+</div>
+@endif
+
+{{-- Pipeline — el detalle de etapas (Captación, Publicación, Búsqueda de
+     Arrendatario...) es el proceso del LADO del propietario; al inquilino
+     solo le mostramos en qué va en una palabra, no el pipeline completo. --}}
 <div class="section-wrap">
     <div class="section-hd">
         <span class="section-hd-title">Estado del proceso</span>
@@ -142,6 +163,7 @@
             {{ $rental->stage_label }}
         </span>
     </div>
+    @if($role === 'propietario')
     <div style="padding:1.25rem 1.5rem;">
         <div class="stage-pipeline">
             <div class="stage-pip-progress" style="width:{{ $lineWidthPct }};"></div>
@@ -154,6 +176,7 @@
             @endforeach
         </div>
     </div>
+    @endif
 </div>
 
 {{-- Info grid --}}
