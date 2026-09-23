@@ -99,7 +99,7 @@ class DocumentUploader extends Component
     /** Proporción del recuadro guía — credencial vs. página de pasaporte. */
     public function cameraAspectRatio(): string
     {
-        return $this->allowedCategories[0] === 'pasaporte' ? '1.42' : '1.586';
+        return ($this->allowedCategories[0] ?? '') === 'pasaporte' ? '1.42' : '1.586';
     }
 
     public function loadDocuments(): void
