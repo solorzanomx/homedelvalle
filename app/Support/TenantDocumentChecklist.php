@@ -18,10 +18,21 @@ namespace App\Support;
  */
 class TenantDocumentChecklist
 {
+    // 2026-09-24: se consolida a una sola línea de "identificación oficial"
+    // (antes venía separada en INE Frente / INE Reverso, lo cual confundía
+    // en la página pública — internamente el Portal sigue pidiendo ambas
+    // fotos, o la carátula del pasaporte, según el tipo que elija el
+    // inquilino; ver App\Livewire\Portal\DocumentUploader).
     const IDENTIFICACION = [
-        'ine_frente' => 'INE — Frente',
-        'ine_reverso' => 'INE — Reverso',
-        'comprobante_domicilio' => 'Comprobante de Domicilio (no mayor a 3 meses)',
+        'identificacion_oficial' => 'Identificación oficial vigente (INE, pasaporte, etc.)',
+        'comprobante_domicilio' => 'Comprobante de domicilio no mayor a 3 meses (agua, luz o gas)',
+    ];
+
+    // Datos laborales: se capturan como campos (no como documento) al inicio
+    // de la sección de Ingresos del Portal — se listan aquí para que el
+    // checklist público refleje lo que realmente se pide primero.
+    const DATOS_LABORALES = [
+        'datos_laborales' => 'Datos laborales (empresa, puesto, antigüedad e ingreso mensual)',
     ];
 
     const INGRESOS = [
@@ -35,8 +46,11 @@ class TenantDocumentChecklist
         'references' => 'Referencias Personales (nombre, teléfono y relación de al menos 2 personas)',
     ];
 
+    // 2026-09-24: ya no se sube como documento — se recaba la autorización
+    // dentro del propio proceso del Portal. Se deja el requisito listado
+    // porque la consulta sí se realiza.
     const CREDITO = [
-        'credit_report' => 'Autorización de consulta / Reporte de Buró de Crédito',
+        'credit_report' => 'Autorización para consultar tu Buró de Crédito',
     ];
 
     // Garantía — depende de qué tipo defina el asesor (RentalProcess::guarantee_type).
@@ -62,15 +76,17 @@ class TenantDocumentChecklist
 
     // Cuota de investigación — requisito general del expediente, no depende
     // del tipo de garantía (lista oficial, 2026-09-22): $3,500 MXN CDMX, no
-    // reembolsables.
+    // reembolsables. 2026-09-24: ya no la sube el cliente — el asesor
+    // confirma el pago en el CRM y el recibo se genera y descarga desde el
+    // Portal (ver InvestigacionReceiptGeneratorService).
     const PAGO_INVESTIGACION = [
-        'comprobante_pago_investigacion' => 'Comprobante de Pago de Investigación ($3,500 MXN, no reembolsable)',
+        'pago_investigacion' => 'Pago de la investigación de arrendamiento ($3,500 MXN en CDMX, no reembolsable)',
     ];
 
-    /** Documentos que se le piden subir al inquilino, sin importar el tipo de garantía. */
+    /** Documentos e información que se le piden al inquilino, sin importar el tipo de garantía. */
     public static function clientFacing(): array
     {
-        return self::IDENTIFICACION + self::INGRESOS + self::REFERENCIAS + self::CREDITO + self::PAGO_INVESTIGACION;
+        return self::IDENTIFICACION + self::DATOS_LABORALES + self::INGRESOS + self::REFERENCIAS + self::CREDITO + self::PAGO_INVESTIGACION;
     }
 
     /**

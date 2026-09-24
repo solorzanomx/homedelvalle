@@ -10,13 +10,13 @@
 
     $groups = [
         [
-            'title' => 'Identificación',
+            'title' => 'Identificación y domicilio',
             'items' => \App\Support\TenantDocumentChecklist::IDENTIFICACION,
         ],
         [
-            'title' => 'Comprobación de ingresos',
-            'items' => \App\Support\TenantDocumentChecklist::INGRESOS,
-            'note' => 'Con uno de estos documentos es suficiente.',
+            'title' => 'Datos laborales y comprobación de ingresos',
+            'items' => \App\Support\TenantDocumentChecklist::DATOS_LABORALES + \App\Support\TenantDocumentChecklist::INGRESOS,
+            'note' => 'De los comprobantes de ingresos, con un solo tipo es suficiente — se piden los últimos 3.',
         ],
         [
             'title' => 'Referencias y Buró de Crédito',
@@ -25,7 +25,7 @@
         [
             'title' => 'Cuota de investigación',
             'items' => \App\Support\TenantDocumentChecklist::PAGO_INVESTIGACION,
-            'note' => 'Costo por investigación: $3,500 MXN en CDMX, no reembolsable.',
+            'note' => 'Tu asesor confirma el pago y tu recibo queda disponible para descarga en tu portal.',
         ],
     ];
 @endphp
