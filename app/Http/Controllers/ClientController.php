@@ -916,6 +916,36 @@ class ClientController extends Controller
         return back()->with('success', 'Contrasena del portal actualizada.');
     }
 
+    /**
+     * Borra la aceptación de los documentos legales requeridos del portal
+     * (aviso de privacidad, confidencialidad) para este cliente, para poder
+     * volver a probar la pantalla de "he leído y acepto" cuantas veces se
+     * necesite — solo uso de prueba del asesor (previewPortal), no algo que
+     * el cliente real dispare (2026-09-24).
+     */
+    public function resetLegalAcceptance(Client $client)
+    {
+        if (!$client->user_id) {
+            return back()->with('error', 'Este cliente no tiene cuenta de portal.');
+        }
+
+        $user = \App\Models\User::find($client->user_id);
+        if (!$user) {
+            return back()->with('error', 'Usuario de portal no encontrado.');
+        }
+
+        $slugs = config('portal.required_legal_documents', ['aviso-de-privacidad']);
+        $docIds = \App\Models\LegalDocument::whereIn('slug', $slugs)->pluck('id');
+
+        $deleted = \App\Models\LegalAcceptance::whereIn('legal_document_id', $docIds)
+            ->where('email', $user->email)
+            ->delete();
+
+        return back()->with('success', $deleted > 0
+            ? "Aceptación legal reseteada ({$deleted} documento(s)) — al entrar al portal le volverá a pedir aceptar."
+            : 'Este cliente no tenía documentos legales aceptados en el portal.');
+    }
+
     public function search(Request $request)
     {
         $q = $request->input('q', '');

@@ -771,6 +771,11 @@
                         <button class="btn btn-sm btn-outline" style="width:100%;">&#128065; Ver portal como {{ $client->name }}</button>
                     </form>
                     <p style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;">No manda ningún correo — entras tú a su sesión para revisar cómo lo ve él.</p>
+                    <form method="POST" action="{{ route('clients.reset-legal-acceptance', $client) }}" style="margin-top:0.4rem;" onsubmit="return confirm('¿Resetear la aceptación de aviso de privacidad y confidencialidad de este cliente? La próxima vez que entre al portal (o que lo veas con \'Ver portal como...\') le volverá a pedir aceptar.')">
+                        @csrf
+                        <button class="btn btn-sm btn-outline" style="width:100%;">↺ Resetear aceptación legal</button>
+                    </form>
+                    <p style="font-size:0.68rem;color:var(--text-muted);margin-top:0.3rem;">Para volver a probar la pantalla de "he leído y acepto" cuantas veces necesites.</p>
                     <div class="portal-section" style="margin-top:0.75rem;">
                         <div style="font-size:0.78rem; font-weight:500; margin-bottom:0.35rem;">Resetear contrasena</div>
                         <form method="POST" action="{{ route('clients.reset-portal-password', $client) }}" style="display:flex; gap:0.35rem;">
