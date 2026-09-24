@@ -500,24 +500,24 @@
                 <div style="margin-bottom:1.25rem;">
                     <div class="idtype-slot" data-type="INE" {{ $curIdType !== 'INE' ? 'hidden' : '' }}>
                         <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">INE — Frente</div>
-                        @livewire('portal.document-uploader', ['allowedCategories' => ['ine_frente']], key('exp-id-ine_frente'))
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['ine_frente'], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-id-ine_frente'))
                         <div style="font-size:.78rem;color:var(--text-muted);margin:.75rem 0 .35rem;">INE — Reverso</div>
-                        @livewire('portal.document-uploader', ['allowedCategories' => ['ine_reverso']], key('exp-id-ine_reverso'))
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['ine_reverso'], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-id-ine_reverso'))
                     </div>
 
                     <div class="idtype-slot" data-type="pasaporte" {{ $curIdType !== 'pasaporte' ? 'hidden' : '' }}>
                         <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Página de datos del pasaporte</div>
-                        @livewire('portal.document-uploader', ['allowedCategories' => ['pasaporte']], key('exp-id-pasaporte'))
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['pasaporte'], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-id-pasaporte'))
                     </div>
 
                     <div class="idtype-slot" data-type="cedula_profesional" {{ $curIdType !== 'cedula_profesional' ? 'hidden' : '' }}>
                         <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Cédula Profesional</div>
-                        @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion']], key('exp-id-cedula'))
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion'], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-id-cedula'))
                     </div>
 
                     <div class="idtype-slot" data-type="otro" {{ $curIdType !== 'otro' ? 'hidden' : '' }}>
                         <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.35rem;">Identificación</div>
-                        @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion']], key('exp-id-otro'))
+                        @livewire('portal.document-uploader', ['allowedCategories' => ['identificacion'], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-id-otro'))
                     </div>
 
                     @if(!$curIdType)
@@ -587,7 +587,7 @@
                 <div style="margin-bottom:1.25rem;">
                     @foreach(\App\Models\Client::DOMICILIO_PROOF_TYPES as $type => $label)
                     <div class="domicilio-slot" data-type="{{ $type }}" {{ $curDomicilioType !== $type ? 'hidden' : '' }}>
-                        @livewire('portal.document-uploader', ['allowedCategories' => [$type]], key('exp-domicilio-'.$type))
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$type], 'rentalProcessId' => $rentalAsInquilino?->id], key('exp-domicilio-'.$type))
                     </div>
                     @endforeach
 

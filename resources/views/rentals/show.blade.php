@@ -597,6 +597,21 @@
                     <form method="POST" action="{{ route('rentals.documents.store', $rental->id) }}" enctype="multipart/form-data">
                         @csrf
                         <div class="form-grid">
+                            @if($rental->tenantClient || $rental->ownerClient)
+                            <div class="form-group">
+                                <label class="form-label">¿De quién es este documento?</label>
+                                <select name="client_id" class="form-select">
+                                    <option value="">— No aplica a una persona —</option>
+                                    @if($rental->tenantClient)
+                                    <option value="{{ $rental->tenantClient->id }}">Inquilino: {{ $rental->tenantClient->name }}</option>
+                                    @endif
+                                    @if($rental->ownerClient)
+                                    <option value="{{ $rental->ownerClient->id }}">Propietario: {{ $rental->ownerClient->name }}</option>
+                                    @endif
+                                </select>
+                                <p class="form-hint" style="font-size:.68rem;">Si es un documento de identidad/domicilio de una de las partes, elígelo aquí para que también se vea en su Portal.</p>
+                            </div>
+                            @endif
                             <div class="form-group">
                                 <label class="form-label">Categoria</label>
                                 <select name="category" class="form-select" required>

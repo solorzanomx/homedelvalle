@@ -8,6 +8,7 @@ use App\Models\RentalProcess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class RentalDocumentController extends Controller
 {
@@ -15,10 +16,19 @@ class RentalDocumentController extends Controller
     {
         $rental = RentalProcess::findOrFail($rentalId);
 
+        // client_id opcional aquí — se guarda solo si el documento es de una
+        // de las 2 partes del trato (inquilino/propietario). Antes NUNCA se
+        // guardaba, así que un documento subido desde el CRM (identificación,
+        // comprobante de domicilio) no coincidía con lo que busca el Portal
+        // del Cliente (Document.client_id) y no se veía ahí — ni al revés
+        // (hallazgo 2026-09-24).
+        $validClientIds = array_values(array_filter([$rental->tenant_client_id, $rental->owner_client_id]));
+
         $validated = $request->validate([
             'category' => 'required|in:' . implode(',', array_keys(Document::CATEGORIES)),
             'label' => 'required|string|max:255',
             'file' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx',
+            'client_id' => ['nullable', Rule::in($validClientIds)],
         ]);
 
         $file = $request->file('file');
@@ -26,6 +36,7 @@ class RentalDocumentController extends Controller
 
         Document::create([
             'rental_process_id' => $rental->id,
+            'client_id' => $validated['client_id'] ?? null,
             'uploaded_by' => Auth::id(),
             'category' => $validated['category'],
             'label' => $validated['label'],
