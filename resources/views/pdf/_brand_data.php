@@ -47,3 +47,13 @@ if ($brandLogoDarkPath && file_exists($brandLogoDarkPath)) {
 
 $brandFontPath = resource_path('fonts/inter-latin.woff2');
 $brandFontB64  = file_exists($brandFontPath) ? base64_encode(file_get_contents($brandFontPath)) : null;
+
+// Firma de Ana Laura Monsiváis Flores (Directora General) — por ahora solo
+// se usa en el Recibo de Apartado y el Acuerdo de Confidencialidad, no en
+// los demás documentos de marca (decisión 2026-09-24). El SVG trae trazos
+// en blanco y negro (dos capas) — sobre una página blanca solo se ve el
+// trazo negro, es lo esperado para un documento impreso normal.
+$brandSignaturePath = public_path('img/firma-ana-laura-monsivais.svg');
+$brandSignatureSrc = file_exists($brandSignaturePath)
+    ? 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($brandSignaturePath))
+    : null;

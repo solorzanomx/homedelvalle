@@ -68,14 +68,24 @@ strong { color:#0f172a; }
     <div class="sign-col">
         <p style="font-size:10px; margin-bottom:0;">Le&iacute;do el presente instrumento y enteradas las partes de su contenido y alcance, se expide para constancia en la Ciudad de M&eacute;xico, a {{ $fecha }}.</p>
         <div style="font-size:10px; margin: 14px 0 0;">RECIB&Iacute; DE CONFORMIDAD</div>
-        <div class="sign-line">
+        @if($brandSignatureSrc ?? null)
+        <div style="margin-top:26px;text-align:center;">
+            <img src="{{ $brandSignatureSrc }}" style="height:52px;">
+        </div>
+        @endif
+        <div class="sign-line" style="{{ ($brandSignatureSrc ?? null) ? 'margin-top:4px;' : '' }}">
             <div class="sign-name">{{ $recibeName }}</div>
             {{ $recibeTitle }}<br>
             Home del Valle Bienes Ra&iacute;ces<br>
             Por cuenta y orden del propietario, {{ $arrendador }}
-            @if($recibePhone)<br>Tel. {{ $recibePhone }}@endif
-            @if($recibeEmail)<br>{{ $recibeEmail }}@endif
         </div>
+        @if($atendidoPorName)
+        <p style="font-size:9px; color:#94a3b8; margin-top:10px;">
+            Tr&aacute;mite atendido por {{ $atendidoPorName }}
+            @if($atendidoPorPhone) &middot; Tel. {{ $atendidoPorPhone }}@endif
+            @if($atendidoPorEmail) &middot; {{ $atendidoPorEmail }}@endif
+        </p>
+        @endif
     </div>
 </div>
 
