@@ -27,13 +27,13 @@ class RentalDepositReceiptGeneratorService
      * el sustento legal del documento.
      */
     const DEFAULT_CLAUSES = [
-        'objeto' => 'De conformidad con los artículos 2243 a 2247 del Código Civil para la Ciudad de México, relativos a la promesa de contrato, la cantidad recibida tiene por objeto formalizar la intención de {{arrendataria}}, en su carácter de PROMITENTE ARRENDATARIA, de celebrar contrato de arrendamiento respecto del inmueble antes identificado. Como consecuencia de la recepción del presente depósito, el PROMITENTE ARRENDADOR se obliga a reservar temporalmente el inmueble, absteniéndose de ofrecerlo, comprometerlo o celebrar contrato de arrendamiento respecto del mismo con un tercero, hasta la celebración del contrato de arrendamiento, misma que deberá efectuarse A MÁS TARDAR EL DÍA {{fecha_limite}}.',
+        'objeto' => 'De conformidad con los artículos 2243 a 2247 del Código Civil para la Ciudad de México, relativos a la promesa de contrato, la cantidad recibida tiene por objeto formalizar la intención de {{arrendataria}}, en su carácter de {{promitente_arrendataria}}, de celebrar contrato de arrendamiento respecto del inmueble antes identificado. Como consecuencia de la recepción del presente depósito, el PROMITENTE ARRENDADOR se obliga a reservar temporalmente el inmueble, absteniéndose de ofrecerlo, comprometerlo o celebrar contrato de arrendamiento respecto del mismo con un tercero, hasta la celebración del contrato de arrendamiento, misma que deberá efectuarse A MÁS TARDAR EL DÍA {{fecha_limite}}.',
         'condiciones_economicas' => 'Las partes tienen contemplado celebrar el contrato de arrendamiento estableciendo una renta mensual de {{renta_texto}}{{cuota_mantenimiento_texto}}, bajo los términos y condiciones que se consignarán expresamente en el contrato de arrendamiento definitivo.',
-        'fecha_limite' => 'Las partes acuerdan que el contrato definitivo de arrendamiento deberá celebrarse y firmarse A MÁS TARDAR EL DÍA {{fecha_limite}}, pudiendo formalizarse en cualquier fecha anterior de común acuerdo. En dicha fecha límite deberán quedar formalizadas las obligaciones definitivas entre {{arrendador}}, en su carácter de ARRENDADOR, y {{arrendataria}}, en su carácter de ARRENDATARIA.',
+        'fecha_limite' => 'Las partes acuerdan que el contrato definitivo de arrendamiento deberá celebrarse y firmarse A MÁS TARDAR EL DÍA {{fecha_limite}}, pudiendo formalizarse en cualquier fecha anterior de común acuerdo. En dicha fecha límite deberán quedar formalizadas las obligaciones definitivas entre {{arrendador}}, en su carácter de ARRENDADOR, y {{arrendataria}}, en su carácter de {{arrendataria_rol}}.',
         'aplicacion_deposito' => 'La cantidad entregada mediante el presente instrumento constituye exclusivamente la garantía de cumplimiento de la presente promesa de arrendamiento y es independiente del depósito en garantía que, en su caso, se pacte en el contrato de arrendamiento definitivo conforme al artículo 2448 del Código Civil para la Ciudad de México. No obstante lo anterior, en caso de celebrarse el contrato de arrendamiento en los términos convenidos, las partes podrán acordar expresamente en dicho contrato definitivo que la presente cantidad sea reconocida y aplicada a cuenta del depósito en garantía, debiendo quedar dicha aplicación asentada por escrito en el propio contrato.',
-        'incumplimiento_arrendataria' => 'Si por causas directamente imputables a la PROMITENTE ARRENDATARIA ésta desistiere de la operación, se negare injustificadamente a celebrar el contrato de arrendamiento o dejare de cumplir con los requisitos y obligaciones previamente convenidos para su formalización, perderá en favor del PROMITENTE ARRENDADOR la cantidad de {{monto_texto}} entregada mediante el presente recibo, misma que se aplicará como pena convencional, sin obligación de devolución. Las partes convienen, de conformidad con el artículo 1840 del Código Civil para la Ciudad de México, que dicha pena convencional sustituye cualquier reclamación adicional por concepto de daños y perjuicios derivados del incumplimiento.',
-        'incumplimiento_arrendador' => 'Si por causas directamente imputables al PROMITENTE ARRENDADOR éste desistiere injustificadamente de la operación, arrendare o comprometiera el inmueble con un tercero durante el periodo de reserva, o se negare a celebrar el contrato de arrendamiento en los términos previamente convenidos, deberá devolver a la PROMITENTE ARRENDATARIA los {{monto_texto}} recibidos y pagar adicionalmente la cantidad de {{monto_texto}} por concepto de pena convencional. En consecuencia, la cantidad total a entregar a la PROMITENTE ARRENDATARIA en dicho supuesto será de {{monto_doble_texto}}. Las partes convienen, de conformidad con el artículo 1840 del Código Civil para la Ciudad de México, que dicha pena convencional sustituye cualquier reclamación adicional por concepto de daños y perjuicios derivados del incumplimiento.',
-        'causas_no_imputables' => 'En caso de que la operación no pudiera formalizarse por una causa jurídica, material o documental no imputable a la PROMITENTE ARRENDATARIA, que impida legítimamente la celebración del contrato de arrendamiento, la cantidad recibida mediante el presente instrumento deberá ser devuelta a ésta, sin aplicación de pena convencional.',
+        'incumplimiento_arrendataria' => 'Si por causas directamente imputables {{a_promitente_arrendataria}} {{esta_arrendataria}} desistiere de la operación, se negare injustificadamente a celebrar el contrato de arrendamiento o dejare de cumplir con los requisitos y obligaciones previamente convenidos para su formalización, perderá en favor del PROMITENTE ARRENDADOR la cantidad de {{monto_texto}} entregada mediante el presente recibo, misma que se aplicará como pena convencional, sin obligación de devolución. Las partes convienen, de conformidad con el artículo 1840 del Código Civil para la Ciudad de México, que dicha pena convencional sustituye cualquier reclamación adicional por concepto de daños y perjuicios derivados del incumplimiento.',
+        'incumplimiento_arrendador' => 'Si por causas directamente imputables al PROMITENTE ARRENDADOR éste desistiere injustificadamente de la operación, arrendare o comprometiera el inmueble con un tercero durante el periodo de reserva, o se negare a celebrar el contrato de arrendamiento en los términos previamente convenidos, deberá devolver {{a_promitente_arrendataria}} los {{monto_texto}} recibidos y pagar adicionalmente la cantidad de {{monto_texto}} por concepto de pena convencional. En consecuencia, la cantidad total a entregar {{a_promitente_arrendataria}} en dicho supuesto será de {{monto_doble_texto}}. Las partes convienen, de conformidad con el artículo 1840 del Código Civil para la Ciudad de México, que dicha pena convencional sustituye cualquier reclamación adicional por concepto de daños y perjuicios derivados del incumplimiento.',
+        'causas_no_imputables' => 'En caso de que la operación no pudiera formalizarse por una causa jurídica, material o documental no imputable {{a_promitente_arrendataria}}, que impida legítimamente la celebración del contrato de arrendamiento, la cantidad recibida mediante el presente instrumento deberá ser devuelta a {{esta_arrendataria}}, sin aplicación de pena convencional.',
         'alcance' => 'El presente documento acredita la recepción del depósito, la reserva temporal del inmueble y las obligaciones expresamente aquí establecidas, y constituye una promesa de contrato en los términos de los artículos 2243 a 2247 del Código Civil para la Ciudad de México. Las condiciones definitivas del arrendamiento, incluyendo derechos, obligaciones, vigencia, garantías, entrega y recepción del inmueble y demás estipulaciones aplicables, quedarán consignadas en el contrato de arrendamiento definitivo que celebren las partes.',
     ];
 
@@ -91,6 +91,13 @@ class RentalDepositReceiptGeneratorService
             ? ', cantidad que incluye la cuota ordinaria de mantenimiento del condominio por $' . number_format($mantenimiento, 2) . ' M.N.'
             : '';
 
+        // Concordancia de género del inquilino ("arrendatario"/"arrendataria")
+        // — antes quedaba fijo en femenino sin importar el cliente real.
+        // Client.gender: 'M' = Mujer, cualquier otro valor (incl. sin dato)
+        // se trata como masculino, el default no marcado del español.
+        $esFemenino = $rental->tenantClient?->gender === 'M';
+        $arrendatariaRolTitle = $esFemenino ? 'Arrendataria' : 'Arrendatario';
+
         $tokens = [
             'arrendataria' => $arrendataria,
             'arrendador' => $arrendador,
@@ -100,11 +107,23 @@ class RentalDepositReceiptGeneratorService
             'monto_doble_texto' => $montoDobleTexto,
             'renta_texto' => $rentaTexto,
             'cuota_mantenimiento_texto' => $cuotaMantenimientoTexto,
+            'promitente_arrendataria' => $esFemenino ? 'PROMITENTE ARRENDATARIA' : 'PROMITENTE ARRENDATARIO',
+            'a_promitente_arrendataria' => $esFemenino ? 'a la PROMITENTE ARRENDATARIA' : 'al PROMITENTE ARRENDATARIO',
+            'arrendataria_rol' => $esFemenino ? 'ARRENDATARIA' : 'ARRENDATARIO',
+            'esta_arrendataria' => $esFemenino ? 'ésta' : 'éste',
         ];
 
-        $clauses = collect(self::DEFAULT_CLAUSES)->map(function ($default, $key) use ($tokens) {
+        $clauses = collect(self::DEFAULT_CLAUSES)->map(function ($default, $key) use ($tokens, $esFemenino) {
+            $title = self::CLAUSE_TITLES[$key];
+            // Solo se toca si es masculino — el texto base ya está en
+            // femenino, así que en ese caso se deja intacto (str_ireplace
+            // igual lo "reemplazaría" por sí mismo pero normalizando la
+            // may/minúscula original, sin necesidad).
+            if ($key === 'incumplimiento_arrendataria' && ! $esFemenino) {
+                $title = str_ireplace('a la promitente arrendataria', 'al promitente arrendatario', $title);
+            }
             return [
-                'title' => self::CLAUSE_TITLES[$key],
+                'title' => $title,
                 'body' => self::clause($key, $tokens),
             ];
         })->values();
@@ -124,7 +143,7 @@ class RentalDepositReceiptGeneratorService
 
         return view('pdf.recibo-apartado', compact(
             'rental', 'folio', 'fecha', 'fechaLimite', 'arrendataria', 'arrendador', 'inmueble',
-            'montoTexto', 'rentaTexto', 'clauses', 'recibeName', 'recibeTitle',
+            'montoTexto', 'rentaTexto', 'clauses', 'recibeName', 'recibeTitle', 'arrendatariaRolTitle',
             'atendidoPorName', 'atendidoPorPhone', 'atendidoPorEmail'
         ) + ['montoNumero' => number_format($monto, 2)])->render();
     }

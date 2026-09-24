@@ -52,7 +52,7 @@ strong { color:#0f172a; }
 <p>Recib&iacute; de {{ $arrendataria }} la cantidad de <strong>{{ $montoTexto }}</strong>, por concepto de <strong>DEP&Oacute;SITO EN GARANT&Iacute;A Y RESERVA</strong> respecto de la futura celebraci&oacute;n del contrato de arrendamiento del inmueble ubicado en <strong>{{ $inmueble }}</strong>, propiedad de {{ $arrendador }}, sujeto a los t&eacute;rminos y condiciones que se establecen a continuaci&oacute;n:</p>
 
 <table class="info-table">
-    <tr><td>Promitente Arrendataria</td><td>{{ $arrendataria }}</td></tr>
+    <tr><td>Promitente {{ $arrendatariaRolTitle }}</td><td>{{ $arrendataria }}</td></tr>
     <tr><td>Promitente Arrendador</td><td>{{ $arrendador }}</td></tr>
     <tr><td>Inmueble</td><td>{{ $inmueble }}</td></tr>
     <tr><td>Renta mensual pactada</td><td>{{ $rentaTexto }}</td></tr>
@@ -66,7 +66,7 @@ strong { color:#0f172a; }
 
 <div class="sign-row">
     <div class="sign-col">
-        <p style="font-size:10px; margin-bottom:0;">Le&iacute;do el presente instrumento y enteradas las partes de su contenido y alcance, se expide para constancia en la Ciudad de M&eacute;xico, a {{ $fecha }}.</p>
+        <p style="font-size:10px; margin-bottom:0;">El presente recibo se expide a favor de {{ $arrendataria }} como constancia de la recepci&oacute;n del dep&oacute;sito se&ntilde;alado, sujeto a los t&eacute;rminos y condiciones establecidos en este instrumento, en la Ciudad de M&eacute;xico, a {{ $fecha }}.</p>
         <div style="font-size:10px; margin: 14px 0 0;">RECIB&Iacute; DE CONFORMIDAD</div>
         @if($brandSignatureSrc ?? null)
         <div style="margin-top:26px;text-align:center;">
