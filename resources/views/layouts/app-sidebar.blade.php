@@ -415,14 +415,14 @@
                         <a href="{{ route('admin.rentas.activas') }}" class="nav-item {{ request()->routeIs('admin.rentas.activas') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="key" class="w-4 h-4" /></span> Colocación Activa
                         </a>
+                        @if(Route::has('rentals.index'))
+                        <a href="{{ route('rentals.index') }}" class="nav-item {{ request()->routeIs('rentals.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="handshake" class="w-4 h-4" /></span> Tratos de Renta
+                        </a>
+                        @endif
                         <a href="{{ route('admin.rentas.gestion') }}" class="nav-item {{ request()->routeIs('admin.rentas.gestion*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Post-Cierre
                         </a>
-                        @if(Route::has('rentals.index'))
-                        <a href="{{ route('rentals.index') }}" class="nav-item {{ request()->routeIs('rentals.*') ? 'active' : '' }}">
-                            <span class="nav-icon"><x-icon name="home" class="w-4 h-4" /></span> Histórico Rentas
-                        </a>
-                        @endif
                     </div>
                 </div>
                 @endif

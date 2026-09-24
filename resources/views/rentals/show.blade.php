@@ -651,6 +651,14 @@
                         </span>
                         <div class="doc-actions">
                             <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" title="Descargar">&#8615;</a>
+                            @if($catKey === 'comprobante_apartado' && ! $rental->apartado_paid_at)
+                            {{-- El "Verificar" genérico solo marca el documento como revisado, no
+                                 confirma el apartado ni genera el recibo — eso vive en la tarjeta
+                                 de Apartado en la pestaña Investigación. Mandamos ahí en vez de
+                                 dejar botones que parecen aceptar pero no hacen nada (hallazgo
+                                 2026-09-24). --}}
+                            <a href="javascript:void(0)" onclick="switchTab('investigacion')" class="btn btn-sm btn-primary" title="Confirmar apartado">Confirmar apartado →</a>
+                            @else
                             @if($doc->status !== 'verified')
                             <form method="POST" action="{{ route('documents.update-status', $doc->id) }}" style="display:inline;">
                                 @csrf @method('PATCH')
@@ -664,6 +672,7 @@
                                 <input type="hidden" name="status" value="rejected">
                                 <button type="submit" class="btn btn-sm btn-outline" title="Rechazar" style="color:var(--danger);">&#10007;</button>
                             </form>
+                            @endif
                             @endif
                             <form method="POST" action="{{ route('documents.destroy', $doc->id) }}" style="display:inline;" onsubmit="return confirm('Eliminar este documento?')">
                                 @csrf @method('DELETE')

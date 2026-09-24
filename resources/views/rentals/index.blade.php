@@ -95,6 +95,18 @@
 .k-action.danger:hover { border-color: #ef4444; color: #ef4444; }
 .kanban-empty { text-align: center; color: var(--text-muted); font-size: 0.75rem; padding: 1.5rem 0.5rem; opacity: 0.7; }
 
+/* Divisor entre "en trámite" (antes de firmar) y "ya firmado" */
+.kanban-divider {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 28px; max-width: 28px; flex-shrink: 0; gap: .5rem;
+}
+.kanban-divider .line { flex: 1; width: 2px; background: var(--border); border-radius: 1px; }
+.kanban-divider .label {
+    writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg);
+    font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+    color: var(--text-muted); white-space: nowrap;
+}
+
 /* Expiry badge */
 .expiry-badge {
     font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.45rem;
@@ -216,6 +228,13 @@ $stageColorMap = \App\Models\RentalProcess::STAGE_COLORS;
             $cards   = $rentalsByStage[$stageKey];
             $idx     = array_search($stageKey, $stageList);
         @endphp
+        @if($stageKey === 'activo')
+        <div class="kanban-divider" title="A la izquierda: en trámite. A la derecha: contrato ya firmado.">
+            <div class="line"></div>
+            <span class="label">Ya firmado →</span>
+            <div class="line"></div>
+        </div>
+        @endif
         <div class="kanban-col">
             <div class="kanban-col-header" style="">
                 <style>.kanban-col:nth-child({{ $idx + 1 }}) .kanban-col-header::before { background: {{ $color }}; }</style>

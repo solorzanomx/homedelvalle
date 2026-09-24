@@ -52,7 +52,13 @@ class RentalsAdminController extends Controller
 
     public function gestion()
     {
-        $activas = RentalProcess::whereNotIn('status', ['completed', 'cancelled'])
+        // Solo tratos que YA llegaron a etapa 'activo'/'renovacion' (contrato
+        // firmado) — antes filtraba solo por status, así que un trato recién
+        // creado (apartado/investigación aún pendientes) aparecía aquí mezclado
+        // con rentas ya firmadas, como si ya estuviera "post-cierre" (hallazgo
+        // 2026-09-24). Esos tratos en trámite viven en "Tratos de Renta".
+        $activas = RentalProcess::whereIn('stage', ['activo', 'renovacion'])
+            ->whereNotIn('status', ['completed', 'cancelled'])
             ->with(['property', 'ownerClient', 'tenantClient'])
             ->orderBy('lease_end_date')
             ->get();
