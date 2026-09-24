@@ -394,6 +394,39 @@ class RentalProcessController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
+    /**
+     * Manda (o reenvía) el recibo de apartado ya generado por correo al
+     * inquilino — no es automático al confirmar (decisión 2026-09-24): el
+     * asesor decide cuándo mandarlo, como ya existe con resendInvitation()
+     * del portal.
+     */
+    public function sendApartadoReceipt(string $id, \App\Services\EmailService $emailService)
+    {
+        $rental = RentalProcess::with('tenantClient', 'property')->findOrFail($id);
+
+        $recibo = $rental->documents()->where('category', 'recibo_apartado')->latest()->first();
+        if (! $recibo) {
+            return back()->with('error', 'Este trato todavía no tiene un recibo de apartado generado.');
+        }
+
+        $tenant = $rental->tenantClient;
+        if (! $tenant || ! $tenant->email) {
+            return back()->with('error', 'El inquilino no tiene un correo registrado.');
+        }
+
+        $inmueble = $rental->property?->title ?? 'el inmueble';
+        $subject = 'Recibo de tu apartado — ' . $inmueble;
+        $body = '<p>Hola ' . e($tenant->name) . ',</p>'
+            . '<p>Adjunto tu recibo de apartado para <strong>' . e($inmueble) . '</strong>. Puedes descargarlo también desde tu Portal en cualquier momento.</p>'
+            . '<p>Saludos,<br>Home del Valle Bienes Raíces</p>';
+
+        $sent = $emailService->send($tenant->email, $subject, $body, $tenant->name, null, Auth::user(), [$recibo->file_path]);
+
+        return back()->with($sent ? 'success' : 'error', $sent
+            ? 'Recibo enviado por correo a ' . $tenant->email . '.'
+            : 'No se pudo enviar el correo — revisa la configuración de correo saliente.');
+    }
+
     public function storeInvestigacionPago(Request $request, string $id, \App\Services\InvestigacionReceiptGeneratorService $generator)
     {
         $rental = RentalProcess::with('tenantClient', 'property')->findOrFail($id);

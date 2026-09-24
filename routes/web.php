@@ -310,6 +310,7 @@ Route::middleware('auth')->group(function () {
     // Apartado (reserva previa a investigación/póliza)
     Route::post('rentals/{rental}/apartado', [RentalProcessController::class, 'storeApartado'])->name('rentals.apartado.store');
     Route::post('rentals/{rental}/apartado/preview', [RentalProcessController::class, 'previewApartado'])->name('rentals.apartado.preview');
+    Route::post('rentals/{rental}/apartado/enviar-correo', [RentalProcessController::class, 'sendApartadoReceipt'])->name('rentals.apartado.send-email');
     Route::post('rentals/{rental}/investigacion-pago', [RentalProcessController::class, 'storeInvestigacionPago'])->name('rentals.investigacion-pago.store');
     // Investigación de candidato
     Route::post('rentals/{rental}/investigacion',        [RentalProcessController::class, 'storeInvestigation'])->name('rentals.investigacion.store');

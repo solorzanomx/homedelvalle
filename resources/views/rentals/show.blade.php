@@ -305,6 +305,10 @@
                     @endif
                     @if($recibo)
                     <a href="{{ route('documents.download', $recibo->id) }}" class="btn btn-sm btn-outline">📄 Ver recibo</a>
+                    <form method="POST" action="{{ route('rentals.apartado.send-email', $rental->id) }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline">✉️ Reenviar por correo</button>
+                    </form>
                     @endif
                 @else
                     @php $comprobanteApartado = $rental->documents->where('category', 'comprobante_apartado')->sortByDesc('created_at')->first(); @endphp
