@@ -364,6 +364,36 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Recibo de apartado generado.');
     }
 
+    /**
+     * Vista previa del recibo con los datos que trae el formulario en ese
+     * momento — genera el PDF real (mismo Browsershot) pero SIN guardar
+     * nada: no toca apartado_paid_at/amount/deadline en el rental, no crea
+     * el Document. Permite revisar el recibo antes de confirmar el
+     * apartado (que sí es la acción que queda en firme).
+     */
+    public function previewApartado(Request $request, string $id, \App\Services\RentalDepositReceiptGeneratorService $generator)
+    {
+        $rental = RentalProcess::with('tenantClient', 'ownerClient', 'property', 'user')->findOrFail($id);
+
+        $validated = $request->validate([
+            'apartado_amount' => 'required|numeric|min:0',
+            'apartado_paid_at' => 'required|date',
+            'apartado_deadline' => 'required|date',
+            'apartado_payment_method' => 'nullable|in:efectivo,transferencia,cheque',
+            'apartado_notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Se asignan en memoria nada más — este modelo nunca se guarda.
+        $rental->forceFill($validated);
+
+        $path = $generator->generatePdf($rental);
+
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="vista-previa-recibo-apartado.pdf"',
+        ])->deleteFileAfterSend(true);
+    }
+
     public function storeInvestigacionPago(Request $request, string $id, \App\Services\InvestigacionReceiptGeneratorService $generator)
     {
         $rental = RentalProcess::with('tenantClient', 'property')->findOrFail($id);

@@ -354,7 +354,9 @@
                             <label class="form-label" style="font-size:.72rem;">Notas (opcional)</label>
                             <textarea name="apartado_notes" class="form-textarea" rows="2"></textarea>
                         </div>
+                        <button type="submit" formaction="{{ route('rentals.apartado.preview', $rental->id) }}" formtarget="_blank" class="btn btn-outline" style="margin-top:.75rem;">👁 Vista previa</button>
                         <button type="submit" class="btn btn-primary" style="margin-top:.75rem;">Generar recibo de apartado</button>
+                        <p style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;">La vista previa abre el PDF con estos mismos datos en una pestaña nueva, sin confirmar el apartado todavía.</p>
                     </form>
                 @endif
             </div>
