@@ -1074,8 +1074,20 @@
         <div class="card-header"><span style="font-size:.85rem;font-weight:700;">Tipo de garantía</span></div>
         <div class="card-body">
 
-            {{-- Cuota de investigación — la confirma tu asesor al recibir el
-                 depósito; en cuanto queda confirmada, aparece el recibo. --}}
+            {{-- Cuota de investigación — solo aplica cuando la garantía NO es
+                 póliza jurídica. Con póliza, la aseguradora hace su propia
+                 investigación como parte de la cobertura que contrata el
+                 propietario, y Home del Valle no cobra esta cuota aparte —
+                 sin esta aclaración el inquilino puede pensar que se le
+                 cobran las dos cosas (hallazgo 2026-09-24). --}}
+            @if($hasPoliza)
+            <div style="margin-bottom:1.25rem;padding:1rem 1.1rem;border:1px solid #BFDBFE;border-radius:10px;background:#EFF6FF;">
+                <div style="font-size:.85rem;font-weight:700;color:#1D4ED8;">🛡️ Investigación incluida en tu Póliza Jurídica</div>
+                <div style="font-size:.78rem;color:#1D4ED8;margin-top:.35rem;line-height:1.5;">
+                    Tu garantía es por Póliza Jurídica, así que la investigación de arrendatario la realiza directamente la aseguradora como parte de la cobertura contratada por el propietario. No hay una cuota de investigación aparte que Home del Valle te cobre — el único costo relacionado con tu garantía es el de la póliza, que tu asesor te confirmará.
+                </div>
+            </div>
+            @else
             <div style="margin-bottom:1.25rem;padding:1rem 1.1rem;border:1px solid var(--border);border-radius:10px;background:{{ $rentalAsInquilino?->investigacion_paid_at ? '#F0FDF4' : '#FFFBEB' }};">
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;">
                     <div>
@@ -1094,6 +1106,7 @@
                     @endif
                 </div>
             </div>
+            @endif
 
             {{-- Tipo de garantía definida por asesor --}}
             @if($guaranteeType)
