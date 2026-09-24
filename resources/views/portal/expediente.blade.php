@@ -245,7 +245,8 @@
         <div class="apartado-copy">
             Tu asesor confirmó tu depósito de apartado el {{ $rentalAsInquilino->apartado_paid_at->format('d/m/Y') }}
             por <strong>${{ number_format($rentalAsInquilino->apartado_amount, 2) }} MXN</strong>.
-            Tu lugar para <strong>{{ $rentalAsInquilino->property?->title ?? 'el inmueble' }}</strong> queda reservado.
+            @php $propAddr = $rentalAsInquilino->property?->address; $propColony = $rentalAsInquilino->property?->colony; @endphp
+            Tu lugar para <strong>{{ $propAddr ?? 'el inmueble' }}{{ $propColony ? ', ' . $propColony : '' }}</strong> queda reservado.
         </div>
         @php $reciboApartado = $documents->get('recibo_apartado')?->sortByDesc('created_at')->first(); @endphp
         @if($reciboApartado)
@@ -255,9 +256,14 @@
     @else
     <div class="apartado-card pending">
         <div class="apartado-title">🔑 Paso 1: aparta tu inmueble</div>
+        @php
+            $propAddr = $rentalAsInquilino->property?->address;
+            $propColony = $rentalAsInquilino->property?->colony;
+            $comprobanteApartado = $documents->get('comprobante_apartado')?->sortByDesc('created_at')->first();
+        @endphp
         <div class="apartado-copy">
-            @if($rentalAsInquilino->property)
-            Estás en proceso para <strong>{{ $rentalAsInquilino->property->title }}</strong>@if($rentalAsInquilino->monthly_rent), renta de <strong>${{ number_format($rentalAsInquilino->monthly_rent, 2) }} MXN/mes</strong>@endif.
+            @if($propAddr)
+            Estás en proceso para <strong>{{ $propAddr }}{{ $propColony ? ', ' . $propColony : '' }}</strong>@if($rentalAsInquilino->monthly_rent), renta de <strong>${{ number_format($rentalAsInquilino->monthly_rent, 2) }} MXN/mes</strong>@endif.
             @endif
             Puedes seguir llenando tu información y subiendo tus documentos más abajo desde ahora — eso no se pierde.
             Pero para que tu lugar quede realmente reservado y tu proceso avance en firme, es necesario primero depositar tu apartado.
@@ -285,8 +291,18 @@
                 <div class="value">012180015109353085</div>
             </div>
         </div>
-        <div class="apartado-copy" style="margin-bottom:0;font-size:.78rem;color:var(--text-muted);">
-            Una vez que hagas tu depósito, avísale a tu asesor para que lo confirme y te genere tu recibo.
+
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #FDE68A;">
+            @if($comprobanteApartado)
+            <div class="apartado-copy" style="margin-bottom:.6rem;">
+                ✓ Recibimos tu comprobante el {{ $comprobanteApartado->created_at->format('d/m/Y') }}. Tu asesor lo va a revisar y confirmar tu apartado en breve.
+            </div>
+            @else
+            <div class="apartado-copy" style="margin-bottom:.6rem;">
+                ¿Ya hiciste tu depósito de apartado? Sube aquí tu comprobante para que tu asesor lo confirme.
+            </div>
+            @endif
+            @livewire('portal.document-uploader', ['allowedCategories' => ['comprobante_apartado'], 'rentalProcessId' => $rentalAsInquilino->id], key('paso1-comprobante-apartado'))
         </div>
     </div>
     @endif

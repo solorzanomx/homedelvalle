@@ -307,7 +307,24 @@
                     <a href="{{ route('documents.download', $recibo->id) }}" class="btn btn-sm btn-outline">📄 Ver recibo</a>
                     @endif
                 @else
-                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">Registra el apartado que pagó el arrendatario para reservar la propiedad y generar el recibo antes de iniciar la investigación.</p>
+                    @php $comprobanteApartado = $rental->documents->where('category', 'comprobante_apartado')->sortByDesc('created_at')->first(); @endphp
+                    @if($comprobanteApartado)
+                    <div style="display:flex;align-items:center;gap:.75rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;">
+                        @if(in_array($comprobanteApartado->mime_type, ['image/jpeg','image/jpg','image/png']))
+                        <a href="{{ route('documents.download', $comprobanteApartado->id) }}" target="_blank">
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($comprobanteApartado->file_path) }}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
+                        </a>
+                        @endif
+                        <div style="flex:1;">
+                            <div style="font-size:.82rem;font-weight:600;">📎 El cliente subió su comprobante de depósito</div>
+                            <div style="font-size:.72rem;color:var(--text-muted);">{{ $comprobanteApartado->created_at->format('d/m/Y H:i') }}</div>
+                        </div>
+                        <a href="{{ route('documents.download', $comprobanteApartado->id) }}" target="_blank" class="btn btn-sm btn-outline">Ver comprobante</a>
+                    </div>
+                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">Revisa el comprobante y confirma el apartado para generar el recibo antes de iniciar la investigación.</p>
+                    @else
+                    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">El cliente aún no ha subido su comprobante de depósito. Puedes registrar el apartado de todos modos si ya te confirmó el pago por otro medio.</p>
+                    @endif
                     <form method="POST" action="{{ route('rentals.apartado.store', $rental->id) }}">
                         @csrf
                         <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:flex-end;">

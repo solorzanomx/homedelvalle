@@ -74,6 +74,9 @@ class Document extends Model
         'pagare'                => 'Pagaré',
         // Cuota de investigación (requisito general, no depende de la garantía)
         'comprobante_pago_investigacion' => 'Comprobante de Pago de Investigación',
+        // Apartado — el cliente sube su comprobante de depósito desde el
+        // Portal (Paso 1); el asesor lo revisa y confirma desde el CRM.
+        'comprobante_apartado' => 'Comprobante de Depósito de Apartado',
         // Expediente del Vendedor — checklist real de la notaría (2026-07-07),
         // ver App\Support\SellerDocumentChecklist
         'documento_migratorio'   => 'Documento Migratorio',
