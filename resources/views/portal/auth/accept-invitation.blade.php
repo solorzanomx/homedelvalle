@@ -9,8 +9,16 @@
             <svg class="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <h1 class="text-xl font-bold text-gray-900 mb-2">Enlace inválido o expirado</h1>
-        <p class="text-sm text-gray-500 mb-6">Este enlace de activación ya no es válido. Puede haber expirado (duran 7 días) o ya fue usado.</p>
-        <p class="text-sm text-gray-500">Pide a tu asesor que te reenvíe el correo de bienvenida o escríbenos a
+        <p class="text-sm text-gray-500 mb-6">Este enlace de activación ya no es válido. Esto pasa cuando ya activaste tu cuenta antes (el enlace solo sirve una vez) o cuando pasaron más de 7 días desde que te lo enviamos.</p>
+
+        <p class="text-sm font-medium text-gray-700 mb-2">¿Ya activaste tu cuenta antes?</p>
+        <a href="{{ route('portal.login') }}"
+           class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm py-3 px-5 transition-all shadow-sm mb-6">
+            Ir a iniciar sesión
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+
+        <p class="text-sm text-gray-500">¿Todavía no tienes contraseña? Pide a tu asesor que te reenvíe el correo de bienvenida o escríbenos a
             <a href="mailto:contacto@homedelvalle.mx" class="text-brand-600 hover:underline">contacto@homedelvalle.mx</a>.
         </p>
     </div>

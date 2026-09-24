@@ -362,13 +362,18 @@ class PortalExpedienteController extends Controller
         $sections = [];
         $references = $references ?? collect();
 
-        // Datos personales (todos)
-        $personalFields = ['first_name','last_name_paterno','last_name_materno','birth_date','birth_state','gender','nationality','marital_status','curp','rfc'];
+        // Datos personales (todos) — curp/rfc NO van aquí: se llenan en la
+        // pestaña de Identificación, no en esta. Antes contaban para el % de
+        // "Datos personales" sin tener un campo visible ahí para llenarlos,
+        // así que un cliente que llenara TODO lo que sí ve en esta pestaña
+        // se quedaba atorado sin poder llegar a 100% (hallazgo 2026-09-24,
+        // reportado por un cliente real vía WhatsApp).
+        $personalFields = ['first_name','last_name_paterno','last_name_materno','birth_date','birth_state','gender','nationality','marital_status'];
         $personalFilled = collect($personalFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['datos'] = ['filled' => $personalFilled, 'total' => count($personalFields), 'pct' => round($personalFilled / count($personalFields) * 100)];
 
-        // Identificación (todos)
-        $idFields = ['id_type','id_number','id_expiry_month','id_expiry_year','address_street','address_colony','address_municipality','address_state','address_zip'];
+        // Identificación (todos) — incluye curp/rfc, que sí se llenan aquí.
+        $idFields = ['id_type','curp','rfc','id_number','id_expiry_month','id_expiry_year','address_street','address_colony','address_municipality','address_state','address_zip'];
         $idFilled = collect($idFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['identificacion'] = ['filled' => $idFilled, 'total' => count($idFields), 'pct' => round($idFilled / count($idFields) * 100)];
 
