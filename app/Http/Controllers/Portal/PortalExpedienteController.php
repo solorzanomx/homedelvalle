@@ -38,7 +38,7 @@ class PortalExpedienteController extends Controller
         if ($isArrendatario) {
             $rentalAsInquilino = RentalProcess::where('tenant_client_id', $client->id)
                 ->whereNotIn('status', ['cancelled'])
-                ->with(['avales', 'pagares'])
+                ->with(['avales', 'pagares', 'property'])
                 ->latest()
                 ->first();
         }

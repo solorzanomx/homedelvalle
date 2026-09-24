@@ -149,6 +149,42 @@
     padding: 1rem 1.25rem;
     margin-bottom: 1rem;
 }
+
+/* ── Paso 1: Apartado ─────────────────────────────────────── */
+.apartado-card {
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid;
+}
+.apartado-card.pending { background: #FFFBEB; border-color: #FDE68A; }
+.apartado-card.done { background: #F0FDF4; border-color: #BBF7D0; }
+.apartado-title { font-size: .95rem; font-weight: 800; margin-bottom: .35rem; display: flex; align-items: center; gap: .5rem; }
+.apartado-card.pending .apartado-title { color: #92400E; }
+.apartado-card.done .apartado-title { color: #166534; }
+.apartado-copy { font-size: .82rem; color: var(--text); line-height: 1.55; margin-bottom: .9rem; }
+.apartado-bank {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: .9rem 1.1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: .75rem;
+    margin-bottom: .75rem;
+}
+.apartado-bank-field .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted); font-weight: 700; margin-bottom: .1rem; }
+.apartado-bank-field .value { font-size: .88rem; font-weight: 700; color: var(--text); }
+.apartado-copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: .68rem;
+    color: var(--text-muted);
+    padding: .1rem .4rem;
+    cursor: pointer;
+    margin-left: .4rem;
+}
 @endsection
 
 @section('content')
@@ -193,6 +229,67 @@
 <div style="background:#ECFDF5;border:1px solid #BBF7D0;color:#166534;border-radius:var(--radius);padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem;font-weight:600;">
     ✅ {{ session('success') }}
 </div>
+@endif
+
+{{-- ══════════════════════════════════════════════════════════
+     PASO 1 (arrendatario): apartado del inmueble. No bloquea el
+     llenado del expediente — es un empujón persuasivo, no un
+     gate técnico (decisión 2026-09-24): se puede seguir llenando
+     y subiendo documentos abajo mientras tanto, pero nada "cuenta"
+     en firme hasta que el asesor confirme el depósito.
+════════════════════════════════════════════════════════════ --}}
+@if($isArrendatario && $rentalAsInquilino)
+    @if($rentalAsInquilino->apartado_paid_at)
+    <div class="apartado-card done">
+        <div class="apartado-title">✅ Apartado confirmado</div>
+        <div class="apartado-copy">
+            Tu asesor confirmó tu depósito de apartado el {{ $rentalAsInquilino->apartado_paid_at->format('d/m/Y') }}
+            por <strong>${{ number_format($rentalAsInquilino->apartado_amount, 2) }} MXN</strong>.
+            Tu lugar para <strong>{{ $rentalAsInquilino->property?->title ?? 'el inmueble' }}</strong> queda reservado.
+        </div>
+        @php $reciboApartado = $documents->get('recibo_apartado')?->sortByDesc('created_at')->first(); @endphp
+        @if($reciboApartado)
+        <a href="{{ route('portal.documents.download', $reciboApartado->id) }}" class="btn btn-sm btn-primary">📄 Descargar recibo de apartado</a>
+        @endif
+    </div>
+    @else
+    <div class="apartado-card pending">
+        <div class="apartado-title">🔑 Paso 1: aparta tu inmueble</div>
+        <div class="apartado-copy">
+            @if($rentalAsInquilino->property)
+            Estás en proceso para <strong>{{ $rentalAsInquilino->property->title }}</strong>@if($rentalAsInquilino->monthly_rent), renta de <strong>${{ number_format($rentalAsInquilino->monthly_rent, 2) }} MXN/mes</strong>@endif.
+            @endif
+            Puedes seguir llenando tu información y subiendo tus documentos más abajo desde ahora — eso no se pierde.
+            Pero para que tu lugar quede realmente reservado y tu proceso avance en firme, es necesario primero depositar tu apartado.
+            En cuanto tu asesor confirme el depósito, verás la confirmación aquí y podrás descargar tu recibo.
+        </div>
+        <div class="apartado-bank">
+            <div class="apartado-bank-field">
+                <div class="label">Banco</div>
+                <div class="value">BBVA</div>
+            </div>
+            <div class="apartado-bank-field">
+                <div class="label">Titular</div>
+                <div class="value">Ana Laura Monsiváis Flores</div>
+            </div>
+            <div class="apartado-bank-field">
+                <div class="label">Cuenta
+                    <button type="button" class="apartado-copy-btn" onclick="navigator.clipboard?.writeText('1510935308')">copiar</button>
+                </div>
+                <div class="value">1510935308</div>
+            </div>
+            <div class="apartado-bank-field">
+                <div class="label">CLABE
+                    <button type="button" class="apartado-copy-btn" onclick="navigator.clipboard?.writeText('012180015109353085')">copiar</button>
+                </div>
+                <div class="value">012180015109353085</div>
+            </div>
+        </div>
+        <div class="apartado-copy" style="margin-bottom:0;font-size:.78rem;color:var(--text-muted);">
+            Una vez que hagas tu depósito, avísale a tu asesor para que lo confirme y te genere tu recibo.
+        </div>
+    </div>
+    @endif
 @endif
 
 {{-- Tabs de sección --}}
