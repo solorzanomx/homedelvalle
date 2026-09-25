@@ -316,6 +316,7 @@ Route::middleware('auth')->group(function () {
     Route::post('rentals/{rental}/investigacion',        [RentalProcessController::class, 'storeInvestigation'])->name('rentals.investigacion.store');
     Route::patch('rentals/{rental}/investigacion/toggle',[RentalProcessController::class, 'toggleInvestigation'])->name('rentals.investigacion.toggle');
     Route::patch('documents/{document}/status', [RentalDocumentController::class, 'updateStatus'])->name('documents.update-status');
+    Route::get('revision-documentos/metricas', [\App\Http\Controllers\DocumentReviewController::class, 'metrics'])->name('documents.metrics');
     Route::get('revision-documentos', [\App\Http\Controllers\DocumentReviewController::class, 'index'])->name('documents.inbox');
     Route::post('documents/{document}/notify-rejection', [RentalDocumentController::class, 'notifyRejection'])->name('documents.notify-rejection');
     Route::post('documents/bulk-approve', [RentalDocumentController::class, 'bulkApprove'])->name('documents.bulk-approve');

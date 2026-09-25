@@ -694,7 +694,15 @@
                             <div class="form-group" style="flex:1; min-width:120px; margin:0;">
                                 <label class="form-label" style="font-size:0.72rem;">Categoria</label>
                                 <select name="category" class="form-select" required>
-                                    @foreach($documentCategories as $ck => $cl) <option value="{{ $ck }}">{{ $cl }}</option> @endforeach
+                                    @if($documentChecklist['sections'])
+                                        @foreach($documentChecklist['sections'] as $upSection)
+                                            <optgroup label="{{ $upSection['title'] }}">
+                                                @foreach($upSection['categories'] as $ck => $cl) <option value="{{ $ck }}">{{ $cl }}</option> @endforeach
+                                            </optgroup>
+                                        @endforeach
+                                    @else
+                                        @foreach($documentCategories as $ck => $cl) <option value="{{ $ck }}">{{ $cl }}</option> @endforeach
+                                    @endif
                                 </select>
                             </div>
                             <div class="form-group" style="flex:1; min-width:140px; margin:0;">
@@ -711,39 +719,46 @@
                 </div>
             </div>
 
-            @php $docsByCategory = $operation->documents->groupBy('category'); @endphp
-            @foreach($documentCategories as $catKey => $catLabel)
-                @php $catDocs = $docsByCategory->get($catKey, collect()); @endphp
-                <div style="margin-bottom:0.65rem;">
-                    <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.3rem;">
-                        @if($catDocs->where('status', 'verified')->count() > 0) <span style="color:var(--success);">&#10003;</span>
-                        @elseif($catDocs->count() > 0) <span style="color:#f59e0b;">&#9679;</span>
-                        @else <span style="color:var(--border);">&#9675;</span> @endif
-                        <span style="font-size:0.8rem; font-weight:600;">{{ $catLabel }}</span>
-                        <span style="font-size:0.7rem; color:var(--text-muted);">({{ $catDocs->count() }})</span>
+            {{-- Solo lo que aplica a ESTE tipo de operación (App\Support\OperationDocumentChecklist) --}}
+            @php
+                $opPending = $operation->documents->where('status', 'received')->count();
+            @endphp
+            @if($opPending > 0)
+            <div style="display:flex;align-items:center;gap:.75rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:.6rem .9rem;margin-bottom:.9rem;">
+                <div style="flex:1;font-size:.82rem;"><strong>{{ $opPending }}</strong> {{ $opPending === 1 ? 'documento por revisar' : 'documentos por revisar' }}</div>
+                <button type="button" class="btn btn-sm btn-primary" onclick="hdvDocViewer.openFirstPending()">Revisar pendientes →</button>
+            </div>
+            @endif
+
+            @foreach($documentChecklist['sections'] as $section)
+                @php $sectionPending = collect($section['present'])->flatMap(fn($p) => $p['docs'])->where('status', 'received')->count(); @endphp
+                <div class="card" style="margin-bottom:.9rem;"><div class="card-body" style="padding:.85rem;">
+                    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;">
+                        <span>{{ $section['icon'] }}</span>
+                        <h4 style="font-size:.86rem;font-weight:700;margin:0;flex:1;">{{ $section['title'] }}</h4>
+                        @if($sectionPending)<span class="badge badge-blue">{{ $sectionPending }} por revisar</span>@endif
                     </div>
-                    @foreach($catDocs as $doc)
-                    <div class="doc-item">
-                        <div class="doc-icon">&#128196;</div>
-                        <div class="doc-info">
-                            <div class="doc-name">{{ $doc->label }}</div>
-                            <div class="doc-meta">{{ $doc->uploader->name ?? '' }} &middot; {{ $doc->created_at->format('d/m/Y') }}</div>
-                        </div>
-                        <span class="badge badge-{{ match($doc->status) { 'verified' => 'green', 'rejected' => 'red', 'received' => 'blue', default => 'yellow' } }}">{{ $doc->status_label }}</span>
-                        <div class="doc-actions">
-                            <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" title="Descargar">&#8615;</a>
-                            @if($doc->status !== 'verified')
-                            <form method="POST" action="{{ route('documents.update-status', $doc->id) }}" style="display:inline;">@csrf @method('PATCH')<input type="hidden" name="status" value="verified"><button type="submit" class="btn btn-sm btn-outline" style="color:var(--success);">&#10003;</button></form>
-                            @endif
-                            @if($doc->status !== 'rejected')
-                            <form method="POST" action="{{ route('documents.update-status', $doc->id) }}" style="display:inline;">@csrf @method('PATCH')<input type="hidden" name="status" value="rejected"><button type="submit" class="btn btn-sm btn-outline" style="color:var(--danger);">&#10007;</button></form>
-                            @endif
-                            <form method="POST" action="{{ route('documents.destroy', $doc->id) }}" style="display:inline;" onsubmit="return confirm('Eliminar?')">@csrf @method('DELETE')<button type="submit" class="btn btn-sm btn-danger">&#128465;</button></form>
-                        </div>
-                    </div>
+                    @foreach($section['present'] as $p)
+                        @include('rentals._doc_category', ['catLabel' => $p['label'], 'catKey' => $p['key'], 'catDocs' => $p['docs']])
                     @endforeach
-                </div>
+                    @if($section['missing'])
+                    <div style="font-size:.76rem;color:var(--text-muted);border-top:1px dashed var(--border);padding-top:.5rem;margin-top:.3rem;">
+                        <span style="font-weight:600;">Sin subir:</span> {{ implode(' · ', $section['missing']) }}
+                    </div>
+                    @endif
+                </div></div>
             @endforeach
+
+            @if($documentChecklist['others']->isNotEmpty())
+                <div class="card" style="margin-bottom:.9rem;"><div class="card-body" style="padding:.85rem;">
+                    <h4 style="font-size:.86rem;font-weight:700;margin:0 0 .6rem;">📂 Otros documentos</h4>
+                    @foreach($documentChecklist['others']->groupBy('category') as $catKey => $catDocs)
+                        @include('rentals._doc_category', ['catLabel' => $documentCategories[$catKey] ?? $catKey, 'catKey' => $catKey, 'catDocs' => $catDocs])
+                    @endforeach
+                </div></div>
+            @endif
+
+            @include('rentals._doc_viewer')
         </div>
 
         {{-- TAB: Contracts --}}

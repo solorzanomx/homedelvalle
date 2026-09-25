@@ -156,7 +156,7 @@ class OperationController extends Controller
             'property.photos', 'client', 'secondaryClient', 'broker', 'user',
             'stageLogs.user',
             'checklistItems.template', 'checklistItems.completedByUser',
-            'documents.uploader', 'tasks.user',
+            'documents.uploader', 'documents.events.user', 'documents.client', 'tasks.user',
             'contracts.template', 'contracts.signer', 'contracts.clauses', 'contracts.versions', 'contracts.clauseSuggestions.clause',
             'poliza.events.user', 'commissions',
             'sourceOperation', 'spawnedOperations',
@@ -214,6 +214,7 @@ class OperationController extends Controller
 
         $progress = $this->checklistService->getStageProgress($operation);
         $documentCategories = Document::CATEGORIES;
+        $documentChecklist = \App\Support\OperationDocumentChecklist::build($operation);
         $contractTemplates = ContractTemplate::active()->get();
         $clients = $operation->type === 'venta' ? Client::orderBy('name')->get() : collect();
 
@@ -267,7 +268,7 @@ class OperationController extends Controller
                 ->first()?->signatureRequest?->completed_at?->format('Y-m-d');
         }
 
-        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'clientRentaOperations', 'providerCompanies', 'users', 'contratoOriginalFecha'));
+        return view('operations.show', compact('operation', 'timeline', 'progress', 'documentCategories', 'documentChecklist', 'contractTemplates', 'clients', 'clientOffers', 'clientDocuments', 'clientRentaOperations', 'providerCompanies', 'users', 'contratoOriginalFecha'));
     }
 
     public function edit(string $id)

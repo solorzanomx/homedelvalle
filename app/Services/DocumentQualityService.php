@@ -132,6 +132,7 @@ class DocumentQualityService
     private function block(array $result, string $message, ?string $category, ?int $clientId, bool $bypassable = true): array
     {
         if (! $bypassable) {
+            $this->logBlock($clientId, $category, $message, false);
             $result['block'] = $message;
             return $result;
         }
@@ -143,14 +144,32 @@ class DocumentQualityService
             $blocks = (int) Cache::get($key, 0);
             if ($blocks >= self::MAX_BLOCKS) {
                 Cache::forget($key);
+                $this->logBlock($clientId, $category, $message, true);
                 $result['warnings'][] = 'El cliente lo subió después de ' . self::MAX_BLOCKS . ' intentos rechazados por calidad: ' . $message;
                 return $result;
             }
             Cache::put($key, $blocks + 1, now()->addDay());
         }
 
+        $this->logBlock($clientId, $category, $message, false);
         $result['block'] = $message;
         return $result;
+    }
+
+    /** Bitácora de bloqueos para afinar umbrales con datos reales (página de métricas). */
+    private function logBlock(?int $clientId, ?string $category, string $message, bool $bypassed): void
+    {
+        try {
+            \DB::table('document_quality_blocks')->insert([
+                'client_id' => $clientId,
+                'category' => $category,
+                'reason' => mb_substr($message, 0, 300),
+                'bypassed' => $bypassed,
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            Log::info('DocumentQualityService: bitácora de bloqueo omitida', ['error' => $e->getMessage()]);
+        }
     }
 
     /** @return array{0:string,1:string} [bytes, mediaType] */

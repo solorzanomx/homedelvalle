@@ -84,24 +84,10 @@ class RentalDocumentChecklist
      */
     public static function build(RentalProcess $rental): array
     {
-        $docs = $rental->documents->sortByDesc('created_at')->values();
-        $shown = [];
-        $out = [];
-
-        foreach (self::sections($rental) as $section) {
-            $present = [];
-            $missing = [];
-            foreach ($section['categories'] as $key => $label) {
-                $catDocs = $docs->filter(fn($d) => $d->category === $key && self::belongs($d, $section, $rental))
-                    ->reject(fn($d) => isset($shown[$d->id]))->values();
-                foreach ($catDocs as $d) { $shown[$d->id] = true; }
-                $catDocs->isEmpty() ? $missing[$key] = $label : $present[] = ['key' => $key, 'label' => $label, 'docs' => $catDocs];
-            }
-            $out[] = $section + ['present' => $present, 'missing' => $missing];
-        }
-
-        $others = $docs->reject(fn($d) => isset($shown[$d->id]))->values();
-
-        return ['sections' => $out, 'others' => $others];
+        return DocumentChecklist::assemble(
+            $rental->documents,
+            self::sections($rental),
+            fn(Document $d, array $section) => self::belongs($d, $section, $rental),
+        );
     }
 }

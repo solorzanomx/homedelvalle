@@ -119,6 +119,21 @@ class DocumentUploadTest extends TestCase
         $this->assertTrue(\Illuminate\Support\Facades\Route::has('documents.bulk-approve'));
     }
 
+    public function test_every_operation_checklist_category_exists(): void
+    {
+        foreach (['venta', 'captacion', 'comprador', 'inquilino', 'renta'] as $type) {
+            $op = new \App\Models\Operation(['type' => $type]);
+            $sections = \App\Support\OperationDocumentChecklist::sections($op);
+            $this->assertNotEmpty($sections, "Sin secciones para {$type}");
+            foreach ($sections as $section) {
+                foreach (array_keys($section['categories']) as $cat) {
+                    $this->assertArrayHasKey($cat, \App\Models\Document::CATEGORIES, "{$type}: '{$cat}' no existe en Document::CATEGORIES");
+                }
+            }
+        }
+        $this->assertSame([], \App\Support\OperationDocumentChecklist::sections(new \App\Models\Operation(['type' => 'desconocido'])));
+    }
+
     public function test_tiny_image_is_blocked_and_cannot_be_bypassed(): void
     {
         $svc = new DocumentQualityService();

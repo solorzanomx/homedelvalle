@@ -25,9 +25,12 @@
         <h1 style="font-size:1.25rem;font-weight:700;margin:0;">Documentos por revisar</h1>
         <div style="font-size:.8rem;color:var(--text-muted);">Lo que subieron tus clientes y espera tu aprobación. Los más viejos primero.</div>
     </div>
-    @if($counts['all'] > 0)
-    <button type="button" class="btn btn-primary" onclick="hdvDocViewer.openFirstPending()">Revisar pendientes →</button>
-    @endif
+    <div style="display:flex;gap:.5rem;">
+        <a href="{{ route('documents.metrics') }}" class="btn btn-outline">📊 Métricas</a>
+        @if($counts['all'] > 0)
+        <button type="button" class="btn btn-primary" onclick="hdvDocViewer.openFirstPending()">Revisar pendientes →</button>
+        @endif
+    </div>
 </div>
 
 <form method="GET" class="inbox-tabs" style="align-items:center;">
