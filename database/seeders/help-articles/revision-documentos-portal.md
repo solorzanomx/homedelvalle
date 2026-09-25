@@ -2,7 +2,18 @@
 
 Los documentos que suben los clientes (Portal) y los que subes tú llegan al CRM para que los **revises y apruebes**. Esta guía cubre cómo se ve la lista, cómo revisar rápido con el visor y qué hacer cuando un documento no se lee bien.
 
-## Dónde se revisan
+## La bandeja central: Docs por revisar
+
+En el menú lateral, **Docs por revisar** (con contador azul) junta **todo lo que subieron tus clientes y aún no apruebas o rechazas**, de todos los tratos: rentas, expediente de venta y captaciones.
+
+- **Los más viejos primero**, agrupados por cliente, con un enlace directo a su renta/operación/captación.
+- Filtros: **Atrasados (+24 h)**, Rentas, Ventas y expediente, Captaciones, y buscador por cliente.
+- **Revisar pendientes →** abre el visor en el primero y va saltando al siguiente cada vez que decides.
+- Lo que apruebas o rechazas queda atenuado en la lista (no desaparece de golpe) y el contador baja.
+- **Alerta automática:** todos los días a las 9:30 recibes **un solo aviso** si tienes documentos con más de 24 h sin revisar (con los nombres y cuánto llevan esperando). Si un documento no tiene asesor asignado, el aviso va a los administradores.
+- No aparecen ahí los documentos que genera el broker (presentación, opinión de valor, recibos, contratos) ni los que subes tú.
+
+## Dónde más se revisan
 
 - **Rentas:** en la renta → pestaña **Documentos**.
 - **Ficha del cliente:** sección de documentos del expediente.

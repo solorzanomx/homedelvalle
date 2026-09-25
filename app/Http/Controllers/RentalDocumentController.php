@@ -101,6 +101,20 @@ class RentalDocumentController extends Controller
 
         $document->update($data);
 
+        // Documentos de una Captación tienen flujo propio (captacion_status +
+        // recalcular etapa del cliente). Sin esto, aprobarlos desde el visor o la
+        // bandeja central dejaría la captación en 'pendiente' (2026-09-25).
+        if ($document->captacion_id && $document->captacion_status !== null) {
+            $captaciones = app(\App\Services\CaptacionService::class);
+            if ($validated['status'] === 'verified') {
+                $captaciones->approveDocument($document);
+            } elseif ($validated['status'] === 'rejected') {
+                $captaciones->rejectDocument($document, $validated['rejection_reason'] ?? null);
+            }
+        }
+
+        \App\Support\DocumentReviewInbox::forgetCount();
+
         // El visor del CRM aprueba/rechaza sin recargar la página.
         if ($request->expectsJson()) {
             return response()->json([

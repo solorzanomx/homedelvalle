@@ -98,7 +98,11 @@ window.hdvDocViewer = (function () {
     var statusLabel = { verified: 'Verificado', rejected: 'Rechazado', received: 'Recibido', pending: 'Pendiente' };
 
     function rows() {
-        return Array.prototype.slice.call(document.querySelectorAll('#tab-documents .doc-item')).filter(function (r) { return r.dataset.kind !== 'other'; });
+        // Todas las filas de documento de la página (pestaña de la renta o bandeja central);
+        // las ocultas por un filtro no cuentan para la navegación.
+        return Array.prototype.slice.call(document.querySelectorAll('.doc-item[data-doc-id]')).filter(function (r) {
+            return r.dataset.kind !== 'other' && !r.classList.contains('doc-filtered-out');
+        });
     }
     function rowById(id) { return document.getElementById('docrow-' + id); }
     function current() { return rows()[idx]; }
@@ -194,6 +198,7 @@ window.hdvDocViewer = (function () {
             .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
             .then(function (j) {
                 paintRow(row, j.status, j.rejection_reason); changed = true;
+                document.dispatchEvent(new CustomEvent('hdv:doc-status', { detail: { id: id, status: j.status } }));
                 var opened = el('hdvViewer').classList.contains('open');
                 if (opened && fromViewer) {
                     var n = nextPending();

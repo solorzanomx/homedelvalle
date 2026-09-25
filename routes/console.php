@@ -72,6 +72,8 @@ Schedule::command('captaciones:check-exclusiva-pending')->dailyAt('09:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('captaciones:check-exclusiva-pending scheduled run failed'));
 Schedule::command('captaciones:check-valuacion-pendiente')->dailyAt('09:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('captaciones:check-valuacion-pendiente scheduled run failed'));
+Schedule::command('documents:check-pending-review')->dailyAt('09:30')
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('documents:check-pending-review scheduled run failed'));
 Schedule::job(new \App\Jobs\SendWeeklyPropertySummary)->weeklyOn(1, '08:00') // Monday 8 AM
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('SendWeeklyPropertySummary scheduled run failed'));
 Schedule::command('app:send-birthday-greetings')->dailyAt('09:00')

@@ -57,6 +57,15 @@ class DocumentUploadTest extends TestCase
         }
     }
 
+    public function test_inbox_excludes_only_real_categories_and_route_exists(): void
+    {
+        foreach (\App\Support\DocumentReviewInbox::GENERATED as $key) {
+            $this->assertArrayHasKey($key, \App\Models\Document::CATEGORIES, "GENERATED menciona '{$key}' que no existe");
+        }
+        $this->assertTrue(\Illuminate\Support\Facades\Route::has('documents.inbox'));
+        $this->assertTrue(class_exists(\App\Console\Commands\CheckDocumentsPendingReview::class));
+    }
+
     public function test_tiny_image_is_blocked_and_cannot_be_bypassed(): void
     {
         $svc = new DocumentQualityService();

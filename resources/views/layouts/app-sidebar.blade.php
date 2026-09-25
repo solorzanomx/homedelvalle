@@ -359,6 +359,15 @@
                             <span style="margin-left:auto;background:#f59e0b;color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:20px">{{ $unseenLeads > 99 ? '99+' : $unseenLeads }}</span>
                             @endif
                         </a>
+                        @if(Route::has('documents.inbox'))
+                        <a href="{{ route('documents.inbox') }}" class="nav-item {{ request()->routeIs('documents.inbox') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="clipboard-list" class="w-4 h-4" /></span> Docs por revisar
+                            @php $docsToReview = \App\Support\DocumentReviewInbox::count(); @endphp
+                            @if($docsToReview > 0)
+                            <span style="margin-left:auto;background:#3b82f6;color:#fff;font-size:0.65rem;font-weight:700;padding:0.1rem 0.4rem;border-radius:20px">{{ $docsToReview > 99 ? '99+' : $docsToReview }}</span>
+                            @endif
+                        </a>
+                        @endif
                         <a href="{{ route('clients.index') }}" class="nav-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="users" class="w-4 h-4" /></span> Clientes
                         </a>
