@@ -53,7 +53,7 @@
             display: flex;
             flex-direction: column;
             position: fixed;
-            top: 0; left: 0; bottom: 0;
+            top: var(--banner-h, 0px); left: 0; bottom: 0;
             z-index: 200;
             overflow-y: auto;
             overflow-x: hidden;
@@ -246,7 +246,7 @@
         .portal-topbar {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0;
+            top: var(--banner-h, 0px); left: 0; right: 0;
             height: 52px;
             background: var(--sidebar-bg);
             z-index: 150;
@@ -401,11 +401,11 @@
 </head>
 <body>
 @if(session('impersonating_as') && config('portal.impersonation_banner', true))
-<div style="position:sticky;top:0;z-index:9999;background:#7C3AED;color:#fff;padding:.6rem 1rem;font-size:.82rem;display:flex;align-items:center;justify-content:center;gap:.75rem;flex-wrap:wrap;">
-    <span>&#128065; Estás viendo el portal como <strong>{{ Auth::user()->name }}</strong> — vista previa de asesor.</span>
+<div id="previewBanner" style="position:sticky;top:0;z-index:9999;background:#7C3AED;color:#fff;padding:.5rem .85rem;font-size:.78rem;display:flex;align-items:center;justify-content:center;gap:.6rem;flex-wrap:wrap;line-height:1.3;">
+    <span>&#128065; Vista previa de asesor: <strong>{{ Auth::user()->name }}</strong></span>
     <form method="POST" action="{{ route('portal.preview.exit') }}" style="margin:0;">
         @csrf
-        <button type="submit" style="background:#fff;color:#7C3AED;border:none;border-radius:6px;padding:.25rem .75rem;font-size:.78rem;font-weight:700;cursor:pointer;">Salir de la vista previa</button>
+        <button type="submit" style="background:#fff;color:#7C3AED;border:none;border-radius:6px;padding:.25rem .7rem;font-size:.75rem;font-weight:700;cursor:pointer;">Salir</button>
     </form>
 </div>
 @endif
@@ -955,6 +955,17 @@
     @endauth
     @if($tenantNav ?? false)
         @include('portal._tenant_bottom_nav', ['rental' => $activeRental, 'docsBadge' => $tenantDocsBadge])
+    @endif
+    @if(session('impersonating_as') && config('portal.impersonation_banner', true))
+    <script>
+    // El aviso de vista previa es sticky y tapaba la barra superior (con el botón del menú) en el celular:
+    // se mide su altura y la barra superior / menú lateral se colocan debajo.
+    (function () {
+        var b = document.getElementById('previewBanner');
+        function sync() { document.documentElement.style.setProperty('--banner-h', (b ? b.offsetHeight : 0) + 'px'); }
+        sync(); window.addEventListener('resize', sync); window.addEventListener('load', sync);
+    })();
+    </script>
     @endif
 </body>
 </html>
