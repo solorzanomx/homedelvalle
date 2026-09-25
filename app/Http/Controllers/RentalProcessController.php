@@ -180,11 +180,12 @@ class RentalProcessController extends Controller
         $timeline = $timeline->sortByDesc('date')->values();
 
         $documentCategories = \App\Models\Document::CATEGORIES;
+        $documentChecklist = \App\Support\RentalDocumentChecklist::build($rental);
 
         $contractTemplates = ContractTemplate::active()->get();
         $providerCompanies = \App\Models\ProviderCompany::where('status', 'active')->with('contacts')->orderBy('name')->get();
 
-        return view('rentals.show', compact('rental', 'timeline', 'documentCategories', 'contractTemplates', 'providerCompanies'));
+        return view('rentals.show', compact('rental', 'timeline', 'documentCategories', 'documentChecklist', 'contractTemplates', 'providerCompanies'));
     }
 
     public function edit(string $id)

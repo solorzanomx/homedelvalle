@@ -33,6 +33,11 @@
         <div style="flex:1;min-width:0;">
             <p style="font-weight:600;font-size:.83rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $existing['label'] }}</p>
             <p style="font-size:.7rem;color:#64748b;">{{ $existing['size'] }} &middot; {{ $existing['date'] }}</p>
+            @if(!empty($existing['rejectionReason']))
+            <p style="font-size:.72rem;color:#b91c1c;margin-top:.2rem;font-weight:600;">⚠ Rechazado: {{ $existing['rejectionReason'] }}<br><span style="font-weight:400;">Elimínalo y súbelo de nuevo corregido.</span></p>
+            @elseif($existing['status'] === 'rejected')
+            <p style="font-size:.72rem;color:#b91c1c;margin-top:.2rem;font-weight:600;">⚠ Documento rechazado. Elimínalo y súbelo de nuevo.</p>
+            @endif
             @if($existing['aiStatus'])
             @php $aiColor = match($existing['aiStatus']) { 'match'=>'#10b981', 'mismatch'=>'#ef4444', 'expired'=>'#ef4444', default=>'#94a3b8' }; @endphp
             <p style="font-size:.68rem;color:{{ $aiColor }};margin-top:.15rem;" title="{{ $existing['aiNotes'] }}">
@@ -54,7 +59,7 @@
         {{-- Casilla para subir la siguiente --}}
         @if($maxSlots > 1)
         <p style="font-size:.72rem;color:#64748b;margin-bottom:.35rem;">
-            {{ count($documents) > 0 ? 'Sube el comprobante ' . (count($documents) + 1) . ' de ' . $maxSlots : 'Sube los últimos ' . $maxSlots . ' comprobantes' }}
+            {{ $remainingSlots < $maxSlots ? 'Sube el comprobante ' . ($maxSlots - $remainingSlots + 1) . ' de ' . $maxSlots : 'Sube los últimos ' . $maxSlots . ' comprobantes' }}
         </p>
         @endif
         <div style="display:flex;gap:.5rem;align-items:stretch;">
@@ -207,6 +212,11 @@
         <div style="flex:1;min-width:0;">
             <p style="font-weight:600;font-size:.83rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $doc['label'] }}</p>
             <p style="font-size:.7rem;color:#64748b;">{{ $doc['category'] }}@if($doc['size']) &middot; {{ $doc['size'] }}@endif &middot; {{ $doc['date'] }}</p>
+            @if(!empty($doc['rejectionReason']))
+            <p style="font-size:.72rem;color:#b91c1c;margin-top:.2rem;font-weight:600;">⚠ Rechazado: {{ $doc['rejectionReason'] }}<br><span style="font-weight:400;">Elimínalo y súbelo de nuevo corregido.</span></p>
+            @elseif($doc['status'] === 'rejected')
+            <p style="font-size:.72rem;color:#b91c1c;margin-top:.2rem;font-weight:600;">⚠ Documento rechazado. Elimínalo y súbelo de nuevo.</p>
+            @endif
             @if($doc['aiStatus'])
             @php $aiColor = match($doc['aiStatus']) { 'match'=>'#10b981', 'mismatch'=>'#ef4444', 'expired'=>'#ef4444', default=>'#94a3b8' }; @endphp
             <p style="font-size:.68rem;color:{{ $aiColor }};margin-top:.1rem;" title="{{ $doc['aiNotes'] }}">🤖 {{ $doc['aiStatusLabel'] }}</p>

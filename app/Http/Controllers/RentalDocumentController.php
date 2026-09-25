@@ -92,6 +92,7 @@ class RentalDocumentController extends Controller
         if ($validated['status'] === 'verified') {
             $data['verified_at'] = now();
             $data['verified_by'] = Auth::id();
+            $data['rejection_reason'] = null;
         }
 
         if ($validated['status'] === 'rejected') {
@@ -99,6 +100,16 @@ class RentalDocumentController extends Controller
         }
 
         $document->update($data);
+
+        // El visor del CRM aprueba/rechaza sin recargar la página.
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'status' => $document->status,
+                'status_label' => $document->status_label,
+                'rejection_reason' => $document->rejection_reason,
+            ]);
+        }
 
         return back()->with('success', 'Estado del documento actualizado.');
     }
@@ -120,6 +131,25 @@ class RentalDocumentController extends Controller
         }
 
         return Storage::disk('public')->download($document->file_path, $document->file_name);
+    }
+
+    /** Abre el archivo en el navegador (visor del CRM) en vez de forzar la descarga. */
+    public function preview(string $documentId)
+    {
+        $document = Document::findOrFail($documentId);
+
+        $absolute = (str_starts_with($document->file_path, '/') || str_starts_with($document->file_path, storage_path()))
+            ? $document->file_path
+            : (Storage::disk('public')->exists($document->file_path) ? Storage::disk('public')->path($document->file_path) : null);
+
+        if (! $absolute || ! file_exists($absolute)) {
+            abort(404, 'Archivo no encontrado.');
+        }
+
+        return response()->file($absolute, [
+            'Content-Type' => $document->mime_type ?: 'application/octet-stream',
+            'Content-Disposition' => 'inline; filename="' . addslashes($document->file_name ?? basename($absolute)) . '"',
+        ]);
     }
 
     public function destroy(string $documentId)

@@ -75,7 +75,10 @@ class DocumentUploader extends Component
     /** Cuántas casillas más se pueden llenar (0 = ya se llenaron todas). */
     public function remainingSlots(): int
     {
-        return max(0, $this->maxSlots - count($this->documents));
+        // Un documento rechazado no ocupa casilla: el cliente debe poder volver a subirlo.
+        $active = count(array_filter($this->documents, fn($d) => $d['status'] !== 'rejected'));
+
+        return max(0, $this->maxSlots - $active);
     }
 
     /** Categorías de identificación donde vale la pena ofrecer cámara guiada. */
@@ -133,7 +136,8 @@ class DocumentUploader extends Component
                 'statusLabel' => $d->status_label,
                 'size'        => $d->file_size ? round($d->file_size / 1024) . ' KB' : null,
                 'date'        => $d->created_at->format('d/m/Y'),
-                'canDelete'   => in_array($d->status, ['pending', 'received']),
+                'canDelete'   => in_array($d->status, ['pending', 'received', 'rejected']),
+                'rejectionReason' => $d->status === 'rejected' ? $d->rejection_reason : null,
                 'isImage'     => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png']),
                 'thumbUrl'    => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png']) && !str_starts_with($d->file_path, '/')
                                     ? \Illuminate\Support\Facades\Storage::disk('public')->url($d->file_path)
@@ -242,7 +246,7 @@ class DocumentUploader extends Component
         if (! $document || ! $client) return;
 
         $canDelete = $document->client_id === $client->id
-                  && in_array($document->status, ['pending', 'received']);
+                  && in_array($document->status, ['pending', 'received', 'rejected']);
 
         if (! $canDelete) { $this->errorMsg = 'No puedes eliminar este documento.'; return; }
 

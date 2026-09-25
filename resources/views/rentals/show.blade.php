@@ -615,8 +615,12 @@
                             <div class="form-group">
                                 <label class="form-label">Categoria</label>
                                 <select name="category" class="form-select" required>
-                                    @foreach($documentCategories as $catKey => $catLabel)
-                                        <option value="{{ $catKey }}">{{ $catLabel }}</option>
+                                    @foreach($documentChecklist['sections'] as $uploadSection)
+                                        <optgroup label="{{ $uploadSection['title'] }}">
+                                            @foreach($uploadSection['categories'] as $catKey => $catLabel)
+                                                <option value="{{ $catKey }}">{{ $catLabel }}</option>
+                                            @endforeach
+                                        </optgroup>
                                     @endforeach
                                 </select>
                             </div>
@@ -636,79 +640,56 @@
                 </div>
             </div>
 
-            {{-- Document Checklist by Category --}}
+            {{-- Documentos que aplican a ESTA renta (App\Support\RentalDocumentChecklist) --}}
             @php
-                $docsByCategory = $rental->documents->groupBy('category');
+                $reviewable = collect($documentChecklist['sections'])->flatMap(fn($s) => collect($s['present'])->flatMap(fn($p) => $p['docs']))
+                    ->concat($documentChecklist['others'])->filter(fn($d) => $d->status === 'received')->count();
             @endphp
+            @if($reviewable > 0)
+            <div style="display:flex;align-items:center;gap:.75rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:.7rem 1rem;margin-bottom:1rem;">
+                <div style="flex:1;font-size:.85rem;"><strong>{{ $reviewable }}</strong> {{ $reviewable === 1 ? 'documento por revisar' : 'documentos por revisar' }}</div>
+                <button type="button" class="btn btn-sm btn-primary" onclick="hdvDocViewer.openFirstPending()">Revisar pendientes →</button>
+            </div>
+            @endif
 
-            @foreach($documentCategories as $catKey => $catLabel)
-                @php $catDocs = $docsByCategory->get($catKey, collect()); @endphp
-                <div style="margin-bottom:0.75rem;">
-                    <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.35rem;">
-                        @if($catDocs->where('status', 'verified')->count() > 0)
-                            <span style="color:var(--success); font-size:1rem;">&#10003;</span>
-                        @elseif($catDocs->count() > 0)
-                            <span style="color:#f59e0b; font-size:1rem;">&#9679;</span>
-                        @else
-                            <span style="color:var(--border); font-size:1rem;">&#9675;</span>
+            @foreach($documentChecklist['sections'] as $section)
+                @php
+                    $sectionDocs = collect($section['present'])->flatMap(fn($p) => $p['docs']);
+                    $sectionPending = $sectionDocs->where('status', 'received')->count();
+                @endphp
+                <div class="card" style="margin-bottom:1rem;">
+                    <div class="card-body" style="padding:1rem;">
+                        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;">
+                            <span>{{ $section['icon'] }}</span>
+                            <h4 style="font-size:.9rem;font-weight:700;margin:0;flex:1;">{{ $section['title'] }}</h4>
+                            @if($sectionPending)<span class="badge badge-blue">{{ $sectionPending }} por revisar</span>@endif
+                        </div>
+
+                        @foreach($section['present'] as $p)
+                            @include('rentals._doc_category', ['catLabel' => $p['label'], 'catKey' => $p['key'], 'catDocs' => $p['docs']])
+                        @endforeach
+
+                        @if($section['missing'])
+                        <div style="font-size:.78rem;color:var(--text-muted);border-top:1px dashed var(--border);padding-top:.6rem;margin-top:.4rem;">
+                            <span style="font-weight:600;">Sin subir:</span> {{ implode(' · ', $section['missing']) }}
+                        </div>
                         @endif
-                        <span style="font-size:0.82rem; font-weight:600;">{{ $catLabel }}</span>
-                        <span style="font-size:0.72rem; color:var(--text-muted);">({{ $catDocs->count() }})</span>
                     </div>
-
-                    @foreach($catDocs as $doc)
-                    <div class="doc-item">
-                        <div class="doc-icon">&#128196;</div>
-                        <div class="doc-info">
-                            <div class="doc-name">{{ $doc->label }}</div>
-                            <div class="doc-meta">
-                                {{ $doc->file_name }} &middot; {{ $doc->file_size_formatted }}
-                                &middot; {{ $doc->uploader->name ?? '' }}
-                                &middot; {{ $doc->created_at->format('d/m/Y') }}
-                            </div>
-                        </div>
-                        <span class="badge badge-{{ match($doc->status) { 'verified' => 'green', 'rejected' => 'red', 'received' => 'blue', default => 'yellow' } }}">
-                            {{ $doc->status_label }}
-                        </span>
-                        <div class="doc-actions">
-                            <a href="{{ route('documents.download', $doc->id) }}" class="btn btn-sm btn-outline" title="Descargar">&#8615;</a>
-                            @if($catKey === 'comprobante_apartado' && ! $rental->apartado_paid_at)
-                            {{-- El "Verificar" genérico solo marca el documento como revisado, no
-                                 confirma el apartado ni genera el recibo — eso vive en la tarjeta
-                                 de Apartado en la pestaña Investigación. Mandamos ahí en vez de
-                                 dejar botones que parecen aceptar pero no hacen nada (hallazgo
-                                 2026-09-24). --}}
-                            <a href="javascript:void(0)" onclick="switchTab('investigacion')" class="btn btn-sm btn-primary" title="Confirmar apartado">Confirmar apartado →</a>
-                            @else
-                            @if($doc->status !== 'verified')
-                            <form method="POST" action="{{ route('documents.update-status', $doc->id) }}" style="display:inline;">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="status" value="verified">
-                                <button type="submit" class="btn btn-sm btn-outline" title="Verificar" style="color:var(--success);">&#10003;</button>
-                            </form>
-                            @endif
-                            @if($doc->status !== 'rejected')
-                            <form method="POST" action="{{ route('documents.update-status', $doc->id) }}" style="display:inline;">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="status" value="rejected">
-                                <button type="submit" class="btn btn-sm btn-outline" title="Rechazar" style="color:var(--danger);">&#10007;</button>
-                            </form>
-                            @endif
-                            @endif
-                            <form method="POST" action="{{ route('documents.destroy', $doc->id) }}" style="display:inline;" onsubmit="return confirm('Eliminar este documento?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">&#128465;</button>
-                            </form>
-                        </div>
-                    </div>
-                    @if($doc->status === 'rejected' && $doc->rejection_reason)
-                        <div style="margin-left:2.5rem; margin-bottom:0.5rem; font-size:0.78rem; color:var(--danger);">
-                            Razon: {{ $doc->rejection_reason }}
-                        </div>
-                    @endif
-                    @endforeach
                 </div>
             @endforeach
+
+            @if($documentChecklist['others']->isNotEmpty())
+                <div class="card" style="margin-bottom:1rem;">
+                    <div class="card-body" style="padding:1rem;">
+                        <h4 style="font-size:.9rem;font-weight:700;margin:0 0 .75rem;">📂 Otros documentos</h4>
+                        @foreach($documentChecklist['others']->groupBy('category') as $catKey => $catDocs)
+                            @include('rentals._doc_category', ['catLabel' => $documentCategories[$catKey] ?? $catKey, 'catKey' => $catKey, 'catDocs' => $catDocs])
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @include('rentals._doc_viewer')
         </div>
 
         {{-- TAB: Poliza Juridica --}}
