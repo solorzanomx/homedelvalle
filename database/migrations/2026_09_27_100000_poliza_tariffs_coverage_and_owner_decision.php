@@ -34,9 +34,17 @@ return new class extends Migration {
                 $table->decimal('percent', 6, 2)->nullable()->comment('% de la renta mensual (rangos sin tope)');
                 $table->unsignedSmallInteger('sort_order')->default(0);
                 $table->timestamps();
-                $table->index(['poliza_tariff_sheet_id', 'poliza_plan_id', 'rent_over']);
+                // Nombre explícito: el automático (poliza_rates_poliza_tariff_sheet_id_poliza_plan_id_rent_over_index) pasa de
+                // los 64 caracteres que permite MySQL.
+                $table->index(['poliza_tariff_sheet_id', 'poliza_plan_id', 'rent_over'], 'poliza_rates_lookup');
             });
         }
+        try {
+            Schema::table('poliza_rates', fn(Blueprint $t) => $t->index(['poliza_tariff_sheet_id', 'poliza_plan_id', 'rent_over'], 'poliza_rates_lookup'));
+        } catch (\Throwable $e) {
+            // ya existe (tabla creada con el índice): nada que hacer
+        }
+
         if (! Schema::hasTable('poliza_coverages')) {
             Schema::create('poliza_coverages', function (Blueprint $table) {
                 $table->id();
