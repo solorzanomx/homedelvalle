@@ -49,7 +49,12 @@ class PortalDocumentController extends Controller
         ) + ['allCategories' => Document::CATEGORIES]);
     }
 
-    public function download(string $id)
+    /**
+     * ¿El cliente autenticado puede ver este documento? Suyo (client_id) siempre. Documentos de una
+     * captación/renta SIN dueño individual (contratos, recibos): cualquiera de las partes. Los documentos
+     * PERSONALES de otra parte (INE, estados de cuenta del inquilino) NO se comparten con el propietario.
+     */
+    private function authorizedDocument(string $id): Document
     {
         $client   = $this->portalService->getClientForUser(Auth::user());
         $document = Document::findOrFail($id);
@@ -58,38 +63,39 @@ class PortalDocumentController extends Controller
         if ($client) {
             if ($document->client_id === $client->id) {
                 $hasAccess = true;
+            } elseif (! $document->client_id && $document->captacion_id) {
+                $cap = Captacion::find($document->captacion_id);
+                $hasAccess = $cap && $cap->client_id === $client->id;
+            } elseif (! $document->client_id && $document->rental_process_id) {
+                $rental = RentalProcess::find($document->rental_process_id);
+                $hasAccess = $rental && ($rental->owner_client_id === $client->id || $rental->tenant_client_id === $client->id);
             } elseif ($document->captacion_id) {
                 $cap = Captacion::find($document->captacion_id);
-                if ($cap && $cap->client_id === $client->id) {
-                    $hasAccess = true;
-                }
-            } elseif ($document->rental_process_id) {
-                $rental = RentalProcess::find($document->rental_process_id);
-                if ($rental && ($rental->owner_client_id === $client->id || $rental->tenant_client_id === $client->id)) {
-                    $hasAccess = true;
-                }
+                $hasAccess = $cap && $cap->client_id === $client->id;
             }
         }
 
-        if (!$hasAccess) {
-            abort(403, 'No tienes acceso a este documento.');
-        }
+        abort_unless($hasAccess, 403, 'No tienes acceso a este documento.');
 
-        // Los PDFs generados por el sistema (Acuerdo de Representación, Oferta de
-        // Compra, etc.) se guardan con ruta absoluta fuera del disco público
-        // — mismo fix ya aplicado en RentalDocumentController::download().
-        if (str_starts_with($document->file_path, '/') || str_starts_with($document->file_path, storage_path())) {
-            if (!file_exists($document->file_path)) {
-                return back()->with('error', 'Archivo no encontrado.');
-            }
-            return response()->download($document->file_path, $document->file_name ?? basename($document->file_path));
-        }
+        return $document;
+    }
 
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'Archivo no encontrado.');
-        }
+    public function download(string $id)
+    {
+        $document = $this->authorizedDocument($id);
+        \App\Models\DocumentEvent::logAccess($document, 'descargado desde el Portal');
 
-        return Storage::disk('public')->download($document->file_path, $document->file_name);
+        return \App\Support\SecureFiles::response($document->file_path, $document->file_name, $document->mime_type)
+            ?? back()->with('error', 'Archivo no encontrado.');
+    }
+
+    /** Vista en línea (miniaturas y visor del Portal) — mismas reglas de acceso que la descarga. */
+    public function preview(string $id)
+    {
+        $document = $this->authorizedDocument($id);
+
+        return \App\Support\SecureFiles::response($document->file_path, $document->file_name, $document->mime_type, true)
+            ?? abort(404);
     }
 
     public function upload(Request $request)
@@ -112,7 +118,7 @@ class PortalDocumentController extends Controller
             return back()->with('error', $gate['block']);
         }
 
-        $path  = $file->store('documents/client-' . $client->id, 'public');
+        $path  = \App\Support\SecureFiles::store($file, 'documents/client-' . $client->id);
         $label = !empty($validated['label']) ? $validated['label'] : $file->getClientOriginalName();
 
         $document = Document::create([

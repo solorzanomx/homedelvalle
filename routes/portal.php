@@ -50,7 +50,8 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
 
     // Documentos
     Route::get('/documentos',                [PortalDocumentController::class, 'index'])->name('documents.index');
-    Route::get('/documentos/{id}/descargar', [PortalDocumentController::class, 'download'])->name('documents.download');
+    Route::get('/documentos/{id}/descargar', [PortalDocumentController::class, 'download'])->middleware('throttle:120,1')->name('documents.download');
+    Route::get('/documentos/{id}/ver',       [PortalDocumentController::class, 'preview'])->middleware('throttle:240,1')->name('documents.preview');
     Route::post('/documentos/subir',         [PortalDocumentController::class, 'upload'])->name('documents.upload');
 
     // Rentas

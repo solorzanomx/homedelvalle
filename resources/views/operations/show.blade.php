@@ -1180,7 +1180,7 @@
                         <div style="font-weight:600;">{{ $doc->label ?? \App\Models\Document::CATEGORIES[$doc->category] ?? $doc->category }}</div>
                         <div style="color:var(--text-muted); font-size:0.72rem;">{{ $doc->created_at->format('d/m/Y') }} &middot; Operation #{{ $doc->operation_id }}</div>
                     </div>
-                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-sm btn-outline">Ver</a>
+                    <a href="{{ route('documents.preview', $doc->id) }}" target="_blank" class="btn btn-sm btn-outline">Ver</a>
                 </div>
                 @empty
                 <p style="font-size:0.78rem; color:var(--text-muted);">Sin documentos registrados todavía.</p>

@@ -139,8 +139,9 @@ class DocumentUploader extends Component
                 'canDelete'   => in_array($d->status, ['pending', 'received', 'rejected']),
                 'rejectionReason' => $d->status === 'rejected' ? $d->rejection_reason : null,
                 'isImage'     => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png']),
-                'thumbUrl'    => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png']) && !str_starts_with($d->file_path, '/')
-                                    ? \Illuminate\Support\Facades\Storage::disk('public')->url($d->file_path)
+                // Miniatura por ruta AUTORIZADA (no por URL pública del disco): los archivos son privados.
+                'thumbUrl'    => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png'])
+                                    ? route('portal.documents.preview', $d->id)
                                     : null,
                 'aiStatus'      => $d->ai_verification_status,
                 'aiStatusLabel' => $d->ai_verification_status_label,
@@ -192,7 +193,7 @@ class DocumentUploader extends Component
             return;
         }
 
-        $path  = $this->file->store('documents/client-' . $client->id, 'public');
+        $path  = \App\Support\SecureFiles::store($this->file, 'documents/client-' . $client->id);
         $label = $this->label ?: (Document::CATEGORIES[$this->category] ?? $this->file->getClientOriginalName());
 
         $captacion = Captacion::where('client_id', $client->id)->with('property')->latest()->first();
@@ -270,9 +271,7 @@ class DocumentUploader extends Component
 
         if (! $canDelete) { $this->errorMsg = 'No puedes eliminar este documento.'; return; }
 
-        if ($document->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
-        }
+        \App\Support\SecureFiles::delete($document->file_path);
 
         $document->delete();
         $this->loadDocuments();

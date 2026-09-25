@@ -24,10 +24,29 @@ class DocumentEvent extends Model
         'rejected' => 'Rechazado',
         'notified' => 'Cliente avisado',
         'reminded' => 'Recordatorio enviado',
+        'viewed' => 'Consultado',
     ];
 
     public function document() { return $this->belongsTo(Document::class); }
     public function user() { return $this->belongsTo(User::class); }
+
+    /**
+     * Bitácora de ACCESO a documentos sensibles (quién los abrió/descargó y cuándo). Sin repetir el mismo
+     * usuario+documento dentro de 10 minutos para no llenar el historial al navegar con el visor.
+     */
+    public static function logAccess(Document $document, string $how): void
+    {
+        $userId = Auth::id();
+        if (! $userId) {
+            return;
+        }
+        $key = "docaccess:{$userId}:{$document->id}";
+        if (\Illuminate\Support\Facades\Cache::has($key)) {
+            return;
+        }
+        \Illuminate\Support\Facades\Cache::put($key, 1, now()->addMinutes(10));
+        static::log($document, 'viewed', $how, $userId);
+    }
 
     /** Registra un evento; nunca debe romper el flujo principal. */
     public static function log(Document|int $document, string $type, ?string $note = null, ?int $userId = null): void

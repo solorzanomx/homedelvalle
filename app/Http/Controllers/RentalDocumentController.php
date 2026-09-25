@@ -32,7 +32,7 @@ class RentalDocumentController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('documents/rental-' . $rental->id, 'public');
+        $path = \App\Support\SecureFiles::store($file, 'documents/rental-' . $rental->id);
 
         Document::create([
             'rental_process_id' => $rental->id,
@@ -61,7 +61,7 @@ class RentalDocumentController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('documents/operation-' . $operation->id, 'public');
+        $path = \App\Support\SecureFiles::store($file, 'documents/operation-' . $operation->id);
 
         Document::create([
             'operation_id' => $operation->id,
@@ -128,19 +128,10 @@ class RentalDocumentController extends Controller
     {
         $document = Document::findOrFail($documentId);
 
-        // Presentaciones PDF se almacenan con ruta absoluta fuera del disco público
-        if (str_starts_with($document->file_path, '/') || str_starts_with($document->file_path, storage_path())) {
-            if (!file_exists($document->file_path)) {
-                return back()->with('error', 'Archivo no encontrado.');
-            }
-            return response()->download($document->file_path, $document->file_name ?? basename($document->file_path));
-        }
+        \App\Models\DocumentEvent::logAccess($document, 'descargado');
 
-        if (!Storage::disk('public')->exists($document->file_path)) {
-            return back()->with('error', 'Archivo no encontrado.');
-        }
-
-        return Storage::disk('public')->download($document->file_path, $document->file_name);
+        return \App\Support\SecureFiles::response($document->file_path, $document->file_name, $document->mime_type)
+            ?? back()->with('error', 'Archivo no encontrado.');
     }
 
     /** "Avisar ahora" por correo o WhatsApp a quien tiene documentos rechazados (todos los del cliente, en un solo mensaje). */
@@ -191,27 +182,16 @@ class RentalDocumentController extends Controller
     {
         $document = Document::findOrFail($documentId);
 
-        $absolute = (str_starts_with($document->file_path, '/') || str_starts_with($document->file_path, storage_path()))
-            ? $document->file_path
-            : (Storage::disk('public')->exists($document->file_path) ? Storage::disk('public')->path($document->file_path) : null);
+        \App\Models\DocumentEvent::logAccess($document, 'visto');
 
-        if (! $absolute || ! file_exists($absolute)) {
-            abort(404, 'Archivo no encontrado.');
-        }
-
-        return response()->file($absolute, [
-            'Content-Type' => $document->mime_type ?: 'application/octet-stream',
-            'Content-Disposition' => 'inline; filename="' . addslashes($document->file_name ?? basename($absolute)) . '"',
-        ]);
+        return \App\Support\SecureFiles::response($document->file_path, $document->file_name, $document->mime_type, true) ?? abort(404, 'Archivo no encontrado.');
     }
 
     public function destroy(string $documentId)
     {
         $document = Document::findOrFail($documentId);
 
-        if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-            Storage::disk('public')->delete($document->file_path);
-        }
+        \App\Support\SecureFiles::delete($document->file_path);
 
         $document->delete();
 

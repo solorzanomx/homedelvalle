@@ -318,7 +318,7 @@
                     <div style="display:flex;align-items:center;gap:.75rem;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem;">
                         @if(in_array($comprobanteApartado->mime_type, ['image/jpeg','image/jpg','image/png']))
                         <a href="{{ route('documents.download', $comprobanteApartado->id) }}" target="_blank">
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($comprobanteApartado->file_path) }}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
+                            <img src="{{ route('documents.preview', $comprobanteApartado->id) }}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
                         </a>
                         @endif
                         <div style="flex:1;">

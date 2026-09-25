@@ -14,6 +14,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Área | Doc | Tocar con cuidado si… |
 |---|---|---|
 | Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos |
+| Seguridad de archivos y accesos: almacenamiento privado, autorización por pertenencia, rutas del CRM solo personal | `docs/funcionalidades/seguridad-archivos.md` | tocas subidas/descargas, contratos, o agregas rutas con `auth` |
 | Garantía del inquilino: póliza (Previsión Legal, 3 planes) vs. aval + $3,500, "¿qué sigue?", contrato del proveedor / con un clic | `docs/funcionalidades/garantia-y-poliza-inquilino.md` | tocas `TenantRoadmap`, planes de póliza, `guarantee_type`, pasos del inquilino en el Portal |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
@@ -31,6 +32,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 - **Toda `Operation` nueva pasa por `OperationObserver`** (autocorrige phase/type/stage). Lee la nota antes de crear una por un camino nuevo.
 - **Propiedades públicas:** `reservada/vendida/rentada` se ven con letrero; `archived` se oculta.
 - **Cada módulo/feature nuevo entrega su artículo del Manual del Broker en la misma sesión:** `database/seeders/help-articles/{slug}.md` + migración que lo siembra (patrón de `2026_09_25_130000_seed_help_revision_documentos.php`; editar el .md después NO actualiza la BD, requiere migración de resync).
+- **SEGURIDAD de archivos:** todo archivo sensible se guarda/lee con `App\Support\SecureFiles` (disco privado), nunca en `public`; toda ruta `auth` del CRM lleva rol (`viewer`); toda ruta que sirve un archivo autoriza por pertenencia. Ver `docs/funcionalidades/seguridad-archivos.md`.
 - **Subidas de documentos:** jamás `capture=` en `<input type=file>`; todo punto de subida del Portal pasa por `DocumentQualityService` y lleva `data-hdv-assist`. **Aprobar/rechazar un documento SIEMPRE por `DocumentReviewService::apply()`.**
 
 ## 3. Deploy (se lo entregas a Alejandro; él lo corre en el servidor aaPanel, `/www/wwwroot/homedelvalle.mx`)

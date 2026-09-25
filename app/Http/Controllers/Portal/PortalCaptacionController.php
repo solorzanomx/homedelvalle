@@ -72,7 +72,7 @@ class PortalCaptacionController extends Controller
 
         $captacion = $this->captacionService->getOrCreateForClient($client);
 
-        $path     = $request->file('file')->store('captaciones/' . $captacion->id, 'public');
+        $path     = \App\Support\SecureFiles::store($request->file('file'), 'captaciones/' . $captacion->id);
         $original = $request->file('file')->getClientOriginalName();
 
         $document = Document::create([
@@ -121,7 +121,7 @@ class PortalCaptacionController extends Controller
             return back()->with('error', 'No puedes eliminar un documento ya aprobado.');
         }
 
-        Storage::disk('public')->delete($document->file_path);
+        \App\Support\SecureFiles::delete($document->file_path);
         $document->delete();
 
         return back()->with('success', 'Documento eliminado.');

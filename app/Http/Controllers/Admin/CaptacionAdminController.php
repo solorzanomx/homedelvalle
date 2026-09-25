@@ -357,7 +357,7 @@ class CaptacionAdminController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('documents/captacion-' . $captacion->id, 'public');
+        $path = \App\Support\SecureFiles::store($file, 'documents/captacion-' . $captacion->id);
 
         Document::create([
             'captacion_id'     => $captacion->id,
@@ -382,9 +382,7 @@ class CaptacionAdminController extends Controller
     {
         if ($document->captacion_id !== $captacion->id) abort(403);
 
-        if ($document->file_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($document->file_path)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($document->file_path);
-        }
+        \App\Support\SecureFiles::delete($document->file_path);
 
         $document->delete();
         $this->service->recalculateStage($captacion);

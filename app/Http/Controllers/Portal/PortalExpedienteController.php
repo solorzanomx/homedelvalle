@@ -305,7 +305,7 @@ class PortalExpedienteController extends Controller
             return back()->with('error', $gate['block']);
         }
 
-        $path  = $file->store('expediente/client-' . $client->id, 'public');
+        $path  = \App\Support\SecureFiles::store($file, 'expediente/client-' . $client->id);
 
         // property_id era fillable pero nunca se poblaba aquí — sin esto,
         // el widget de expediente en la ficha de propiedad (admin) no podía

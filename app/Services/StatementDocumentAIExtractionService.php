@@ -113,11 +113,7 @@ class StatementDocumentAIExtractionService
 
     private function readFile(string $path): ?string
     {
-        if (str_starts_with($path, '/')) {
-            return file_exists($path) ? file_get_contents($path) : null;
-        }
-
-        return Storage::disk('public')->exists($path) ? Storage::disk('public')->get($path) : null;
+        return \App\Support\SecureFiles::get($path);
     }
 
     private function callAi(string $bytes, string $mimeType, string $category): ?array

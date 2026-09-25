@@ -40,8 +40,13 @@ class ContractVersionMail extends Mailable
             return [];
         }
 
+        $abs = \App\Support\SecureFiles::locate($this->version->pdf_path);
+        if (! $abs) {
+            return [];
+        }
+
         return [
-            Attachment::fromStorageDisk('public', $this->version->pdf_path)
+            Attachment::fromPath($abs)
                 ->as(str_replace(' ', '_', $this->version->contract->title) . '-v' . $this->version->version_number . '.pdf')
                 ->withMime('application/pdf'),
         ];

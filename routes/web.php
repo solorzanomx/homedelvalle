@@ -335,8 +335,8 @@ Route::middleware(['auth', 'viewer'])->group(function () {
     Route::get('revision-documentos', [\App\Http\Controllers\DocumentReviewController::class, 'index'])->name('documents.inbox');
     Route::post('documents/{document}/notify-rejection', [RentalDocumentController::class, 'notifyRejection'])->name('documents.notify-rejection');
     Route::post('documents/bulk-approve', [RentalDocumentController::class, 'bulkApprove'])->name('documents.bulk-approve');
-    Route::get('documents/{document}/preview', [RentalDocumentController::class, 'preview'])->name('documents.preview');
-    Route::get('documents/{document}/download', [RentalDocumentController::class, 'download'])->name('documents.download');
+    Route::get('documents/{document}/preview', [RentalDocumentController::class, 'preview'])->middleware('throttle:240,1')->name('documents.preview');
+    Route::get('documents/{document}/download', [RentalDocumentController::class, 'download'])->middleware('throttle:120,1')->name('documents.download');
     Route::delete('documents/{document}', [RentalDocumentController::class, 'destroy'])->name('documents.destroy');
 
     // Poliza Juridica

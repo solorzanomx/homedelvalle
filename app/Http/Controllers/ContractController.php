@@ -175,7 +175,7 @@ class ContractController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('contracts/rental-' . $rental->id, 'public');
+        $path = \App\Support\SecureFiles::store($file, 'contracts/rental-' . $rental->id);
 
         Contract::create([
             'rental_process_id' => $rental->id,
@@ -310,7 +310,7 @@ class ContractController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('contracts/operation-' . $operation->id, 'public');
+        $path = \App\Support\SecureFiles::store($file, 'contracts/operation-' . $operation->id);
 
         Contract::create([
             'operation_id' => $operation->id,
@@ -384,10 +384,10 @@ class ContractController extends Controller
         $this->authorizeContractAccess($contract);
 
         $pdfPath = $contract->currentVersion->pdf_path ?? $contract->pdf_path;
+        $filename = str_replace(' ', '_', $contract->title) . '.pdf';
 
-        if ($pdfPath && Storage::disk('public')->exists($pdfPath)) {
-            $filename = str_replace(' ', '_', $contract->title) . '.pdf';
-            return Storage::disk('public')->download($pdfPath, $filename);
+        if ($pdfPath && \App\Support\SecureFiles::exists($pdfPath)) {
+            return \App\Support\SecureFiles::response($pdfPath, $filename, 'application/pdf');
         }
 
         // Camino legacy: generar PDF con Dompdf si hay HTML pero no archivo.
@@ -396,12 +396,8 @@ class ContractController extends Controller
             $contract->refresh();
         }
 
-        if (!$contract->pdf_path || !Storage::disk('public')->exists($contract->pdf_path)) {
-            return back()->with('error', 'Archivo no encontrado.');
-        }
-
-        $filename = str_replace(' ', '_', $contract->title) . '.pdf';
-        return Storage::disk('public')->download($contract->pdf_path, $filename);
+        return \App\Support\SecureFiles::response($contract->pdf_path, $filename, 'application/pdf')
+            ?? back()->with('error', 'Archivo no encontrado.');
     }
 
     /**
@@ -464,12 +460,9 @@ class ContractController extends Controller
     {
         $version = ContractVersion::with('contract')->where('contract_id', $contractId)->findOrFail($versionId);
 
-        if (!$version->pdf_path || !Storage::disk('public')->exists($version->pdf_path)) {
-            return back()->with('error', 'Archivo no encontrado.');
-        }
-
         $filename = str_replace(' ', '_', $version->contract->title) . '-v' . $version->version_number . '.pdf';
-        return Storage::disk('public')->download($version->pdf_path, $filename);
+
+        return \App\Support\SecureFiles::response($version->pdf_path, $filename, 'application/pdf') ?? back()->with('error', 'Archivo no encontrado.');
     }
 
     /**
@@ -481,7 +474,7 @@ class ContractController extends Controller
 
         $validated = $request->validate(['to_email' => 'required|email']);
 
-        if (!$version->pdf_path || !Storage::disk('public')->exists($version->pdf_path)) {
+        if (!\App\Support\SecureFiles::exists($version->pdf_path)) {
             return back()->with('error', 'Esta versión no tiene PDF generado.');
         }
 
@@ -526,9 +519,7 @@ class ContractController extends Controller
     {
         $contract = Contract::findOrFail($contractId);
 
-        if ($contract->pdf_path && Storage::disk('public')->exists($contract->pdf_path)) {
-            Storage::disk('public')->delete($contract->pdf_path);
-        }
+        \App\Support\SecureFiles::delete($contract->pdf_path);
 
         $contract->delete();
 

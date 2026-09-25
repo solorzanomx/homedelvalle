@@ -81,7 +81,7 @@ class ContractService
         $dompdf->render();
 
         $filename = 'contracts/contract-' . $contract->id . '-' . time() . '.pdf';
-        Storage::disk('public')->put($filename, $dompdf->output());
+        \App\Support\SecureFiles::put($filename, $dompdf->output());
 
         $contract->update(['pdf_path' => $filename]);
 
@@ -203,7 +203,7 @@ class ContractService
             ->timeout(90)
             ->savePdf($tmpPath);
 
-        Storage::disk('public')->put($filename, file_get_contents($tmpPath));
+        \App\Support\SecureFiles::put($filename, file_get_contents($tmpPath));
         @unlink($tmpPath);
 
         $version = ContractVersion::create([

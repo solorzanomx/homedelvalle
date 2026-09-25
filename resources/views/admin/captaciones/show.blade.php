@@ -353,7 +353,7 @@
                 $ext = $latest ? strtolower(pathinfo($latest->file_name, PATHINFO_EXTENSION)) : '';
                 $isImg = in_array($ext, ['jpg','jpeg','png','gif','webp']);
                 $isPdf = $ext === 'pdf';
-                $previewUrl = $latest ? asset('storage/' . $latest->file_path) : '';
+                $previewUrl = $latest ? route('documents.preview', $latest->id) : '';
                 $docTitle = $allCategories[$cat] ?? $cat;
             @endphp
             <div class="doc-row" ondragover="event.preventDefault(); this.classList.add('drag-over');" ondragleave="this.classList.remove('drag-over');" ondrop="handleDocDrop(event, this)">
@@ -450,7 +450,7 @@
                 $ext = $latest ? strtolower(pathinfo($latest->file_name, PATHINFO_EXTENSION)) : '';
                 $isImg = in_array($ext, ['jpg','jpeg','png','gif','webp']);
                 $isPdf = $ext === 'pdf';
-                $previewUrl = $latest ? asset('storage/' . $latest->file_path) : '';
+                $previewUrl = $latest ? route('documents.preview', $latest->id) : '';
                 $docTitle = $allCategories[$cat] ?? $cat;
             @endphp
             <div class="doc-row" ondragover="event.preventDefault(); this.classList.add('drag-over');" ondragleave="this.classList.remove('drag-over');" ondrop="handleDocDrop(event, this)">
