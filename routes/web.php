@@ -199,9 +199,16 @@ Route::middleware('guest')->group(function () {
     Route::post('/reset-password', [ResetPasswordController::class, 'store'])->middleware('throttle:forgot-password');
 });
 
-// Rutas autenticadas
-Route::middleware('auth')->group(function () {
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+// SEGURIDAD (2026-09-26): antes TODO este grupo exigía solo estar autenticado, así que un usuario del
+// Portal (role 'client') podía abrir /clients, /rentals, /documents/{id}/download… con solo cambiar la
+// URL — 229 rutas del CRM sin ningún rol (verificado con una simulación: HTTP 200 en /clients).
+// Ahora el CRM exige rol de personal (admin/editor/viewer/broker). Lo único que un cliente autenticado
+// necesita fuera del Portal es cerrar sesión y descargar SUS contratos (con verificación de pertenencia).
+Route::middleware('auth')->post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::middleware('auth')->get('contracts/{contract}/download', [ContractController::class, 'download'])->name('contracts.download');
+
+// Rutas autenticadas del CRM (solo personal)
+Route::middleware(['auth', 'viewer'])->group(function () {
 
     // CRUD protegido por autenticación
     // Antes del resource() para que "analytics" no choque con el wildcard {property}.
@@ -346,7 +353,6 @@ Route::middleware('auth')->group(function () {
     Route::post('rentals/{rental}/contracts/upload', [ContractController::class, 'upload'])->name('rentals.contracts.upload');
     Route::get('contracts/{contract}/edit', [ContractController::class, 'editDocument'])->name('contracts.edit-document');
     Route::get('contracts/{contract}/preview', [ContractController::class, 'preview'])->name('contracts.preview');
-    Route::get('contracts/{contract}/download', [ContractController::class, 'download'])->name('contracts.download');
     Route::post('contracts/{contract}/sign', [ContractController::class, 'sign'])->name('contracts.sign');
     Route::post('contracts/{contract}/send-signature', [ContractController::class, 'sendForSignature'])->name('contracts.send-signature');
     Route::delete('contracts/{contract}', [ContractController::class, 'destroy'])->name('contracts.destroy');

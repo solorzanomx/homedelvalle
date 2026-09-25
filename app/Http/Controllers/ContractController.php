@@ -352,11 +352,36 @@ class ContractController extends Controller
     }
 
     /**
+     * Personal del CRM: siempre. Cliente del Portal: SOLO si es parte del contrato
+     * (propietario/inquilino de la renta, o cliente de la operación). Todo lo demás → 403.
+     */
+    private function authorizeContractAccess(Contract $contract): void
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        abort_unless($user, 403);
+
+        if (in_array($user->role, ['admin', 'editor', 'viewer', 'broker'], true)) {
+            return;
+        }
+
+        $client = $user->role === 'client' ? \App\Models\Client::where('user_id', $user->id)->first() : null;
+        $partyIds = array_filter([
+            $contract->rentalProcess?->owner_client_id,
+            $contract->rentalProcess?->tenant_client_id,
+            $contract->operation?->client_id,
+            $contract->operation?->secondary_client_id,
+        ]);
+
+        abort_unless($client && in_array($client->id, $partyIds, true), 403, 'No tienes acceso a este contrato.');
+    }
+
+    /**
      * Download contract PDF.
      */
     public function download(string $contractId)
     {
-        $contract = Contract::with('currentVersion')->findOrFail($contractId);
+        $contract = Contract::with(['currentVersion', 'rentalProcess', 'operation'])->findOrFail($contractId);
+        $this->authorizeContractAccess($contract);
 
         $pdfPath = $contract->currentVersion->pdf_path ?? $contract->pdf_path;
 
