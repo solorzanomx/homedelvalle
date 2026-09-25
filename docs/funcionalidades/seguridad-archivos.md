@@ -24,8 +24,11 @@
 - **Una ruta que sirve un archivo debe autorizar por PERTENENCIA**, no solo por estar autenticado (IDOR): Portal → dueño/parte; CRM → personal.
 - **El propietario nunca ve los documentos personales del inquilino** (INE, estados de cuenta, comprobantes de ingresos): solo el resumen de la investigación.
 - **Livewire MUEVE su archivo temporal al guardarlo** (vive en el mismo disco privado): en `DocumentUploader::upload()` nombre, tamaño y tipo se leen ANTES de `SecureFiles::store()`. Leerlos después lanza `UnableToRetrieveMetadata` y la subida del cliente falla (error real de 2026-09-26, corregido).
-- **Las listas piden miniaturas** (`?thumb=1` → `SecureFiles::thumbnail`, ~240 px, caché en `storage/app/private/thumbs`), no la foto completa. El visor sí pide la original.
+- **Las listas piden miniaturas** (`?thumb=1` → `SecureFiles::thumbnail`, ~240 px, caché en `storage/framework/cache/doc-thumbs` (siempre escribible por el usuario web; si falla, se sirve la imagen original — una miniatura nunca rompe la lista)), no la foto completa. El visor sí pide la original.
 - Los archivos privados no tienen URL: si algo "ya no carga" tras migrar, casi seguro una vista sigue apuntando a `/storage/...` — cámbiala por la ruta autorizada.
+
+## Permisos en el servidor (si algo no carga o no sube)
+Los archivos y carpetas de `storage/` deben pertenecer al **usuario del servidor web** (en aaPanel suele ser `www`). Si algún comando `artisan` se corrió como `root` (p. ej. `files:secure-migrate`), pudo crear carpetas en `storage/app/private` que el usuario web no puede escribir: fallan subidas nuevas y otras operaciones. Diagnóstico: `sudo -u www php artisan files:secure-check`. Arreglo: `chown -R www:www storage && chmod -R ug+rwX storage` desde la raíz del proyecto.
 
 ## Deploy de este cambio
 1. `git pull` + comando de deploy normal (el código lee de privado **y** de público legacy, así que nada se rompe entre el deploy y la migración).

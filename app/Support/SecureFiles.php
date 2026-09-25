@@ -87,44 +87,53 @@ class SecureFiles
      */
     public static function thumbnail(?string $path, int $maxSide = 240): ?string
     {
-        $abs = self::locate($path);
-        if (! $abs || ! function_exists('imagecreatefromstring')) {
-            return null;
-        }
-
-        $info = @getimagesize($abs);
-        if (! $info || ! in_array($info[2] ?? 0, [IMAGETYPE_JPEG, IMAGETYPE_PNG], true) || ($info[0] * $info[1]) > 40_000_000) {
-            return null;
-        }
-
-        $disk = Storage::disk(self::DISK);
-        $key = 'thumbs/' . md5($path . '|' . filemtime($abs) . '|' . $maxSide) . '.jpg';
-        if ($disk->exists($key)) {
-            return $disk->path($key);
-        }
-
-        $img = @imagecreatefromstring((string) file_get_contents($abs));
-        if (! $img) {
-            return null;
-        }
-        $long = max($info[0], $info[1]);
-        if ($long > $maxSide) {
-            $scaled = imagescale($img, (int) round($info[0] * $maxSide / $long), (int) round($info[1] * $maxSide / $long));
-            if ($scaled) {
-                imagedestroy($img);
-                $img = $scaled;
+        // Una miniatura es un adorno: NUNCA debe romper la lista. Cualquier problema (sin GD, permisos, memoria)
+        // devuelve null y el controlador cae a la imagen original.
+        try {
+            $abs = self::locate($path);
+            if (! $abs || ! function_exists('imagecreatefromstring')) {
+                return null;
             }
-        }
-        ob_start();
-        imagejpeg($img, null, 72);
-        $data = (string) ob_get_clean();
-        imagedestroy($img);
-        if ($data === '') {
+
+            $info = @getimagesize($abs);
+            if (! $info || ! in_array($info[2] ?? 0, [IMAGETYPE_JPEG, IMAGETYPE_PNG], true) || ($info[0] * $info[1]) > 40_000_000) {
+                return null;
+            }
+
+            // Caché en storage/framework/cache (siempre escribible por el usuario web), no en el disco privado:
+            // así no depende de los permisos de storage/app/private. Sigue sin ser accesible por URL.
+            $dir = storage_path('framework/cache/doc-thumbs');
+            $file = $dir . '/' . md5($path . '|' . filemtime($abs) . '|' . $maxSide) . '.jpg';
+            if (is_file($file)) {
+                return $file;
+            }
+            if (! is_dir($dir) && ! @mkdir($dir, 0775, true) && ! is_dir($dir)) {
+                return null;
+            }
+
+            $img = @imagecreatefromstring((string) file_get_contents($abs));
+            if (! $img) {
+                return null;
+            }
+            $long = max($info[0], $info[1]);
+            if ($long > $maxSide) {
+                $scaled = imagescale($img, (int) round($info[0] * $maxSide / $long), (int) round($info[1] * $maxSide / $long));
+                if ($scaled) {
+                    imagedestroy($img);
+                    $img = $scaled;
+                }
+            }
+            ob_start();
+            imagejpeg($img, null, 72);
+            $data = (string) ob_get_clean();
+            imagedestroy($img);
+
+            return ($data !== '' && @file_put_contents($file, $data) !== false) ? $file : null;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('SecureFiles::thumbnail falló; se usa la imagen original', ['path' => $path, 'error' => $e->getMessage()]);
+
             return null;
         }
-        $disk->put($key, $data);
-
-        return $disk->path($key);
     }
 
     /** Respuesta con la miniatura (caché privada corta: son pequeñas y la lista las pide varias veces). */
