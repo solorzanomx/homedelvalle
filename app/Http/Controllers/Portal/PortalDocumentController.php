@@ -31,7 +31,7 @@ class PortalDocumentController extends Controller
 
         // Inquilino con renta activa: lista simple de lo que le toca subir, con estado por documento.
         if ($tenantRental = $this->portalService->activeTenantRental($client)) {
-            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $client);
+            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $client, request('open'));
 
             return view('portal.documents.tenant', [
                 'client' => $client,

@@ -13,6 +13,12 @@ El inquilino veía 5 destinos que se traslapaban (Inicio, Renta, Expediente, Doc
 - **Mis documentos** (`portal/documents/tenant.blade.php`, `TenantDocumentRows`): lista con estado por documento en lenguaje simple (**Falta / En revisión / Aprobado / Corregir** + motivo del rechazo). Tocar una fila abre **solo ese** documento (`?open=ine_frente`; filas con alternativas —domicilio luz/agua/gas, ingresos nómina/estados/CFDI— piden primero "¿cuál vas a subir?" con `?cat=`). Un solo `document-uploader` de Livewire a la vez (pantalla ligera, tarea única). La cámara guiada de INE vive en `portal/_id_camera_js.blade.php` (extraída de `expediente`, compartida).
 - **Tus datos** = `portal/expediente` para el inquilino: encabezado simple con "← Mi camino" y "N de M secciones listas" (sin el "100% completo" que contradecía al camino); el apartado confirmado es una línea discreta.
 
+## Reglas de documentos del inquilino (definidas por Alejandro, 2026-09-26)
+- **Identificación: una u otra.** Si sube **INE**, se piden **frente y vuelta** y NO se ofrece pasaporte; si sube **pasaporte**, solo la hoja de datos; si aún no sube nada, la fila es un selector ("¿Qué identificación vas a usar? INE / Pasaporte"). Lógica en `TenantDocumentRows::idMode()`.
+- **Ingresos: los ÚLTIMOS 3** (uno por mes) de un mismo tipo (nómina, estado de cuenta o CFDI de honorarios). La fila muestra el avance ("Faltan 2 de 3 · 1 de 3 subidos") y no se da por completa con menos de 3 (`TenantDocumentRows::INCOME_MONTHS`, `stateFor()`).
+- **La aprobación del asesor también exige 3:** `RentalExpedienteStatus` solo da el grupo de ingresos por completo con **3 archivos aprobados** del mismo tipo (o 1 "otro comprobante"), y el aviso "expediente completo" depende de eso. Si cambias el número, cámbialo en las DOS constantes `INCOME_MONTHS`.
+- Domicilio: una sola pieza (luz, agua o gas de los últimos 3 meses).
+
 ## INVARIANTES — no romper
 - **Un solo indicador de avance para el inquilino: los pasos del camino.** No reintroduzcas un "% completo" del expediente en su vista.
 - **"Tu siguiente paso" siempre es UNA acción** (o "esperando", con `cta_url` null). Si agregas un paso al camino, agrega su rama en `TenantRoadmap::nextAction` y su test en `TenantJourneyTest`.

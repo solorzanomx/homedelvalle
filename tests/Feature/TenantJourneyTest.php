@@ -76,4 +76,38 @@ class TenantJourneyTest extends TestCase
         $top = substr($layout, strpos($layout, 'class="portal-topbar"'), 1200);
         $this->assertLessThan(strpos($top, 'logo_path ??'), strpos($top, 'logo_path_dark'), 'el logo oscuro debe evaluarse antes que el claro');
     }
+
+    private function docs(array $specs): \Illuminate\Support\Collection
+    {
+        return collect($specs)->map(fn($s) => new \App\Models\Document(['category' => $s[0], 'status' => $s[1] ?? 'received', 'rejection_reason' => $s[2] ?? null]));
+    }
+
+    public function test_identification_is_one_or_the_other(): void
+    {
+        $rows = \App\Support\TenantDocumentRows::class;
+
+        $this->assertNull($rows::idMode($this->docs([])), 'sin nada subido: primero elige cuál usará');
+        $this->assertSame('ine', $rows::idMode($this->docs([['ine_frente']])), 'con INE subida ya no se ofrece pasaporte');
+        $this->assertSame('ine', $rows::idMode($this->docs([['ine_reverso', 'rejected']])));
+        $this->assertSame('pasaporte', $rows::idMode($this->docs([['pasaporte']])));
+        $this->assertSame('ine', $rows::idMode($this->docs([]), 'ine_frente'), 'al tocar INE en el selector se abre la carga de INE');
+        $this->assertSame('pasaporte', $rows::idMode($this->docs([]), 'pasaporte'));
+    }
+
+    public function test_income_needs_the_last_three_files_not_just_one(): void
+    {
+        $rows = \App\Support\TenantDocumentRows::class;
+
+        $this->assertSame('falta', $rows::stateFor($this->docs([]), 3)[0]);
+        [$state, $uploaded] = $rows::stateFor($this->docs([['estado_cuenta']]), 3);
+        $this->assertSame(['parcial', 1], [$state, $uploaded], 'con 1 de 3 sigue incompleto');
+        $this->assertSame('revision', $rows::stateFor($this->docs([['estado_cuenta'], ['estado_cuenta'], ['estado_cuenta']]), 3)[0]);
+        $this->assertSame('aprobado', $rows::stateFor($this->docs([['nomina', 'verified'], ['nomina', 'verified'], ['nomina', 'verified']]), 3)[0]);
+
+        [$state, , $reason] = $rows::stateFor($this->docs([['estado_cuenta', 'rejected', 'Foto de pantalla']]), 3);
+        $this->assertSame(['corregir', 'Foto de pantalla'], [$state, $reason]);
+
+        $this->assertSame(3, \App\Support\TenantDocumentRows::INCOME_MONTHS);
+        $this->assertSame(3, \App\Support\RentalExpedienteStatus::INCOME_MONTHS);
+    }
 }

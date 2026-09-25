@@ -21,6 +21,9 @@ class RentalExpedienteStatus
         'Comprobante de ingresos' => ['any_of' => [['nomina'], ['estado_cuenta'], ['cfdi_honorarios'], ['proof_of_income']]],
     ];
 
+    /** Cuántos comprobantes de ingresos (uno por mes) se aprueban para dar el grupo por completo. */
+    const INCOME_MONTHS = 3;
+
     const AVAL_REQUIRED = ['aval_ine_frente', 'aval_ine_reverso', 'aval_comprobante_domicilio', 'aval_escritura', 'aval_predial', 'aval_libertad_gravamen'];
 
     /** @return string[] lo que falta por aprobar (vacío = completo) */
@@ -32,9 +35,24 @@ class RentalExpedienteStatus
             ->where(fn($q) => $q->whereNull('client_id')->orWhere('client_id', $tenantId))
             ->pluck('category')->unique()->all();
 
+        // Comprobantes de ingresos: los ÚLTIMOS 3 (uno por mes) aprobados de un mismo tipo, no basta con uno.
+        $verifiedCounts = Document::where('rental_process_id', $rental->id)
+            ->where('status', 'verified')
+            ->where(fn($q) => $q->whereNull('client_id')->orWhere('client_id', $tenantId))
+            ->pluck('category')->countBy();
+
         $missing = [];
         foreach (self::GROUPS as $label => $rule) {
             $ok = false;
+            if ($label === 'Comprobante de ingresos') {
+                $ok = collect(['nomina', 'estado_cuenta', 'cfdi_honorarios'])->contains(fn($c) => $verifiedCounts->get($c, 0) >= self::INCOME_MONTHS)
+                    || $verifiedCounts->get('proof_of_income', 0) >= 1;
+                if (! $ok) {
+                    $best = collect(['nomina', 'estado_cuenta', 'cfdi_honorarios'])->map(fn($c) => (int) $verifiedCounts->get($c, 0))->max();
+                    $missing[] = 'Comprobante de ingresos (últimos ' . self::INCOME_MONTHS . ($best > 0 ? ", llevas {$best} aprobados" : '') . ')';
+                }
+                continue;
+            }
             foreach ($rule['any_of'] as $combo) {
                 if (! array_diff($combo, $verified)) {
                     $ok = true;

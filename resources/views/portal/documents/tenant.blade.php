@@ -21,6 +21,7 @@
 @php
     $states = [
         'falta'    => ['#f59e0b', '#fffbeb', '＋'],
+        'parcial'  => ['#f59e0b', '#fffbeb', '◔'],
         'revision' => ['#3b82f6', '#eff6ff', '⏳'],
         'aprobado' => ['#10b981', '#ecfdf5', '✓'],
         'corregir' => ['#ef4444', '#fef2f2', '!'],
@@ -57,21 +58,23 @@
     @foreach($group['rows'] as $r)
         @php
             [$c, $bg, $ico] = $states[$r['state']];
+            // Identificación sin elegir: la fila 'identificacion' se abre para escoger; ine_*/pasaporte abren su carga.
             $isOpen = $open === $r['key'];
-            $chosen = $isOpen && $r['chips'] ? collect($r['chips'])->firstWhere('cat', $openCat) : null;
+            $wantCat = $openCat ?: ($r['chosen_cat'] ?? null);   // en ingresos, si ya subió un tipo, se sigue con ese
+            $chosen = $isOpen && $r['chips'] && $wantCat ? collect($r['chips'])->firstWhere('cat', $wantCat) : null;
         @endphp
         <div class="td-row {{ $isOpen ? 'open' : '' }}" id="row-{{ $r['key'] }}">
             <div class="td-top">
                 <div class="td-dot" style="background:{{ $bg }};color:{{ $c }};border:2px solid {{ $c }};">{{ $ico }}</div>
                 <div class="td-label">
                     <b>{{ $r['label'] }}@if($r['optional']) <span style="font-weight:500;color:#94a3b8;">(opcional)</span>@endif</b>
-                    <small style="color:{{ $c }};font-weight:700;">{{ $r['state_label'] }}@if($r['uploaded'] > 0 && $r['state'] !== 'falta') · {{ $r['uploaded'] }} {{ $r['uploaded'] === 1 ? 'archivo' : 'archivos' }}@endif</small>
+                    <small style="color:{{ $c }};font-weight:700;">{{ $r['state_label'] }}@if($r['needed'] > 1 && $r['uploaded'] > 0) · {{ $r['uploaded'] }} de {{ $r['needed'] }} subidos @elseif($r['uploaded'] > 0 && $r['state'] !== 'falta') · {{ $r['uploaded'] }} {{ $r['uploaded'] === 1 ? 'archivo' : 'archivos' }}@endif</small>
                     @if($r['hint'] && ! $isOpen)<small>{{ $r['hint'] }}</small>@endif
                 </div>
                 @if(! $isOpen && $r['state'] !== 'aprobado')
                     <a class="td-btn" style="background:{{ $r['state'] === 'revision' ? '#eff6ff' : ($r['state'] === 'corregir' ? '#ef4444' : '#1D4ED8') }};color:{{ $r['state'] === 'revision' ? '#1D4ED8' : '#fff' }};"
                        href="{{ route('portal.documents.index', ['open' => $r['key']]) }}#row-{{ $r['key'] }}">
-                        {{ $r['state'] === 'corregir' ? 'Corregir' : ($r['state'] === 'revision' ? 'Ver / agregar' : 'Subir') }}
+                        {{ $r['state'] === 'corregir' ? 'Corregir' : ($r['state'] === 'revision' ? 'Ver / agregar' : ($r['state'] === 'parcial' ? 'Subir el que falta' : ($r['key'] === 'identificacion' ? 'Elegir' : 'Subir'))) }}
                     </a>
                 @endif
             </div>
@@ -83,10 +86,10 @@
                     @if($r['hint'])<p style="margin:0 0 .6rem;font-size:.78rem;color:#64748b;">{{ $r['hint'] }}</p>@endif
 
                     @if($r['chips'] && ! $chosen)
-                        <p style="margin:0 0 .5rem;font-size:.82rem;font-weight:700;color:#0f172a;">¿Cuál vas a subir?</p>
+                        <p style="margin:0 0 .5rem;font-size:.82rem;font-weight:700;color:#0f172a;">{{ $r['key'] === 'identificacion' ? '¿Qué identificación vas a usar?' : '¿Cuál vas a subir?' }}</p>
                         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
                             @foreach($r['chips'] as $chip)
-                                <a class="td-chip" href="{{ route('portal.documents.index', ['open' => $r['key'], 'cat' => $chip['cat']]) }}#row-{{ $r['key'] }}">{{ $chip['label'] }}</a>
+                                <a class="td-chip" href="{{ isset($chip['open']) ? route('portal.documents.index', ['open' => $chip['open']]) . '#row-' . $chip['open'] : route('portal.documents.index', ['open' => $r['key'], 'cat' => $chip['cat']]) . '#row-' . $r['key'] }}">{{ $chip['label'] }}</a>
                             @endforeach
                         </div>
                     @else
