@@ -87,36 +87,8 @@ class RentalDocumentController extends Controller
             'rejection_reason' => 'nullable|string|max:500',
         ]);
 
-        $data = ['status' => $validated['status']];
-
-        if ($validated['status'] === 'verified') {
-            $data['verified_at'] = now();
-            $data['verified_by'] = Auth::id();
-            $data['rejection_reason'] = null;
-            $data += ['rejected_at' => null, 'rejection_notified_at' => null, 'rejection_notified_via' => null];
-        }
-
-        if ($validated['status'] === 'rejected') {
-            $data['rejection_reason'] = $validated['rejection_reason'] ?? null;
-            // Reinicia el aviso: el scheduler juntará todos los rechazos del cliente en un solo correo.
-            $data += ['rejected_at' => now(), 'rejection_notified_at' => null, 'rejection_notified_via' => null];
-        }
-
-        $document->update($data);
-
-        // Documentos de una Captación tienen flujo propio (captacion_status +
-        // recalcular etapa del cliente). Sin esto, aprobarlos desde el visor o la
-        // bandeja central dejaría la captación en 'pendiente' (2026-09-25).
-        if ($document->captacion_id && $document->captacion_status !== null) {
-            $captaciones = app(\App\Services\CaptacionService::class);
-            if ($validated['status'] === 'verified') {
-                $captaciones->approveDocument($document);
-            } elseif ($validated['status'] === 'rejected') {
-                $captaciones->rejectDocument($document, $validated['rejection_reason'] ?? null);
-            }
-        }
-
-        \App\Support\DocumentReviewInbox::forgetCount();
+        app(\App\Services\DocumentReviewService::class)->apply($document, $validated['status'], $validated['rejection_reason'] ?? null);
+        $document->refresh();
 
         // El visor del CRM aprueba/rechaza sin recargar la página.
         // El asesor puede pedir no avisar (casilla del visor): queda a mano para WhatsApp o "avisar ahora".
@@ -202,6 +174,16 @@ class RentalDocumentController extends Controller
             'count' => $docs->count(),
             'message' => $sent ? "Correo enviado a {$client->email}." : ($client->email ? 'No se pudo enviar el correo — revisa la configuración de correo saliente.' : 'El cliente no tiene correo registrado.'),
         ], $sent ? 200 : 422);
+    }
+
+    /** Aprobar varios documentos a la vez (bandeja central). Solo aprueba; rechazar siempre es individual y con motivo. */
+    public function bulkApprove(Request $request)
+    {
+        $validated = $request->validate(['ids' => 'required|array|min:1|max:200', 'ids.*' => 'integer']);
+
+        $result = app(\App\Services\DocumentReviewService::class)->bulkApprove($validated['ids']);
+
+        return response()->json(['ok' => true] + $result);
     }
 
     /** Abre el archivo en el navegador (visor del CRM) en vez de forzar la descarga. */

@@ -71,8 +71,10 @@
             </div>
             <div><span class="badge" id="hvStatusBadge"></span></div>
             <div class="hv-ai" id="hvAi" style="display:none;"></div>
+            <div id="hvCompare" style="display:none;"></div>
             <div class="hv-ai" id="hvQuality" style="display:none;background:#fffbeb;border-color:#fde68a;color:#92400e;"></div>
             <div class="hv-ai" id="hvReasonShown" style="display:none;background:#fef2f2;border-color:#fecaca;color:#991b1b;"></div>
+            <div id="hvHistory" style="display:none;font-size:.74rem;color:#475569;"></div>
             <div class="hv-actions">
                 <div class="hv-reject-box" id="hvRejectBox">
                     <div>
@@ -140,6 +142,27 @@ window.hdvDocViewer = (function () {
         var ai = el('hvAi');
         if (d.ai) { ai.style.display = ''; ai.textContent = '🤖 Verificación automática: ' + d.ai; ai.style.color = (d.aiStatus === 'match') ? '#166534' : (d.aiStatus === 'mismatch' || d.aiStatus === 'expired') ? '#991b1b' : '#475569'; }
         else ai.style.display = 'none';
+        // Captado por el cliente vs leído en el documento
+        var cmp = el('hvCompare'), rowsC = [];
+        try { rowsC = JSON.parse(d.compare || '[]'); } catch (e) {}
+        if (rowsC.length) {
+            cmp.style.display = '';
+            cmp.innerHTML = '<div style="font-size:.72rem;font-weight:700;color:#334155;margin-bottom:.3rem;">Captado vs. documento</div>' +
+                '<table style="width:100%;font-size:.74rem;border-collapse:collapse;">' + rowsC.map(function (r) {
+                    var mark = r.ok === true ? '<span style="color:#16a34a;">✓</span>' : (r.ok === false ? '<span style="color:#dc2626;">✗</span>' : '');
+                    return '<tr style="border-top:1px solid #e2e8f0;"><td style="padding:.25rem .3rem;color:#64748b;">' + esc(r.label) + '</td><td style="padding:.25rem .3rem;">' +
+                        (r.captured ? esc(r.captured) : '<i style="color:#94a3b8;">—</i>') + '</td><td style="padding:.25rem .3rem;">' +
+                        (r.extracted ? esc(r.extracted) : '<i style="color:#94a3b8;">—</i>') + '</td><td>' + mark + '</td></tr>';
+                }).join('') + '</table><div style="font-size:.66rem;color:#94a3b8;margin-top:.2rem;">Columnas: dato · lo que capturó el cliente · lo que se lee en el documento</div>';
+        } else cmp.style.display = 'none';
+        // Historial
+        var hist = el('hvHistory'), hs = [];
+        try { hs = JSON.parse(d.history || '[]'); } catch (e) {}
+        if (hs.length) {
+            hist.style.display = '';
+            hist.innerHTML = '<div style="font-size:.72rem;font-weight:700;color:#334155;margin-bottom:.25rem;">Historial</div>' +
+                hs.map(function (h) { return '<div style="padding:.15rem 0;"><span style="color:#94a3b8;">' + esc(h[0]) + '</span> · ' + esc(h[1]) + '</div>'; }).join('');
+        } else hist.style.display = 'none';
         var ql = el('hvQuality');
         if (d.quality) { ql.style.display = ''; ql.textContent = '⚠ Calidad dudosa: ' + d.quality; } else ql.style.display = 'none';
         var rs = el('hvReasonShown');

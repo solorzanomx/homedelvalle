@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 #[ObservedBy(DocumentObserver::class)]
 class Document extends Model
 {
-    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'valuation_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by', 'ai_extracted_data', 'ai_verification_status', 'ai_verification_notes', 'quality_status', 'quality_notes', 'rejected_at', 'rejection_notified_at', 'rejection_notified_via',];
+    protected $fillable = ['rental_process_id', 'operation_id', 'client_id', 'property_id', 'captacion_id', 'valuation_id', 'uploaded_by', 'category', 'label', 'file_path', 'file_name', 'mime_type', 'file_size', 'status', 'is_captacion_required', 'captacion_status', 'rejection_reason', 'verified_at', 'verified_by', 'ai_extracted_data', 'ai_verification_status', 'ai_verification_notes', 'quality_status', 'quality_notes', 'rejected_at', 'rejection_notified_at', 'rejection_notified_via', 'rejection_reminders_sent', 'rejection_reminded_at',];
 
     const AI_VERIFICATION_STATUSES = [
         'match'      => 'Coincide',
@@ -105,10 +105,12 @@ class Document extends Model
             'verified_at' => 'datetime',
             'rejected_at' => 'datetime',
             'rejection_notified_at' => 'datetime',
+            'rejection_reminded_at' => 'datetime',
             'ai_extracted_data' => 'array',
         ];
     }
 
+    public function events() { return $this->hasMany(DocumentEvent::class)->orderBy('created_at'); }
     public function rentalProcess() { return $this->belongsTo(RentalProcess::class); }
     public function operation() { return $this->belongsTo(Operation::class); }
     public function client() { return $this->belongsTo(Client::class); }

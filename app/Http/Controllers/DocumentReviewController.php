@@ -14,7 +14,7 @@ class DocumentReviewController extends Controller
         $q = trim((string) $request->query('q', ''));
 
         $docs = DocumentReviewInbox::query()
-            ->with(['client', 'uploader', 'rentalProcess', 'operation', 'captacion'])
+            ->with(['client', 'uploader', 'rentalProcess', 'operation', 'captacion', 'events.user'])
             ->when($q !== '', fn($query) => $query->whereHas('client', fn($c) => $c->where('name', 'like', "%{$q}%")))
             ->orderBy('created_at') // los más viejos primero: son los que llevan más tiempo esperando
             ->limit(300)

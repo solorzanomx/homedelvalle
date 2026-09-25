@@ -111,6 +111,11 @@ class DocumentQualityService
     /** Guarda en el documento el resultado de la revisión (marca "Calidad dudosa"). */
     public function record(Document $document, array $gate): void
     {
+        \App\Models\DocumentEvent::log($document, 'uploaded', null, $document->uploaded_by);
+        if (! empty($gate['warnings'])) {
+            \App\Models\DocumentEvent::log($document, 'quality_warn', implode(' ', $gate['warnings']), $document->uploaded_by);
+        }
+
         if (empty($gate['warnings'])) {
             if (! empty($gate['checked'])) {
                 $document->update(['quality_status' => 'ok', 'quality_notes' => null]);

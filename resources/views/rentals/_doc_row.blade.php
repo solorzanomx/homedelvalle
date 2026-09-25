@@ -16,8 +16,13 @@
      data-reason="{{ $doc->rejection_reason }}"
      data-ai="{{ $doc->ai_verification_status ? $doc->ai_verification_status_label . ($doc->ai_verification_notes ? ' — ' . $doc->ai_verification_notes : '') : '' }}"
      data-ai-status="{{ $doc->ai_verification_status }}"
+     data-compare="{{ json_encode(\App\Support\DocumentReviewInbox::comparison($doc), JSON_UNESCAPED_UNICODE) }}"
+     data-history="{{ json_encode(\App\Support\DocumentReviewInbox::history($doc), JSON_UNESCAPED_UNICODE) }}"
      data-quality="{{ $doc->quality_status === 'warn' ? $doc->quality_notes : '' }}"
      data-meta="{{ $doc->uploader->name ?? '' }} · {{ $doc->created_at->format('d/m/Y H:i') }}">
+    @if(! empty($inbox))
+    <input type="checkbox" class="doc-select" value="{{ $doc->id }}" title="Seleccionar" style="width:18px;height:18px;flex-shrink:0;">
+    @endif
     @if($isImage)
         <img src="{{ route('documents.preview', $doc->id) }}" loading="lazy" alt="" class="doc-thumb" onclick="hdvDocViewer.open({{ $doc->id }})">
     @else

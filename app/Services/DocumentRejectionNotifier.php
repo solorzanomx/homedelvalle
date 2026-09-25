@@ -63,6 +63,100 @@ class DocumentRejectionNotifier
         return $clients;
     }
 
+    const REMINDER_EVERY_DAYS = 3;
+    const MAX_REMINDERS = 2;
+
+    /**
+     * Recordatorio amable a quien ya fue avisado y no ha vuelto a subir (cada 3
+     * días, máximo 2). Tras el 2.º, avisa al asesor para que le llame — el
+     * silencio de un cliente que ya sabe qué corregir suele ser fricción, no
+     * desinterés. @return array{reminded:int, escalated:int}
+     */
+    public function remindDue(): array
+    {
+        $cutoff = now()->subDays(self::REMINDER_EVERY_DAYS);
+
+        $docs = Document::with('client')
+            ->where('status', 'rejected')
+            ->whereIn('rejection_notified_via', ['email', 'whatsapp'])
+            ->where('rejection_reminders_sent', '<', self::MAX_REMINDERS)
+            ->where(fn($q) => $q
+                ->where(fn($a) => $a->where('rejection_reminders_sent', 0)->where('rejection_notified_at', '<=', $cutoff))
+                ->orWhere(fn($b) => $b->where('rejection_reminders_sent', '>', 0)->where('rejection_reminded_at', '<=', $cutoff)))
+            ->whereNotNull('client_id')
+            ->get()
+            ->groupBy('client_id');
+
+        $reminded = 0;
+        $escalated = 0;
+        foreach ($docs as $group) {
+            $client = $group->first()->client;
+            if (! $client) {
+                continue;
+            }
+
+            // Si ya volvió a subir esa categoría (después del rechazo), no hay nada que recordar.
+            $pending = $group->reject(fn($d) => Document::where('client_id', $client->id)
+                ->where('category', $d->category)
+                ->where('id', '!=', $d->id)
+                ->where('created_at', '>', $d->rejected_at ?? $d->updated_at)
+                ->where('status', '!=', 'rejected')
+                ->exists());
+            if ($pending->isEmpty()) {
+                continue;
+            }
+
+            $sent = false;
+            if ($client->email) {
+                try {
+                    $sent = app(EmailService::class)->send($client->email, $this->reminderSubject($pending), $this->emailHtml($client, $pending, true), $client->name);
+                } catch (\Throwable $e) {
+                    Log::warning('DocumentRejectionNotifier: falló el recordatorio', ['client_id' => $client->id, 'error' => $e->getMessage()]);
+                }
+            }
+
+            // Se cuenta el intento aunque no haya correo: así el asesor recibe la escalación en vez de esperar en silencio.
+            Document::whereIn('id', $pending->pluck('id'))->update([
+                'rejection_reminders_sent' => \DB::raw('rejection_reminders_sent + 1'),
+                'rejection_reminded_at' => now(),
+            ]);
+            foreach ($pending as $d) {
+                \App\Models\DocumentEvent::log($d, 'reminded', $sent ? 'por correo' : 'sin correo: no se pudo enviar');
+            }
+            $sent && $reminded++;
+
+            if ((int) $pending->first()->rejection_reminders_sent + 1 >= self::MAX_REMINDERS) {
+                $this->escalate($client, $pending);
+                $escalated++;
+            }
+        }
+
+        return ['reminded' => $reminded, 'escalated' => $escalated];
+    }
+
+    /** Avisa al asesor: el cliente ya recibió 2 recordatorios y sigue sin corregir. */
+    private function escalate(Client $client, Collection $docs): void
+    {
+        $userId = $client->assigned_user_id;
+        if (! $userId) {
+            return;
+        }
+        $labels = $docs->map(fn($d) => $this->label($d))->implode(', ');
+
+        \App\Models\Notification::create([
+            'user_id' => $userId,
+            'type' => 'documentos_sin_resubir',
+            'title' => 'Cliente sin corregir documentos',
+            'body' => "{$client->name} no ha vuelto a subir ({$labels}) tras el aviso y 2 recordatorios. Un mensaje o llamada personal suele destrabarlo.",
+            'data' => ['url' => route('clients.show', $client->id), 'client_id' => $client->id],
+        ]);
+    }
+
+    private function reminderSubject(Collection $docs): string
+    {
+        return $docs->count() === 1 ? 'Te recordamos: falta volver a subir un documento' : 'Te recordamos: faltan ' . $docs->count() . ' documentos por volver a subir';
+    }
+
     /** Envía el correo y marca los documentos. @return bool ¿salió el correo? */
     public function sendEmail(Client $client, Collection $docs, ?User $sender = null): bool
     {
@@ -112,11 +206,16 @@ class DocumentRejectionNotifier
     public function markSkipped(Document $doc): void
     {
         $doc->update(['rejection_notified_at' => now(), 'rejection_notified_via' => 'skipped']);
+        \App\Models\DocumentEvent::log($doc, 'notified', 'no se avisó (decisión del asesor)');
     }
 
     private function mark(Collection $docs, string $via): void
     {
         Document::whereIn('id', $docs->pluck('id'))->update(['rejection_notified_at' => now(), 'rejection_notified_via' => $via]);
+        $labels = ['email' => 'por correo', 'whatsapp' => 'por WhatsApp', 'skipped' => 'no se avisó (decisión del asesor)', 'no_email' => 'sin correo registrado', 'failed' => 'el correo no se pudo enviar'];
+        foreach ($docs as $d) {
+            \App\Models\DocumentEvent::log($d, 'notified', $labels[$via] ?? $via);
+        }
     }
 
     public function portalUrl(Client $client, Collection $docs): string
@@ -158,7 +257,7 @@ class DocumentRejectionNotifier
             . "Súbelo en tu Portal (si es de tu banco, mejor en PDF): {$url}\n\nCualquier duda, aquí estoy.";
     }
 
-    private function emailHtml(Client $client, Collection $docs): string
+    private function emailHtml(Client $client, Collection $docs, bool $reminder = false): string
     {
         $url = e($this->portalUrl($client, $docs));
         $items = $docs->map(function ($d) {
@@ -168,8 +267,11 @@ class DocumentRejectionNotifier
 
         return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#0f172a;line-height:1.5;max-width:560px;">'
             . '<p>Hola ' . e($this->firstName($client)) . ',</p>'
-            . '<p>Revisamos lo que subiste a tu Portal y necesitamos que vuelvas a subir '
-            . ($docs->count() === 1 ? 'el siguiente documento' : 'los siguientes documentos') . ':</p>'
+            . ($reminder
+                ? '<p>Solo un recordatorio amable: para avanzar con tu trámite todavía necesitamos que vuelvas a subir '
+                    . ($docs->count() === 1 ? 'este documento' : 'estos documentos') . ':</p>'
+                : '<p>Revisamos lo que subiste a tu Portal y necesitamos que vuelvas a subir '
+                    . ($docs->count() === 1 ? 'el siguiente documento' : 'los siguientes documentos') . ':</p>')
             . '<ul style="padding-left:20px;">' . $items . '</ul>'
             . '<p style="margin:24px 0;"><a href="' . $url . '" style="background:#1D4ED8;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:bold;display:inline-block;">Subir mis documentos</a></p>'
             . '<p style="background:#eff6ff;border-radius:8px;padding:12px 14px;font-size:14px;">💡 <strong>Para que se apruebe a la primera:</strong> si es de tu banco o de un proveedor, descárgalo en <strong>PDF</strong>. Si es foto, que sea plana, con buena luz y completa. Evita fotografiar la pantalla del celular.</p>'

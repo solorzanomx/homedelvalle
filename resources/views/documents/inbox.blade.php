@@ -39,6 +39,17 @@
     <input type="search" name="q" value="{{ $q }}" placeholder="Buscar cliente…" class="form-input" style="max-width:220px;margin-left:auto;">
 </form>
 
+@if($groups->isNotEmpty())
+<div id="bulkBar" class="card" style="position:sticky;top:0;z-index:30;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,.06);">
+    <div class="card-body" style="padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:.4rem;font-size:.82rem;cursor:pointer;"><input type="checkbox" id="selAll" style="width:16px;height:16px;"> Seleccionar todos</label>
+        <button type="button" class="btn btn-sm btn-outline" id="btnSelAi" title="Selecciona los que la verificación automática marcó como coincide y no tienen aviso de calidad">🤖 Seleccionar los que coinciden</button>
+        <span id="bulkCount" style="font-size:.8rem;color:var(--text-muted);">0 seleccionados</span>
+        <button type="button" class="btn btn-sm btn-primary" id="btnBulk" disabled style="margin-left:auto;">✓ Aprobar seleccionados</button>
+    </div>
+</div>
+@endif
+
 @if($groups->isEmpty())
     <div class="card"><div class="card-body" style="text-align:center;padding:2.5rem 1rem;">
         <div style="font-size:2rem;">✅</div>
@@ -72,6 +83,48 @@
 <script>
 // Al aprobar/rechazar en el visor la fila queda atenuada (no desaparece de golpe,
 // para no descolocar la navegación) y baja el contador.
+// ── Aprobación en bloque ────────────────────────────────────────────────────
+(function () {
+    var csrf = '{{ csrf_token() }}';
+    function boxes() { return Array.prototype.slice.call(document.querySelectorAll('.doc-select')).filter(function (b) { var r = b.closest('.doc-item'); return r && !r.classList.contains('doc-resolved'); }); }
+    function selected() { return boxes().filter(function (b) { return b.checked; }); }
+    function refresh() {
+        var n = selected().length;
+        document.getElementById('bulkCount').textContent = n + (n === 1 ? ' seleccionado' : ' seleccionados');
+        var btn = document.getElementById('btnBulk'); btn.disabled = n === 0;
+        btn.textContent = n ? '✓ Aprobar ' + n + (n === 1 ? ' documento' : ' documentos') : '✓ Aprobar seleccionados';
+    }
+    var all = document.getElementById('selAll'); if (!all) return;
+    all.addEventListener('change', function () { boxes().forEach(function (b) { b.checked = all.checked; }); refresh(); });
+    document.addEventListener('change', function (e) { if (e.target.classList && e.target.classList.contains('doc-select')) refresh(); });
+    document.getElementById('btnSelAi').addEventListener('click', function () {
+        boxes().forEach(function (b) { var r = b.closest('.doc-item'); b.checked = r.dataset.aiStatus === 'match' && !r.dataset.quality; });
+        refresh();
+    });
+    document.getElementById('btnBulk').addEventListener('click', function () {
+        var ids = selected().map(function (b) { return parseInt(b.value, 10); });
+        if (!ids.length || !confirm('¿Aprobar ' + ids.length + ' documento(s)? Asegúrate de haberlos revisado (puedes abrirlos con 👁 Ver).')) return;
+        var btn = this; btn.disabled = true; btn.textContent = 'Aprobando…';
+        var body = new FormData(); ids.forEach(function (id) { body.append('ids[]', id); });
+        fetch("{{ route('documents.bulk-approve') }}", { method: 'POST', body: body, headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } })
+            .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+            .then(function (j) {
+                ids.forEach(function (id) {
+                    if (j.skipped && j.skipped[id]) return;
+                    var row = document.getElementById('docrow-' + id); if (!row) return;
+                    row.classList.add('doc-resolved'); row.dataset.status = 'verified';
+                    var b = row.querySelector('.doc-badge'); if (b) { b.className = 'badge badge-green doc-badge'; b.textContent = 'Verificado'; }
+                    var cb = row.querySelector('.doc-select'); if (cb) { cb.checked = false; cb.disabled = true; }
+                });
+                var skipped = Object.keys(j.skipped || {});
+                alert(j.approved + ' documento(s) aprobados.' + (skipped.length ? '\n' + skipped.length + ' se omitieron: ' + Object.values(j.skipped).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('; ') + '.' : ''));
+                all.checked = false; refresh();
+            })
+            .catch(function () { alert('No se pudo aprobar en bloque. Intenta de nuevo.'); btn.disabled = false; refresh(); });
+    });
+    refresh();
+})();
+
 document.addEventListener('hdv:doc-status', function (e) {
     var row = document.getElementById('docrow-' + e.detail.id);
     if (row && e.detail.status !== 'received') { row.classList.add('doc-resolved'); }

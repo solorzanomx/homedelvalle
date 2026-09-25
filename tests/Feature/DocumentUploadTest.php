@@ -83,6 +83,42 @@ class DocumentUploadTest extends TestCase
         $this->assertTrue(\Illuminate\Support\Facades\Route::has('documents.notify-rejection'));
     }
 
+    public function test_statement_validation_checks_holder_and_period_by_content(): void
+    {
+        $svc = new \App\Services\StatementDocumentAIExtractionService();
+        $client = new \App\Models\Client(['name' => 'Carlos Sánchez Fernández']);
+        $recent = now()->subDays(10)->toDateString();
+
+        [$ok] = $svc->evaluate(['legible' => true, 'tipo_correcto' => true, 'titular' => 'SANCHEZ FERNANDEZ CARLOS', 'periodo_fin' => $recent], 'estado_cuenta', $client);
+        $this->assertSame('match', $ok);
+
+        [$other] = $svc->evaluate(['legible' => true, 'tipo_correcto' => true, 'titular' => 'MARIA LOPEZ RUIZ', 'periodo_fin' => $recent], 'estado_cuenta', $client);
+        $this->assertSame('mismatch', $other);
+
+        [$old] = $svc->evaluate(['legible' => true, 'tipo_correcto' => true, 'titular' => 'Carlos Sánchez', 'periodo_fin' => now()->subMonths(8)->toDateString()], 'nomina', $client);
+        $this->assertSame('expired', $old);
+
+        [$wrong] = $svc->evaluate(['legible' => true, 'tipo_correcto' => false], 'estado_cuenta', $client);
+        $this->assertSame('mismatch', $wrong);
+
+        [$blur] = $svc->evaluate(['legible' => false], 'estado_cuenta', $client);
+        $this->assertSame('unreadable', $blur);
+    }
+
+    public function test_expediente_groups_accept_alternatives(): void
+    {
+        $groups = \App\Support\RentalExpedienteStatus::GROUPS;
+        $this->assertArrayHasKey('Identificación', $groups);
+        foreach ($groups as $rule) {
+            foreach ($rule['any_of'] as $combo) {
+                foreach ($combo as $cat) {
+                    $this->assertArrayHasKey($cat, \App\Models\Document::CATEGORIES);
+                }
+            }
+        }
+        $this->assertTrue(\Illuminate\Support\Facades\Route::has('documents.bulk-approve'));
+    }
+
     public function test_tiny_image_is_blocked_and_cannot_be_bypassed(): void
     {
         $svc = new DocumentQualityService();

@@ -78,4 +78,73 @@ class DocumentReviewInbox
             ?? $d->operation?->broker_id
             ?? $d->operation?->user_id;
     }
+
+    /**
+     * Lo que capturó el cliente vs lo que la IA leyó en el documento, para
+     * decidir sin cambiar de pantalla. Vacío si el documento no se leyó.
+     *
+     * @return array<int, array{label:string, captured:?string, extracted:?string, ok:?bool}>
+     */
+    public static function comparison(Document $d): array
+    {
+        $ai = $d->ai_extracted_data;
+        $c = $d->client;
+        if (! is_array($ai) || empty($ai['legible']) || ! $c) {
+            return [];
+        }
+
+        $rows = [];
+        $add = function (string $label, ?string $captured, ?string $extracted, ?bool $ok) use (&$rows) {
+            if ($captured || $extracted) {
+                $rows[] = ['label' => $label, 'captured' => $captured ?: null, 'extracted' => $extracted ?: null, 'ok' => $ok];
+            }
+        };
+
+        if (DocumentUploadGuide::kind($d->category) === DocumentUploadGuide::KIND_ID) {
+            $add('Nombre', $c->name, $ai['nombre_completo'] ?? null, self::similar($c->name, $ai['nombre_completo'] ?? null));
+            $add('CURP', $c->curp, $ai['curp'] ?? null, ($c->curp && ! empty($ai['curp'])) ? strtoupper(trim($c->curp)) === strtoupper(trim($ai['curp'])) : null);
+            $vig = ! empty($ai['vigencia_mes']) ? sprintf('%02d/%s', $ai['vigencia_mes'], $ai['vigencia_anio'] ?? '') : null;
+            $mine = $c->id_expiry_month ? sprintf('%02d/%s', $c->id_expiry_month, $c->id_expiry_year) : null;
+            $add('Vigencia', $mine, $vig, ($mine && $vig) ? $mine === $vig : null);
+        } elseif (isset($ai['calle_numero']) || isset($ai['codigo_postal'])) {
+            $mine = trim(implode(', ', array_filter([$c->address_street, $c->address_colony, $c->address_zip])));
+            $doc = trim(implode(', ', array_filter([$ai['calle_numero'] ?? null, $ai['colonia'] ?? null, $ai['codigo_postal'] ?? null])));
+            $zipOk = ($c->address_zip && ! empty($ai['codigo_postal'])) ? $c->address_zip === $ai['codigo_postal'] : null;
+            $add('Domicilio', $mine, $doc, $zipOk);
+            $add('Fecha del recibo', null, $ai['fecha_recibo'] ?? null, null);
+        } elseif (isset($ai['titular'])) {
+            $add('Titular', $c->name, $ai['titular'] ?? null, self::similar($c->name, $ai['titular'] ?? null));
+            $add('Institución / empresa', null, $ai['institucion'] ?? null, null);
+            $add('Ingreso neto (nómina)', $c->income_amount ? number_format((float) $c->income_amount, 2) : null, $ai['ingreso_neto'] ?? null, null);
+            $per = trim(($ai['periodo_inicio'] ?? '') . ' → ' . ($ai['periodo_fin'] ?? ''), ' →');
+            $add('Periodo', null, $per ?: null, null);
+        }
+
+        return $rows;
+    }
+
+    /** Historial del documento listo para el visor: [['d/m H:i', 'texto'], ...]. */
+    public static function history(Document $d): array
+    {
+        return $d->events->map(function ($e) {
+            $who = $e->user?->name;
+            $text = (\App\Models\DocumentEvent::LABELS[$e->type] ?? $e->type)
+                . ($e->note ? ': ' . $e->note : '')
+                . ($who && in_array($e->type, ['verified', 'rejected'], true) ? " ({$who})" : '');
+            return [$e->created_at->format('d/m H:i'), $text];
+        })->values()->all();
+    }
+
+    /** ¿Los dos nombres se parecen lo bastante (tokens, sin acentos)? null si falta alguno. */
+    public static function similar(?string $a, ?string $b): ?bool
+    {
+        $norm = fn($s) => array_filter(explode(' ', preg_replace('/[^a-z ]/', '', strtolower(\Illuminate\Support\Str::ascii((string) $s)))));
+        $x = $norm($a);
+        $y = $norm($b);
+        if (! $x || ! $y) {
+            return null;
+        }
+
+        return count(array_intersect($x, $y)) / min(count($x), count($y)) >= 0.6;
+    }
 }

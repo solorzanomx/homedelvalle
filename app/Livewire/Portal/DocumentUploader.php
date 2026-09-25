@@ -242,6 +242,12 @@ class DocumentUploader extends Component
             }
         }
 
+        // Estados de cuenta y nóminas: se valida por contenido (titular, periodo reciente, tipo correcto).
+        if (app(\App\Services\StatementDocumentAIExtractionService::class)->shouldExtract($document)) {
+            app(\App\Services\StatementDocumentAIExtractionService::class)->extract($document, $client);
+            $document->refresh();
+        }
+
         $this->reset(['file', 'label']);
         if (! $this->isSingleSlot()) {
             $this->category = '';

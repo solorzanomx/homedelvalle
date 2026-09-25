@@ -118,7 +118,7 @@ class RentalProcessController extends Controller
     {
         $rental = RentalProcess::with([
             'property', 'ownerClient', 'tenantClient', 'broker', 'user',
-            'documents.uploader', 'stageLogs.user', 'tasks.user',
+            'documents.uploader', 'documents.events.user', 'documents.client', 'stageLogs.user', 'tasks.user',
             'poliza.events.user', 'contracts.template', 'contracts.signer',
             'investigation.tenantClient',
         ])->findOrFail($id);

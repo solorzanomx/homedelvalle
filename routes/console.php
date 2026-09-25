@@ -74,6 +74,8 @@ Schedule::command('captaciones:check-valuacion-pendiente')->dailyAt('09:00')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('captaciones:check-valuacion-pendiente scheduled run failed'));
 Schedule::command('documents:notify-rejections')->everyFiveMinutes()->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('documents:notify-rejections scheduled run failed'));
+Schedule::command('documents:remind-reupload')->dailyAt('10:30')
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('documents:remind-reupload scheduled run failed'));
 Schedule::command('documents:check-pending-review')->dailyAt('09:30')
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('documents:check-pending-review scheduled run failed'));
 Schedule::job(new \App\Jobs\SendWeeklyPropertySummary)->weeklyOn(1, '08:00') // Monday 8 AM
