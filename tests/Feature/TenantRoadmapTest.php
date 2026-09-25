@@ -30,6 +30,15 @@ class TenantRoadmapTest extends TestCase
         $this->assertSame(3500, TenantRoadmap::INVESTIGATION_FEE);
     }
 
+    public function test_website_plan_scope_and_price_visibility_flags_exist(): void
+    {
+        $plan = new PolizaPlan(['price' => 6000, 'show_on_website' => true]);
+        // Las tarifas varían por estado: por defecto NO se publican en el sitio hasta que alguien lo active.
+        $this->assertFalse((bool) $plan->show_price_public);
+        $this->assertTrue($plan->show_on_website);
+        $this->assertContains('show_price_public', $plan->getFillable());
+    }
+
     public function test_plan_price_formatting_and_routes(): void
     {
         $this->assertSame('$6,000 MXN', (new PolizaPlan(['price' => 6000, 'currency' => 'MXN']))->price_formatted);

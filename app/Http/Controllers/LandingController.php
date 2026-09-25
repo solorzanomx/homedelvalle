@@ -182,6 +182,14 @@ class LandingController extends Controller
         ]);
     }
 
+    /** Los esquemas de póliza jurídica (Previsión Legal), leídos del catálogo editable del CRM. */
+    public function polizasJuridicas(Request $request)
+    {
+        return view('public.polizas-juridicas', [
+            'plans' => \App\Models\PolizaPlan::forWebsite()->get(),
+        ]);
+    }
+
     /**
      * Show the rental owner landing page.
      */

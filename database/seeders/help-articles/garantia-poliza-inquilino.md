@@ -17,6 +17,10 @@ Al entrar al Portal, si aún no lo definió, el inquilino contesta una pregunta:
 
 Los esquemas son **Básica, Superior e Integral**. Son un **catálogo que tú editas** en **Rentas → Planes de póliza** (solo administradores): nombre, precio, etiqueta ("La más común"), qué incluye (una línea por concepto) y si está activo. **El Portal solo muestra los planes activos y con precio**: hoy Superior ($6,000) está listo; Básica e Integral aparecen como "Falta precio" hasta que les pongas el suyo. Si Previsión Legal cambia precios o coberturas, lo cambias ahí, sin programar. *(Sus precios varían por estado.)*
 
+**Qué incluye cada plan** (según Previsión Legal; cada plan suma al anterior): **Básica** — investigación legal y laboral del inquilino, contrato a la medida, asesoría jurídica, firma digital e intervención extrajudicial. **Superior** — suma investigación crediticia, cobranza extrajudicial y abogado a la firma del convenio. **Integral** — suma investigación laboral del fiador, abogado en la firma del contrato, los procesos judiciales (adeudo, abandono, vencimiento, extinción de dominio), cobranza judicial o ejecución de pagarés, honorarios y gastos de juicio y desalojo.
+
+**En el sitio web:** los tres planes con su cobertura se publican en **/rentar/polizas-juridicas**, leídos de este mismo catálogo. Cada plan tiene dos casillas: **Mostrar en el sitio web** y **Mostrar el precio en el sitio web** (apagada por defecto, porque las tarifas cambian por estado: enciéndela cuando tengas las tarifas confirmadas; mientras tanto el sitio dice "Tarifa según el estado del inmueble — te la cotizamos").
+
 ## Con póliza: qué te toca
 
 1. El inquilino **elige un plan** en su Portal → te llega un aviso y se abre el registro de póliza (estado *Pendiente*).

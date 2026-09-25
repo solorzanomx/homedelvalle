@@ -96,7 +96,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             @foreach([
                 ['key','Inventario fuera de portales','Trabajamos con propietarios que prefieren publicar discretamente. Una parte del inventario sólo se ofrece a través de nosotros.'],
-                ['shield-check','Pólizas jurídicas claras','Si optas por póliza, te explicamos qué cubre, qué cuesta y cuál es la cobertura. Trabajamos sólo con afianzadoras autorizadas y reconocidas.'],
+                ['shield-check','Pólizas jurídicas claras','Si optas por póliza, te explicamos qué cubre cada plan y cuánto cuesta. Trabajamos con Previsión Legal, especialista en pólizas jurídicas de arrendamiento.'],
                 ['heart','Pet-friendly cuando aplica','Tenemos propietarios que aceptan mascotas. Te matcheamos sólo con inmuebles donde tu mascota es bienvenida desde el día uno.'],
                 ['handshake','Sin "comisión por hablar"','No cobramos al inquilino por buscar ni por mostrar. Nuestra remuneración la cubre el propietario al cierre.'],
             ] as [$icon,$title,$desc])
@@ -111,6 +111,11 @@
             </div>
             @endforeach
         </div>
+        <p class="mt-8 text-center">
+            <a href="{{ route('landing.rentar.polizas') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:text-brand-700">
+                Conoce los tres planes de póliza jurídica <x-icon name="arrow-right" class="w-4 h-4" />
+            </a>
+        </p>
     </div>
 </section>
 
@@ -125,8 +130,8 @@
         <div class="space-y-4">
             @foreach([
                 ['¿Cuánto cobran al inquilino?','Cero. La búsqueda y asesoría son gratuitas para ti. Nuestra comisión la paga el propietario al firmar contrato.'],
-                ['¿Qué necesito para rentar?','Generalmente: identificación oficial, comprobante de ingresos (3 últimos meses) o aval con propiedad, comprobante de domicilio actual y RFC. Si vas con póliza jurídica, los requisitos los marca la afianzadora.'],
-                ['¿Qué es una póliza jurídica y por qué la pedirían?','Es un instrumento que reemplaza al fiador tradicional. Una afianzadora cubre al propietario en caso de incumplimiento. Para ti como inquilino, suele ser más rápido de tramitar que conseguir un aval con propiedad.'],
+                ['¿Qué necesito para rentar?','Generalmente: identificación oficial, comprobante de ingresos (3 últimos meses) o aval con propiedad, comprobante de domicilio actual y RFC. Si vas con póliza jurídica, los requisitos los marca Previsión Legal.'],
+                ['¿Qué es una póliza jurídica y por qué la pedirían?','Es un servicio jurídico que reemplaza al aval con propiedad: investigan al inquilino, elaboran el contrato y respaldan legalmente al propietario en caso de incumplimiento (según el plan, incluso con cobranza y juicio). Si no tienes un aval con propiedad en CDMX, es el camino. Trabajamos con Previsión Legal y tienes tres planes para elegir: los encuentras en nuestra página de pólizas jurídicas.'],
                 ['¿Aceptan inquilinos con mascotas?','Sí, dentro del inventario que las acepta. Cuando llenas tu brief y marcas que tienes mascota, sólo te enviamos opciones donde se permiten.'],
                 ['¿Puedo cambiar mi brief después?','Sí, en cualquier momento. Si después de la primera curaduría quieres ajustar zona, presupuesto o plazo, lo actualizamos y volvemos a buscar.'],
                 ['¿Cuánto suele tardar todo el proceso?','Desde la primera curaduría hasta firmar contrato, entre 7 y 21 días si el inquilino tiene documentación lista y elige una opción que ya tiene póliza pre-aprobada.'],

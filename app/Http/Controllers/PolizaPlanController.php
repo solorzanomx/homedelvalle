@@ -42,6 +42,8 @@ class PolizaPlanController extends Controller
             'sort_order' => $v['sort_order'] ?? 0,
             'is_active' => $request->boolean('is_active'),
             'is_recommended' => $request->boolean('is_recommended'),
+            'show_on_website' => $request->boolean('show_on_website'),
+            'show_price_public' => $request->boolean('show_price_public'),
         ];
     }
 

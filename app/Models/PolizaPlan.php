@@ -12,17 +12,23 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PolizaPlan extends Model
 {
-    protected $fillable = ['provider_name', 'name', 'tagline', 'price', 'currency', 'inclusions', 'description', 'sort_order', 'is_active', 'is_recommended'];
+    protected $fillable = ['provider_name', 'name', 'tagline', 'price', 'currency', 'inclusions', 'description', 'sort_order', 'is_active', 'is_recommended', 'show_on_website', 'show_price_public'];
 
     protected function casts(): array
     {
-        return ['price' => 'decimal:2', 'inclusions' => 'array', 'is_active' => 'boolean', 'is_recommended' => 'boolean'];
+        return ['price' => 'decimal:2', 'inclusions' => 'array', 'is_active' => 'boolean', 'is_recommended' => 'boolean', 'show_on_website' => 'boolean', 'show_price_public' => 'boolean'];
     }
 
     /** Planes que el inquilino puede ver y elegir. */
     public function scopeOffered($q)
     {
         return $q->where('is_active', true)->whereNotNull('price')->orderBy('sort_order')->orderBy('id');
+    }
+
+    /** Planes de la página pública (incluye los que aún no tienen precio: la cobertura ya es información útil). */
+    public function scopeForWebsite($q)
+    {
+        return $q->where('show_on_website', true)->orderBy('sort_order')->orderBy('id');
     }
 
     public function getPriceFormattedAttribute(): string

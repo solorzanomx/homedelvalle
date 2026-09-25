@@ -25,7 +25,7 @@
         [
             'title' => 'Cuota de investigación',
             'items' => \App\Support\TenantDocumentChecklist::PAGO_INVESTIGACION,
-            'note' => 'Tu asesor confirma el pago y tu recibo queda disponible para descarga en tu portal.',
+            'note' => 'Aplica cuando tu garantía es un aval: tu asesor confirma el pago y tu recibo queda disponible en tu portal. Si tu garantía es una póliza jurídica no pagas esta cuota: Previsión Legal hace su propia investigación.',
         ],
     ];
 @endphp
@@ -65,7 +65,7 @@
 
         <div class="rounded-2xl border border-brand-100 bg-brand-50/60 px-6 py-5 mb-10">
             <p class="text-sm text-brand-900 leading-relaxed">
-                <strong>Garantía:</strong> tu asesor te indicará si tu proceso será con aval o con pagarés, según el inmueble y las condiciones de la renta. En cuanto se defina, verás esa sección activa en tu portal.
+                <strong>Garantía:</strong> si no cuentas con un aval con propiedad en CDMX, tu garantía es una <a href="{{ route('landing.rentar.polizas') }}" class="font-semibold underline">póliza jurídica</a> (elige entre tres planes). Si tienes aval, seguimos con la investigación de aval. En tu portal verás cuál te corresponde y los pasos que siguen.
             </p>
         </div>
 

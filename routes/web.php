@@ -176,6 +176,7 @@ Route::post('/desarrolladores-e-inversionistas', [LandingController::class, 'sto
 Route::get('/vende-a-desarrolladora', [LandingController::class, 'vendeDesarrolladora'])->name('landing.vende-desarrolladora');
 Route::get('/rentar', [LandingController::class, 'rentar'])->name('landing.rentar');
 Route::get('/rentar/requisitos', [LandingController::class, 'requisitosRenta'])->name('landing.rentar.requisitos');
+Route::get('/rentar/polizas-juridicas', [LandingController::class, 'polizasJuridicas'])->name('landing.rentar.polizas');
 Route::get('/renta-tu-propiedad', [LandingController::class, 'rentaTuPropiedad'])->name('landing.renta-tu-propiedad');
 Route::post('/landing/submit', [LandingController::class, 'submit'])->middleware('throttle:public-form')->name('landing.submit');
 

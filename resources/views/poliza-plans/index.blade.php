@@ -35,6 +35,8 @@
         <div style="display:flex;align-items:center;gap:1.25rem;margin-top:.75rem;flex-wrap:wrap;">
             <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;"><input type="checkbox" name="is_active" value="1" {{ $plan->is_active ? 'checked' : '' }}> Activo (visible en el Portal)</label>
             <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;"><input type="checkbox" name="is_recommended" value="1" {{ $plan->is_recommended ? 'checked' : '' }}> Destacar como recomendado</label>
+            <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;"><input type="checkbox" name="show_on_website" value="1" {{ $plan->show_on_website ? 'checked' : '' }}> Mostrar en el sitio web</label>
+            <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;" title="Las tarifas varían por estado: déjalo apagado hasta confirmarlas"><input type="checkbox" name="show_price_public" value="1" {{ $plan->show_price_public ? 'checked' : '' }}> Mostrar el precio en el sitio web</label>
             <button class="btn btn-primary btn-sm" style="margin-left:auto;">Guardar</button>
         </div>
     </div>

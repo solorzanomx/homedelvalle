@@ -9,6 +9,12 @@
 - Después: **contrato y firma**. Con póliza el contrato **lo emite el proveedor**: el asesor lo **sube** y aparece en el Portal del inquilino y del propietario (se firma con el mecanismo de siempre). Sin póliza, el contrato se **genera con un clic** con la plantilla activa.
 - Los planes NO son código: son un **catálogo editable** (CRM → Rentas → Planes de póliza). La página de Previsión Legal no publica precios (varían por estado): Superior arranca en $6,000; **Básica e Integral quedan ocultas hasta que se les ponga precio**. El Portal solo muestra planes **activos y con precio**.
 
+## Página pública de los 3 planes (2026-09-26)
+- `/rentar/polizas-juridicas` (`landing.rentar.polizas`, vista `public/polizas-juridicas.blade.php`) muestra Básica / Superior / Integral con su cobertura, leída del **mismo catálogo** que usa el Portal. Está en el sitemap y enlazada desde `/rentar` y `/rentar/requisitos`.
+- **Coberturas tomadas de previsionlegal.mx** (póliza jurídica de arrendamiento habitacional): Básica = investigación legal/laboral, contrato a la medida, asesoría jurídica, firma digital, intervención extrajudicial. Superior = todo lo de Básica + investigación crediticia + cobranza extrajudicial + abogado a la firma del convenio. Integral = todo lo de Superior + investigación laboral del fiador/obligado solidario + abogado en la firma del contrato + 4 procesos judiciales (adeudo, abandono, vencimiento, extinción de dominio) + cobranza judicial o ejecución de pagarés + honorarios + gastos de juicio y de desalojo. **La página de origen NO publica montos, plazos ni precios**, y presenta los planes de forma progresiva ("cada plan incluye progresivamente"). No inventes montos de cobertura.
+- Dos banderas por plan en el CRM: **`show_on_website`** (aparece en la página pública, default sí) y **`show_price_public`** (muestra el precio en el sitio, default **no**: las tarifas varían por estado — encender solo cuando Alejandro confirme las tarifas). El precio del Portal (`price` + `is_active`) es independiente.
+- Los textos públicos ya no dicen "afianzadora": Previsión Legal vende **pólizas jurídicas**, no fianzas (regla de copy).
+
 ## Mapa de archivos
 | Pieza | Archivo |
 |---|---|

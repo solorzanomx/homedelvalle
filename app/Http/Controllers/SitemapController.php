@@ -37,6 +37,7 @@ class SitemapController extends Controller
             ['url' => url('/vende-tu-propiedad'),                      'priority' => '0.8', 'changefreq' => 'monthly'],
             ['url' => url('/comprar'),                                 'priority' => '0.8', 'changefreq' => 'monthly'],
             ['url' => url('/rentar'),                                  'priority' => '0.8', 'changefreq' => 'monthly'],
+            ['url' => url('/rentar/polizas-juridicas'),                'priority' => '0.6', 'changefreq' => 'monthly'],
             ['url' => url('/renta-tu-propiedad'),                      'priority' => '0.8', 'changefreq' => 'monthly'],
             ['url' => url('/desarrolladores-e-inversionistas'),        'priority' => '0.7', 'changefreq' => 'monthly'],
             ['url' => url('/servicios'),                               'priority' => '0.7', 'changefreq' => 'monthly'],
