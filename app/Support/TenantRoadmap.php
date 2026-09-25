@@ -101,7 +101,7 @@ class TenantRoadmap
 
         $secondary = null;
         if (! $steps['apartado']['done']) {
-            $secondary = ['title' => 'Aparta tu inmueble', 'body' => 'Tu depósito reserva tu lugar mientras avanzas con lo demás.', 'cta_label' => 'Cómo apartar', 'cta_url' => route('portal.expediente') . '#apartado'];
+            $secondary = ['title' => 'Aparta tu inmueble', 'body' => 'Tu depósito reserva tu lugar mientras avanzas con lo demás.', 'cta_label' => 'Cómo apartar', 'cta_url' => route('portal.expediente', ['apartado' => 1]) . '#apartado'];
         }
 
         $a = match ($step) {

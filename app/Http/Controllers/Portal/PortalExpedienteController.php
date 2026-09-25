@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
 use App\Models\Captacion;
+use App\Models\Client;
 use App\Models\Document;
 use App\Models\Notification;
 use App\Models\Property;
@@ -29,7 +30,10 @@ class PortalExpedienteController extends Controller
 
         $interestTypes = $client->interest_types ?? [];
         $isArrendador  = in_array('renta_propietario', $interestTypes);
-        $isArrendatario= in_array('renta_inquilino',   $interestTypes);
+        // Inquilino = tiene una renta activa como arrendatario (misma fuente que "Mi camino"); el interés capturado
+        // ya no es requisito (si faltaba, el asistente y las pestañas de inquilino no salían).
+        $tenantRental  = $this->portalService->activeTenantRental($client);
+        $isArrendatario= in_array('renta_inquilino',   $interestTypes) || (bool) $tenantRental;
         $isComprador   = in_array('compra',            $interestTypes);
         $isVendedor    = in_array('venta',             $interestTypes);
 
@@ -71,12 +75,100 @@ class PortalExpedienteController extends Controller
         // Calcular completitud por sección
         $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents, $references);
 
+        // Asistente "Tus datos" del inquilino: pasos cortos, uno por pantalla.
+        $wizard = null;
+        $prefilled = [];
+        if ($isArrendatario && $rentalAsInquilino && $tenantRental && $tenantRental->id === $rentalAsInquilino->id) {
+            $wizard = $this->wizardSteps($sections, $rentalAsInquilino, (string) request('paso'));
+            // Después de calcular el avance (para no inflarlo): prellena, SOLO en pantalla, lo que la IA leyó de sus documentos.
+            $prefilled = $this->prefillFromDocuments($client, $documents);
+        }
+
         return view('portal.expediente', compact(
             'client', 'sections',
             'isArrendador', 'isArrendatario', 'isComprador', 'isVendedor',
             'rentalAsInquilino', 'rentalAsOwner',
-            'documents', 'aval', 'references',
+            'documents', 'aval', 'references', 'wizard', 'prefilled',
         ));
+    }
+
+    /** Pasos del asistente (orden fijo). El aval solo aparece si la garantía del inquilino es aval. */
+    private function wizardSteps(array $sections, RentalProcess $rental, string $requested): array
+    {
+        $defs = [
+            'datos' => ['Datos personales', 'datos', 'datos'],
+            'identificacion' => ['Identificación y domicilio', 'identificacion', 'identificacion'],
+            'hogar' => ['Tu hogar', 'hogar', 'hogar'],
+            'referencias' => ['Referencias personales', 'hogar', 'referencias'],
+            'ingresos' => ['Trabajo e ingresos', 'ingresos', 'ingresos'],
+        ];
+        if (\App\Support\TenantRoadmap::route($rental) === \App\Support\TenantRoadmap::ROUTE_AVAL) {
+            $defs['garantia'] = ['Tu aval', 'garantia', 'garantia'];
+        }
+
+        $keys = array_keys($defs);
+        $steps = [];
+        foreach ($defs as $key => [$title, $section, $sectionKey]) {
+            $steps[$key] = ['key' => $key, 'title' => $title, 'section' => $section, 'pct' => (int) ($sections[$sectionKey]['pct'] ?? 0)];
+        }
+
+        // Paso actual: el pedido; si no, el primero incompleto; si todo está completo, el primero.
+        $current = isset($steps[$requested]) ? $requested : (collect($steps)->first(fn($st) => $st['pct'] < 100)['key'] ?? $keys[0]);
+        $i = array_search($current, $keys, true);
+
+        return [
+            'steps' => $steps,
+            'current' => $current,
+            'index' => $i + 1,
+            'total' => count($keys),
+            'prev' => $i > 0 ? $keys[$i - 1] : null,
+            'next' => $keys[$i + 1] ?? 'fin',
+        ];
+    }
+
+    /**
+     * Rellena EN MEMORIA (no guarda) los campos vacíos con lo que la IA leyó en sus documentos: CURP y vigencia de la
+     * INE, y la dirección del recibo. Así lo que subió en "Mis documentos" no se vuelve a teclear; lo confirma y guarda.
+     *
+     * @return string[] etiquetas de lo prellenado (para avisar al cliente)
+     */
+    private function prefillFromDocuments(Client $client, $documents): array
+    {
+        $filled = [];
+        $ai = fn(string $cat) => ($documents->get($cat)?->sortByDesc('created_at')->first(fn($d) => is_array($d->ai_extracted_data) && ! empty($d->ai_extracted_data['legible'])))?->ai_extracted_data;
+
+        $id = $ai('ine_frente') ?? $ai('pasaporte');
+        if ($id) {
+            if (! $client->curp && ! empty($id['curp'])) { $client->curp = strtoupper($id['curp']); $filled[] = 'CURP'; }
+            if (! $client->id_expiry_month && ! empty($id['vigencia_mes'])) { $client->id_expiry_month = $id['vigencia_mes']; $client->id_expiry_year = $id['vigencia_anio'] ?? null; $filled[] = 'vigencia de tu identificación'; }
+            if (! $client->id_type) { $client->id_type = $documents->has('pasaporte') && ! $documents->has('ine_frente') ? 'pasaporte' : 'INE'; }
+        }
+
+        $addr = $ai('luz') ?? $ai('agua') ?? $ai('gas');
+        if ($addr) {
+            $map = ['address_street' => 'calle_numero', 'address_colony' => 'colonia', 'address_municipality' => 'alcaldia_municipio', 'address_state' => 'estado', 'address_zip' => 'codigo_postal'];
+            $any = false;
+            foreach ($map as $field => $key) {
+                if (! $client->{$field} && ! empty($addr[$key])) { $client->{$field} = $addr[$key]; $any = true; }
+            }
+            $any && $filled[] = 'tu domicilio';
+        }
+
+        return $filled;
+    }
+
+    /** Tras guardar un paso: si vino `next`, sigue al siguiente paso (o de regreso a Mi camino al terminar). */
+    private function saved(Request $request, string $message)
+    {
+        $next = (string) $request->input('next');
+        if ($next === 'fin') {
+            return redirect()->route('portal.journey')->with('success', $message . ' ¡Terminaste tus datos!');
+        }
+        if (in_array($next, ['datos', 'identificacion', 'hogar', 'referencias', 'ingresos', 'garantia'], true)) {
+            return redirect()->route('portal.expediente', ['paso' => $next])->with('success', $message);
+        }
+
+        return back()->with('success', $message);
     }
 
     /** Guardar datos personales / legales */
@@ -124,7 +216,7 @@ class PortalExpedienteController extends Controller
 
         $client->update($validated);
 
-        return back()->with('success', 'Datos personales actualizados correctamente.');
+        return $this->saved($request, 'Datos personales actualizados correctamente.');
     }
 
     /** Guardar ingresos + datos laborales + arrendador anterior (arrendatario) */
@@ -154,7 +246,7 @@ class PortalExpedienteController extends Controller
         ]);
 
         $client->update($validated);
-        return back()->with('success', 'Información de ingresos guardada.');
+        return $this->saved($request, 'Información de ingresos guardada.');
     }
 
     /** Guardar información del hogar (arrendatario) — ocupantes y mascotas */
@@ -181,7 +273,7 @@ class PortalExpedienteController extends Controller
             'pets'            => $pets,
         ]);
 
-        return back()->with('success', 'Información del hogar guardada.');
+        return $this->saved($request, 'Información del hogar guardada.');
     }
 
     /** Guardar referencias personales (arrendatario) — hasta 3, estructuradas */
@@ -215,7 +307,7 @@ class PortalExpedienteController extends Controller
             );
         }
 
-        return back()->with('success', 'Referencias personales guardadas.');
+        return $this->saved($request, 'Referencias personales guardadas.');
     }
 
     /** Guardar financiamiento (comprador) */
@@ -281,7 +373,7 @@ class PortalExpedienteController extends Controller
             RentalAval::create($validated);
         }
 
-        return back()->with('success', 'Datos del aval guardados correctamente.');
+        return $this->saved($request, 'Datos del aval guardados correctamente.');
     }
 
     /** Subir documento al expediente */

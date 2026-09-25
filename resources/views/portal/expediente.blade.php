@@ -189,7 +189,9 @@
 
 @section('content')
 
+@unless($wizard ?? null)
 @include('portal._upload_guide_card')
+@endunless
 
 @php
     $totalPct = $client->legal_completeness;
@@ -212,7 +214,25 @@
 
 {{-- Inquilino: encabezado sencillo con regreso a "Mi camino" (sin el % duplicado: el avance real es el del camino).
      Otros perfiles conservan el hero con progreso global. --}}
-@if($tenantMode)
+@if($tenantMode && $wizard)
+    @php $wz = $wizard; @endphp
+    <script>document.body.classList.add('tenant-wizard');</script>
+    <a href="{{ route('portal.journey') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:600;color:#1D4ED8;text-decoration:none;margin-bottom:.5rem;">← Mi camino</a>
+    <div class="wiz-dots" aria-label="Pasos">
+        @foreach($wz['steps'] as $st)
+            @php $cls = $st['key'] === $wz['current'] ? 'active' : ($st['pct'] >= 100 ? 'done' : 'todo'); @endphp
+            <a href="{{ route('portal.expediente', ['paso' => $st['key']]) }}" class="wiz-dot {{ $cls }}" title="{{ $st['title'] }}">{{ $st['pct'] >= 100 && $cls !== 'active' ? '✓' : $loop->iteration }}</a>
+        @endforeach
+    </div>
+    <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#64748b;">Paso {{ $wz['index'] }} de {{ $wz['total'] }}</div>
+    <h1 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:.1rem 0 .3rem;">{{ $wz['steps'][$wz['current']]['title'] }}</h1>
+    <p style="font-size:.82rem;color:#64748b;margin:0 0 .9rem;line-height:1.5;">Tus datos se guardan en tu teléfono mientras escribes, y al tocar <strong>Guardar y continuar</strong> pasas al siguiente paso.</p>
+    @if(count($prefilled) && $wz['current'] === 'identificacion')
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:.65rem .85rem;margin-bottom:.9rem;font-size:.8rem;color:#1e3a8a;line-height:1.45;">
+        ✨ Ya llenamos por ti {{ implode(', ', $prefilled) }} con lo que leímos de tus documentos. Revísalo y guarda.
+    </div>
+    @endif
+@elseif($tenantMode)
     @php $secDone = collect($sections)->filter(fn($x) => ($x['pct'] ?? 0) >= 100)->count(); $secTotal = count($sections); @endphp
     <a href="{{ route('portal.journey') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:600;color:#1D4ED8;text-decoration:none;margin-bottom:.6rem;">← Mi camino</a>
     <h1 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 .25rem;">Tus datos</h1>
@@ -251,7 +271,7 @@
      y subiendo documentos abajo mientras tanto, pero nada "cuenta"
      en firme hasta que el asesor confirme el depósito.
 ════════════════════════════════════════════════════════════ --}}
-@if($isArrendatario && $rentalAsInquilino)
+@if($isArrendatario && $rentalAsInquilino && (! ($wizard ?? null) || request()->boolean('apartado')))
     @if($rentalAsInquilino->apartado_paid_at)
     {{-- Línea discreta: el detalle del apartado ya está en "Mi camino" (no repetir una tarjeta grande). --}}
     @php $reciboApartado = $documents->get('recibo_apartado')?->sortByDesc('created_at')->first(); @endphp
@@ -315,7 +335,7 @@
 @endif
 
 {{-- Tabs de sección --}}
-<div class="exp-tabs">
+<div class="exp-tabs" @if($wizard ?? null) hidden @endif>
     <button class="exp-tab active" onclick="showSection('datos',this)">
         👤 Datos personales
         <span class="tab-badge">{{ $sections['datos']['pct'] }}%</span>
@@ -482,6 +502,8 @@
             <form method="POST" action="{{ route('portal.expediente.datos') }}">
                 @csrf
 
+                <div class="wiz-doc-note">📄 Tu INE o pasaporte se sube en <a href="{{ route('portal.documents.index') }}"><strong>Mis documentos</strong></a>; lo que leemos de ahí se llena solo abajo.</div>
+                <div class="exp-doc-block">
                 {{-- PASO 1: Tipo de Identificación — decide qué casilla de subida
                      aparece justo abajo. --}}
                 <div class="form-group" style="margin-bottom:1rem;">
@@ -531,6 +553,8 @@
                     @endif
                 </div>
 
+                </div>{{-- /exp-doc-block --}}
+
                 {{-- PASO 3: CURP/RFC — se llenan solos al subir INE/pasaporte,
                      pero se pueden corregir a mano. --}}
                 <div class="form-grid">
@@ -573,6 +597,8 @@
 
                 <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Domicilio para contratos</div>
 
+                <div class="wiz-doc-note">📄 Tu recibo de luz, agua o gas se sube en <a href="{{ route('portal.documents.index') }}"><strong>Mis documentos</strong></a>; tu dirección se llena sola con lo que leemos.</div>
+                <div class="exp-doc-block">
                 {{-- PASO 1: ¿Qué comprobante de domicilio vas a subir? — decide
                      qué casilla de subida aparece justo abajo. --}}
                 <div class="form-group" style="margin-bottom:1rem;">
@@ -601,6 +627,8 @@
                     <p style="font-size:.82rem;color:var(--text-muted);">Elige arriba qué comprobante vas a subir (agua, luz o gas).</p>
                     @endif
                 </div>
+
+                </div>{{-- /exp-doc-block --}}
 
                 {{-- PASO 3: dirección — se llena sola al subir el comprobante,
                      pero se puede corregir a mano. --}}
@@ -868,6 +896,7 @@
                 </div>
                 <span style="font-size:.78rem;font-weight:700;white-space:nowrap;">{{ $sh['pct'] }}%</span>
             </div>
+            <div data-wiz-part="hogar">
             <form method="POST" action="{{ route('portal.expediente.hogar') }}">
                 @csrf
                 <div class="form-grid">
@@ -905,9 +934,10 @@
                     <button type="submit" class="btn btn-primary">Guardar información del hogar</button>
                 </div>
             </form>
+            </div>{{-- /data-wiz-part hogar --}}
 
             {{-- Referencias personales (3, estructuradas) --}}
-            <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
+            <div data-wiz-part="referencias" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
                 @php $sr = $sections['referencias'] ?? ['filled'=>0,'total'=>3,'pct'=>0]; @endphp
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
                     <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;">Referencias personales</div>
@@ -1017,6 +1047,8 @@
                     </div>
                 </div>
 
+                <div class="wiz-doc-note">📄 Tus comprobantes de ingresos (los últimos 3) se suben en <a href="{{ route('portal.documents.index') }}"><strong>Mis documentos</strong></a>.</div>
+                <div class="exp-doc-block">
                 {{-- PASO 2: ¿Cómo vas a comprobar tus ingresos? — decide qué
                      casilla de subida aparece justo abajo. --}}
                 <div class="form-group" style="margin-top:1rem;">
@@ -1039,6 +1071,7 @@
                     </div>
                     @endforeach
                 </div>
+                </div>{{-- /exp-doc-block --}}
 
                 <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Arrendador anterior</div>
                 <div class="form-grid">
@@ -1302,6 +1335,96 @@
 </div>
 @endif
 
+
+{{-- ═══ Asistente "Tus datos" (inquilino): estilos, barra fija de acciones y comportamiento ═══ --}}
+@if($wizard ?? null)
+<style>
+.tenant-wizard .exp-tabs, .tenant-wizard .section-progress, .tenant-wizard .exp-doc-block { display:none !important; }
+.tenant-wizard .wiz-doc-note { display:block; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:.6rem .8rem; font-size:.78rem; color:#475569; margin-bottom:1rem; line-height:1.45; }
+.wiz-doc-note { display:none; }
+.wiz-doc-note a { color:#1D4ED8; }
+.tenant-wizard .card-header { display:none; }
+.tenant-wizard .exp-section .card { border:0; box-shadow:none; background:transparent; }
+.tenant-wizard .exp-section .card-body { padding:0; }
+.wiz-dots { display:flex; gap:.4rem; margin:.2rem 0 .6rem; flex-wrap:wrap; }
+.wiz-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:800; text-decoration:none; border:2px solid #cbd5e1; color:#94a3b8; background:#fff; }
+.wiz-dot.done { border-color:#10b981; color:#10b981; background:#ecfdf5; }
+.wiz-dot.active { border-color:#1D4ED8; background:#1D4ED8; color:#fff; box-shadow:0 0 0 4px rgba(29,78,216,.15); }
+.tenant-wizard .form-input, .tenant-wizard .form-select { min-height:46px; font-size:16px; } /* 16px evita el zoom automático de iOS */
+.tenant-wizard .form-group { margin-bottom:.9rem; }
+.tenant-wizard.wiz-js .form-actions { display:none; }
+.tenant-wizard .portal-main { padding-bottom:140px; }
+.wiz-bar { position:fixed; left:0; right:0; bottom:0; z-index:850; display:flex; gap:.6rem; padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom)); background:#fff; border-top:1px solid #e2e8f0; box-shadow:0 -4px 20px rgba(15,23,42,.08); }
+.wiz-bar .wb-prev { flex:0 0 auto; display:flex; align-items:center; justify-content:center; min-height:50px; padding:0 1rem; border-radius:12px; background:#f1f5f9; color:#334155; font-weight:700; font-size:.9rem; text-decoration:none; }
+.wiz-bar .wb-save { flex:1; min-height:50px; border:0; border-radius:12px; background:#1D4ED8; color:#fff; font-weight:800; font-size:1rem; cursor:pointer; }
+.wiz-bar .wb-save[disabled] { opacity:.6; }
+@media (max-width: 768px) { .wiz-bar { bottom:calc(58px + env(safe-area-inset-bottom)); padding-bottom:.7rem; } .tenant-wizard .portal-main { padding-bottom:210px; } }
+@media (min-width: 769px) { .wiz-bar { left:var(--sidebar-w, 250px); } }
+</style>
+
+<div class="wiz-bar">
+    @if($wizard['prev'])<a class="wb-prev" href="{{ route('portal.expediente', ['paso' => $wizard['prev']]) }}">← Anterior</a>@endif
+    <button type="button" class="wb-save" id="wizSave">{{ $wizard['next'] === 'fin' ? 'Guardar y terminar ✓' : 'Guardar y continuar →' }}</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {   // showSection() se define más abajo
+    var CUR = @json($wizard['current']), NEXT = @json($wizard['next']), SEC = @json($wizard['steps'][$wizard['current']]['section']), UID = @json(auth()->id());
+    document.body.classList.add('wiz-js');
+
+    // 1. Solo la sección del paso actual (y, en "Tu hogar / Referencias", solo su parte).
+    showSection(SEC, null);
+    document.querySelectorAll('[data-wiz-part]').forEach(function (el) { el.hidden = el.getAttribute('data-wiz-part') !== CUR; });
+    var section = document.getElementById('sec-' + SEC);
+    var form = (section.querySelector('[data-wiz-part="' + CUR + '"] form') || section.querySelector('form:not([enctype])'));
+    if (!form) return;
+
+    // 2. Al guardar, el servidor sigue con el siguiente paso.
+    var nx = document.createElement('input'); nx.type = 'hidden'; nx.name = 'next'; nx.value = NEXT; form.appendChild(nx);
+
+    // 3. Teclado y autocompletado correctos en el teléfono, según el campo.
+    var map = [
+        [/phone|mobile|telefono|celular/i, {type: 'tel', inputmode: 'tel', autocomplete: 'tel'}],
+        [/email/i, {inputmode: 'email', autocapitalize: 'none', autocomplete: 'email'}],
+        [/curp|rfc/i, {autocapitalize: 'characters', autocomplete: 'off', spellcheck: 'false'}],
+        [/zip|postal/i, {inputmode: 'numeric', autocomplete: 'postal-code', maxlength: '5'}],
+        [/amount|income|value|monto|ingreso/i, {inputmode: 'decimal'}],
+        [/first_name/i, {autocomplete: 'given-name'}], [/last_name_paterno/i, {autocomplete: 'family-name'}],
+        [/address_street/i, {autocomplete: 'street-address'}], [/address_municipality/i, {autocomplete: 'address-level2'}],
+        [/address_state/i, {autocomplete: 'address-level1'}], [/employer_name/i, {autocomplete: 'organization'}],
+    ];
+    form.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea').forEach(function (el) {
+        map.forEach(function (m) { if (m[0].test(el.name || '')) { Object.keys(m[1]).forEach(function (k) { if (k === 'type' && el.type !== 'text') return; el.setAttribute(k, m[1][k]); }); } });
+    });
+
+    // 4. Borrador en el teléfono: se guarda mientras escribe y se restaura si vuelve (solo en campos vacíos).
+    var KEY = 'hdv-draft-' + UID + '-' + CUR, timer = null;
+    function fields() { return form.querySelectorAll('input:not([type=hidden]):not([type=password]):not([type=file]), select, textarea'); }
+    try {
+        var saved = JSON.parse(localStorage.getItem(KEY) || '{}'), restored = 0;
+        fields().forEach(function (el) {
+            if (!el.name || !(el.name in saved) || el.name === 'next') return;
+            if (el.type === 'checkbox' || el.type === 'radio') return;
+            if (!el.value && saved[el.name]) { el.value = saved[el.name]; restored++; }
+        });
+        if (restored) { var n = document.createElement('div'); n.style.cssText = 'background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:.5rem .75rem;margin-bottom:.8rem;font-size:.78rem;color:#92400e;'; n.textContent = 'Recuperamos lo que estabas escribiendo.'; form.prepend(n); }
+    } catch (e) {}
+    form.addEventListener('input', function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            try { var o = {}; fields().forEach(function (el) { if (el.name && el.type !== 'checkbox' && el.type !== 'radio') o[el.name] = el.value; }); localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {}
+        }, 400);
+    });
+    form.addEventListener('submit', function () { try { localStorage.removeItem(KEY); } catch (e) {} });
+
+    // 5. Botón fijo: envía el formulario de este paso.
+    document.getElementById('wizSave').addEventListener('click', function () {
+        this.disabled = true; this.textContent = 'Guardando…';
+        if (form.requestSubmit) form.requestSubmit(); else form.submit();
+    });
+});
+</script>
+@endif
 @endsection
 
 @section('scripts')

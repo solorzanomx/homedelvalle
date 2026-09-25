@@ -31,7 +31,16 @@ El inquilino veía 5 destinos que se traslapaban (Inicio, Renta, Expediente, Doc
 ## Cómo se verificó
 `TenantJourneyTest` (lógica sin BD) + tinker con inquilino sintético a través del enrutador real (rutas, contenido esperado, sin "Mi Expediente" en el menú) + vista en marcos de 390 px en navegador (capturas de Mi camino, Mis documentos y fila abierta).
 
-## Pendiente (fases 3–4 acordadas)
-1. Partir "Tus datos" en pantallas cortas (5–8 campos) con guardado automático, botón "Continuar" fijo y teclado correcto por campo (`inputmode`, `autocomplete`); mostrar solo lo que aplica a un inquilino.
+## Fase 3: "Tus datos" como asistente por pasos (2026-09-26)
+- `/mi-expediente?paso=<paso>` para el inquilino: **un paso por pantalla** — `datos` → `identificacion` (identificación y domicilio) → `hogar` → `referencias` → `ingresos` → `garantia` (solo si su ruta es aval). Sin `paso`, abre en el **primer incompleto**. Lógica: `PortalExpedienteController::wizardSteps()`.
+- **Barra fija** "← Anterior / Guardar y continuar →" (sobre la barra inferior del celular), puntos de avance, y **cada guardado sigue al siguiente paso** (`next` → `saved()`); el último ("Guardar y terminar") regresa a **Mi camino**. Los botones de guardar de cada formulario se ocultan solo cuando hay JS (sin JS siguen funcionando).
+- **Los documentos ya no se suben aquí** (bloques `.exp-doc-block` ocultos y sustituidos por una nota a "Mis documentos"); los campos ocultos se siguen enviando con su valor actual.
+- **Prellenado con IA** (`prefillFromDocuments`): CURP, vigencia de la INE y dirección leídos de los documentos subidos, **solo en pantalla** (no se guarda hasta que el cliente confirma) y después de calcular el avance para no inflarlo.
+- **Borrador en el teléfono** (`localStorage`, `hdv-draft-<usuario>-<paso>`): se guarda al escribir, se restaura solo en campos vacíos y se borra al enviar. Teclado/autocompletado por nombre de campo (`tel`, `email`, CURP en mayúsculas, CP numérico, `street-address`…), inputs a 16 px (evita el zoom de iOS).
+- **El inquilino se detecta por su renta activa** también en `PortalExpedienteController::show()` (`activeTenantRental`), no solo por `interest_types`.
+- El apartado pendiente y su tarjeta de pago se abren desde Mi camino con `?apartado=1`; en el asistente no se repite.
+
+## Pendiente (fase 4 acordada)
+1. ~~Partir "Tus datos" en pantallas cortas~~ ✅ hecho (arriba). Falta: guardado automático en el SERVIDOR (hoy es un borrador local) y dividir los pasos más largos (p. ej. identificación y domicilio, trabajo e ingresos) si las pruebas con clientes lo piden.
 2. Planes de póliza como tarjetas deslizables con "ver qué incluye"; firma del contrato dentro del Portal.
 3. Probar con un teléfono real y el caso de Carlos; luego decidir si se replica el patrón a propietario, comprador y vendedor.

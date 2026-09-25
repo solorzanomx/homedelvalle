@@ -110,4 +110,29 @@ class TenantJourneyTest extends TestCase
         $this->assertSame(3, \App\Support\TenantDocumentRows::INCOME_MONTHS);
         $this->assertSame(3, \App\Support\RentalExpedienteStatus::INCOME_MONTHS);
     }
+
+    private function wizard(array $sections, array $rentalAttrs, string $requested = ''): array
+    {
+        $m = new \ReflectionMethod(\App\Http\Controllers\Portal\PortalExpedienteController::class, 'wizardSteps');
+        $m->setAccessible(true);
+
+        return $m->invoke(app(\App\Http\Controllers\Portal\PortalExpedienteController::class), $sections, new RentalProcess($rentalAttrs), $requested);
+    }
+
+    public function test_wizard_steps_skip_aval_with_poliza_and_open_on_the_first_incomplete_step(): void
+    {
+        $sec = fn($p) => ['pct' => $p];
+        $sections = ['datos' => $sec(100), 'identificacion' => $sec(40), 'hogar' => $sec(0), 'referencias' => $sec(0), 'ingresos' => $sec(0), 'garantia' => $sec(0)];
+
+        $poliza = $this->wizard($sections, ['tenant_has_aval' => false]);
+        $this->assertSame(['datos', 'identificacion', 'hogar', 'referencias', 'ingresos'], array_keys($poliza['steps']), 'con póliza no hay paso de aval');
+        $this->assertSame('identificacion', $poliza['current'], 'abre en el primer paso incompleto');
+        $this->assertSame(['datos', 'hogar'], [$poliza['prev'], $poliza['next']]);
+        $this->assertSame(2, $poliza['index']);
+
+        $aval = $this->wizard($sections, ['tenant_has_aval' => true]);
+        $this->assertArrayHasKey('garantia', $aval['steps']);
+        $this->assertSame('fin', $this->wizard($sections, ['tenant_has_aval' => true], 'garantia')['next'], 'el último paso termina en Mi camino');
+        $this->assertSame('identificacion', $this->wizard($sections, ['tenant_has_aval' => false], 'inventado')['current'], 'un paso inválido cae al primero incompleto');
+    }
 }

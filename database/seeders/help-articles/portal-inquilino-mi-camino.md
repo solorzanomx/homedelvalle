@@ -17,6 +17,10 @@ Cuando un cliente tiene una **renta activa como inquilino**, su Portal cambia a 
 
 Una lista con el **estado de cada documento** en palabras simples: **Falta**, **En revisión**, **Aprobado** o **Corregir** (con el motivo que escribiste al rechazar). Arriba, "Sigue con…" apunta al siguiente. Al tocar uno se abre **solo ese**: sube foto, archivo o PDF (con la guía de "así sí / así no"). Para domicilio (luz, agua o gas) e ingresos (nómina, estados de cuenta o CFDI) primero elige cuál va a subir. El contador naranja del menú indica cuántos documentos le faltan o debe corregir.
 
+### Tus datos, paso a paso
+
+El formulario largo del expediente ahora es un **asistente**: Datos personales → Identificación y domicilio → Tu hogar → Referencias → Trabajo e ingresos (→ Tu aval, solo si su garantía es aval). Un paso por pantalla, con botón fijo **Guardar y continuar**; al terminar regresa a Mi camino. Lo que escribe se guarda en su teléfono mientras teclea (por si se corta la señal), y con lo que leemos de sus documentos **prellenamos** CURP, vigencia de la INE y su domicilio para que solo confirme.
+
 ### Reglas que aplica la lista
 
 - **Identificación: una u otra.** Si el inquilino sube su INE, le pide **frente y vuelta** y ya no le ofrece pasaporte; si prefiere pasaporte, lo elige primero. Si aún no sube nada, primero escoge cuál usará.
