@@ -24,7 +24,7 @@
     <input type="checkbox" class="doc-select" value="{{ $doc->id }}" title="Seleccionar" style="width:18px;height:18px;flex-shrink:0;">
     @endif
     @if($isImage)
-        <img src="{{ route('documents.preview', $doc->id) }}" loading="lazy" alt="" class="doc-thumb" onclick="hdvDocViewer.open({{ $doc->id }})">
+        <img src="{{ route('documents.preview', ['document' => $doc->id, 'thumb' => 1]) }}" loading="lazy" alt="" class="doc-thumb" onclick="hdvDocViewer.open({{ $doc->id }})">
     @else
         <div class="doc-icon" @if($canView) style="cursor:pointer" onclick="hdvDocViewer.open({{ $doc->id }})" @endif>{{ $isPdf ? '📕' : '📄' }}</div>
     @endif

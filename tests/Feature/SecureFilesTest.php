@@ -61,4 +61,19 @@ class SecureFilesTest extends TestCase
             $this->assertContains('viewer', $mw, "{$name} debe exigir rol de personal (viewer)");
         }
     }
+
+    public function test_thumbnails_are_small_cached_and_only_for_images(): void
+    {
+        $path = SecureFiles::store(UploadedFile::fake()->image('big.jpg', 3000, 2000), 'documents/client-1');
+        $thumb = SecureFiles::thumbnail($path);
+
+        $this->assertNotNull($thumb);
+        $this->assertLessThanOrEqual(240, max(getimagesize($thumb)[0], getimagesize($thumb)[1]));
+        $this->assertLessThan(filesize(SecureFiles::locate($path)), filesize($thumb));
+        $this->assertSame($thumb, SecureFiles::thumbnail($path), 'la segunda vez sale de la caché');
+
+        SecureFiles::put('documents/client-1/doc.pdf', '%PDF-1.4');
+        $this->assertNull(SecureFiles::thumbnail('documents/client-1/doc.pdf'), 'un PDF no tiene miniatura');
+        $this->assertNull(SecureFiles::thumbnailResponse('documents/no-existe.jpg'));
+    }
 }

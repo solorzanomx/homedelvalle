@@ -23,6 +23,8 @@
 - **Ninguna ruta con `auth` puede quedar sin rol.** `SmokeTest::test_no_authenticated_route_is_open_to_any_logged_in_user` falla si se agrega una; solo se justifica en su lista `$allowed`.
 - **Una ruta que sirve un archivo debe autorizar por PERTENENCIA**, no solo por estar autenticado (IDOR): Portal → dueño/parte; CRM → personal.
 - **El propietario nunca ve los documentos personales del inquilino** (INE, estados de cuenta, comprobantes de ingresos): solo el resumen de la investigación.
+- **Livewire MUEVE su archivo temporal al guardarlo** (vive en el mismo disco privado): en `DocumentUploader::upload()` nombre, tamaño y tipo se leen ANTES de `SecureFiles::store()`. Leerlos después lanza `UnableToRetrieveMetadata` y la subida del cliente falla (error real de 2026-09-26, corregido).
+- **Las listas piden miniaturas** (`?thumb=1` → `SecureFiles::thumbnail`, ~240 px, caché en `storage/app/private/thumbs`), no la foto completa. El visor sí pide la original.
 - Los archivos privados no tienen URL: si algo "ya no carga" tras migrar, casi seguro una vista sigue apuntando a `/storage/...` — cámbiala por la ruta autorizada.
 
 ## Deploy de este cambio

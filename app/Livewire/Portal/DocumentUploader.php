@@ -141,7 +141,7 @@ class DocumentUploader extends Component
                 'isImage'     => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png']),
                 // Miniatura por ruta AUTORIZADA (no por URL pública del disco): los archivos son privados.
                 'thumbUrl'    => in_array($d->mime_type, ['image/jpeg', 'image/jpg', 'image/png'])
-                                    ? route('portal.documents.preview', $d->id)
+                                    ? route('portal.documents.preview', ['id' => $d->id, 'thumb' => 1])
                                     : null,
                 'aiStatus'      => $d->ai_verification_status,
                 'aiStatusLabel' => $d->ai_verification_status_label,
@@ -193,6 +193,12 @@ class DocumentUploader extends Component
             return;
         }
 
+        // OJO: el archivo temporal de Livewire vive en el MISMO disco privado; al guardarlo definitivo Livewire lo
+        // MUEVE (ya no existe después), así que nombre/tamaño/tipo se leen ANTES de guardar.
+        $originalName = $this->file->getClientOriginalName();
+        $mimeType = $this->file->getMimeType();
+        $fileSize = $this->file->getSize();
+
         $path  = \App\Support\SecureFiles::store($this->file, 'documents/client-' . $client->id);
         $label = $this->label ?: (Document::CATEGORIES[$this->category] ?? $this->file->getClientOriginalName());
 
@@ -207,9 +213,9 @@ class DocumentUploader extends Component
             'category'          => $this->category,
             'label'             => $label,
             'file_path'         => $path,
-            'file_name'         => $this->file->getClientOriginalName(),
-            'mime_type'         => $this->file->getMimeType(),
-            'file_size'         => $this->file->getSize(),
+            'file_name'         => $originalName,
+            'mime_type'         => $mimeType,
+            'file_size'         => $fileSize,
             'status'            => 'received',
         ]);
 

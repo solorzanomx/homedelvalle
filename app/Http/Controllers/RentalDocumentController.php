@@ -178,9 +178,14 @@ class RentalDocumentController extends Controller
     }
 
     /** Abre el archivo en el navegador (visor del CRM) en vez de forzar la descarga. */
-    public function preview(string $documentId)
+    public function preview(Request $request, string $documentId)
     {
         $document = Document::findOrFail($documentId);
+
+        // ?thumb=1 → miniatura reducida para las listas (cae a la imagen completa si no se puede generar).
+        if ($request->boolean('thumb') && ($thumb = \App\Support\SecureFiles::thumbnailResponse($document->file_path))) {
+            return $thumb;
+        }
 
         \App\Models\DocumentEvent::logAccess($document, 'visto');
 

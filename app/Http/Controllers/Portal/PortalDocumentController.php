@@ -90,9 +90,13 @@ class PortalDocumentController extends Controller
     }
 
     /** Vista en línea (miniaturas y visor del Portal) — mismas reglas de acceso que la descarga. */
-    public function preview(string $id)
+    public function preview(Request $request, string $id)
     {
         $document = $this->authorizedDocument($id);
+
+        if ($request->boolean('thumb') && ($thumb = \App\Support\SecureFiles::thumbnailResponse($document->file_path))) {
+            return $thumb;
+        }
 
         return \App\Support\SecureFiles::response($document->file_path, $document->file_name, $document->mime_type, true)
             ?? abort(404);

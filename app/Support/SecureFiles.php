@@ -80,6 +80,67 @@ class SecureFiles
         Storage::disk('public')->delete($path);
     }
 
+    /**
+     * Miniatura JPEG (lado mayor $maxSide) cacheada en el disco privado. Las listas de documentos mostraban
+     * la foto COMPLETA (2–3 MB) por fila: lento y frágil. Devuelve la ruta absoluta de la miniatura, o null si no
+     * se puede generar (sin GD, no es imagen, o demasiado grande para decodificar con seguridad de memoria).
+     */
+    public static function thumbnail(?string $path, int $maxSide = 240): ?string
+    {
+        $abs = self::locate($path);
+        if (! $abs || ! function_exists('imagecreatefromstring')) {
+            return null;
+        }
+
+        $info = @getimagesize($abs);
+        if (! $info || ! in_array($info[2] ?? 0, [IMAGETYPE_JPEG, IMAGETYPE_PNG], true) || ($info[0] * $info[1]) > 40_000_000) {
+            return null;
+        }
+
+        $disk = Storage::disk(self::DISK);
+        $key = 'thumbs/' . md5($path . '|' . filemtime($abs) . '|' . $maxSide) . '.jpg';
+        if ($disk->exists($key)) {
+            return $disk->path($key);
+        }
+
+        $img = @imagecreatefromstring((string) file_get_contents($abs));
+        if (! $img) {
+            return null;
+        }
+        $long = max($info[0], $info[1]);
+        if ($long > $maxSide) {
+            $scaled = imagescale($img, (int) round($info[0] * $maxSide / $long), (int) round($info[1] * $maxSide / $long));
+            if ($scaled) {
+                imagedestroy($img);
+                $img = $scaled;
+            }
+        }
+        ob_start();
+        imagejpeg($img, null, 72);
+        $data = (string) ob_get_clean();
+        imagedestroy($img);
+        if ($data === '') {
+            return null;
+        }
+        $disk->put($key, $data);
+
+        return $disk->path($key);
+    }
+
+    /** Respuesta con la miniatura (caché privada corta: son pequeñas y la lista las pide varias veces). */
+    public static function thumbnailResponse(?string $path): ?BinaryFileResponse
+    {
+        $thumb = self::thumbnail($path);
+        if (! $thumb) {
+            return null;
+        }
+        $response = response()->file($thumb, ['Content-Type' => 'image/jpeg']);
+        $response->headers->set('X-Content-Type-Options', 'nosniff');
+        $response->headers->set('Cache-Control', 'private, max-age=600');
+
+        return $response;
+    }
+
     /** Respuesta de descarga/visor con cabeceras seguras (sin caché compartida, sin adivinar el tipo). */
     public static function response(?string $path, ?string $name = null, ?string $mime = null, bool $inline = false): ?BinaryFileResponse
     {
