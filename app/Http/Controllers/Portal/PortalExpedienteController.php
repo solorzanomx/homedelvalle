@@ -298,6 +298,13 @@ class PortalExpedienteController extends Controller
         ]);
 
         $file  = $request->file('file');
+
+        $quality = app(\App\Services\DocumentQualityService::class);
+        $gate = $quality->gate($file, $request->category, $client->id);
+        if ($gate['block']) {
+            return back()->with('error', $gate['block']);
+        }
+
         $path  = $file->store('expediente/client-' . $client->id, 'public');
 
         // property_id era fillable pero nunca se poblaba aquí — sin esto,
@@ -322,6 +329,8 @@ class PortalExpedienteController extends Controller
             'file_size'         => $file->getSize(),
             'status'            => 'received',
         ]);
+
+        $quality->record($document, $gate);
 
         // Antes nada avisaba al broker de un documento nuevo — se enteraba
         // solo si entraba manualmente a revisar (auditoria 2026-07-06).

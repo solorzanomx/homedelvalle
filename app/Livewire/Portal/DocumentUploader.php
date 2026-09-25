@@ -180,6 +180,18 @@ class DocumentUploader extends Component
             return;
         }
 
+        // Revisión de calidad ANTES de guardar: si es evidente que no se va a
+        // poder leer (foto a una pantalla, muy pequeña, ilegible), se le dice
+        // al cliente qué hacer en el momento.
+        $quality = app(\App\Services\DocumentQualityService::class);
+        $gate = $quality->gate($this->file, $this->category, $client->id);
+        if ($gate['block']) {
+            $this->errorMsg = $gate['block'];
+            $this->reset(['file']);
+            $this->uploading = false;
+            return;
+        }
+
         $path  = $this->file->store('documents/client-' . $client->id, 'public');
         $label = $this->label ?: (Document::CATEGORIES[$this->category] ?? $this->file->getClientOriginalName());
 
@@ -199,6 +211,8 @@ class DocumentUploader extends Component
             'file_size'         => $this->file->getSize(),
             'status'            => 'received',
         ]);
+
+        $quality->record($document, $gate);
 
         $this->notifyBroker($client, $document);
 

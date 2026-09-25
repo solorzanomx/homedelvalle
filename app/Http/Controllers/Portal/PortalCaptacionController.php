@@ -64,12 +64,18 @@ class PortalCaptacionController extends Controller
             'address_zip'          => 'nullable|string|max:5',
         ]);
 
+        $quality = app(\App\Services\DocumentQualityService::class);
+        $gate = $quality->gate($request->file('file'), $request->input('category'), $client->id);
+        if ($gate['block']) {
+            return back()->with('error', $gate['block'])->withInput();
+        }
+
         $captacion = $this->captacionService->getOrCreateForClient($client);
 
         $path     = $request->file('file')->store('captaciones/' . $captacion->id, 'public');
         $original = $request->file('file')->getClientOriginalName();
 
-        Document::create([
+        $document = Document::create([
             'captacion_id'         => $captacion->id,
             'client_id'            => $client->id,
             'uploaded_by'          => Auth::id(),
@@ -83,6 +89,8 @@ class PortalCaptacionController extends Controller
             'is_captacion_required'=> in_array($request->input('category'), \App\Models\Captacion::REQUIRED_DOCS_ETAPA1),
             'captacion_status'     => 'pendiente',
         ]);
+
+        $quality->record($document, $gate);
 
         $clientFields = array_filter(
             \Illuminate\Support\Arr::except($validated, ['category', 'file']),

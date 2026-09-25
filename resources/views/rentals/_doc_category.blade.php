@@ -28,6 +28,7 @@
          data-reason="{{ $doc->rejection_reason }}"
          data-ai="{{ $doc->ai_verification_status ? $doc->ai_verification_status_label . ($doc->ai_verification_notes ? ' — ' . $doc->ai_verification_notes : '') : '' }}"
          data-ai-status="{{ $doc->ai_verification_status }}"
+         data-quality="{{ $doc->quality_status === 'warn' ? $doc->quality_notes : '' }}"
          data-meta="{{ $doc->uploader->name ?? '' }} · {{ $doc->created_at->format('d/m/Y H:i') }}">
         @if($isImage)
             <img src="{{ route('documents.preview', $doc->id) }}" loading="lazy" alt="" class="doc-thumb" onclick="hdvDocViewer.open({{ $doc->id }})">
@@ -48,6 +49,9 @@
             <div style="font-size:.72rem;color:{{ $aiColor }};margin-top:.15rem;" title="{{ $doc->ai_verification_notes }}">
                 🤖 {{ $doc->ai_verification_status_label }}@if($doc->ai_verification_notes) — {{ \Illuminate\Support\Str::limit($doc->ai_verification_notes, 80) }}@endif
             </div>
+            @endif
+            @if($doc->quality_status === 'warn')
+            <div style="font-size:.72rem;color:#b45309;margin-top:.15rem;" title="{{ $doc->quality_notes }}">⚠ Calidad dudosa — {{ \Illuminate\Support\Str::limit($doc->quality_notes, 90) }}</div>
             @endif
             <div class="doc-reason" style="font-size:.75rem;color:var(--danger);margin-top:.15rem;{{ $doc->status === 'rejected' && $doc->rejection_reason ? '' : 'display:none;' }}">
                 Motivo del rechazo: <span class="doc-reason-text">{{ $doc->rejection_reason }}</span>

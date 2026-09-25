@@ -65,6 +65,7 @@
             </div>
             <div><span class="badge" id="hvStatusBadge"></span></div>
             <div class="hv-ai" id="hvAi" style="display:none;"></div>
+            <div class="hv-ai" id="hvQuality" style="display:none;background:#fffbeb;border-color:#fde68a;color:#92400e;"></div>
             <div class="hv-ai" id="hvReasonShown" style="display:none;background:#fef2f2;border-color:#fecaca;color:#991b1b;"></div>
             <div class="hv-actions">
                 <div class="hv-reject-box" id="hvRejectBox">
@@ -72,6 +73,7 @@
                         <span class="hv-chip" data-reason="Está borroso o ilegible. Súbelo de nuevo con mejor luz y enfoque.">Ilegible</span>
                         <span class="hv-chip" data-reason="El documento está vencido o tiene más de 3 meses. Sube uno más reciente.">Vencido</span>
                         <span class="hv-chip" data-reason="El documento no corresponde al titular del trato.">No es del titular</span>
+                        <span class="hv-chip" data-reason="Parece una foto tomada a una pantalla y no se lee bien. Descarga el PDF original (de tu banco o proveedor) y súbelo de nuevo, o tómale foto al documento sobre una mesa.">Foto de pantalla</span>
                         <span class="hv-chip" data-reason="Está incompleto (falta el reverso o alguna página). Súbelo completo.">Incompleto</span>
                         <span class="hv-chip" data-reason="No es el documento que se solicita en este apartado.">Documento equivocado</span>
                     </div>
@@ -126,6 +128,8 @@ window.hdvDocViewer = (function () {
         var ai = el('hvAi');
         if (d.ai) { ai.style.display = ''; ai.textContent = '🤖 Verificación automática: ' + d.ai; ai.style.color = (d.aiStatus === 'match') ? '#166534' : (d.aiStatus === 'mismatch' || d.aiStatus === 'expired') ? '#991b1b' : '#475569'; }
         else ai.style.display = 'none';
+        var ql = el('hvQuality');
+        if (d.quality) { ql.style.display = ''; ql.textContent = '⚠ Calidad dudosa: ' + d.quality; } else ql.style.display = 'none';
         var rs = el('hvReasonShown');
         if (d.status === 'rejected' && d.reason) { rs.style.display = ''; rs.textContent = 'Motivo enviado al cliente: ' + d.reason; } else rs.style.display = 'none';
         el('hvApprove').style.display = d.status === 'verified' ? 'none' : '';

@@ -603,6 +603,9 @@
                 <div style="flex:1;min-width:0;">
                     <div style="font-weight:600;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $doc->label ?? $doc->file_name }}</div>
                     <div style="font-size:.72rem;color:var(--text-muted);">{{ $allDocCategories[$doc->category] ?? $doc->category }} &middot; {{ $doc->created_at->format('d/m/Y') }}@if($doc->uploader) &middot; {{ $doc->uploader->name }}@endif</div>
+                    @if($doc->quality_status === 'warn')
+                    <div style="font-size:.72rem;color:#b45309;margin-top:.15rem;" title="{{ $doc->quality_notes }}">⚠ Calidad dudosa — {{ Str::limit($doc->quality_notes, 80) }}</div>
+                    @endif
                     @if($doc->ai_verification_status)
                     @php $aiColor = match($doc->ai_verification_status) { 'match' => '#10b981', 'mismatch', 'expired' => '#ef4444', default => '#94a3b8' }; @endphp
                     <div style="font-size:.72rem;color:{{ $aiColor }};margin-top:.15rem;" title="{{ $doc->ai_verification_notes }}">

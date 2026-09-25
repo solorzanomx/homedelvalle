@@ -105,10 +105,17 @@ class PortalDocumentController extends Controller
         ]);
 
         $file  = $request->file('file');
+
+        $quality = app(\App\Services\DocumentQualityService::class);
+        $gate = $quality->gate($file, $validated['category'], $client->id);
+        if ($gate['block']) {
+            return back()->with('error', $gate['block']);
+        }
+
         $path  = $file->store('documents/client-' . $client->id, 'public');
         $label = !empty($validated['label']) ? $validated['label'] : $file->getClientOriginalName();
 
-        Document::create([
+        $document = Document::create([
             'client_id'         => $client->id,
             'rental_process_id' => $validated['rental_process_id'] ?? null,
             'uploaded_by'       => Auth::id(),
@@ -120,6 +127,8 @@ class PortalDocumentController extends Controller
             'file_size'         => $file->getSize(),
             'status'            => 'received',
         ]);
+
+        $quality->record($document, $gate);
 
         return back()->with('success', 'Documento subido correctamente.');
     }

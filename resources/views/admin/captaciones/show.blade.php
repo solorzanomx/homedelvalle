@@ -396,7 +396,7 @@
                         <input type="hidden" name="category" value="{{ $cat }}">
                         <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
                             {{ $latest ? 'Reemplazar' : 'Subir' }}
-                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" capture="environment" style="display:none;" onchange="handleDocFileChange(this)">
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="handleDocFileChange(this)">
                         </label>
                     </form>
                     @if($latest)
@@ -487,7 +487,7 @@
                         <input type="hidden" name="category" value="{{ $cat }}">
                         <label class="btn btn-sm btn-outline" style="cursor:pointer;margin:0;">
                             {{ $latest ? 'Reemplazar' : 'Subir' }}
-                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" capture="environment" style="display:none;" onchange="handleDocFileChange(this)">
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;" onchange="handleDocFileChange(this)">
                         </label>
                     </form>
                     @if($latest)

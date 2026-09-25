@@ -62,6 +62,7 @@
             {{ $remainingSlots < $maxSlots ? 'Sube el comprobante ' . ($maxSlots - $remainingSlots + 1) . ' de ' . $maxSlots : 'Sube los últimos ' . $maxSlots . ' comprobantes' }}
         </p>
         @endif
+        @include('portal._upload_tips', ['category' => $singleCategory])
         <div style="display:flex;gap:.5rem;align-items:stretch;">
             <label style="display:block;flex:1;">
                 <div id="slot-dz-{{ $this->getId() }}"
@@ -69,14 +70,18 @@
                     <span wire:loading.remove wire:target="file" style="font-size:.8rem;color:#64748b;">
                         <strong style="color:#1D4ED8;">Subir archivo</strong> — PDF, JPG o PNG
                     </span>
+                    <span wire:loading wire:target="upload" style="font-size:.8rem;color:#1D4ED8;display:inline-flex;align-items:center;gap:.4rem;">
+                        <span class="lw-spinner"></span> Revisando que se lea bien...
+                    </span>
                     <span wire:loading wire:target="file" style="font-size:.8rem;color:#1D4ED8;display:inline-flex;align-items:center;gap:.4rem;">
                         <span class="lw-spinner"></span> Subiendo...
                     </span>
                 </div>
-                {{-- capture="environment" — en celular esto abre la cámara
-                     trasera directo (no la galería) al tocar "Subir archivo",
-                     aunque el usuario nunca abra la cámara guiada de abajo. --}}
-                <input id="slot-input-{{ $singleCategory }}" type="file" wire:model="file" accept=".pdf,.jpg,.jpeg,.png" capture="environment" style="display:none;">
+                {{-- SIN capture="environment" (2026-09-25): forzaba la cámara al tocar
+                     "Subir archivo" y el cliente no podía elegir un PDF ni una
+                     captura — terminaba fotografiando la pantalla de su teléfono.
+                     Sin el atributo el celular ofrece cámara, fotos o archivos. --}}
+                <input id="slot-input-{{ $singleCategory }}" type="file" wire:model="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
             </label>
             @if($isIdCategory)
             <button type="button" onclick="idCamOpen('{{ $singleCategory }}')"
@@ -157,6 +162,10 @@
             @endforeach
         </select>
     </div>
+
+    @if($category)
+    <div style="margin-bottom:1rem;">@include('portal._upload_tips', ['category' => $category, 'open' => true])</div>
+    @endif
 
     <div style="margin-bottom:1rem;">
         <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:.4rem;">Nombre del documento</label>

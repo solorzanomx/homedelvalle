@@ -85,7 +85,8 @@ class AnthropicProvider implements AIProviderContract
             'messages'   => [[
                 'role'    => 'user',
                 'content' => [
-                    ['type' => 'image', 'source' => ['type' => 'base64', 'media_type' => $mediaType, 'data' => $imageBase64]],
+                    // PDF va como bloque 'document'; imágenes como 'image'.
+                    ['type' => $mediaType === 'application/pdf' ? 'document' : 'image', 'source' => ['type' => 'base64', 'media_type' => $mediaType, 'data' => $imageBase64]],
                     ['type' => 'text', 'text' => $prompt],
                 ],
             ]],

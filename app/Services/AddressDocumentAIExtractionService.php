@@ -37,10 +37,11 @@ class AddressDocumentAIExtractionService
     public function extract(Document $document): void
     {
         try {
-            if (! in_array($document->mime_type, ['image/jpeg', 'image/jpg', 'image/png'], true)) {
+            // PDF incluido: los recibos digitales de luz/agua/gas casi siempre son PDF.
+            if (! in_array($document->mime_type, ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'], true)) {
                 $document->update([
                     'ai_verification_status' => 'unreadable',
-                    'ai_verification_notes'  => 'Solo se puede leer automáticamente en formato JPG o PNG (este archivo es ' . ($document->mime_type ?: 'de otro tipo') . ').',
+                    'ai_verification_notes'  => 'Solo se puede leer automáticamente en formato PDF, JPG o PNG (este archivo es ' . ($document->mime_type ?: 'de otro tipo') . ').',
                 ]);
                 return;
             }

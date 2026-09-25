@@ -99,6 +99,7 @@
     </div>
     <div style="padding:1.25rem;">
         @if($client)
+        @include('portal._upload_guide_card')
         @livewire('portal.document-uploader', ['rentalProcessId' => null, 'allowedCategories' => []])
         @else
         <div style="text-align:center;padding:2.5rem;color:#94a3b8;">

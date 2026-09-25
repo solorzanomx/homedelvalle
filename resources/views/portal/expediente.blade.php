@@ -189,6 +189,8 @@
 
 @section('content')
 
+@include('portal._upload_guide_card')
+
 @php
     $totalPct = $client->legal_completeness;
     $allSectionPcts = collect($sections)->pluck('pct');
@@ -653,7 +655,7 @@
                     <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;align-items:center;">
                         @csrf
                         <input type="hidden" name="category" value="{{ $cat }}">
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="this.form.submit()">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:160px;" onchange="hdvUploadSubmit(this)">
                     </form>
                     @endif
                 </div>
@@ -704,7 +706,7 @@
                     @csrf
                     @if($rentalAsOwner)<input type="hidden" name="rental_process_id" value="{{ $rentalAsOwner->id }}">@endif
                     <input type="hidden" name="category" value="{{ $cat }}">
-                    <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:180px;" onchange="this.form.submit()">
+                    <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:180px;" onchange="hdvUploadSubmit(this)">
                 </form>
                 @endif
             </div>
@@ -734,7 +736,7 @@
                     <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data" style="display:flex;gap:.4rem;align-items:center;">
                         @csrf
                         <input type="hidden" name="category" value="{{ $cat }}">
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:180px;" onchange="this.form.submit()">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:180px;" onchange="hdvUploadSubmit(this)">
                     </form>
                     @endif
                 </div>
@@ -836,7 +838,7 @@
                 <form method="POST" action="{{ route('portal.expediente.upload') }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="category" value="carta_preautorizacion">
-                    <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.82rem;" onchange="this.form.submit()">
+                    <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.82rem;" onchange="hdvUploadSubmit(this)">
                 </form>
                 @endif
             </div>
@@ -1222,7 +1224,7 @@
                             @csrf
                             @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
                             <input type="hidden" name="category" value="{{ $cat }}">
-                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:150px;" onchange="this.form.submit()">
+                            <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.75rem;max-width:150px;" onchange="hdvUploadSubmit(this)">
                         </form>
                         @else
                         <span style="font-size:.72rem;color:var(--text-muted);">Subido ✓</span>
@@ -1284,7 +1286,7 @@
                         @if($rentalAsInquilino)<input type="hidden" name="rental_process_id" value="{{ $rentalAsInquilino->id }}">@endif
                         <input type="hidden" name="category" value="poliza_contract">
                         <p class="form-hint" style="margin-bottom:.4rem;">Sube tu copia de la póliza cuando la tengas:</p>
-                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.82rem;" onchange="this.form.submit()">
+                        <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="font-size:.82rem;" onchange="hdvUploadSubmit(this)">
                     </form>
                     @endif
                 </div>
@@ -1299,6 +1301,19 @@
 @endsection
 
 @section('scripts')
+<script>
+// Los documentos se revisan (calidad) en el servidor al subir — puede tardar unos
+// segundos, así que se avisa en vez de dejar el botón "muerto".
+function hdvUploadSubmit(input) {
+    if (!input.files || !input.files.length) return;
+    var msg = document.createElement('span');
+    msg.style.cssText = 'font-size:.75rem;font-weight:600;color:#1D4ED8;';
+    msg.textContent = '⏳ Subiendo y revisando que se lea bien…';
+    input.style.display = 'none';
+    input.parentNode.appendChild(msg);
+    input.form.submit();
+}
+</script>
 <script>
 function showSection(id, btn) {
     document.querySelectorAll('.exp-section').forEach(s => s.classList.remove('active'));

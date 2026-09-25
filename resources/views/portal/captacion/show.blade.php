@@ -492,6 +492,7 @@
                 <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin-bottom:.4rem;">Categoría seleccionada</label>
                 <div id="upload-cat-name" style="font-size:.88rem; font-weight:600; padding:.55rem .75rem; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius);"></div>
             </div>
+            <div id="upload-tips" style="margin-bottom:1rem;"></div>
             <div style="margin-bottom:1.25rem;">
                 <label style="display:block; font-size:.78rem; font-weight:600; color:var(--text-muted); margin-bottom:.4rem;">Archivo (PDF, JPG o PNG — máx. 10 MB)</label>
                 <input type="file" name="file" id="upload-file" class="form-input" accept=".pdf,.jpg,.jpeg,.png" required>
@@ -537,7 +538,7 @@
 
             <div style="display:flex; gap:.75rem; justify-content:flex-end;">
                 <button type="button" class="btn btn-outline" onclick="closeUpload()">Cancelar</button>
-                <button type="submit" class="btn btn-primary" style="background:#1D4ED8;">Subir</button>
+                <button type="submit" class="btn btn-primary" style="background:#1D4ED8;" onclick="if(document.getElementById('upload-file').files.length){this.textContent='Subiendo y revisando…';}">Subir</button>
             </div>
         </form>
     </div>
@@ -547,11 +548,16 @@
 @section('scripts')
 <script>
 var catNames = @json($allCategories);
+// Leyenda de cómo subir cada documento (fuente: App\Support\DocumentUploadGuide).
+var uploadTipsByKind = {!! json_encode(collect(['id' => 'ine_frente', 'statement' => 'estado_cuenta', 'utility' => 'luz', 'legal' => 'escritura', 'payment' => 'comprobante_apartado', 'generic' => null])->map(fn($c) => view('portal._upload_tips', ['category' => $c, 'open' => true])->render())->all(), JSON_UNESCAPED_UNICODE|JSON_HEX_TAG) !!};
+var uploadKindMap = {!! json_encode(\App\Support\DocumentUploadGuide::KINDS) !!};
 
 function openUpload(category) {
     document.getElementById('upload-category').value = category;
     document.getElementById('upload-file').value = '';
     document.getElementById('upload-cat-name').textContent = catNames[category] || category;
+    var tips = document.getElementById('upload-tips');
+    if (tips) tips.innerHTML = uploadTipsByKind[uploadKindMap[category] || 'generic'] || '';
 
     document.querySelectorAll('.upload-extra-fields').forEach(function(block) {
         var isMatch = block.dataset.cat === category;
