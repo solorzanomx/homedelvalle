@@ -39,6 +39,20 @@
 | "Avisar ahora" / WhatsApp | `RentalDocumentController::notifyRejection` (ruta `documents.notify-rejection`) + aviso (toast) en `rentals/_doc_viewer.blade.php` |
 | Columnas | `documents.rejected_at`, `rejection_notified_at`, `rejection_notified_via` (email / whatsapp / skipped / no_email / failed) |
 
+## Bloque 2 (2026-09-25, commits `eddb614`, `b97f5fd` y el de asistente de subida)
+| Pieza | Archivo |
+|---|---|
+| Único punto de aprobar/rechazar (avisos, captación, historial, "expediente completo") | `app/Services/DocumentReviewService.php` — TODO cambio de estado pasa por `apply()`; aprobar en bloque = `bulkApprove()` |
+| Aviso "expediente del inquilino completo y aprobado" (una vez por renta, no avanza etapa solo) | `app/Support/RentalExpedienteStatus.php` |
+| Recordatorios de re-subida (3 y 6 días; tras el 2.º escala al asesor) | `DocumentRejectionNotifier::remindDue()` + `documents:remind-reupload` (10:30 diario) |
+| Historial por documento | tabla `document_events`, `App\Models\DocumentEvent::log()`; se ve en el visor |
+| "Captado vs. documento" en el visor | `DocumentReviewInbox::comparison()` (usa `documents.ai_extracted_data`) |
+| Validación por contenido de estados de cuenta y nóminas (titular, tipo, periodo ≤3 meses; imagen o PDF) | `app/Services/StatementDocumentAIExtractionService.php` (se llama en `DocumentUploader::upload`); reglas en `evaluate()` (probadas sin red) |
+| Métricas | `DocumentReviewController::metrics` → `documents/metrics.blade.php` (`/revision-documentos/metricas`); bloqueos en `document_quality_blocks` |
+| Pestaña Docs de Ventas filtrada por tipo | `app/Support/OperationDocumentChecklist.php` + `DocumentChecklist` (compartido con Rentas) en `operations/show` |
+| Asistente de subida del Portal (vista previa "¿se lee bien?", girar, varias fotos → UN PDF, reduce fotos >2000 px) | `resources/views/portal/_upload_assist.blade.php` (incluido en `layouts/portal.blade.php`; se activa con `data-hdv-assist` en los `<input type=file>`). PDF armado en JS sin librerías |
+| Ejemplos "así sí / así no" | `portal/_upload_examples.blade.php` (SVG en línea), dentro de `_upload_tips` y `_upload_guide_card` |
+
 ## INVARIANTES — no romper
 - **No volver a poner `capture="environment"` en ningún `<input type=file>`.** Forzaba la cámara, impedía elegir PDF y provocaba fotos a pantallas. Los 6 formularios del expediente usan `hdvUploadSubmit(this)` (avisa "Subiendo y revisando…"), no `this.form.submit()` directo.
 - **El gate de calidad nunca debe tronar una subida:** IA caída/sin key → se acepta (fail-open). Solo se BLOQUEA lo evidente (foto de pantalla, ilegible, imagen diminuta, PDF inválido/con contraseña). Lo dudoso pasa con `quality_status='warn'` ("Calidad dudosa").
@@ -57,6 +71,11 @@
 - **WhatsApp es un enlace `wa.me`** que abre el chat con el texto listo; `WhatsAppService` NO envía de verdad (no hay proveedor conectado). Se abre la pestaña dentro del clic antes del `fetch` para evitar el bloqueo de pop-ups.
 - **Rechazar reinicia el aviso** (`rejected_at=now`, notificación en null); aprobar lo limpia. Si cambias `updateStatus`, conserva ese reinicio o el cliente recibirá avisos de rechazos viejos.
 - **Los estados `skipped/no_email/failed` siguen siendo reenviables a mano** (`pendingFor`), pero el scheduler solo toma los de `rejection_notified_at` nulo (no reintenta infinito).
+- **Nunca cambies `documents.status` directamente para aprobar/rechazar: usa `DocumentReviewService::apply()`** (si no, se pierden reinicio de avisos, flujo de Captación, historial y aviso de expediente completo).
+- **El asistente de subida solo intercepta cambios REALES del usuario (`e.isTrusted`) sobre inputs con `data-hdv-assist`.** La cámara guiada de INE dispara eventos sintéticos y debe pasar directo; el reenvío propio va marcado `__hdv`. Los PDF/doc pasan sin asistente. Si una imagen no decodifica (HEIC) se envía tal cual. Los inputs nuevos de subida deben llevar `data-hdv-assist`.
+- **El PDF del asistente es de imágenes:** el servidor lo acepta porque empieza con `%PDF` y no trae `/Encrypt`; la revisión de calidad con IA lo lee como documento.
+- **Aprobar en bloque nunca aprueba `comprobante_apartado` de una renta sin apartado confirmado** (se omite y se avisa); rechazar siempre es individual y con motivo.
+- **La bandeja y las métricas cuentan solo lo subido por `role='client'`** y excluyen `DocumentReviewInbox::GENERATED`.
 - **Los archivos están en el disco `public`** (URL directa). Pendiente de seguridad: servirlos con permiso. No prometas privacidad de esos archivos.
 
 ## Cómo probar sin romper (checklist)
@@ -68,11 +87,11 @@
 ## Deploy
 `git pull && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan route:clear && /etc/init.d/php-fpm-83 restart` (ruta del proyecto en el servidor: ver `DEPLOYMENT_GUIDE.md`). Las migraciones de esta función: `add_quality_to_documents` y `seed_help_revision_documentos`.
 
-## Pendiente / ideas aprobadas por Alejandro (2026-09-25) — aún NO construidas
-1. ~~Aviso al cliente al rechazar~~ ✅ hecho (ver arriba). Falta: recordatorio si el cliente no vuelve a subir tras N días.
-2. Aprobar en bloque; comparar lado a lado con los datos capturados; avance automático de etapa al completar requeridos.
-3. Portal: vista previa "¿se lee bien?" antes de enviar, modo "escanear" (varias fotos → un PDF), ejemplos visuales sí/no, recordatorios amables, enlace mágico.
-4. Validar por contenido los PDF de estados de cuenta (periodo reciente, nombre coincide).
-5. Aplicar la misma limpieza por caso a la pantalla de **venta** (`operations/show`); hoy solo Renta está filtrada (la bandeja sí cubre ventas/expediente).
-6. Lista de documentos del **propietario** que renta es un default — pendiente de confirmar con Alejandro.
-7. Historial por documento (cuántas veces se rechazó y por qué) y métricas de calidad por categoría.
+## Pendiente / ideas (no construidas)
+1. **Enlace mágico** (entrar al Portal sin contraseña por WhatsApp): decisión de seguridad, se dejó fuera a propósito — tocar autenticación exige revisar `project_homedelvalle_seguridad` y añadir expiración/un solo uso.
+2. WhatsApp real (Twilio/Meta): hoy todo es enlace `wa.me`.
+3. Lista de documentos del **propietario** que renta es un default — pendiente de confirmar con Alejandro.
+4. Validar por contenido otros documentos (predial, escritura, constancia fiscal) con el mismo patrón de `StatementDocumentAIExtractionService`.
+5. Servir los archivos con permiso (hoy en disco `public`, URL directa).
+6. Afinar umbrales de calidad con la página de métricas después de unas semanas de uso real.
+7. Los formularios simples del expediente (no Livewire) no pasan por la validación de contenido de estados de cuenta, solo por la de calidad.

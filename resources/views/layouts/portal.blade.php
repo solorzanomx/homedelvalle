@@ -896,5 +896,8 @@
     @endif
     @livewireScripts
     @stack('scripts')
+    @auth
+    @include('portal._upload_assist')
+    @endauth
 </body>
 </html>

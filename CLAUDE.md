@@ -13,7 +13,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 ## 1. Índice de funcionalidades documentadas
 | Área | Doc | Tocar con cuidado si… |
 |---|---|---|
-| Documentos: subida guiada, calidad, visor y revisión (Renta) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` (Documentos), `Document`, `capture=` en inputs |
+| Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).
@@ -30,7 +30,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 - **Toda `Operation` nueva pasa por `OperationObserver`** (autocorrige phase/type/stage). Lee la nota antes de crear una por un camino nuevo.
 - **Propiedades públicas:** `reservada/vendida/rentada` se ven con letrero; `archived` se oculta.
 - **Cada módulo/feature nuevo entrega su artículo del Manual del Broker en la misma sesión:** `database/seeders/help-articles/{slug}.md` + migración que lo siembra (patrón de `2026_09_25_130000_seed_help_revision_documentos.php`; editar el .md después NO actualiza la BD, requiere migración de resync).
-- **Subidas de documentos:** jamás `capture=` en `<input type=file>`; todo punto de subida del Portal pasa por `DocumentQualityService`.
+- **Subidas de documentos:** jamás `capture=` en `<input type=file>`; todo punto de subida del Portal pasa por `DocumentQualityService` y lleva `data-hdv-assist`. **Aprobar/rechazar un documento SIEMPRE por `DocumentReviewService::apply()`.**
 
 ## 3. Deploy (se lo entregas a Alejandro; él lo corre en el servidor aaPanel, `/www/wwwroot/homedelvalle.mx`)
 ```

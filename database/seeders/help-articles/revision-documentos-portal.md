@@ -60,6 +60,33 @@ El Portal ya le enseña al cliente cómo subir cada documento (leyenda en cada c
 
 Rechaza con el motivo **Foto de pantalla** o **Ilegible** y, si hace falta, mándale el enlace a su Portal: ahí verá la guía "Cómo subir tus documentos para que se aprueben a la primera".
 
+## Aprobar en bloque
+
+En **Docs por revisar** cada documento tiene una casilla. Marca los que quieras (o **Seleccionar todos**) y pulsa **✓ Aprobar N documentos**. El botón **🤖 Seleccionar los que coinciden** marca solo los que la verificación automática dio por buenos y no traen aviso de calidad — pero **tú decides**: ábrelos con 👁 Ver si dudas. El comprobante de apartado se omite (se confirma desde la renta) y rechazar siempre es uno por uno, con motivo.
+
+## Datos junto al documento
+
+En el visor, el panel lateral muestra **"Captado vs. documento"**: lo que el cliente capturó (nombre, CURP, domicilio, titular…) contra lo que se lee en el archivo, con ✓/✗. También trae el **historial** del documento (subido, calidad dudosa, aprobado/rechazado y por quién, avisos al cliente).
+
+Los **estados de cuenta y nóminas** se validan por contenido: que sea del tipo correcto, que el titular sea el cliente y que el periodo sea de los últimos 3 meses (imagen o PDF).
+
+## Avisos automáticos para ti
+
+- **Expediente completo:** cuando todos los documentos obligatorios del inquilino de una renta quedan aprobados, recibes un aviso (una sola vez) para avanzar de etapa. No avanza solo.
+- **Cliente sin corregir:** si rechazaste algo y el cliente no lo vuelve a subir, el sistema le manda un recordatorio amable a los 3 días y otro a los 6; después te avisa a ti para que le llames o escribas.
+
+## Métricas
+
+En **Docs por revisar → 📊 Métricas**: cuánto se sube, cuánto se rechaza (por tipo y por motivo), cuánto tardas en revisar y cuántos archivos bloquea el sistema por mala calidad. Un % de rechazo alto en un tipo de documento suele significar que su guía del Portal no está clara.
+
+## Lo que ve el cliente al subir
+
+Al elegir fotos, el Portal abre una **vista previa "¿Se lee bien?"**: puede girarlas, agregar más hojas (se envían juntas en **un solo PDF**) y confirma antes de enviar. Las fotos muy pesadas se reducen solas. Cada casilla trae una guía con ejemplos **así sí / así no**.
+
+## En ventas y otros tratos
+
+La pestaña **Docs** de una operación también muestra solo lo que aplica a su tipo (vendedor, comprador, inquilino, propietario), con el mismo visor y las mismas acciones que en Rentas.
+
 ## Otros detalles útiles
 
 - **Eliminar** está dentro del menú **⋯** y pide confirmación — evita borrar por accidente.

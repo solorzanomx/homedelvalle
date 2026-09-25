@@ -11,5 +11,6 @@
         @foreach($g['do'] as $t)<li style="color:#166534;margin-bottom:.2rem;">✅ {{ $t }}</li>@endforeach
         @foreach($g['dont'] as $t)<li style="color:#991b1b;margin-bottom:.2rem;">❌ {{ $t }}</li>@endforeach
     </ul>
+    @include('portal._upload_examples')
     <div style="font-size:.68rem;color:#94a3b8;">Formatos: PDF, JPG o PNG · máximo 10 MB</div>
 </details>

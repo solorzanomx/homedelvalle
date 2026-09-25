@@ -81,7 +81,7 @@
                      "Subir archivo" y el cliente no podía elegir un PDF ni una
                      captura — terminaba fotografiando la pantalla de su teléfono.
                      Sin el atributo el celular ofrece cámara, fotos o archivos. --}}
-                <input id="slot-input-{{ $singleCategory }}" type="file" wire:model="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;">
+                <input id="slot-input-{{ $singleCategory }}" type="file" wire:model="file" accept=".pdf,.jpg,.jpeg,.png" data-hdv-assist="1" data-hdv-tip="{{ \App\Support\DocumentUploadGuide::for($singleCategory)['headline'] }}" style="display:none;">
             </label>
             @if($isIdCategory)
             <button type="button" onclick="idCamOpen('{{ $singleCategory }}')"
@@ -189,7 +189,7 @@
                     <span class="lw-spinner"></span> Cargando...
                 </span>
             </div>
-            <input type="file" wire:model="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;">
+            <input type="file" wire:model="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" data-hdv-assist="1" style="display:none;">
         </label>
     </div>
 

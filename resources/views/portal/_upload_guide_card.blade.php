@@ -14,6 +14,7 @@
         📎 Cómo subir tus documentos para que se aprueben a la primera
         <span style="display:block;font-size:.75rem;font-weight:500;color:#475569;margin-top:.15rem;">Regla de oro: el PDF original siempre se lee mejor que una foto. <u>Nunca le tomes foto a una pantalla.</u></span>
     </summary>
+    @include('portal._upload_examples')
     <div style="margin-top:.75rem;display:grid;gap:.6rem;">
         @foreach($kinds as $k => [$icon, $title])
             @php $g = \App\Support\DocumentUploadGuide::for($sampleCat[$k]); @endphp
