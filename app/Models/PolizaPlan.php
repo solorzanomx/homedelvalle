@@ -22,13 +22,26 @@ class PolizaPlan extends Model
     /** Planes que el inquilino puede ver y elegir. */
     public function scopeOffered($q)
     {
-        return $q->where('is_active', true)->whereNotNull('price')->orderBy('sort_order')->orderBy('id');
+        return $q->where('is_active', true)->orderBy('sort_order')->orderBy('id');
     }
 
     /** Planes de la página pública (incluye los que aún no tienen precio: la cobertura ya es información útil). */
     public function scopeForWebsite($q)
     {
         return $q->where('show_on_website', true)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function coverages()
+    {
+        return $this->belongsToMany(PolizaCoverage::class, 'poliza_coverage_plan')->withPivot('included')->orderBy('poliza_coverages.sort_order');
+    }
+
+    public function rates() { return $this->hasMany(PolizaRate::class); }
+
+    /** Conceptos de la matriz que ESTE plan incluye (en el orden de la hoja). */
+    public function includedCoverages()
+    {
+        return $this->coverages->filter(fn($c) => (bool) $c->pivot->included)->values();
     }
 
     public function getPriceFormattedAttribute(): string
