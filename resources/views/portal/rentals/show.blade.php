@@ -105,6 +105,10 @@
     ← Mis rentas
 </a>
 
+@if($role === 'inquilino')
+    @include('portal._tenant_roadmap', ['rental' => $rental])
+@endif
+
 {{-- Hero --}}
 <div class="rental-hero">
     <div class="rental-hero-badge">{{ $role === 'propietario' ? '🏠 Propietario' : '🔑 Inquilino' }}</div>

@@ -305,6 +305,8 @@ Route::middleware('auth')->group(function () {
 
     // Rentas
     Route::resource('rentals', RentalProcessController::class);
+    Route::post('rentals/{rental}/guarantee-route', [RentalProcessController::class, 'setGuaranteeRoute'])->name('rentals.guarantee-route');
+    Route::post('rentals/{rental}/contracts/auto-generate', [\App\Http\Controllers\ContractController::class, 'autoGenerate'])->name('rentals.contracts.auto-generate');
     Route::patch('rentals/{rental}/stage', [RentalProcessController::class, 'updateStage'])->name('rentals.update-stage');
     Route::post('rentals/{rental}/documents', [RentalDocumentController::class, 'store'])->name('rentals.documents.store');
     // Apartado (reserva previa a investigación/póliza)
@@ -316,6 +318,12 @@ Route::middleware('auth')->group(function () {
     Route::post('rentals/{rental}/investigacion',        [RentalProcessController::class, 'storeInvestigation'])->name('rentals.investigacion.store');
     Route::patch('rentals/{rental}/investigacion/toggle',[RentalProcessController::class, 'toggleInvestigation'])->name('rentals.investigacion.toggle');
     Route::patch('documents/{document}/status', [RentalDocumentController::class, 'updateStatus'])->name('documents.update-status');
+    Route::middleware('admin')->group(function () {
+        Route::get('poliza-planes', [\App\Http\Controllers\PolizaPlanController::class, 'index'])->name('poliza-plans.index');
+        Route::post('poliza-planes', [\App\Http\Controllers\PolizaPlanController::class, 'store'])->name('poliza-plans.store');
+        Route::put('poliza-planes/{plan}', [\App\Http\Controllers\PolizaPlanController::class, 'update'])->name('poliza-plans.update');
+        Route::delete('poliza-planes/{plan}', [\App\Http\Controllers\PolizaPlanController::class, 'destroy'])->name('poliza-plans.destroy');
+    });
     Route::get('revision-documentos/metricas', [\App\Http\Controllers\DocumentReviewController::class, 'metrics'])->name('documents.metrics');
     Route::get('revision-documentos', [\App\Http\Controllers\DocumentReviewController::class, 'index'])->name('documents.inbox');
     Route::post('documents/{document}/notify-rejection', [RentalDocumentController::class, 'notifyRejection'])->name('documents.notify-rejection');

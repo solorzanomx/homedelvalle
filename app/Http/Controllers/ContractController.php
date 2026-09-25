@@ -129,6 +129,38 @@ class ContractController extends Controller
     }
 
     /**
+     * Genera el contrato de arrendamiento con UN clic usando la plantilla activa
+     * que corresponda (sin elegir plantilla ni escribir título). Para rentas con
+     * póliza el contrato lo emite el proveedor: se sube, no se genera.
+     */
+    public function autoGenerate(string $rentalId)
+    {
+        $rental = RentalProcess::with('property')->findOrFail($rentalId);
+
+        $templates = ContractTemplate::active()->where('type', 'rental')->orderBy('id')->get();
+        // Sin póliza, se prefiere una plantilla que NO sea "con póliza".
+        $template = $templates->first(fn($t) => ! str_contains(mb_strtolower($t->name), 'póliza') && ! str_contains(mb_strtolower($t->name), 'poliza')) ?? $templates->first();
+
+        if (! $template) {
+            return back()->with('error', 'No hay una plantilla de contrato de arrendamiento activa. Crea o activa una en Plantillas de contrato.');
+        }
+
+        $title = 'Contrato de Arrendamiento — ' . ($rental->property->title ?? ('Renta #' . $rental->id));
+        $contract = Contract::create([
+            'rental_process_id' => $rental->id,
+            'contract_template_id' => $template->id,
+            'type' => $template->type,
+            'title' => $title,
+            'generated_html' => $this->contractService->generateFromTemplate($template, $rental),
+            'source' => 'generated',
+            'notes' => 'Generado automáticamente con la plantilla "' . $template->name . '".',
+        ]);
+        $this->contractService->generatePdf($contract);
+
+        return back()->with('success', 'Contrato generado con la plantilla "' . $template->name . '". Revísalo antes de enviarlo a firma.');
+    }
+
+    /**
      * Upload an external contract file.
      */
     public function upload(Request $request, string $rentalId)

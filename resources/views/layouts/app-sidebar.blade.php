@@ -429,6 +429,11 @@
                             <span class="nav-icon"><x-icon name="handshake" class="w-4 h-4" /></span> Tratos de Renta
                         </a>
                         @endif
+                        @if(Route::has('poliza-plans.index') && auth()->user()?->role === 'admin')
+                        <a href="{{ route('poliza-plans.index') }}" class="nav-item {{ request()->routeIs('poliza-plans.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="shield" class="w-4 h-4" /></span> Planes de póliza
+                        </a>
+                        @endif
                         <a href="{{ route('admin.rentas.gestion') }}" class="nav-item {{ request()->routeIs('admin.rentas.gestion*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="building-2" class="w-4 h-4" /></span> Post-Cierre
                         </a>

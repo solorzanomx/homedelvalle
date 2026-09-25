@@ -208,6 +208,10 @@
     $hasPoliza  = $guaranteeType === 'poliza_juridica';
 @endphp
 
+@if(isset($isArrendatario, $rentalAsInquilino) && $isArrendatario && $rentalAsInquilino)
+    @include('portal._tenant_roadmap', ['rental' => $rentalAsInquilino])
+@endif
+
 {{-- Hero con progreso global --}}
 <div class="exp-hero">
     <div class="exp-hero-icon">📋</div>

@@ -286,6 +286,8 @@
 
         {{-- TAB: Investigación de candidato --}}
         <div class="tab-content" id="tab-investigacion">
+            @include('rentals._guarantee_route', ['rental' => $rental])
+
         @php $inv = $rental->investigation; @endphp
 
         {{-- Apartado --}}
@@ -940,6 +942,22 @@
 
         {{-- TAB: Contratos --}}
         <div class="tab-content" id="tab-contracts">
+            {{-- Siguiente paso guiado según la ruta de garantía --}}
+            @php $__route = \App\Support\TenantRoadmap::route($rental); @endphp
+            <div class="card" style="margin-bottom:1rem;border-left:4px solid {{ $__route === 'poliza' ? '#9333ea' : '#1D4ED8' }};">
+                <div class="card-body" style="padding:1rem;">
+                    @if($__route === 'poliza')
+                        <h4 style="font-size:.85rem;font-weight:700;margin:0 0 .35rem;">Con póliza, el contrato lo emite el proveedor</h4>
+                        <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 .6rem;">Cuando {{ $rental->polizaPlan?->provider_name ?? 'Previsión Legal' }} te entregue el contrato de arrendamiento, súbelo abajo en <strong>Subir Contrato Externo</strong>: aparece en el Portal del inquilino y del propietario para revisarlo y firmarlo.</p>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="var t=document.querySelector('#tab-contracts input[name=title][placeholder=\'Nombre del contrato\']'); if(t){t.value='Contrato de Arrendamiento — {{ $rental->polizaPlan?->provider_name ?? 'Previsión Legal' }}'; t.scrollIntoView({behavior:'smooth',block:'center'}); t.focus();}">Preparar subida del contrato →</button>
+                    @else
+                        <h4 style="font-size:.85rem;font-weight:700;margin:0 0 .35rem;">Contrato de Home del Valle</h4>
+                        <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 .6rem;">Genera el contrato de arrendamiento con un clic usando la plantilla activa (con los datos del trato). Lo revisas y lo envías a firma.</p>
+                        <form method="POST" action="{{ route('rentals.contracts.auto-generate', $rental->id) }}">@csrf<button class="btn btn-sm btn-primary">⚡ Generar contrato automáticamente</button></form>
+                    @endif
+                </div>
+            </div>
+
             {{-- Generate from Template --}}
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:1rem;">

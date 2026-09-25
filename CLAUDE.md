@@ -14,6 +14,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Área | Doc | Tocar con cuidado si… |
 |---|---|---|
 | Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos |
+| Garantía del inquilino: póliza (Previsión Legal, 3 planes) vs. aval + $3,500, "¿qué sigue?", contrato del proveedor / con un clic | `docs/funcionalidades/garantia-y-poliza-inquilino.md` | tocas `TenantRoadmap`, planes de póliza, `guarantee_type`, pasos del inquilino en el Portal |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).

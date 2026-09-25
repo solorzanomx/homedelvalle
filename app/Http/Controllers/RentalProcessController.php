@@ -188,6 +188,24 @@ class RentalProcessController extends Controller
         return view('rentals.show', compact('rental', 'timeline', 'documentCategories', 'documentChecklist', 'contractTemplates', 'providerCompanies'));
     }
 
+    /** El asesor fija/corrige la ruta de garantía (el inquilino la declara en el Portal, pero el asesor tiene la última palabra). */
+    public function setGuaranteeRoute(Request $request, string $id)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $request->validate(['route' => 'required|in:poliza,aval']);
+
+        if ($request->input('route') === 'poliza') {
+            $rental->update(['tenant_has_aval' => false, 'guarantee_type' => 'poliza_juridica', 'guarantee_declared_at' => now()]);
+            $msg = 'Ruta de garantía: póliza jurídica. El inquilino verá los planes en su Portal.';
+        } else {
+            $keep = in_array($rental->guarantee_type, ['aval', 'aval_pagares', 'pagares'], true) ? $rental->guarantee_type : 'aval';
+            $rental->update(['tenant_has_aval' => true, 'guarantee_type' => $keep, 'guarantee_declared_at' => now()]);
+            $msg = 'Ruta de garantía: aval con investigación ($' . number_format(\App\Support\TenantRoadmap::INVESTIGATION_FEE) . ').';
+        }
+
+        return back()->with('success', $msg);
+    }
+
     public function edit(string $id)
     {
         $rental = RentalProcess::with(['property', 'ownerClient', 'tenantClient', 'broker'])->findOrFail($id);

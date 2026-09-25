@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RentalProcess extends Model
 {
-    protected $fillable = ['operation_id', 'property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at', 'poliza_aseguradora', 'poliza_number', 'poliza_expiry', 'apartado_amount', 'apartado_paid_at', 'apartado_deadline', 'apartado_payment_method', 'apartado_notes', 'investigacion_amount', 'investigacion_paid_at', 'investigacion_payment_method', 'investigacion_notes'];
+    protected $fillable = ['operation_id', 'property_id', 'owner_client_id', 'tenant_client_id', 'broker_id', 'user_id', 'stage', 'monthly_rent', 'currency', 'deposit_amount', 'commission_amount', 'commission_percentage', 'broker_commission_amount', 'guarantee_type', 'lease_start_date', 'lease_end_date', 'lease_duration_months', 'payment_frequency', 'payment_day', 'annual_increase_type', 'annual_increase_percentage', 'notes', 'status', 'completed_at', 'cancelled_at', 'proposed_tenant_at', 'tenant_approved_at', 'poliza_aseguradora', 'poliza_number', 'poliza_expiry', 'apartado_amount', 'apartado_paid_at', 'apartado_deadline', 'apartado_payment_method', 'apartado_notes', 'investigacion_amount', 'investigacion_paid_at', 'investigacion_payment_method', 'investigacion_notes', 'tenant_has_aval', 'guarantee_declared_at', 'poliza_plan_id', 'poliza_plan_selected_at'];
 
     const APARTADO_PAYMENT_METHODS = [
         'efectivo' => 'Efectivo',
@@ -80,6 +80,9 @@ class RentalProcess extends Model
             'payment_day' => 'integer',
             'lease_start_date' => 'date',
             'lease_end_date' => 'date',
+            'tenant_has_aval' => 'boolean',
+            'guarantee_declared_at' => 'datetime',
+            'poliza_plan_selected_at' => 'datetime',
             'completed_at'       => 'datetime',
             'cancelled_at'       => 'datetime',
             'proposed_tenant_at' => 'datetime',
@@ -147,4 +150,5 @@ class RentalProcess extends Model
     {
         return self::GUARANTEE_TYPES[$this->guarantee_type] ?? $this->guarantee_type;
     }
+    public function polizaPlan() { return $this->belongsTo(PolizaPlan::class, 'poliza_plan_id'); }
 }
