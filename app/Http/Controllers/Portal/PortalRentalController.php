@@ -89,44 +89,47 @@ class PortalRentalController extends Controller
         }
         $rental->update($update);
 
+        // Sin aval en CDMX = póliza: al PROPIETARIO le toca elegir el plan y el reparto (se le avisa por portal y correo).
+        if (! $hasAval) {
+            app(\App\Services\PolizaDecisionService::class)->askOwnerToDecide($rental->fresh(['ownerClient']));
+        }
+
         $this->notifyBroker($rental, 'El inquilino definió su garantía',
             "{$client->name} indicó que " . ($hasAval ? 'SÍ tiene aval con inmueble en CDMX (sigue la investigación de aval)' : 'NO tiene aval en CDMX (va con póliza jurídica)') . " en la renta #{$rental->id}.");
 
         return back()->with('success', $hasAval
             ? 'Listo. Seguiremos con la investigación de tu aval; completa sus datos y documentos.'
-            : 'Listo. Sin aval en CDMX tu garantía es una póliza jurídica. Elige el plan que prefieras.');
+            : 'Listo. Sin aval en CDMX tu garantía es una póliza jurídica: tu propietario elegirá el plan y te mostraremos lo que te toca.');
     }
 
-    /** El inquilino elige un plan del catálogo; se abre/actualiza el registro de póliza para que el asesor tramite el alta. */
-    public function selectPlan(Request $request, string $id)
+    /**
+     * El PROPIETARIO decide la póliza (plan) y cómo se reparte el costo (inquilino 100% o 50/50). El inquilino solo lo ve.
+     * Solo el propietario de esa renta (403 para cualquier otro cliente).
+     */
+    public function decidePolicy(Request $request, string $id, \App\Services\PolizaDecisionService $decisions)
     {
-        [$client, $rental] = $this->tenantRental($id);
-        $request->validate(['plan_id' => 'required|integer']);
+        $client = $this->portalService->getClientForUser(Auth::user());
+        $rental = RentalProcess::with(['poliza', 'ownerClient', 'tenantClient'])->findOrFail($id);
+        abort_unless($client && $rental->owner_client_id === $client->id, 403, 'Solo el propietario puede elegir la póliza.');
 
-        if (\App\Support\TenantRoadmap::route($rental) !== \App\Support\TenantRoadmap::ROUTE_POLIZA) {
-            return back()->with('error', 'Tu garantía no es una póliza jurídica.');
-        }
+        $data = $request->validate([
+            'plan_id' => 'required|integer',
+            'tenant_share' => 'required|in:' . implode(',', array_keys(\App\Support\PolizaPricing::SHARE_OPTIONS)),
+        ]);
 
-        $plan = \App\Models\PolizaPlan::offered()->find($request->input('plan_id'));
+        $plan = \App\Models\PolizaPlan::offered()->find($data['plan_id']);
         if (! $plan) {
             return back()->with('error', 'Ese plan ya no está disponible. Elige otro.');
         }
-        if ($rental->poliza && $rental->poliza->status === 'approved') {
-            return back()->with('error', 'Tu póliza ya fue aprobada; para cambiar de plan habla con tu asesor.');
+
+        try {
+            $result = $decisions->decide($rental, $plan, (int) $data['tenant_share'], 'owner', Auth::id());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        $rental->update(['poliza_plan_id' => $plan->id, 'poliza_plan_selected_at' => now(), 'guarantee_type' => 'poliza_juridica']);
-
-        \App\Models\PolizaJuridica::updateOrCreate(
-            ['rental_process_id' => $rental->id],
-            ['tenant_client_id' => $client->id, 'insurance_company' => $plan->provider_name, 'cost' => $plan->price, 'currency' => $plan->currency]
-                + ($rental->poliza ? [] : ['status' => 'pending'])
-        );
-
-        $this->notifyBroker($rental, 'El inquilino eligió su plan de póliza',
-            "{$client->name} eligió el plan {$plan->name} ({$plan->price_formatted}) de {$plan->provider_name} en la renta #{$rental->id}. Tramita el alta; el pago lo hace el inquilino directo con el proveedor.");
-
-        return back()->with('success', "Elegiste el plan {$plan->name}. Tu asesor coordinará el alta con {$plan->provider_name}.");
+        $reparto = $result['split']['tenant_pct'] === 100 ? 'la paga tu inquilino' : 'se reparte mitad y mitad';
+        return back()->with('success', "Elegiste el plan {$plan->name} ($" . number_format($result['amount']) . "); {$reparto}. Tu asesor tramitará el alta.");
     }
 
     public function investigacion(string $id)

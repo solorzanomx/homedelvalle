@@ -313,6 +313,9 @@ Route::middleware(['auth', 'viewer'])->group(function () {
 
     // Rentas
     Route::resource('rentals', RentalProcessController::class);
+    Route::post('rentals/{rental}/poliza-decision', [RentalProcessController::class, 'setPolizaDecision'])->name('rentals.poliza-decision');
+    Route::post('rentals/{rental}/poliza-payment', [RentalProcessController::class, 'setPolizaPayment'])->name('rentals.poliza-payment');
+    Route::post('rentals/{rental}/poliza-remind-owner', [RentalProcessController::class, 'remindOwnerPoliza'])->name('rentals.poliza-remind-owner');
     Route::post('rentals/{rental}/guarantee-route', [RentalProcessController::class, 'setGuaranteeRoute'])->name('rentals.guarantee-route');
     Route::post('rentals/{rental}/contracts/auto-generate', [\App\Http\Controllers\ContractController::class, 'autoGenerate'])->name('rentals.contracts.auto-generate');
     Route::patch('rentals/{rental}/stage', [RentalProcessController::class, 'updateStage'])->name('rentals.update-stage');
@@ -328,6 +331,8 @@ Route::middleware(['auth', 'viewer'])->group(function () {
     Route::patch('documents/{document}/status', [RentalDocumentController::class, 'updateStatus'])->name('documents.update-status');
     Route::middleware('admin')->group(function () {
         Route::get('poliza-planes', [\App\Http\Controllers\PolizaPlanController::class, 'index'])->name('poliza-plans.index');
+        Route::get('poliza-planes/tarifario', [\App\Http\Controllers\PolizaPlanController::class, 'tarifario'])->name('poliza-plans.tarifario');
+        Route::post('poliza-planes/tarifario', [\App\Http\Controllers\PolizaPlanController::class, 'saveTarifario'])->name('poliza-plans.tarifario.save');
         Route::post('poliza-planes', [\App\Http\Controllers\PolizaPlanController::class, 'store'])->name('poliza-plans.store');
         Route::put('poliza-planes/{plan}', [\App\Http\Controllers\PolizaPlanController::class, 'update'])->name('poliza-plans.update');
         Route::delete('poliza-planes/{plan}', [\App\Http\Controllers\PolizaPlanController::class, 'destroy'])->name('poliza-plans.destroy');

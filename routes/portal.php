@@ -59,7 +59,7 @@ Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(fu
     Route::get('/mi-renta',                        [PortalRentalController::class, 'index'])->name('rentals.index');
     Route::get('/mi-renta/{id}',                   [PortalRentalController::class, 'show'])->name('rentals.show');
     Route::post('/mi-renta/{id}/garantia',         [PortalRentalController::class, 'declareGuarantee'])->name('rentals.guarantee.declare');
-    Route::post('/mi-renta/{id}/poliza-plan',      [PortalRentalController::class, 'selectPlan'])->name('rentals.poliza.select');
+    Route::post('/mi-renta/{id}/poliza',           [PortalRentalController::class, 'decidePolicy'])->name('rentals.poliza.decide');
     Route::get('/mi-renta/{id}/candidato',         [PortalRentalController::class, 'investigacion'])->name('rentals.investigacion');
     Route::post('/mi-renta/{id}/candidato/decision',[PortalRentalController::class, 'submitDecision'])->name('rentals.investigacion.decision');
 

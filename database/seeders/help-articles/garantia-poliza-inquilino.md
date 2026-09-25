@@ -15,18 +15,31 @@ Al entrar al Portal, si aún no lo definió, el inquilino contesta una pregunta:
 
 ## Planes de póliza (Previsión Legal)
 
-Los esquemas son **Básica, Superior e Integral**. Son un **catálogo que tú editas** en **Rentas → Planes de póliza** (solo administradores): nombre, precio, etiqueta ("La más común"), qué incluye (una línea por concepto) y si está activo. **El Portal solo muestra los planes activos y con precio**: hoy Superior ($6,000) está listo; Básica e Integral aparecen como "Falta precio" hasta que les pongas el suyo. Si Previsión Legal cambia precios o coberturas, lo cambias ahí, sin programar. *(Sus precios varían por estado.)*
+Los esquemas son **Básica, Superior e Integral**, con la **Hoja de Servicios 2026** de Previsión Legal (Área Metropolitana, Querétaro y Nuevo León). **El precio depende de la renta mensual** del trato:
 
-**Qué incluye cada plan** (según Previsión Legal; cada plan suma al anterior): **Básica** — investigación legal y laboral del inquilino, contrato a la medida, asesoría jurídica, firma digital e intervención extrajudicial. **Superior** — suma investigación crediticia, cobranza extrajudicial y abogado a la firma del convenio. **Integral** — suma investigación laboral del fiador, abogado en la firma del contrato, los procesos judiciales (adeudo, abandono, vencimiento, extinción de dominio), cobranza judicial o ejecución de pagarés, honorarios y gastos de juicio y desalojo.
+| Renta mensual | Básica | Superior | Integral |
+|---|---|---|---|
+| hasta $7,000 | $3,950 | $5,750 | $7,000 |
+| $7,001 – $10,000 | $4,600 | $6,600 | $8,500 |
+| $10,001 – $15,000 | $5,100 | $7,300 | $9,750 |
+| $15,001 – $20,000 | $5,600 | $8,000 | $11,350 |
+| $20,001 – $25,000 | $5,850 | $8,250 | $13,200 |
+| $25,001 – $30,000 | $6,200 | $8,400 | $15,000 |
+| más de $30,000 | 21% de la renta | 29.5% de la renta | 50% de la renta |
 
-**En el sitio web:** los tres planes con su cobertura se publican en **/rentar/polizas-juridicas**, leídos de este mismo catálogo. Cada plan tiene dos casillas: **Mostrar en el sitio web** y **Mostrar el precio en el sitio web** (apagada por defecto, porque las tarifas cambian por estado: enciéndela cuando tengas las tarifas confirmadas; mientras tanto el sitio dice "Tarifa según el estado del inmueble — te la cotizamos").
+**Gastos de emisión: $1,700.** Se cubren al iniciar el trámite; se **acreditan al precio** si la operación se concreta y **no se reembolsan** si no.
 
-## Con póliza: qué te toca
+**Cobertura** (matriz oficial): los tres incluyen antecedentes legales del inquilino, contrato y firma digital con cotejo biométrico, intervención y cobranza extrajudicial, y el proceso judicial por falta de pago o abandono con honorarios y gastos de juicio y desalojo. **Superior** suma antecedentes crediticios y el proceso por vencimiento del contrato y por Ley de Extinción de Dominio. **Integral** suma la cobranza judicial de rentas (pagarés). *(La asistencia de abogado a la firma está sujeta a disponibilidad o previa cita.)*
 
-1. El inquilino **elige un plan** en su Portal → te llega un aviso y se abre el registro de póliza (estado *Pendiente*).
-2. **Tramitas el alta** con Previsión Legal y vas actualizando el estado en la pestaña **Póliza** (Documentos enviados → En revisión → Aprobada / Rechazada). El inquilino ve ese estado.
-3. Cuando **emitan el contrato**, lo subes en **Contratos → Subir Contrato Externo** (el botón *Preparar subida del contrato* ya pone el título). Aparece en el Portal del inquilino y del propietario para revisarlo y firmarlo.
-4. Recuerda: **el inquilino paga la póliza directo al proveedor** — no se registra como cobro nuestro.
+Todo esto se edita en **Rentas → Planes de póliza → Tarifario y cobertura** (solo administradores); si la hoja cambia, se actualiza ahí sin programar.
+
+## Con póliza: el propietario decide
+
+1. Cuando el inquilino dice que **no tiene aval en CDMX**, al **propietario** le llega un aviso (portal y correo): *"Elige la póliza de tu inquilino"*.
+2. En su Portal ve los **3 planes con el precio calculado con la renta de su trato**, qué cubre cada uno, y elige **quién la paga: el inquilino al 100% o mitad y mitad** (le muestra cuánto es cada parte). Al confirmar, **te llega un aviso**.
+3. El **inquilino ya no elige**: ve el plan elegido, **lo que le toca pagar**, los gastos de emisión y qué cubre.
+4. **Tú** tramitas el alta con Previsión Legal, actualizas el estado en la pestaña **Póliza** y, al emitirse, subes **su contrato** en **Contratos**.
+5. En la tarjeta **Garantía del inquilino** (pestaña Investigación) ves la decisión y puedes: **decidir a nombre del propietario** (si te lo pidió por teléfono o WhatsApp), **recordarle** que le toca elegir, y definir **cómo se paga** (cada parte directo a Previsión Legal, o Home del Valle cobra y liquida) y marcar quién ya pagó.
 
 ## Con aval: qué te toca
 

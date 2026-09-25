@@ -19,9 +19,7 @@ class PolizaPlanController extends Controller
             'name' => 'required|string|max:100',
             'provider_name' => 'nullable|string|max:100',
             'tagline' => 'nullable|string|max:120',
-            'price' => 'nullable|numeric|min:0|max:9999999',
             'description' => 'nullable|string|max:600',
-            'inclusions_text' => 'nullable|string|max:3000',
             'sort_order' => 'nullable|integer|min:0|max:999',
         ];
     }
@@ -29,16 +27,11 @@ class PolizaPlanController extends Controller
     private function payload(Request $request): array
     {
         $v = $request->validate($this->rules());
-        $inclusions = collect(preg_split('/\r\n|\r|\n/', (string) ($v['inclusions_text'] ?? '')))
-            ->map(fn($l) => trim($l))->filter()->values()->all();
-
         return [
             'name' => $v['name'],
             'provider_name' => $v['provider_name'] ?: 'Previsión Legal',
             'tagline' => $v['tagline'] ?? null,
-            'price' => $v['price'] ?? null,
             'description' => $v['description'] ?? null,
-            'inclusions' => $inclusions,
             'sort_order' => $v['sort_order'] ?? 0,
             'is_active' => $request->boolean('is_active'),
             'is_recommended' => $request->boolean('is_recommended'),
@@ -57,9 +50,6 @@ class PolizaPlanController extends Controller
     public function update(Request $request, PolizaPlan $plan)
     {
         $data = $this->payload($request);
-        if ($data['is_active'] && $data['price'] === null) {
-            return back()->with('error', "El plan \"{$data['name']}\" necesita un precio para poder activarse (el Portal solo muestra planes con precio).");
-        }
         $plan->update($data);
 
         return back()->with('success', "Plan \"{$plan->name}\" guardado.");
@@ -73,5 +63,53 @@ class PolizaPlanController extends Controller
         $plan->delete();
 
         return back()->with('success', 'Plan eliminado.');
+    }
+
+    /** Tarifario (rangos de renta), gastos de emisión y matriz de cobertura de la hoja de servicios vigente. */
+    public function tarifario()
+    {
+        $sheet = \App\Support\PolizaPricing::sheet();
+        $plans = PolizaPlan::orderBy('sort_order')->orderBy('id')->get();
+        $rates = $sheet ? $sheet->rates()->orderBy('sort_order')->get()->groupBy('sort_order') : collect();
+        $coverages = \App\Models\PolizaCoverage::with('plans')->orderBy('sort_order')->get();
+
+        return view('poliza-plans.tarifario', compact('sheet', 'plans', 'rates', 'coverages'));
+    }
+
+    public function saveTarifario(Request $request)
+    {
+        $sheet = \App\Support\PolizaPricing::sheet();
+        abort_unless($sheet, 404);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'zone_label' => 'nullable|string|max:200',
+            'valid_year' => 'nullable|integer|min:2020|max:2100',
+            'emission_fee' => 'required|numeric|min:0|max:999999',
+            'rates' => 'array',
+            'rates.*.fixed_price' => 'nullable|numeric|min:0|max:99999999',
+            'rates.*.percent' => 'nullable|numeric|min:0|max:100',
+        ]);
+        $sheet->update(collect($data)->only(['name', 'zone_label', 'valid_year', 'emission_fee'])->all());
+
+        foreach ($data['rates'] ?? [] as $id => $vals) {
+            \App\Models\PolizaRate::where('id', $id)->where('poliza_tariff_sheet_id', $sheet->id)->update([
+                'fixed_price' => $vals['fixed_price'] ?? null,
+                'percent' => $vals['percent'] ?? null,
+            ]);
+        }
+
+        // Matriz de cobertura: una casilla por concepto × plan.
+        $checked = $request->input('cov', []);
+        foreach (\App\Models\PolizaCoverage::all() as $cov) {
+            foreach (PolizaPlan::pluck('id') as $planId) {
+                \Illuminate\Support\Facades\DB::table('poliza_coverage_plan')->updateOrInsert(
+                    ['poliza_coverage_id' => $cov->id, 'poliza_plan_id' => $planId],
+                    ['included' => ! empty($checked[$cov->id][$planId])]
+                );
+            }
+        }
+
+        return back()->with('success', 'Tarifario y cobertura guardados.');
     }
 }

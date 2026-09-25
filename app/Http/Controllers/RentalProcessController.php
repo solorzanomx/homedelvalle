@@ -206,6 +206,52 @@ class RentalProcessController extends Controller
         return back()->with('success', $msg);
     }
 
+    /** El asesor decide la póliza A NOMBRE del propietario (p. ej. por WhatsApp/teléfono) o corrige la decisión. */
+    public function setPolizaDecision(Request $request, string $id, \App\Services\PolizaDecisionService $decisions)
+    {
+        $rental = RentalProcess::with(['poliza', 'tenantClient'])->findOrFail($id);
+        $data = $request->validate([
+            'plan_id' => 'required|integer',
+            'tenant_share' => 'required|in:' . implode(',', array_keys(\App\Support\PolizaPricing::SHARE_OPTIONS)),
+        ]);
+        $plan = \App\Models\PolizaPlan::offered()->find($data['plan_id']);
+        if (! $plan) {
+            return back()->with('error', 'Ese plan no está disponible.');
+        }
+
+        try {
+            $r = $decisions->decide($rental, $plan, (int) $data['tenant_share'], 'advisor', Auth::id());
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', "Póliza {$plan->name} registrada: $" . number_format($r['amount']) . ' (inquilino ' . $r['split']['tenant_pct'] . '%).');
+    }
+
+    /** Forma de pago de la póliza (directo a Previsión Legal o vía Home del Valle) y marca de pagos por parte. */
+    public function setPolizaPayment(Request $request, string $id)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $request->validate(['payment_mode' => 'required|in:direct,hdv']);
+
+        $rental->update([
+            'poliza_payment_mode' => $request->input('payment_mode'),
+            'poliza_tenant_paid_at' => $request->boolean('tenant_paid') ? ($rental->poliza_tenant_paid_at ?? now()) : null,
+            'poliza_owner_paid_at' => $request->boolean('owner_paid') ? ($rental->poliza_owner_paid_at ?? now()) : null,
+        ]);
+
+        return back()->with('success', 'Forma de pago de la póliza actualizada.');
+    }
+
+    /** Vuelve a avisar al propietario (portal + correo) que le toca elegir la póliza. */
+    public function remindOwnerPoliza(string $id, \App\Services\PolizaDecisionService $decisions)
+    {
+        $rental = RentalProcess::with('ownerClient')->findOrFail($id);
+        $decisions->askOwnerToDecide($rental, true);
+
+        return back()->with('success', 'Le avisamos de nuevo al propietario que debe elegir la póliza.');
+    }
+
     public function edit(string $id)
     {
         $rental = RentalProcess::with(['property', 'ownerClient', 'tenantClient', 'broker'])->findOrFail($id);

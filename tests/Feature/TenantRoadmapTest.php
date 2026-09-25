@@ -43,8 +43,17 @@ class TenantRoadmapTest extends TestCase
     {
         $this->assertSame('$6,000 MXN', (new PolizaPlan(['price' => 6000, 'currency' => 'MXN']))->price_formatted);
         $this->assertSame('Precio por confirmar', (new PolizaPlan(['price' => null]))->price_formatted);
-        foreach (['poliza-plans.index', 'rentals.guarantee-route', 'rentals.contracts.auto-generate', 'portal.rentals.guarantee.declare', 'portal.rentals.poliza.select'] as $name) {
+        foreach (['poliza-plans.index', 'poliza-plans.tarifario', 'rentals.guarantee-route', 'rentals.contracts.auto-generate', 'rentals.poliza-decision', 'rentals.poliza-payment', 'rentals.poliza-remind-owner', 'portal.rentals.guarantee.declare', 'portal.rentals.poliza.decide', 'landing.rentar.polizas'] as $name) {
             $this->assertTrue(Route::has($name), "Falta la ruta {$name}");
         }
+    }
+
+    public function test_tenant_can_no_longer_pick_a_plan_the_owner_decides(): void
+    {
+        // Antes el inquilino elegía plan; ahora decide el PROPIETARIO (docs/funcionalidades/garantia-y-poliza-inquilino.md).
+        $this->assertFalse(Route::has('portal.rentals.poliza.select'), 'no debe existir una ruta para que el inquilino elija plan');
+        $view = file_get_contents(resource_path('views/portal/_tenant_roadmap.blade.php'));
+        $this->assertStringNotContainsString('Elegir {{ $plan->name }}', $view);
+        $this->assertStringContainsString('elegido por tu propietario', $view);
     }
 }

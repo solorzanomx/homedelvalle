@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\PolizaJuridica;
 use App\Models\PolizaPlan;
 use App\Models\RentalProcess;
+use App\Support\PolizaPricing;
 
 /**
  * "¿Qué sigue?" del INQUILINO (2026-09-26): el camino completo de su renta con el
@@ -113,8 +114,8 @@ class TenantRoadmap
             'garantia' => match (true) {
                 ($steps['garantia']['action'] ?? null) === 'declare' => ['title' => 'Define tu garantía', 'body' => '¿Tienes un aval con propiedad en CDMX? Con tu respuesta sabemos qué sigue.',
                     'minutes' => 1, 'cta_label' => 'Responder', 'cta_url' => '#step-garantia'],
-                ($steps['garantia']['action'] ?? null) === 'choose_plan' => ['title' => 'Elige tu plan de póliza', 'body' => 'Compara los planes y elige el que mejor te acomode. La póliza la pagas directo a Previsión Legal.',
-                    'minutes' => 2, 'cta_label' => 'Ver los planes', 'cta_url' => '#step-garantia'],
+                ! empty($steps['garantia']['awaiting_owner']) => ['title' => 'Tu propietario está eligiendo tu póliza', 'body' => 'Sin aval en CDMX tu garantía es una póliza jurídica; el dueño elige el plan y cómo se reparte el costo. Te avisamos en cuanto decida.',
+                    'minutes' => null, 'cta_label' => null, 'cta_url' => null],
                 ($steps['garantia']['route'] ?? null) === self::ROUTE_AVAL && ! ($steps['garantia']['fee_paid'] ?? false) => ['title' => 'Completa los datos de tu aval', 'body' => 'Datos y documentos de tu aval; tu asesor confirmará la cuota de investigación ($' . number_format(self::INVESTIGATION_FEE) . ').',
                     'minutes' => 10, 'cta_label' => 'Ver documentos del aval', 'cta_url' => $docs],
                 default => ['title' => 'Estamos trabajando en tu garantía', 'body' => $steps['garantia']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
@@ -207,16 +208,18 @@ class TenantRoadmap
             $plan = $r->polizaPlan;
             $poliza = $r->poliza;
             if (! $plan) {
-                return $base + ['done' => false, 'action' => $plans->isEmpty() ? null : 'choose_plan',
-                    'summary' => 'Sin aval en CDMX, tu garantía es una póliza jurídica con Previsión Legal, quien realiza la investigación. Elige el plan que mejor te acomode.'];
+                return $base + ['done' => false, 'action' => null, 'awaiting_owner' => true,
+                    'summary' => 'Sin aval en CDMX, tu garantía es una póliza jurídica con Previsión Legal, quien realiza la investigación. Tu propietario elegirá el plan y cómo se reparte el costo; te avisamos en cuanto decida.'];
             }
             $approved = $poliza && $poliza->status === 'approved';
             $status = $poliza ? (PolizaJuridica::STATUSES[$poliza->status] ?? $poliza->status) : 'Pendiente';
+            $decision = self::polizaDecision($r);
+            $mine = $decision ? '$' . number_format($decision['split']['tenant']) . ' MXN' . ($decision['split']['tenant_pct'] < 100 ? ' (' . $decision['split']['tenant_pct'] . '%)' : '') : null;
 
-            return $base + ['done' => $approved, 'plan' => $plan, 'poliza' => $poliza,
+            return $base + ['done' => $approved, 'plan' => $plan, 'poliza' => $poliza, 'decision' => $decision,
                 'summary' => $approved
                     ? "Tu póliza {$plan->name} fue aprobada. ✅"
-                    : "Elegiste el plan {$plan->name} ({$plan->price_formatted}). Estado: {$status}. Tu asesor coordina el alta con Previsión Legal; el pago de la póliza lo haces directo con ellos.",
+                    : "Tu propietario eligió el plan {$plan->name}" . ($mine ? ". Tu parte: {$mine}" : '') . ". Estado: {$status}. Tu asesor coordina el alta con Previsión Legal.",
             ];
         }
 
@@ -237,6 +240,36 @@ class TenantRoadmap
         }
 
         return $base + ['done' => $done, 'fee' => self::INVESTIGATION_FEE, 'fee_paid' => $paid, 'summary' => $summary];
+    }
+
+    /**
+     * La decisión del propietario con montos: total, reparto (inquilino/propietario), gastos de emisión y forma de pago.
+     * Usa la "foto" guardada al decidir; si es una renta anterior (el inquilino eligió el plan), calcula con la tarifa vigente.
+     *
+     * @return array{plan:PolizaPlan, amount:float, split:array, emission_fee:float, payment_mode:string, decided_by:?string, tenant_paid:bool, owner_paid:bool}|null
+     */
+    public static function polizaDecision(RentalProcess $r): ?array
+    {
+        $plan = $r->polizaPlan;
+        if (! $plan) {
+            return null;
+        }
+        $amount = $r->poliza_quote_amount !== null ? (float) $r->poliza_quote_amount : (PolizaPricing::quote($plan, (float) $r->monthly_rent)['amount'] ?? null);
+        if ($amount === null) {
+            return null;
+        }
+        $fee = $r->poliza_emission_fee !== null ? (float) $r->poliza_emission_fee : (float) (PolizaPricing::sheet()?->emission_fee ?? 0);
+
+        return [
+            'plan' => $plan,
+            'amount' => $amount,
+            'split' => PolizaPricing::split($amount, (int) ($r->poliza_tenant_share ?? 100)), // rentas anteriores: la pagaba el inquilino
+            'emission_fee' => $fee,
+            'payment_mode' => $r->poliza_payment_mode ?: 'direct',
+            'decided_by' => $r->poliza_decided_by,
+            'tenant_paid' => (bool) $r->poliza_tenant_paid_at,
+            'owner_paid' => (bool) $r->poliza_owner_paid_at,
+        ];
     }
 
     private static function contrato(RentalProcess $r, string $route): array

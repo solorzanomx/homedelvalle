@@ -16,7 +16,7 @@ class TenantJourneyTest extends TestCase
             'apartado' => ['key' => 'apartado', 'done' => true],
             'informacion' => ['key' => 'informacion', 'done' => false],
             'documentos' => ['key' => 'documentos', 'done' => false, 'counts' => ['approved' => 0, 'review' => 0, 'rejected' => 0], 'missing' => ['Identificación']],
-            'garantia' => ['key' => 'garantia', 'done' => false, 'summary' => 'x', 'route' => 'poliza', 'action' => 'choose_plan'],
+            'garantia' => ['key' => 'garantia', 'done' => false, 'summary' => 'x', 'route' => 'poliza', 'action' => null, 'awaiting_owner' => true],
             'contrato' => ['key' => 'contrato', 'done' => false, 'summary' => 'y', 'contract' => null],
             'entrega' => ['key' => 'entrega', 'done' => false, 'summary' => 'z'],
         ];
@@ -39,8 +39,8 @@ class TenantJourneyTest extends TestCase
         $this->assertStringContainsString('Corrige 2 documentos', $a['title']);
 
         $a = TenantRoadmap::nextAction($r, $this->steps('garantia'));
-        $this->assertSame('Elige tu plan de póliza', $a['title']);
-        $this->assertSame('#step-garantia', $a['cta_url'], 'el plan se elige dentro del camino');
+        $this->assertSame('Tu propietario está eligiendo tu póliza', $a['title']);
+        $this->assertNull($a['cta_url'], 'el inquilino no elige plan: solo espera a que el propietario decida');
 
         $a = TenantRoadmap::nextAction($r, $this->steps('contrato'));
         $this->assertNull($a['cta_url'], 'sin contrato disponible no hay nada que hacer: solo esperar');

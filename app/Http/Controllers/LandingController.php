@@ -185,8 +185,22 @@ class LandingController extends Controller
     /** Los esquemas de póliza jurídica (Previsión Legal), leídos del catálogo editable del CRM. */
     public function polizasJuridicas(Request $request)
     {
+        $plans = \App\Models\PolizaPlan::forWebsite()->with('coverages')->get();
+        $sheet = \App\Support\PolizaPricing::sheet();
+
+        // Datos para la calculadora (se calcula en el navegador): por plan, sus rangos de renta.
+        $rates = $sheet
+            ? $sheet->rates()->orderBy('rent_over')->get()->groupBy('poliza_plan_id')->map(fn($rows) => $rows->map(fn($r) => [
+                'over' => (float) $r->rent_over, 'upTo' => $r->rent_up_to !== null ? (float) $r->rent_up_to : null,
+                'fixed' => $r->fixed_price !== null ? (float) $r->fixed_price : null, 'percent' => $r->percent !== null ? (float) $r->percent : null,
+            ])->values())
+            : collect();
+
         return view('public.polizas-juridicas', [
-            'plans' => \App\Models\PolizaPlan::forWebsite()->get(),
+            'plans' => $plans,
+            'sheet' => $sheet,
+            'rates' => $rates,
+            'coverages' => \App\Models\PolizaCoverage::with('plans')->orderBy('sort_order')->get()->groupBy('section'),
         ]);
     }
 

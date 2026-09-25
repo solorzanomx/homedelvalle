@@ -6,7 +6,8 @@
     <h1 style="font-size:1.25rem;font-weight:700;margin:0;">Planes de póliza jurídica</h1>
     <div style="font-size:.82rem;color:var(--text-muted);max-width:720px;">
         Los esquemas que ofrece el proveedor (hoy Previsión Legal). El inquilino que <strong>no tiene aval en CDMX</strong> ve en su Portal los planes
-        <strong>activos y con precio</strong> y elige uno; el pago lo hace directo con el proveedor. Edita aquí nombres, precios y qué incluye — no hay que programar nada.
+        <strong>activos</strong>; el <strong>propietario</strong> elige uno en su Portal (con el precio según la renta de su trato) y decide si lo paga el inquilino o mitad y mitad.
+        Los <strong>precios por rango de renta</strong> y la <strong>matriz de cobertura</strong> se editan en el <a href="{{ route('poliza-plans.tarifario') }}"><strong>Tarifario y cobertura →</strong></a>
     </div>
 </div>
 
@@ -16,27 +17,20 @@
     <div class="card-body" style="padding:1rem;">
         <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;flex-wrap:wrap;">
             <strong>{{ $plan->name }}</strong>
-            @if($plan->is_active && $plan->price !== null)<span class="badge badge-green">Visible en el Portal</span>
-            @elseif($plan->price === null)<span class="badge badge-yellow">Falta precio</span>
-            @else<span class="badge badge-blue">Oculto</span>@endif
+            @if($plan->is_active)<span class="badge badge-green">Disponible para el propietario</span>@else<span class="badge badge-blue">Oculto</span>@endif
         </div>
         <div class="form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;">
             <div class="form-group"><label class="form-label">Nombre del plan *</label><input name="name" class="form-input" value="{{ old('name', $plan->name) }}" required></div>
-            <div class="form-group"><label class="form-label">Precio (MXN)</label><input name="price" type="number" step="0.01" min="0" class="form-input" value="{{ $plan->price }}" placeholder="Ej. 6000"></div>
             <div class="form-group"><label class="form-label">Etiqueta (opcional)</label><input name="tagline" class="form-input" value="{{ $plan->tagline }}" placeholder="La más común"></div>
             <div class="form-group"><label class="form-label">Proveedor</label><input name="provider_name" class="form-input" value="{{ $plan->provider_name }}"></div>
             <div class="form-group"><label class="form-label">Orden</label><input name="sort_order" type="number" min="0" class="form-input" value="{{ $plan->sort_order }}"></div>
         </div>
         <div class="form-group" style="margin-top:.5rem;"><label class="form-label">Descripción corta (opcional)</label><input name="description" class="form-input" value="{{ $plan->description }}"></div>
-        <div class="form-group" style="margin-top:.5rem;">
-            <label class="form-label">Qué incluye (uno por línea)</label>
-            <textarea name="inclusions_text" class="form-input" rows="5" placeholder="Investigación del inquilino&#10;Contrato de arrendamiento&#10;Asesoría jurídica…">{{ implode("\n", $plan->inclusions ?? []) }}</textarea>
-        </div>
         <div style="display:flex;align-items:center;gap:1.25rem;margin-top:.75rem;flex-wrap:wrap;">
             <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;"><input type="checkbox" name="is_active" value="1" {{ $plan->is_active ? 'checked' : '' }}> Activo (visible en el Portal)</label>
             <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;"><input type="checkbox" name="is_recommended" value="1" {{ $plan->is_recommended ? 'checked' : '' }}> Destacar como recomendado</label>
             <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;"><input type="checkbox" name="show_on_website" value="1" {{ $plan->show_on_website ? 'checked' : '' }}> Mostrar en el sitio web</label>
-            <label style="display:flex;gap:.4rem;align-items:center;font-size:.85rem;" title="Las tarifas varían por estado: déjalo apagado hasta confirmarlas"><input type="checkbox" name="show_price_public" value="1" {{ $plan->show_price_public ? 'checked' : '' }}> Mostrar el precio en el sitio web</label>
+            
             <button class="btn btn-primary btn-sm" style="margin-left:auto;">Guardar</button>
         </div>
     </div>
@@ -52,10 +46,8 @@
         <strong style="display:block;margin-bottom:.6rem;">➕ Agregar otro plan</strong>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem;">
             <div class="form-group"><label class="form-label">Nombre *</label><input name="name" class="form-input" required></div>
-            <div class="form-group"><label class="form-label">Precio (MXN)</label><input name="price" type="number" step="0.01" min="0" class="form-input"></div>
             <div class="form-group"><label class="form-label">Proveedor</label><input name="provider_name" class="form-input" value="Previsión Legal"></div>
         </div>
-        <div class="form-group"><label class="form-label">Qué incluye (uno por línea)</label><textarea name="inclusions_text" class="form-input" rows="3"></textarea></div>
         <button class="btn btn-primary btn-sm">Agregar</button>
     </div>
 </form>

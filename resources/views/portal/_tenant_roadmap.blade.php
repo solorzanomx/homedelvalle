@@ -55,40 +55,37 @@
                     <p style="font-size:.7rem;color:#94a3b8;margin:.4rem 0 0;">Sin aval en CDMX, la garantía es una póliza jurídica (Previsión Legal se encarga de la investigación).</p>
                 @endif
 
-                {{-- Garantía por póliza: elegir plan --}}
-                @if($step['key'] === 'garantia' && ($step['action'] ?? null) === 'choose_plan' && ! $slim)
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.7rem;margin-top:.7rem;">
-                        @foreach($rm['plans'] as $plan)
-                        <div style="border:{{ $plan->is_recommended ? '2px solid #1D4ED8' : '1px solid #e2e8f0' }};border-radius:12px;padding:.85rem;background:#fff;position:relative;display:flex;flex-direction:column;">
-                            @if($plan->tagline)<span style="position:absolute;top:-.6rem;left:.8rem;background:#1D4ED8;color:#fff;font-size:.62rem;font-weight:700;padding:.12rem .55rem;border-radius:9999px;">{{ $plan->tagline }}</span>@endif
-                            <div style="font-weight:700;font-size:.92rem;color:#0f172a;">{{ $plan->name }}</div>
-                            <div style="font-size:1.25rem;font-weight:800;color:#1D4ED8;margin:.15rem 0 .4rem;">{{ $plan->price_formatted }}</div>
-                            @if($plan->description)<div style="font-size:.74rem;color:#64748b;margin-bottom:.4rem;">{{ $plan->description }}</div>@endif
-                            <ul style="margin:0 0 .7rem;padding:0;list-style:none;font-size:.75rem;color:#334155;line-height:1.5;flex:1;">
-                                @foreach(($plan->inclusions ?? []) as $inc)<li>✓ {{ $inc }}</li>@endforeach
+                {{-- Garantía por póliza: DECIDE el propietario; el inquilino ve el plan, lo que le toca pagar y qué cubre --}}
+                @if($step['key'] === 'garantia' && ! empty($step['decision']) && ! $slim)
+                    @php $d = $step['decision']; $plan = $d['plan']->loadMissing('coverages'); @endphp
+                    <div style="margin-top:.7rem;border:1.5px solid #1D4ED8;border-radius:14px;padding:.95rem 1rem;background:#fff;">
+                        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;flex-wrap:wrap;">
+                            <div style="font-weight:800;font-size:1rem;color:#0f172a;">Plan {{ $plan->name }}</div>
+                            <div style="font-size:.72rem;color:#64748b;">{{ $plan->provider_name }} · {{ $d['decided_by'] === 'advisor' ? 'definido con tu asesor' : 'elegido por tu propietario' }}</div>
+                        </div>
+                        <div style="margin:.55rem 0;background:#eff6ff;border-radius:12px;padding:.7rem .85rem;">
+                            <div style="font-size:.72rem;font-weight:700;color:#1e3a8a;text-transform:uppercase;letter-spacing:.05em;">Tu parte</div>
+                            <div style="font-size:1.5rem;font-weight:800;color:#1D4ED8;line-height:1.15;">${{ number_format($d['split']['tenant']) }} MXN</div>
+                            <div style="font-size:.76rem;color:#475569;margin-top:.15rem;">
+                                @if($d['split']['tenant_pct'] === 100) La póliza (${{ number_format($d['amount']) }}) la cubres tú.
+                                @else Se paga mitad y mitad: tu propietario cubre otros ${{ number_format($d['split']['owner']) }}. Total de la póliza: ${{ number_format($d['amount']) }}.
+                                @endif
+                            </div>
+                        </div>
+                        <ul style="margin:0 0 .6rem;padding:0;list-style:none;font-size:.78rem;color:#334155;line-height:1.5;">
+                            <li>🧾 <strong>Anticipo por gastos de emisión:</strong> ${{ number_format($d['emission_fee']) }}. Se cubre al iniciar el trámite y <em>se acredita al precio</em> si se concreta; si no se concreta, no se reembolsa.</li>
+                            <li>💳 @if($d['payment_mode'] === 'hdv') Tu asesor te indicará cómo pagar tu parte. @else Pagas tu parte <strong>directo a Previsión Legal</strong>; tu asesor te acompaña en el trámite. @endif</li>
+                            @if($d['tenant_paid'])<li style="color:#166534;font-weight:700;">✅ Tu parte ya está pagada.</li>@endif
+                        </ul>
+                        <details style="font-size:.78rem;">
+                            <summary style="cursor:pointer;color:#1D4ED8;font-weight:700;">Ver qué cubre este plan</summary>
+                            <ul style="margin:.5rem 0 0;padding:0;list-style:none;line-height:1.5;color:#334155;">
+                                @foreach($plan->includedCoverages() as $cov)
+                                <li>✓ {{ $cov->label }}@if($cov->note)<span style="color:#94a3b8;"> — {{ $cov->note }}</span>@endif</li>
+                                @endforeach
                             </ul>
-                            <form method="POST" action="{{ route('portal.rentals.poliza.select', $rental->id) }}" onsubmit="return confirm('¿Elegir el plan {{ $plan->name }} ({{ $plan->price_formatted }})?')">
-                                @csrf <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                                <button class="btn btn-sm btn-primary" style="width:100%;border-radius:9px;padding:.55rem;font-weight:700;font-size:.8rem;cursor:pointer;">Elegir {{ $plan->name }}</button>
-                            </form>
-                        </div>
-                        @endforeach
+                        </details>
                     </div>
-                    <p style="font-size:.7rem;color:#94a3b8;margin:.5rem 0 0;">El pago de la póliza lo realizas directamente con {{ $rm['plans']->first()->provider_name ?? 'el proveedor' }}. Tu asesor te acompaña en el trámite.</p>
-                @endif
-
-                {{-- Garantía con plan elegido: cambiar plan mientras no esté aprobada --}}
-                @if($step['key'] === 'garantia' && isset($step['plan']) && ! $step['done'] && $rm['plans']->count() > 1)
-                    <details style="margin-top:.5rem;font-size:.75rem;"><summary style="cursor:pointer;color:#1D4ED8;font-weight:600;">Cambiar de plan</summary>
-                        <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.4rem;">
-                            @foreach($rm['plans']->where('id', '!=', $step['plan']->id) as $plan)
-                            <form method="POST" action="{{ route('portal.rentals.poliza.select', $rental->id) }}" onsubmit="return confirm('¿Cambiar al plan {{ $plan->name }} ({{ $plan->price_formatted }})?')">
-                                @csrf <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                                <button class="btn btn-sm btn-outline" style="border-radius:8px;padding:.35rem .7rem;font-size:.75rem;cursor:pointer;">{{ $plan->name }} — {{ $plan->price_formatted }}</button>
-                            </form>
-                            @endforeach
-                        </div>
-                    </details>
                 @endif
 
                 {{-- Contrato disponible --}}
