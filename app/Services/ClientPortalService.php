@@ -85,6 +85,16 @@ class ClientPortalService
     /**
      * Get the Client record linked to a portal user.
      */
+    /** La renta activa donde el cliente es el INQUILINO (define el "modo inquilino" del Portal). */
+    public function activeTenantRental(Client $client): ?\App\Models\RentalProcess
+    {
+        return \App\Models\RentalProcess::with(['property', 'broker', 'tenantClient'])
+            ->where('tenant_client_id', $client->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+    }
+
     public function getClientForUser(User $user): ?Client
     {
         return Client::where('user_id', $user->id)->first();

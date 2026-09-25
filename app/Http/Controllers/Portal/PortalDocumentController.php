@@ -29,6 +29,21 @@ class PortalDocumentController extends Controller
             ]);
         }
 
+        // Inquilino con renta activa: lista simple de lo que le toca subir, con estado por documento.
+        if ($tenantRental = $this->portalService->activeTenantRental($client)) {
+            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $client);
+
+            return view('portal.documents.tenant', [
+                'client' => $client,
+                'rental' => $tenantRental,
+                'groups' => $rows['groups'],
+                'counts' => $rows['counts'],
+                'next' => $rows['next'],
+                'open' => request('open'),
+                'openCat' => request('cat'),
+            ]);
+        }
+
         // Captacion del cliente y sus documentos — sin filtrar status (mismo
         // bug ya corregido en EnsurePortalLegalAcceptance/PortalDashboardController).
         $captacion = Captacion::where('client_id', $client->id)

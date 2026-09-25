@@ -15,6 +15,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 |---|---|---|
 | Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos |
 | Seguridad de archivos y accesos: almacenamiento privado, autorización por pertenencia, rutas del CRM solo personal | `docs/funcionalidades/seguridad-archivos.md` | tocas subidas/descargas, contratos, o agregas rutas con `auth` |
+| Portal del inquilino: "Mi camino", menú corto, barra inferior móvil, "Mis documentos" con estados | `docs/funcionalidades/portal-inquilino-navegacion.md` | tocas `layouts/portal`, `TenantRoadmap`, `TenantDocumentRows`, `portal/journey`, `portal/expediente` |
 | Garantía del inquilino: póliza (Previsión Legal, 3 planes) vs. aval + $3,500, "¿qué sigue?", contrato del proveedor / con un clic | `docs/funcionalidades/garantia-y-poliza-inquilino.md` | tocas `TenantRoadmap`, planes de póliza, `guarantee_type`, pasos del inquilino en el Portal |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 

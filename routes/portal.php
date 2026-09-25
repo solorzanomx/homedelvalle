@@ -45,6 +45,7 @@ Route::middleware(['auth', 'client'])->name('portal.')->group(function () {
 Route::middleware(['auth', 'client', 'portal.legal'])->name('portal.')->group(function () {
 
     Route::get('/inicio',                    [PortalDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/mi-camino',                 [\App\Http\Controllers\Portal\PortalJourneyController::class, 'show'])->name('journey');
     Route::get('/cuenta',                    [PortalDashboardController::class, 'account'])->name('account');
     Route::put('/cuenta/password',           [PortalDashboardController::class, 'updatePassword'])->name('account.password');
 

@@ -26,6 +26,11 @@ class PortalDashboardController extends Controller
             ]);
         }
 
+        // Inquilino con una renta activa: su "inicio" ES "Mi camino" (una sola pantalla que dice qué sigue).
+        if ($this->portalService->activeTenantRental($client)) {
+            return redirect()->route('portal.journey');
+        }
+
         $interests   = $client->interest_types ?? [];
         $isRental    = (bool) array_intersect(['renta_propietario', 'renta_inquilino'], $interests);
         $isVenta     = in_array('venta', $interests);

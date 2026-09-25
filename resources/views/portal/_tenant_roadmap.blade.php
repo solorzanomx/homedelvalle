@@ -1,21 +1,27 @@
 {{-- "¿Qué sigue?" del inquilino. Espera: $rental (RentalProcess donde el cliente es el inquilino). Fuente: App\Support\TenantRoadmap --}}
 @php
-    $rm = \App\Support\TenantRoadmap::build($rental);
-    $icons = ['apartado' => '🔑', 'documentos' => '📄', 'garantia' => '🛡️', 'contrato' => '✍️', 'entrega' => '🏠'];
+    $rm = $roadmap ?? \App\Support\TenantRoadmap::build($rental);
+    $compact = $compact ?? false;   // compacto: pasos hechos = una línea, pasos futuros = solo título, el activo se expande
+    $icons = ['apartado' => '🔑', 'informacion' => '📝', 'documentos' => '📄', 'garantia' => '🛡️', 'contrato' => '✍️', 'entrega' => '🏠'];
 @endphp
-<div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1.25rem;">
+<div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem;">
+    @if(! $compact)
     <div style="display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;flex-wrap:wrap;margin-bottom:.25rem;">
         <h3 style="margin:0;font-size:1rem;color:#0f172a;">Tu camino a la renta</h3>
         <span style="font-size:.72rem;color:#64748b;">{{ collect($rm['steps'])->where('state','done')->count() }} de {{ count($rm['steps']) }} pasos completos</span>
     </div>
     <p style="margin:0 0 .9rem;font-size:.78rem;color:#64748b;">Siempre sabrás en qué paso vas y qué sigue.</p>
+    @else
+    <h3 style="margin:0 0 .8rem;font-size:.9rem;color:#0f172a;">Todo el camino</h3>
+    @endif
 
     @foreach($rm['steps'] as $i => $step)
         @php
             $st = $step['state'];
             $dot = ['done' => ['#10b981', '#ecfdf5'], 'active' => ['#1D4ED8', '#eff6ff'], 'pending' => ['#f59e0b', '#fffbeb'], 'todo' => ['#cbd5e1', '#f8fafc']][$st];
         @endphp
-        <div style="display:flex;gap:.8rem;{{ $loop->last ? '' : 'padding-bottom:1rem;' }}">
+        @php $slim = $compact && $st !== 'active'; @endphp
+        <div id="step-{{ $step['key'] }}" style="display:flex;gap:.8rem;{{ $loop->last ? '' : ($slim ? 'padding-bottom:.7rem;' : 'padding-bottom:1rem;') }}">
             <div style="display:flex;flex-direction:column;align-items:center;">
                 <div style="width:30px;height:30px;border-radius:50%;background:{{ $dot[1] }};border:2px solid {{ $dot[0] }};display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">
                     {{ $st === 'done' ? '✓' : ($icons[$step['key']] ?? ($i + 1)) }}
@@ -27,15 +33,20 @@
                     {{ $step['title'] }}
                     @if($st === 'active')<span style="font-size:.62rem;font-weight:700;background:#1D4ED8;color:#fff;border-radius:9999px;padding:.1rem .5rem;margin-left:.3rem;vertical-align:middle;">AHORA</span>@elseif($st === 'pending')<span style="font-size:.62rem;font-weight:700;background:#f59e0b;color:#fff;border-radius:9999px;padding:.1rem .5rem;margin-left:.3rem;vertical-align:middle;">PENDIENTE</span>@endif
                 </div>
+                @if(! $slim)
                 <div style="font-size:.8rem;color:{{ $st === 'todo' ? '#94a3b8' : '#475569' }};margin-top:.15rem;line-height:1.45;">{{ $step['summary'] }}</div>
+                @endif
 
-                {{-- Documentos: enlace a corregir/subir --}}
-                @if($step['key'] === 'documentos' && $st === 'active')
-                    <a href="{{ route('portal.expediente') }}" style="display:inline-block;margin-top:.5rem;font-size:.78rem;font-weight:700;color:#1D4ED8;">Ir a mis documentos →</a>
+                {{-- Tus datos / Documentos: enlace al lugar de trabajo --}}
+                @if(! $compact && $step['key'] === 'informacion' && $st === 'active')
+                    <a href="{{ route('portal.expediente') }}" style="display:inline-block;margin-top:.5rem;font-size:.78rem;font-weight:700;color:#1D4ED8;">Completar mis datos →</a>
+                @endif
+                @if(! $compact && $step['key'] === 'documentos' && $st === 'active')
+                    <a href="{{ route('portal.documents.index') }}" style="display:inline-block;margin-top:.5rem;font-size:.78rem;font-weight:700;color:#1D4ED8;">Ir a mis documentos →</a>
                 @endif
 
                 {{-- Garantía: ¿tienes aval en CDMX? --}}
-                @if($step['key'] === 'garantia' && ($step['action'] ?? null) === 'declare')
+                @if($step['key'] === 'garantia' && ($step['action'] ?? null) === 'declare' && ! $slim)
                     <form method="POST" action="{{ route('portal.rentals.guarantee.declare', $rental->id) }}" style="margin-top:.6rem;display:flex;gap:.5rem;flex-wrap:wrap;">
                         @csrf
                         <button name="has_aval" value="1" class="btn btn-sm" style="border:1.5px solid #1D4ED8;background:#fff;color:#1D4ED8;border-radius:9px;padding:.55rem .9rem;font-weight:700;font-size:.8rem;cursor:pointer;">Tengo un aval con propiedad en CDMX</button>
@@ -45,7 +56,7 @@
                 @endif
 
                 {{-- Garantía por póliza: elegir plan --}}
-                @if($step['key'] === 'garantia' && ($step['action'] ?? null) === 'choose_plan')
+                @if($step['key'] === 'garantia' && ($step['action'] ?? null) === 'choose_plan' && ! $slim)
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.7rem;margin-top:.7rem;">
                         @foreach($rm['plans'] as $plan)
                         <div style="border:{{ $plan->is_recommended ? '2px solid #1D4ED8' : '1px solid #e2e8f0' }};border-radius:12px;padding:.85rem;background:#fff;position:relative;display:flex;flex-direction:column;">

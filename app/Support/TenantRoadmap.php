@@ -59,6 +59,7 @@ class TenantRoadmap
 
         $steps = [
             self::apartado($r),
+            self::informacion($r),
             self::documentos($r),
             self::garantia($r, $route, $plans),
             self::contrato($r, $route),
@@ -85,6 +86,68 @@ class TenantRoadmap
         return ['route' => $route, 'steps' => $steps, 'plans' => $plans, 'current' => $current];
     }
 
+    /**
+     * "Tu siguiente paso": UNA acción concreta para el inquilino (título, texto, tiempo estimado y botón).
+     * Sale del paso activo del camino. `cta_url` null = no hay nada que hacer ahora (esperando al asesor).
+     *
+     * @param  array  $rm  el resultado de build()
+     * @return array{title:string, body:string, minutes:?int, cta_label:?string, cta_url:?string, step:?string, secondary:?array}
+     */
+    public static function nextAction(RentalProcess $r, array $rm): array
+    {
+        $steps = collect($rm['steps'])->keyBy('key');
+        $step = $rm['current'];
+        $docs = route('portal.documents.index');
+
+        $secondary = null;
+        if (! $steps['apartado']['done']) {
+            $secondary = ['title' => 'Aparta tu inmueble', 'body' => 'Tu depósito reserva tu lugar mientras avanzas con lo demás.', 'cta_label' => 'Cómo apartar', 'cta_url' => route('portal.expediente') . '#apartado'];
+        }
+
+        $a = match ($step) {
+            'informacion' => ['title' => 'Completa tus datos', 'body' => 'Datos personales, domicilio, trabajo y referencias. Se guardan mientras escribes.',
+                'minutes' => 5, 'cta_label' => 'Completar mis datos', 'cta_url' => route('portal.expediente')],
+
+            'documentos' => self::nextForDocuments($steps['documentos'], $docs),
+
+            'garantia' => match (true) {
+                ($steps['garantia']['action'] ?? null) === 'declare' => ['title' => 'Define tu garantía', 'body' => '¿Tienes un aval con propiedad en CDMX? Con tu respuesta sabemos qué sigue.',
+                    'minutes' => 1, 'cta_label' => 'Responder', 'cta_url' => '#step-garantia'],
+                ($steps['garantia']['action'] ?? null) === 'choose_plan' => ['title' => 'Elige tu plan de póliza', 'body' => 'Compara los planes y elige el que mejor te acomode. La póliza la pagas directo a Previsión Legal.',
+                    'minutes' => 2, 'cta_label' => 'Ver los planes', 'cta_url' => '#step-garantia'],
+                ($steps['garantia']['route'] ?? null) === self::ROUTE_AVAL && ! ($steps['garantia']['fee_paid'] ?? false) => ['title' => 'Completa los datos de tu aval', 'body' => 'Datos y documentos de tu aval; tu asesor confirmará la cuota de investigación ($' . number_format(self::INVESTIGATION_FEE) . ').',
+                    'minutes' => 10, 'cta_label' => 'Ver documentos del aval', 'cta_url' => $docs],
+                default => ['title' => 'Estamos trabajando en tu garantía', 'body' => $steps['garantia']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
+            },
+
+            'contrato' => ! empty($steps['contrato']['contract']) && $steps['contrato']['contract']->pdf_path
+                ? ['title' => 'Revisa y firma tu contrato', 'body' => 'Léelo con calma; si tienes dudas, tu asesor te acompaña.', 'minutes' => 10,
+                    'cta_label' => 'Ver mi contrato', 'cta_url' => route('contracts.download', $steps['contrato']['contract']->id)]
+                : ['title' => 'Tu contrato está en preparación', 'body' => $steps['contrato']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
+
+            'entrega' => ['title' => 'Casi listo: la entrega de tu inmueble', 'body' => $steps['entrega']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
+
+            default => ['title' => '¡Todo en orden!', 'body' => 'Completaste todos los pasos. Tu asesor te contactará ante cualquier novedad.', 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
+        };
+
+        return $a + ['step' => $step, 'secondary' => $secondary];
+    }
+
+    private static function nextForDocuments(array $step, string $docsUrl): array
+    {
+        $c = $step['counts'];
+        if ($c['rejected'] > 0) {
+            return ['title' => 'Corrige ' . $c['rejected'] . ($c['rejected'] === 1 ? ' documento' : ' documentos'), 'body' => 'Tu asesor dejó el motivo en cada uno. Súbelos de nuevo y listo.',
+                'minutes' => 3, 'cta_label' => 'Ver qué corregir', 'cta_url' => $docsUrl];
+        }
+        if (! empty($step['missing'])) {
+            return ['title' => 'Sube tu ' . mb_strtolower($step['missing'][0]), 'body' => 'Faltan: ' . implode(', ', $step['missing']) . '. Puedes tomarle foto o subir el PDF.',
+                'minutes' => 2, 'cta_label' => 'Subir documentos', 'cta_url' => $docsUrl];
+        }
+
+        return ['title' => 'Tu asesor está revisando tus documentos', 'body' => 'No tienes nada pendiente por ahora. Te avisamos en cuanto estén aprobados.', 'minutes' => null, 'cta_label' => null, 'cta_url' => null];
+    }
+
     private static function apartado(RentalProcess $r): array
     {
         $done = (bool) $r->apartado_paid_at;
@@ -95,6 +158,18 @@ class TenantRoadmap
                 ? 'Tu apartado quedó confirmado el ' . $r->apartado_paid_at->format('d/m/Y') . '.'
                 : 'Aparta el inmueble con tu depósito para reservar tu lugar.',
         ];
+    }
+
+    /** "Tus datos": la información del expediente (datos personales, domicilio, trabajo, referencias). */
+    private static function informacion(RentalProcess $r): array
+    {
+        $pct = (int) ($r->tenantClient?->legal_completeness ?? 0);
+        $done = $pct >= 100;
+
+        return ['key' => 'informacion', 'title' => 'Tus datos', 'done' => $done, 'pct' => $pct,
+            'summary' => $done
+                ? 'Tu información está completa. ✅'
+                : "Completa tus datos personales, domicilio, trabajo y referencias (llevas {$pct}%). Se guardan mientras avanzas."];
     }
 
     private static function documentos(RentalProcess $r): array
@@ -116,7 +191,7 @@ class TenantRoadmap
         }
 
         return ['key' => 'documentos', 'title' => 'Tus documentos', 'done' => $done, 'summary' => $summary,
-            'counts' => compact('approved', 'review', 'rejected')];
+            'counts' => compact('approved', 'review', 'rejected'), 'missing' => $done ? [] : RentalExpedienteStatus::missing($r)];
     }
 
     private static function garantia(RentalProcess $r, string $route, $plans): array

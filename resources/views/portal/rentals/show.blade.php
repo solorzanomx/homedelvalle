@@ -106,7 +106,11 @@
 </a>
 
 @if($role === 'inquilino')
-    @include('portal._tenant_roadmap', ['rental' => $rental])
+    <a href="{{ route('portal.journey') }}" style="display:flex;align-items:center;gap:.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:.85rem 1rem;margin-bottom:1rem;text-decoration:none;color:#1e3a8a;">
+        <span style="font-size:1.3rem;">🧭</span>
+        <span style="flex:1;font-size:.85rem;font-weight:700;">Ver mi camino y mi siguiente paso</span>
+        <span style="font-weight:800;">→</span>
+    </a>
 @endif
 
 {{-- Hero --}}

@@ -444,6 +444,16 @@
     }
     $activeRental = $portalRentals->first();
 
+    // MODO INQUILINO (2026-09-26): quien tiene una renta activa como arrendatario ve un menú corto y sencillo
+    // (Mi camino, Mis documentos, Mi renta, Mi asesor) en lugar del menú completo. Ver docs/funcionalidades/portal-inquilino-navegacion.md
+    $tenantNav = $isArrendatario && $activeRental && $portalClient && $activeRental->tenant_client_id === $portalClient->id;
+    $onJourney = request()->routeIs('portal.journey');
+    $tenantDocsBadge = 0;
+    if ($tenantNav) {
+        $tenantRows = \App\Support\TenantDocumentRows::build($activeRental, $portalClient);
+        $tenantDocsBadge = $tenantRows['counts']['falta'] + $tenantRows['counts']['corregir'];
+    }
+
     // Stage route groups
     $onCaptacion  = request()->routeIs('portal.captacion*') || request()->routeIs('portal.captacion');
     $onValuacion  = request()->routeIs('portal.valuacion*');
@@ -570,6 +580,36 @@
         {{-- ── Navigation ── --}}
 
         {{-- Dashboard --}}
+        @if($tenantNav)
+        <div class="sb-section">
+            <div class="sb-section-label">Mi renta</div>
+            <a href="{{ route('portal.journey') }}" class="sb-item {{ $onJourney || $onDashboard ? 'active' : '' }}">
+                <span>&#129517;</span>
+                Mi camino
+            </a>
+            <a href="{{ route('portal.documents.index') }}" class="sb-item {{ $onDocs ? 'active' : '' }}" style="position:relative;">
+                <span>&#128196;</span>
+                Mis documentos
+                @if($tenantDocsBadge > 0)
+                <span style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);min-width:20px;text-align:center;font-size:.68rem;font-weight:800;padding:1px 6px;border-radius:10px;background:#f59e0b;color:#fff;">{{ $tenantDocsBadge }}</span>
+                @endif
+            </a>
+            <a href="{{ route('portal.rentals.show', $activeRental->id) }}" class="sb-item {{ request()->routeIs('portal.rentals.show') ? 'active' : '' }}">
+                <span>&#127968;</span>
+                Mi renta
+            </a>
+            @php
+                $advWa = preg_replace('/\D/', '', $activeRental->broker?->whatsapp ?: $activeRental->broker?->phone ?: '');
+                if ($advWa && strlen($advWa) === 10) { $advWa = '52' . $advWa; }
+            @endphp
+            @if($advWa)
+            <a href="https://wa.me/{{ $advWa }}?text={{ rawurlencode('Hola, soy ' . Auth::user()->name . '. Tengo una duda sobre mi renta.') }}" target="_blank" rel="noopener" class="sb-item">
+                <span>&#128172;</span>
+                Mi asesor
+            </a>
+            @endif
+        </div>
+        @else
         <div class="sb-section">
             <div class="sb-section-label">General</div>
             <a href="{{ route('portal.dashboard') }}"
@@ -578,6 +618,7 @@
                 Mi Inicio
             </a>
         </div>
+        @endif
 
         {{-- Venta funnel stages --}}
         @if($isVenta && $portalCaptacion)
@@ -663,7 +704,7 @@
         @endif
 
         {{-- ── Secciones de renta ── --}}
-        @if($isRenta)
+        @if($isRenta && ! $tenantNav)
         <div class="sb-section">
             <div class="sb-section-label">Mi proceso de renta</div>
 
@@ -757,6 +798,7 @@
                 Mi Inmueble
             </a>
             @endif
+            @if(! $tenantNav)
             <a href="{{ route('portal.expediente') }}"
                class="sb-item {{ $onExpediente ? 'active' : '' }}"
                style="position:relative;">
@@ -777,12 +819,13 @@
                 <span>&#128196;</span>
                 Mis Documentos
             </a>
+            @endif
             <a href="{{ route('portal.account') }}"
                class="sb-item {{ $onAccount ? 'active' : '' }}">
                 <span>&#9881;&#65039;</span>
                 Mi Cuenta
             </a>
-            @if($portalClient && ($portalClient->advisor_whatsapp ?? false))
+            @if(! $tenantNav && $portalClient && ($portalClient->advisor_whatsapp ?? false))
             <a href="https://wa.me/{{ preg_replace('/\D/', '', $portalClient->advisor_whatsapp) }}"
                target="_blank" class="sb-item">
                 <span>&#128242;</span>
@@ -899,5 +942,8 @@
     @auth
     @include('portal._upload_assist')
     @endauth
+    @if($tenantNav ?? false)
+        @include('portal._tenant_bottom_nav', ['rental' => $activeRental, 'docsBadge' => $tenantDocsBadge])
+    @endif
 </body>
 </html>
