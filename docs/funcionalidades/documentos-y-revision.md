@@ -31,6 +31,14 @@
 | Contador en el menú | `layouts/app-sidebar.blade.php` ("Docs por revisar") |
 | Alerta >24 h | `app/Console/Commands/CheckDocumentsPendingReview.php`, agendado 09:30 en `routes/console.php`; 1 aviso por asesor, sin repetir el mismo día |
 
+## Aviso al cliente al rechazar (2026-09-25)
+| Pieza | Archivo |
+|---|---|
+| Lógica (correo, WhatsApp, agrupado, marcas) | `app/Services/DocumentRejectionNotifier.php` |
+| Envío automático | `app/Console/Commands/NotifyDocumentRejections.php` (`documents:notify-rejections`, cada 5 min, espera 10 min desde el rechazo) |
+| "Avisar ahora" / WhatsApp | `RentalDocumentController::notifyRejection` (ruta `documents.notify-rejection`) + aviso (toast) en `rentals/_doc_viewer.blade.php` |
+| Columnas | `documents.rejected_at`, `rejection_notified_at`, `rejection_notified_via` (email / whatsapp / skipped / no_email / failed) |
+
 ## INVARIANTES — no romper
 - **No volver a poner `capture="environment"` en ningún `<input type=file>`.** Forzaba la cámara, impedía elegir PDF y provocaba fotos a pantallas. Los 6 formularios del expediente usan `hdvUploadSubmit(this)` (avisa "Subiendo y revisando…"), no `this.form.submit()` directo.
 - **El gate de calidad nunca debe tronar una subida:** IA caída/sin key → se acepta (fail-open). Solo se BLOQUEA lo evidente (foto de pantalla, ilegible, imagen diminuta, PDF inválido/con contraseña). Lo dudoso pasa con `quality_status='warn'` ("Calidad dudosa").
@@ -45,6 +53,10 @@
 - **`updateStatus` sincroniza el flujo de Captación** (`CaptacionService::approveDocument/rejectDocument` → recalcula etapa). No lo quites: aprobar desde el visor/bandeja dejaría la captación en 'pendiente'.
 - **El visor (`hdvDocViewer`) toma TODAS las filas `.doc-item[data-doc-id]` de la página** y emite el evento `hdv:doc-status`; cualquier página que use `_doc_row` + `_doc_viewer` obtiene visor gratis. Las filas ocultas por filtro llevan `.doc-filtered-out`.
 - **En `@section('styles')` va CSS crudo, sin `<style>`** (ver reglas de oro); `rentals/show` conserva esa deuda vieja, no la repliques.
+- **Un cliente = un correo de rechazo** (agrupa todos sus rechazados sin avisar). Nunca mandes un correo por documento. El "debounce" es el scheduler (no hay queue worker en producción).
+- **WhatsApp es un enlace `wa.me`** que abre el chat con el texto listo; `WhatsAppService` NO envía de verdad (no hay proveedor conectado). Se abre la pestaña dentro del clic antes del `fetch` para evitar el bloqueo de pop-ups.
+- **Rechazar reinicia el aviso** (`rejected_at=now`, notificación en null); aprobar lo limpia. Si cambias `updateStatus`, conserva ese reinicio o el cliente recibirá avisos de rechazos viejos.
+- **Los estados `skipped/no_email/failed` siguen siendo reenviables a mano** (`pendingFor`), pero el scheduler solo toma los de `rejection_notified_at` nulo (no reintenta infinito).
 - **Los archivos están en el disco `public`** (URL directa). Pendiente de seguridad: servirlos con permiso. No prometas privacidad de esos archivos.
 
 ## Cómo probar sin romper (checklist)
@@ -57,7 +69,7 @@
 `git pull && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan route:clear && /etc/init.d/php-fpm-83 restart` (ruta del proyecto en el servidor: ver `DEPLOYMENT_GUIDE.md`). Las migraciones de esta función: `add_quality_to_documents` y `seed_help_revision_documentos`.
 
 ## Pendiente / ideas aprobadas por Alejandro (2026-09-25) — aún NO construidas
-1. **Aviso al cliente al rechazar** (WhatsApp/correo con el motivo y enlace a la casilla). Hoy el cliente solo lo ve entrando al Portal.
+1. ~~Aviso al cliente al rechazar~~ ✅ hecho (ver arriba). Falta: recordatorio si el cliente no vuelve a subir tras N días.
 2. Aprobar en bloque; comparar lado a lado con los datos capturados; avance automático de etapa al completar requeridos.
 3. Portal: vista previa "¿se lee bien?" antes de enviar, modo "escanear" (varias fotos → un PDF), ejemplos visuales sí/no, recordatorios amables, enlace mágico.
 4. Validar por contenido los PDF de estados de cuenta (periodo reciente, nombre coincide).

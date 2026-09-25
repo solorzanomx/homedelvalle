@@ -37,6 +37,16 @@ Al rechazar debes dar un **motivo** (es obligatorio). Elige uno rápido —*Ileg
 
 Aprobar limpia cualquier motivo anterior.
 
+### Avisar al cliente
+
+Al rechazar, la casilla **"Avisar al cliente por correo"** viene marcada:
+
+- **No sale un correo por cada documento.** El sistema espera unos **10 minutos** y manda **un solo correo** con todo lo que rechazaste de ese cliente: cada documento con su motivo, un botón directo a su Portal y el consejo de subirlo en PDF. Rechaza tranquilo varios seguidos.
+- Al rechazar aparece un aviso abajo del visor con opciones: **✉️ Avisar por correo ahora** (sin esperar los 10 minutos) y **💬 Avisar por WhatsApp** (abre WhatsApp con el mensaje ya escrito — tú solo das enviar).
+- Si **desmarcas** la casilla, el cliente no recibe aviso automático; puedes avisarle por WhatsApp o correo en el momento que quieras.
+- Si el cliente **no tiene correo** registrado, el aviso automático no sale y el visor te ofrece WhatsApp.
+- Si aprobaste el documento por error y lo rechazas después (o al revés), el aviso pendiente se reinicia solo.
+
 ## Calidad de los documentos: qué hace el sistema por ti
 
 El Portal ya le enseña al cliente cómo subir cada documento (leyenda en cada casilla) y **revisa la calidad antes de guardarlo**:

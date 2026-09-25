@@ -66,6 +66,23 @@ class DocumentUploadTest extends TestCase
         $this->assertTrue(class_exists(\App\Console\Commands\CheckDocumentsPendingReview::class));
     }
 
+    public function test_rejection_notifier_builds_one_message_with_reasons_and_link(): void
+    {
+        $client = new \App\Models\Client(['name' => 'Carlos Sánchez', 'phone' => '55 1234 5678']);
+        $docs = collect([
+            new \App\Models\Document(['category' => 'estado_cuenta', 'rejection_reason' => 'Foto de pantalla']),
+            new \App\Models\Document(['category' => 'luz', 'rejection_reason' => 'Vencido']),
+        ]);
+
+        $text = app(\App\Services\DocumentRejectionNotifier::class)->whatsappText($client, $docs);
+
+        $this->assertStringContainsString('Hola Carlos', $text);
+        $this->assertStringContainsString('Foto de pantalla', $text);
+        $this->assertStringContainsString('Vencido', $text);
+        $this->assertStringContainsString('mi-expediente', $text);
+        $this->assertTrue(\Illuminate\Support\Facades\Route::has('documents.notify-rejection'));
+    }
+
     public function test_tiny_image_is_blocked_and_cannot_be_bypassed(): void
     {
         $svc = new DocumentQualityService();

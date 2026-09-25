@@ -37,6 +37,12 @@
 .hv-reject-box textarea { width:100%; min-height:70px; border:1px solid #cbd5e1; border-radius:8px; padding:.5rem; font-size:.85rem; resize:vertical; }
 .hv-confirm-reject { background:#dc2626; color:#fff; border:0; border-radius:9px; padding:.7rem; font-weight:700; cursor:pointer; }
 .hv-hint { font-size:.7rem; color:#94a3b8; text-align:center; }
+.hv-toast { position:absolute; left:1rem; bottom:1rem; max-width:420px; background:#0f172a; color:#fff; border:1px solid #334155; border-radius:12px; padding:.8rem 1rem; font-size:.82rem; line-height:1.4; box-shadow:0 10px 30px rgba(0,0,0,.4); display:none; z-index:5; }
+.hv-toast.show { display:block; }
+.hv-toast .hv-tbtns { margin-top:.6rem; display:flex; gap:.4rem; flex-wrap:wrap; }
+.hv-toast button { background:rgba(255,255,255,.14); color:#fff; border:0; border-radius:8px; padding:.4rem .7rem; font-size:.78rem; cursor:pointer; }
+.hv-toast button:hover { background:rgba(255,255,255,.26); }
+.hv-notify-opt { display:flex; align-items:center; gap:.4rem; font-size:.75rem; color:#475569; }
 @media (max-width: 800px) { .hv-body { flex-direction:column; } .hv-side { width:auto; max-height:45vh; } }
 </style>
 
@@ -78,6 +84,7 @@
                         <span class="hv-chip" data-reason="No es el documento que se solicita en este apartado.">Documento equivocado</span>
                     </div>
                     <textarea id="hvReason" placeholder="Motivo que verá el cliente en su Portal…"></textarea>
+                    <label class="hv-notify-opt"><input type="checkbox" id="hvNotify" checked> Avisar al cliente por correo (en unos minutos, un solo correo con todo)</label>
                     <button class="hv-confirm-reject" type="button" onclick="hdvDocViewer.confirmReject()">Rechazar y avisar al cliente</button>
                 </div>
                 <button class="hv-approve" type="button" id="hvApprove" onclick="hdvDocViewer.setStatus(hdvDocViewer.currentId(), 'verified', true)">✓ Aprobar documento</button>
@@ -86,6 +93,7 @@
             </div>
         </aside>
     </div>
+    <div class="hv-toast" id="hvToast"></div>
 </div>
 
 <script>
@@ -164,7 +172,7 @@ window.hdvDocViewer = (function () {
         render(); showReject(!!rejectMode);
     }
     function close() {
-        el('hdvViewer').classList.remove('open'); document.body.style.overflow = ''; el('hvContent').innerHTML = '';
+        el('hdvViewer').classList.remove('open'); document.body.style.overflow = ''; el('hvContent').innerHTML = ''; hideToast();
     }
     function step(n) {
         var all = rows(); if (!all.length) return;
@@ -194,11 +202,13 @@ window.hdvDocViewer = (function () {
         var row = rowById(id); if (!row) return;
         var body = new FormData(); body.append('_method', 'PATCH'); body.append('status', status);
         if (reason) body.append('rejection_reason', reason);
+        if (status === 'rejected') body.append('notify_client', el('hvNotify').checked ? '1' : '0');
         fetch(statusUrl + id + '/status', { method: 'POST', body: body, headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } })
             .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
             .then(function (j) {
                 paintRow(row, j.status, j.rejection_reason); changed = true;
                 document.dispatchEvent(new CustomEvent('hdv:doc-status', { detail: { id: id, status: j.status } }));
+                if (j.notice) showToast(id, j.notice); else if (status === 'verified') hideToast();
                 var opened = el('hdvViewer').classList.contains('open');
                 if (opened && fromViewer) {
                     var n = nextPending();
@@ -208,6 +218,39 @@ window.hdvDocViewer = (function () {
             })
             .catch(function () { alert('No se pudo actualizar el documento. Intenta de nuevo.'); });
     }
+    // ── Aviso al cliente tras rechazar ──────────────────────────────────────────
+    var toastDocId = null;
+    function hideToast() { el('hvToast').classList.remove('show'); }
+    function showToast(id, n) {
+        toastDocId = id;
+        var many = n.pending > 1 ? ' (' + n.pending + ' documentos rechazados de este cliente)' : '';
+        var msg = n.auto
+            ? '✉️ Rechazado. Se avisará a <b>' + esc(n.client) + '</b> por correo en ~' + n.minutes + ' min, en un solo mensaje con todo lo que rechaces' + many + '.'
+            : 'Rechazado. <b>' + esc(n.client) + '</b> no recibirá aviso automático' + (n.can_email ? '' : ' (no tiene correo registrado)') + many + '.';
+        var btns = '';
+        if (n.can_email) btns += '<button type="button" onclick="hdvDocViewer.notifyNow(\'email\')">✉️ Avisar por correo ahora</button>';
+        if (n.can_whatsapp) btns += '<button type="button" onclick="hdvDocViewer.notifyNow(\'whatsapp\')">💬 Avisar por WhatsApp</button>';
+        btns += '<button type="button" onclick="hdvDocViewer.hideToast()">Cerrar</button>';
+        var t = el('hvToast'); t.innerHTML = '<div>' + msg + '</div><div class="hv-tbtns">' + btns + '</div>'; t.classList.add('show');
+    }
+    function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+    function notifyNow(channel) {
+        if (!toastDocId) return;
+        // Se abre la pestaña en el clic (antes del fetch) para que el navegador no bloquee el pop-up de WhatsApp.
+        var w = channel === 'whatsapp' ? window.open('', '_blank') : null;
+        var body = new FormData(); body.append('channel', channel);
+        fetch("{{ url('documents') }}/" + toastDocId + '/notify-rejection', { method: 'POST', body: body, headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' } })
+            .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+            .then(function (res) {
+                if (channel === 'whatsapp') {
+                    if (res.ok && res.j.url && w) { w.location = res.j.url; hideToast(); } else { if (w) w.close(); alert(res.j.message || 'No se pudo abrir WhatsApp.'); }
+                } else {
+                    var t = el('hvToast'); t.innerHTML = '<div>' + (res.ok ? '✅ ' : '⚠️ ') + esc(res.j.message || '') + '</div><div class="hv-tbtns"><button type="button" onclick="hdvDocViewer.hideToast()">Cerrar</button></div>';
+                }
+            })
+            .catch(function () { if (w) w.close(); alert('No se pudo enviar el aviso. Intenta de nuevo.'); });
+    }
+
     function confirmReject() {
         var reason = el('hvReason').value.trim();
         if (!reason) { el('hvReason').focus(); el('hvReason').style.borderColor = '#dc2626'; return; }
@@ -229,7 +272,7 @@ window.hdvDocViewer = (function () {
     });
 
     return { open: open, close: close, step: step, rotate: rotate, toggleZoom: toggleZoom, setStatus: setStatus,
-             showReject: showReject, confirmReject: confirmReject, openFirstPending: openFirstPending,
+             showReject: showReject, confirmReject: confirmReject, notifyNow: notifyNow, hideToast: hideToast, openFirstPending: openFirstPending,
              currentId: function () { return current() ? current().dataset.docId : null; } };
 })();
 </script>

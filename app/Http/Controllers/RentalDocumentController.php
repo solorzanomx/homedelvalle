@@ -93,10 +93,13 @@ class RentalDocumentController extends Controller
             $data['verified_at'] = now();
             $data['verified_by'] = Auth::id();
             $data['rejection_reason'] = null;
+            $data += ['rejected_at' => null, 'rejection_notified_at' => null, 'rejection_notified_via' => null];
         }
 
         if ($validated['status'] === 'rejected') {
             $data['rejection_reason'] = $validated['rejection_reason'] ?? null;
+            // Reinicia el aviso: el scheduler juntará todos los rechazos del cliente en un solo correo.
+            $data += ['rejected_at' => now(), 'rejection_notified_at' => null, 'rejection_notified_via' => null];
         }
 
         $document->update($data);
@@ -116,12 +119,33 @@ class RentalDocumentController extends Controller
         \App\Support\DocumentReviewInbox::forgetCount();
 
         // El visor del CRM aprueba/rechaza sin recargar la página.
+        // El asesor puede pedir no avisar (casilla del visor): queda a mano para WhatsApp o "avisar ahora".
+        $notifier = app(\App\Services\DocumentRejectionNotifier::class);
+        $skipped = $validated['status'] === 'rejected' && $request->input('notify_client') === '0';
+        if ($skipped) {
+            $notifier->markSkipped($document);
+        }
+
         if ($request->expectsJson()) {
+            $notice = null;
+            $client = $document->client;
+            if ($validated['status'] === 'rejected' && $client) {
+                $notice = [
+                    'client' => $client->name,
+                    'pending' => $notifier->pendingFor($client)->count(),
+                    'auto' => ! $skipped && (bool) $client->email,
+                    'minutes' => \App\Services\DocumentRejectionNotifier::DEFAULT_DELAY_MINUTES,
+                    'can_email' => (bool) $client->email,
+                    'can_whatsapp' => strlen(preg_replace('/[^0-9]/', '', $client->whatsapp ?: $client->phone ?: '')) >= 10,
+                ];
+            }
+
             return response()->json([
                 'ok' => true,
                 'status' => $document->status,
                 'status_label' => $document->status_label,
                 'rejection_reason' => $document->rejection_reason,
+                'notice' => $notice,
             ]);
         }
 
@@ -145,6 +169,39 @@ class RentalDocumentController extends Controller
         }
 
         return Storage::disk('public')->download($document->file_path, $document->file_name);
+    }
+
+    /** "Avisar ahora" por correo o WhatsApp a quien tiene documentos rechazados (todos los del cliente, en un solo mensaje). */
+    public function notifyRejection(Request $request, string $documentId)
+    {
+        $request->validate(['channel' => 'required|in:email,whatsapp']);
+
+        $client = Document::with('client')->findOrFail($documentId)->client;
+        if (! $client) {
+            return response()->json(['ok' => false, 'message' => 'El documento no está ligado a un cliente.'], 422);
+        }
+
+        $notifier = app(\App\Services\DocumentRejectionNotifier::class);
+        $docs = $notifier->pendingFor($client);
+        if ($docs->isEmpty()) {
+            return response()->json(['ok' => false, 'message' => 'No hay documentos rechazados pendientes de avisar.'], 422);
+        }
+
+        if ($request->input('channel') === 'whatsapp') {
+            $url = $notifier->whatsappUrl($client, $docs);
+
+            return $url
+                ? response()->json(['ok' => true, 'url' => $url, 'count' => $docs->count()])
+                : response()->json(['ok' => false, 'message' => 'El cliente no tiene un teléfono válido.'], 422);
+        }
+
+        $sent = $notifier->sendEmail($client, $docs, Auth::user());
+
+        return response()->json([
+            'ok' => $sent,
+            'count' => $docs->count(),
+            'message' => $sent ? "Correo enviado a {$client->email}." : ($client->email ? 'No se pudo enviar el correo — revisa la configuración de correo saliente.' : 'El cliente no tiene correo registrado.'),
+        ], $sent ? 200 : 422);
     }
 
     /** Abre el archivo en el navegador (visor del CRM) en vez de forzar la descarga. */
