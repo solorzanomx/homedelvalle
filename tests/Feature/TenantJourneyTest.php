@@ -64,4 +64,16 @@ class TenantJourneyTest extends TestCase
         $this->assertStringContainsString('$tenantNav', $layout);
         $this->assertStringContainsString('portal._tenant_bottom_nav', $layout);
     }
+
+    public function test_tenant_mode_does_not_depend_on_interest_types_and_topbar_uses_the_dark_logo(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/portal.blade.php'));
+
+        // Misma fuente de verdad que Mi camino: la renta activa como inquilino, no el interés capturado.
+        $this->assertStringContainsString('activeTenantRental($portalClient)', $layout);
+
+        // La barra superior es de fondo oscuro: el logo para fondo oscuro va primero.
+        $top = substr($layout, strpos($layout, 'class="portal-topbar"'), 1200);
+        $this->assertLessThan(strpos($top, 'logo_path ??'), strpos($top, 'logo_path_dark'), 'el logo oscuro debe evaluarse antes que el claro');
+    }
 }

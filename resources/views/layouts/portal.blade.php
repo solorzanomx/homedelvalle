@@ -446,7 +446,14 @@
 
     // MODO INQUILINO (2026-09-26): quien tiene una renta activa como arrendatario ve un menú corto y sencillo
     // (Mi camino, Mis documentos, Mi renta, Mi asesor) en lugar del menú completo. Ver docs/funcionalidades/portal-inquilino-navegacion.md
-    $tenantNav = $isArrendatario && $activeRental && $portalClient && $activeRental->tenant_client_id === $portalClient->id;
+    // Misma fuente de verdad que Mi camino y el redirect de /inicio (activeTenantRental): NO depende de que el
+    // cliente tenga el interés 'renta_inquilino' capturado (antes, si faltaba, el menú corto y la barra inferior no salían).
+    $tenantRentalNav = $portalClient ? app(\App\Services\ClientPortalService::class)->activeTenantRental($portalClient) : null;
+    $tenantNav = (bool) $tenantRentalNav;
+    if ($tenantNav) {
+        $activeRental = $tenantRentalNav;
+        $isArrendatario = true;
+    }
     $onJourney = request()->routeIs('portal.journey');
     $tenantDocsBadge = 0;
     if ($tenantNav) {
@@ -528,8 +535,12 @@
     <div class="portal-topbar">
         <button class="topbar-hamburger" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
         <a href="{{ route('portal.dashboard') }}" class="topbar-logo">
-            @if($siteSettings->logo_path ?? false)
-                <img src="{{ asset('storage/' . $siteSettings->logo_path) }}" alt="" style="max-height:26px;">
+            {{-- La barra superior es de fondo OSCURO: va el logo para fondo oscuro (igual que el menú lateral). Si solo existe
+                 el de fondo claro, se vuelve blanco con un filtro para que no se pierda. --}}
+            @if($siteSettings->logo_path_dark ?? false)
+                <img src="{{ Storage::url($siteSettings->logo_path_dark) }}" alt="{{ $siteSettings->site_name ?? 'Home del Valle' }}" style="max-height:26px;">
+            @elseif($siteSettings->logo_path ?? false)
+                <img src="{{ asset('storage/' . $siteSettings->logo_path) }}" alt="{{ $siteSettings->site_name ?? 'Home del Valle' }}" style="max-height:26px;filter:brightness(0) invert(1);">
             @else
                 <div class="topbar-logo-mark">H</div>
             @endif
