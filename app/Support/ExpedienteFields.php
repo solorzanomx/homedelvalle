@@ -15,14 +15,14 @@ class ExpedienteFields
     const IDENTIFICATION = ['id_type', 'curp', 'rfc', 'id_number', 'id_expiry_month', 'id_expiry_year', 'address_street', 'address_colony', 'address_municipality', 'address_state', 'address_zip'];
 
     /** Inquilino: datos laborales + cómo comprueba + arrendador anterior. */
-    const INCOME_TENANT = ['income_type', 'income_amount', 'income_proof_type', 'employer_name', 'employer_phone', 'job_seniority', 'previous_landlord_name', 'previous_landlord_phone'];
+    const INCOME_TENANT = ['income_type', 'income_amount', 'income_proof_type', 'employer_name', 'employer_phone', 'job_seniority', 'previous_landlord_name', 'previous_landlord_phone', 'previous_landlord_address'];
 
     /**
      * Obligado solidario: LOS MISMOS que el inquilino (nombre de su trabajo, teléfono, antigüedad, tipo e importe de
      * ingresos y ANTIGUO ARRENDADOR), salvo el "tipo de comprobante" (sus documentos van en Mis documentos).
      * Además de las 3 referencias personales, que cuentan aparte. Solo se deja fuera "información del hogar".
      */
-    const INCOME_OBLIGADO = ['income_type', 'income_amount', 'employer_name', 'employer_phone', 'job_seniority', 'previous_landlord_name', 'previous_landlord_phone'];
+    const INCOME_OBLIGADO = ['income_type', 'income_amount', 'employer_name', 'employer_phone', 'job_seniority', 'previous_landlord_name', 'previous_landlord_phone', 'previous_landlord_address'];
 
     /** Referencias personales que se piden (inquilino y obligado solidario). */
     const REFERENCES_REQUIRED = 3;

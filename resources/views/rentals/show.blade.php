@@ -550,7 +550,9 @@
                     <div class="card-header"><h3>Referencias</h3></div>
                     <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
                         @include('rentals._personal_references', ['who' => 'inquilino', 'person' => $rental->tenantClient, 'rental' => $rental])
+                        @include('rentals._previous_landlord', ['who' => 'inquilino', 'person' => $rental->tenantClient, 'rental' => $rental])
                         @if($rental->obligado)
+                            @include('rentals._previous_landlord', ['who' => 'obligado solidario', 'person' => $rental->obligado, 'rental' => $rental])
                             @include('rentals._personal_references', ['who' => 'obligado solidario', 'person' => $rental->obligado->load('references'), 'rental' => $rental])
                         @endif
 

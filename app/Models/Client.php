@@ -49,7 +49,7 @@ class Client extends Model
         'employer_name', 'employer_address', 'employer_phone', 'job_seniority',
         'other_income_amount', 'other_income_description',
         'previous_landlord_name', 'previous_landlord_phone', 'previous_landlord_mobile',
-        'previous_landlord_email', 'previous_landlord_years',
+        'previous_landlord_email', 'previous_landlord_years', 'previous_landlord_address',
         // Vigencia de identificación (mes/año, como viene en el INE)
         'id_expiry_month', 'id_expiry_year',
         // Cómo comprueba ingresos + mascotas

@@ -278,6 +278,7 @@ class PortalExpedienteController extends Controller
             'previous_landlord_mobile' => 'nullable|string|max:30',
             'previous_landlord_email'  => 'nullable|email|max:150',
             'previous_landlord_years'  => 'nullable|string|max:60',
+            'previous_landlord_address' => 'nullable|string|max:200',
         ]);
 
         $client->update($validated);

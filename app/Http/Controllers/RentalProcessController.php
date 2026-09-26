@@ -312,6 +312,28 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Referencia guardada.');
     }
 
+    /** El asesor captura/corrige los datos del arrendador anterior del inquilino u obligado (p. ej. por teléfono). */
+    public function savePreviousLandlord(Request $request, string $id)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $data = $request->validate([
+            'who' => 'required|in:tenant,obligado',
+            'previous_landlord_name' => 'nullable|string|max:150',
+            'previous_landlord_phone' => 'nullable|string|max:30',
+            'previous_landlord_mobile' => 'nullable|string|max:30',
+            'previous_landlord_email' => 'nullable|email|max:150',
+            'previous_landlord_address' => 'nullable|string|max:200',
+            'previous_landlord_years' => 'nullable|string|max:60',
+        ]);
+        $clientId = $data['who'] === 'tenant' ? $rental->tenant_client_id : $rental->obligado_client_id;
+        abort_unless($clientId, 422, 'Esta renta no tiene esa persona registrada.');
+        unset($data['who']);
+
+        \App\Models\Client::findOrFail($clientId)->update($data);
+
+        return back()->with('success', 'Datos del arrendador anterior guardados.');
+    }
+
     /** Deshace el rechazo de una referencia. */
     public function restoreReference(string $id, string $referenceId)
     {

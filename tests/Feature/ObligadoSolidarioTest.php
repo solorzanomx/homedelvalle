@@ -17,7 +17,7 @@ class ObligadoSolidarioTest extends TestCase
             $this->assertContains($f, $fillable, "Client no tiene el campo '{$f}'");
         }
         // Mismo cuestionario que el inquilino (menos "hogar"): trabajo, antiguo arrendador y 3 referencias.
-        foreach (['employer_name', 'employer_phone', 'job_seniority', 'previous_landlord_name', 'previous_landlord_phone'] as $f) {
+        foreach (['employer_name', 'employer_phone', 'job_seniority', 'previous_landlord_name', 'previous_landlord_phone', 'previous_landlord_address'] as $f) {
             $this->assertContains($f, ExpedienteFields::INCOME_OBLIGADO, "El obligado debe conservar '{$f}'");
         }
         $this->assertSame(3, ExpedienteFields::REFERENCES_REQUIRED);
@@ -46,7 +46,7 @@ class ObligadoSolidarioTest extends TestCase
 
     public function test_rejected_references_do_not_count_and_have_crm_routes(): void
     {
-        foreach (['rentals.references.reject', 'rentals.references.restore', 'rentals.references.save'] as $name) {
+        foreach (['rentals.references.reject', 'rentals.references.restore', 'rentals.references.save', 'rentals.previous-landlord.save'] as $name) {
             $this->assertTrue(\Illuminate\Support\Facades\Route::has($name), "Falta la ruta {$name}");
             $this->assertContains('viewer', \Illuminate\Support\Facades\Route::getRoutes()->getByName($name)->gatherMiddleware());
         }

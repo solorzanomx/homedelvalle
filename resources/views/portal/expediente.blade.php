@@ -1108,6 +1108,10 @@
                         <label class="form-label">Email</label>
                         <input type="email" name="previous_landlord_email" class="form-input" value="{{ old('previous_landlord_email',$client->previous_landlord_email) }}">
                     </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Dirección del inmueble que rentabas</label>
+                        <input type="text" name="previous_landlord_address" class="form-input" value="{{ old('previous_landlord_address',$client->previous_landlord_address) }}" placeholder="Calle, número, colonia">
+                    </div>
                     <div class="form-group">
                         <label class="form-label">Tiempo de arrendamiento</label>
                         <input type="text" name="previous_landlord_years" class="form-input" value="{{ old('previous_landlord_years',$client->previous_landlord_years) }}" placeholder="Ej. 3 años">

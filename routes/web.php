@@ -316,6 +316,7 @@ Route::middleware(['auth', 'viewer'])->group(function () {
     Route::post('rentals/{rental}/poliza-decision', [RentalProcessController::class, 'setPolizaDecision'])->name('rentals.poliza-decision');
     Route::post('rentals/{rental}/poliza-payment', [RentalProcessController::class, 'setPolizaPayment'])->name('rentals.poliza-payment');
     Route::post('rentals/{rental}/obligado', [RentalProcessController::class, 'registerObligado'])->name('rentals.obligado.register');
+    Route::post('rentals/{rental}/arrendador-anterior', [RentalProcessController::class, 'savePreviousLandlord'])->name('rentals.previous-landlord.save');
     Route::post('rentals/{rental}/referencias', [RentalProcessController::class, 'saveReference'])->name('rentals.references.save');
     Route::post('rentals/{rental}/referencias/{reference}/rechazar', [RentalProcessController::class, 'rejectReference'])->name('rentals.references.reject');
     Route::post('rentals/{rental}/referencias/{reference}/restaurar', [RentalProcessController::class, 'restoreReference'])->name('rentals.references.restore');
