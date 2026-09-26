@@ -135,4 +135,12 @@ class TenantJourneyTest extends TestCase
         $this->assertSame('fin', $this->wizard($sections, ['tenant_has_aval' => true], 'garantia')['next'], 'el último paso termina en Mi camino');
         $this->assertSame('identificacion', $this->wizard($sections, ['tenant_has_aval' => false], 'inventado')['current'], 'un paso inválido cae al primero incompleto');
     }
+
+    public function test_crm_investigation_lists_the_references_the_tenant_captured(): void
+    {
+        // Las 3 referencias del inquilino (Portal → Tus datos → Referencias) deben verse en Renta → Investigación → Referencias.
+        $view = file_get_contents(resource_path('views/rentals/show.blade.php'));
+        $this->assertStringContainsString('Referencias personales que dio el inquilino', $view);
+        $this->assertStringContainsString("tenantClient.references", file_get_contents(app_path('Http/Controllers/RentalProcessController.php')));
+    }
 }

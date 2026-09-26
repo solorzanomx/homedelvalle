@@ -40,6 +40,8 @@ El inquilino veía 5 destinos que se traslapaban (Inicio, Renta, Expediente, Doc
 - **El inquilino se detecta por su renta activa** también en `PortalExpedienteController::show()` (`activeTenantRental`), no solo por `interest_types`.
 - El apartado pendiente y su tarjeta de pago se abren desde Mi camino con `?apartado=1`; en el asistente no se repite.
 
+- **Referencias en el CRM:** las 3 referencias personales que el inquilino captura en su Portal (paso "Referencias personales") se ven en **Renta → Investigación → tarjeta Referencias** (nombre, celular con Llamar/WhatsApp, fijo, correo, domicilio, y "N de 3"); el asesor anota abajo cuántas verificó y el resultado.
+
 ## Pendiente (fase 4 acordada)
 1. ~~Partir "Tus datos" en pantallas cortas~~ ✅ hecho (arriba). Falta: guardado automático en el SERVIDOR (hoy es un borrador local) y dividir los pasos más largos (p. ej. identificación y domicilio, trabajo e ingresos) si las pruebas con clientes lo piden.
 2. Planes de póliza como tarjetas deslizables con "ver qué incluye"; firma del contrato dentro del Portal.

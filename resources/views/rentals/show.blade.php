@@ -541,12 +541,48 @@
                 </div>
 
                 {{-- Referencias --}}
+                @php
+                    // Las 3 referencias personales que el inquilino captura en su Portal ("Tus datos → Referencias personales").
+                    $tenantRefs = ($rental->tenantClient?->references ?? collect())->sortBy('sort_order')->values();
+                    $waDigits = fn($p) => (function ($d) { return strlen($d) === 10 ? '52' . $d : $d; })(preg_replace('/\D/', '', (string) $p));
+                @endphp
                 <div class="card">
                     <div class="card-header"><h3>Referencias</h3></div>
                     <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+                        <div style="grid-column:1/-1;">
+                            <div style="font-size:.78rem;font-weight:700;margin-bottom:.45rem;">
+                                Referencias personales que dio el inquilino
+                                <span class="badge {{ $tenantRefs->count() >= 3 ? 'badge-green' : ($tenantRefs->count() > 0 ? 'badge-yellow' : 'badge-red') }}">{{ $tenantRefs->count() }} de 3</span>
+                            </div>
+                            @forelse($tenantRefs as $i => $ref)
+                            <div style="border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem;margin-bottom:.45rem;font-size:.82rem;line-height:1.5;">
+                                <strong>{{ $i + 1 }}. {{ $ref->name }}</strong>
+                                @if($ref->address)<div style="color:var(--text-muted);">📍 {{ $ref->address }}</div>@endif
+                                <div style="display:flex;gap:.9rem;flex-wrap:wrap;margin-top:.15rem;">
+                                    @if($ref->mobile_phone)
+                                        <span>📱 {{ $ref->mobile_phone }}
+                                            <a href="tel:{{ preg_replace('/\D/', '', $ref->mobile_phone) }}" style="margin-left:.3rem;">Llamar</a> ·
+                                            <a href="https://wa.me/{{ $waDigits($ref->mobile_phone) }}?text={{ rawurlencode('Hola, le escribo de Home del Valle: ' . ($rental->tenantClient?->name ?? 'una persona') . ' lo(a) dio como referencia personal para una renta. ¿Podría contestarme unas preguntas breves?') }}" target="_blank" rel="noopener">WhatsApp</a></span>
+                                    @endif
+                                    @if($ref->landline_phone)<span>☎️ {{ $ref->landline_phone }} <a href="tel:{{ preg_replace('/\D/', '', $ref->landline_phone) }}" style="margin-left:.3rem;">Llamar</a></span>@endif
+                                    @if($ref->email)<span>✉️ <a href="mailto:{{ $ref->email }}">{{ $ref->email }}</a></span>@endif
+                                </div>
+                            </div>
+                            @empty
+                            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:.6rem .8rem;font-size:.8rem;color:#92400e;">
+                                El inquilino aún no captura sus referencias personales. Las llena en su Portal, en <strong>Tus datos → Referencias personales</strong>.
+                            </div>
+                            @endforelse
+                            @if($tenantRefs->count() > 0 && $tenantRefs->count() < 3)
+                            <div style="font-size:.75rem;color:#92400e;">Faltan {{ 3 - $tenantRefs->count() }} referencia(s) por capturar.</div>
+                            @endif
+                            <div style="font-size:.72rem;color:var(--text-muted);margin-top:.3rem;">Llámales y anota abajo el resultado: cuántas verificaste, si fueron positivas y tus notas.</div>
+                        </div>
+
                         <div class="form-group">
                             <label class="form-label">Núm. de referencias</label>
                             <input type="number" name="references_count" class="form-input" value="{{ $inv?->references_count ?? 0 }}" min="0" max="10">
+                            <p class="form-hint" style="font-size:.68rem;">Cuántas referencias ya verificaste.</p>
                         </div>
                         <div class="form-group">
                             <label class="form-label" style="display:flex;align-items:center;gap:.5rem;">
