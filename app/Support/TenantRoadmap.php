@@ -143,16 +143,20 @@ class TenantRoadmap
     {
         $st = $step['os_status'] ?? null;
         if (! $st || ! $st['registered']) {
-            return ['title' => 'Registra a tu obligado solidario', 'body' => 'Es un requisito de la póliza sin aval. Solo necesitamos su nombre, celular y correo; él llena el resto en su Portal.',
+            return ['title' => 'Registra a tu obligado solidario', 'body' => 'Es un requisito de la póliza sin aval. Solo necesitamos su nombre y celular; los demás datos y sus documentos los capturas tú aquí mismo.',
                 'minutes' => 2, 'cta_label' => 'Registrarlo', 'cta_url' => '#step-obligado'];
         }
-        $wa = preg_replace('/\D/', '', $st['client']?->phone ?? '');
-        $wa = strlen($wa) === 10 ? '52' . $wa : $wa;
+        $name = $st['name'];
+        if ($st['data_pct'] < 100) {
+            return ['title' => "Llena los datos de {$name}", 'body' => 'Pídele su información (trabajo, referencias personales, antiguo arrendador…) y captúrala aquí; es el mismo cuestionario que el tuyo.',
+                'minutes' => 10, 'cta_label' => 'Llenar sus datos', 'cta_url' => route('portal.expediente', ['para' => 'obligado'])];
+        }
+        if (! empty($st['docs_missing']) && ($st['docs']['falta'] + $st['docs']['corregir']) > 0) {
+            return ['title' => "Sube los documentos de {$name}", 'body' => $step['summary'],
+                'minutes' => 5, 'cta_label' => 'Subir sus documentos', 'cta_url' => route('portal.documents.index', ['para' => 'obligado'])];
+        }
 
-        return ['title' => 'Tu obligado solidario está completando su información', 'body' => $step['summary'],
-            'minutes' => null,
-            'cta_label' => $wa ? 'Recordárselo por WhatsApp' : null,
-            'cta_url' => $wa ? 'https://wa.me/' . $wa . '?text=' . rawurlencode('Hola, te recuerdo completar tu información como obligado solidario de mi renta: revisa tu correo para activar tu cuenta.') : null];
+        return ['title' => "Tu asesor está revisando los documentos de {$name}", 'body' => $step['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null];
     }
 
     private static function nextForDocuments(array $step, string $docsUrl): array
@@ -194,7 +198,7 @@ class TenantRoadmap
                 : "Completa tus datos personales, domicilio, trabajo y referencias (llevas {$pct}%). Se guardan mientras avanzas."];
     }
 
-    /** "Tu obligado solidario": quién es, su avance y si ya está completo (datos + documentos aprobados). El inquilino NO ve sus datos. */
+    /** "Tu obligado solidario": quién es, su avance y si ya está completo (datos + documentos aprobados). Lo captura el inquilino. */
     private static function obligado(RentalProcess $r, \App\Services\ObligadoSolidarioService $svc): array
     {
         $st = $svc->status($r);
@@ -202,14 +206,14 @@ class TenantRoadmap
 
         if (! $st['registered']) {
             return $base + ['done' => false, 'action' => 'register_os',
-                'summary' => 'Sin aval en CDMX, la póliza requiere un obligado solidario: una persona que responde junto contigo y aporta los mismos datos y documentos que tú. Regístrala y le enviamos una invitación a su propio Portal; tú no verás su información, solo su avance.'];
+                'summary' => 'Sin aval en CDMX, la póliza requiere un obligado solidario: una persona que responde junto contigo y aporta los mismos datos y documentos que tú. Regístrala (nombre y celular) y tú capturas sus datos y subes sus documentos desde aquí.'];
         }
 
         $docTotal = array_sum($st['docs']);
         $summary = $st['complete']
             ? "{$st['name']} completó su información y sus documentos fueron aprobados. ✅"
             : "{$st['name']} lleva {$st['data_pct']}% de sus datos y {$st['docs']['aprobado']} de {$docTotal} documentos aprobados."
-                . ($st['started'] ? '' : ' Aún no empieza: recuérdale revisar su correo (enlace de activación).');
+                . ($st['started'] ? '' : ' Aún no se sube ningún documento suyo.');
 
         return $base + ['done' => $st['complete'], 'action' => $st['complete'] ? null : 'os_status', 'summary' => $summary];
     }

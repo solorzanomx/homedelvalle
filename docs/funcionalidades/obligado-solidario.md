@@ -1,34 +1,35 @@
 # Obligado solidario (garantía por póliza)
 
-> 2026-09-28. Léelo antes de tocar `ObligadoSolidarioService`, `ObligadoRoadmap`, el paso "Tu obligado solidario" de `TenantRoadmap`, o el modo obligado del Portal.
+> 2026-09-28 (rediseñado). Léelo antes de tocar `ObligadoSolidarioService`, el paso "Tu obligado solidario" de `TenantRoadmap`, `?para=obligado` del Portal o `DocumentUploader`.
 
 ## Regla de negocio (decidida por Alejandro)
-- **Cuando el inquilino NO tiene aval en CDMX (ruta de póliza) se pide un obligado solidario**, con **los mismos datos y documentos que el arrendatario**: datos personales, identificación y domicilio, trabajo/ingresos, y sus 3 documentos (INE por ambos lados o pasaporte, comprobante de domicilio, ingresos de los **últimos 3 meses**). Sin "información del hogar" ni referencias.
-- **Es obligatorio con los 3 planes**; el **asesor puede exentarlo por trato** (`rental_processes.obligado_required = false`; `null` = lo define la ruta).
-- **Él mismo captura y sube, en su PROPIO Portal**: el inquilino solo escribe nombre, celular y correo (y relación, opcional); el obligado recibe una invitación por correo (enlace de activación de 7 días). **El inquilino nunca ve sus datos ni documentos, solo su avance.**
+- **Cuando el inquilino NO tiene aval en CDMX (ruta de póliza) se pide un obligado solidario**, con **el mismo cuestionario y documentos que el arrendatario**: datos personales, identificación y domicilio, **nombre de su trabajo (teléfono y antigüedad)**, ingresos, **antiguo arrendador**, **3 referencias personales**; y 3 documentos (INE por ambos lados o pasaporte, comprobante de domicilio, ingresos de los **últimos 3 meses**). Solo se omite "información del hogar".
+- **Obligatorio con los 3 planes**; el **asesor puede exentarlo por trato** (`rental_processes.obligado_required = false`; `null` = lo define la ruta).
+- **Lo llena el INQUILINO desde su propio Portal.** El obligado NO tiene cuenta ni Portal ni recibe correos: es un `Client` sin `user_id`. El inquilino lo registra (nombre + celular; correo y relación opcionales), le pide la información y la captura (`?para=obligado`) y sube sus documentos.
 
 ## Mapa de archivos
-| Pieza | Archivo |
+| Qué | Dónde |
 |---|---|
-| Alta segura, invitación, estado y avance | `app/Services/ObligadoSolidarioService.php` (`isRequired`, `register`, `resendInvitation`, `status`, `dataProgress`) |
-| Columnas | `rental_processes.obligado_client_id`, `obligado_required`, `obligado_invited_at` (migración `2026_09_28_100000`); el obligado es un `Client` normal con su `User` (rol `client`) |
-| Paso "Tu obligado solidario" del inquilino | `TenantRoadmap::obligado()` / `nextForObligado()` + bloque en `portal/_tenant_roadmap.blade.php`; endpoints `PortalRentalController::storeObligado/resendObligado` (`portal.rentals.obligado.*`) |
-| "Mi camino" del obligado (datos → documentos → revisión) | `app/Support/ObligadoRoadmap.php` + `PortalJourneyController` (`mode = obligado`) |
-| Modo obligado del Portal (menú corto sin "Mi renta", barra inferior, "Mis documentos", asistente de 3 pasos) | `layouts/portal` (`$isObligadoNav`), `PortalDocumentController::index`, `PortalExpedienteController::show` (`$obligadoRental`, `wizardSteps($obligado)`) |
-| Campos que cuentan para el avance (una sola lista) | `app/Support/ExpedienteFields.php` (`PERSONAL`, `IDENTIFICATION`, `INCOME_TENANT`, `INCOME_OBLIGADO`) |
-| Documentos por persona | `TenantDocumentRows::build($rental,$client,$open,$forObligado)`; `RentalExpedienteStatus::missing($rental, $clientId)` y `isFullyComplete()` |
-| CRM: tarjeta (registrar/cambiar, reenviar, exentar, ver ficha/documentos) y sección de documentos | `rentals/_guarantee_route.blade.php`, `RentalProcessController::registerObligado/resendObligado/toggleObligado`, `RentalDocumentChecklist` (sección `obligado`) |
+| Alta, estado, avance y **autorización** | `app/Services/ObligadoSolidarioService.php` (`isRequired`, `register`, `status`, `dataProgress`, `tenantMayActFor`) |
+| Columnas | `rental_processes.obligado_client_id`, `obligado_required` (`obligado_invited_at` quedó sin uso) — migración `2026_09_28_100000` |
+| Paso del inquilino (registro, avance, 2 botones) | `TenantRoadmap::obligado()/nextForObligado()`, `portal/_tenant_roadmap.blade.php`, `PortalRentalController::storeObligado` (`portal.rentals.obligado.store`) |
+| Cuestionario a nombre del obligado | `PortalExpedienteController` (`?para=obligado`, `subject()`, `wizardSteps($obligado)`), `portal/expediente.blade.php` (`$obligadoMode`, banner) |
+| Documentos a nombre del obligado | `PortalDocumentController::index` (`?para=obligado`), `portal/documents/tenant.blade.php`, `Livewire/Portal/DocumentUploader` (`forClientId`) |
+| Campos que cuentan (una sola lista) | `app/Support/ExpedienteFields.php` (`PERSONAL`, `IDENTIFICATION`, `INCOME_TENANT`, `INCOME_OBLIGADO`, `REFERENCES_REQUIRED`) |
+| Documentos por persona | `TenantDocumentRows::build($rental,$client,$open,$forObligado)`; `RentalExpedienteStatus::missing($rental,$clientId)` / `isFullyComplete()` |
+| CRM: tarjeta (registrar otra persona, exentar, ficha, documentos) y sección de documentos | `rentals/_guarantee_route.blade.php`, `RentalProcessController::registerObligado/toggleObligado`, `RentalDocumentChecklist` (sección `obligado`) |
 
 ## INVARIANTES — no romper
-- **NUNCA uses `ClientPortalService::createPortalAccount` para dar de alta a un obligado (ni a nadie que un cliente escriba):** reutiliza al usuario con ese correo y le **cambia rol y contraseña**; un inquilino podría degradar una cuenta interna. `ObligadoSolidarioService::register` rechaza correos de cuentas no-`client`, del propio inquilino y del propietario, y crea el usuario con una contraseña aleatoria que nunca se muestra (entra por la invitación).
-- **Privacidad:** el inquilino ve nombre, avance de datos (%) y documentos aprobados/total; **nunca** correo, datos ni archivos del obligado (`PortalDocumentController::authorizedDocument` solo permite al dueño del documento). El correo de invitación lo promete.
-- **No se cambia al obligado si ya subió documentos** (`hasStarted`); habría que pasar por el asesor.
-- El obligado NO tiene aval, apartado, hogar ni referencias (`forObligado`, `wizardSteps($obligado)`); su ingreso se mide con `INCOME_OBLIGADO`.
-- **El aviso "expediente completo" exige al obligado** cuando es requerido (`isFullyComplete`).
-- El obligado no puede abrir la renta del inquilino (`PortalRentalController::show` solo deja al propietario/inquilino: 403).
-- Si el asesor exenta al obligado, el paso desaparece del camino y de la completitud.
+- **Toda acción "a nombre del obligado" pasa por `ObligadoSolidarioService::tenantMayActFor($cliente, $obligadoId)`**: solo el inquilino de la renta activa cuyo `obligado_client_id` coincide y que aún lo exige. Es la única puerta (expediente, documentos, uploader, ver/descargar sus archivos). Cualquier endpoint nuevo `para=obligado` debe usarla.
+- **`DocumentUploader::$forClientId` es público (el navegador lo puede alterar): se revalida en cada `getClient()`.** Nunca confiar en él sin `tenantMayActFor`.
+- **El obligado NO tiene cuenta: jamás `ClientPortalService::createPortalAccount`** ni crear `User`s para personas que escribe un cliente (reutiliza al usuario con ese correo y le cambia rol y contraseña). El correo del obligado es opcional y se descarta si ya existe (`clients.email` es único).
+- El cuestionario del obligado **conserva** trabajo, antiguo arrendador y 3 referencias (el usuario ya lo corrigió una vez porque se habían eliminado); `hogar` es lo único que se quita.
+- El asesor, al registrar, crea una persona NUEVA (no mezcla datos/documentos de otra); el inquilino solo edita el contacto de la misma persona.
+- **El aviso "expediente completo" exige al obligado** cuando es requerido (`isFullyComplete`). Si el asesor lo exenta, el paso desaparece.
+- Tests: `tests/Feature/ObligadoSolidarioTest.php`.
 
 ## Pendiente / ideas
-1. Recordatorio automático al obligado si no activa su cuenta en N días (hoy: reenviar invitación a mano, o WhatsApp desde el camino del inquilino).
-2. Autorización de consulta de Buró de Crédito del obligado (el inquilino la da en el Portal; falta el equivalente para el obligado).
-3. Que el propietario vea que el obligado ya está completo (hoy solo el asesor y el inquilino).
+1. Recordatorio al inquilino si su obligado sigue incompleto pasados N días.
+2. Autorización de consulta de Buró del obligado.
+3. Que el propietario vea que el obligado ya está completo.
+4. Marca "verificada" por referencia.

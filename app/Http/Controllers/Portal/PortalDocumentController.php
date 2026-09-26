@@ -29,17 +29,23 @@ class PortalDocumentController extends Controller
             ]);
         }
 
-        // Inquilino u obligado solidario con renta activa: lista simple de lo que le toca subir, con estado por documento.
+        // Inquilino con renta activa: lista simple de lo que le toca subir, con estado por documento.
+        // Con ?para=obligado el inquilino sube los documentos de SU obligado solidario (sin cuenta propia).
         $forObligado = false;
+        $subject = $client;
         $tenantRental = $this->portalService->activeTenantRental($client);
-        if (! $tenantRental && ($tenantRental = $this->portalService->activeObligadoRental($client))) {
+        if ($tenantRental && request('para') === 'obligado') {
+            $os = app(\App\Services\ObligadoSolidarioService::class);
+            abort_unless($os->tenantMayActFor($client, $tenantRental->obligado_client_id), 403);
+            $subject = \App\Models\Client::findOrFail($tenantRental->obligado_client_id);
             $forObligado = true;
         }
         if ($tenantRental) {
-            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $client, request('open'), $forObligado);
+            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $subject, request('open'), $forObligado);
 
             return view('portal.documents.tenant', [
                 'client' => $client,
+                'subject' => $subject,
                 'rental' => $tenantRental,
                 'groups' => $rows['groups'],
                 'counts' => $rows['counts'],
@@ -84,6 +90,9 @@ class PortalDocumentController extends Controller
         if ($client) {
             if ($document->client_id === $client->id) {
                 $hasAccess = true;
+            } elseif ($document->client_id && $document->rental_process_id
+                && app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($client, $document->client_id)?->id === (int) $document->rental_process_id) {
+                $hasAccess = true;   // el inquilino ve los documentos de SU obligado solidario (los captura él)
             } elseif (! $document->client_id && $document->captacion_id) {
                 $cap = Captacion::find($document->captacion_id);
                 $hasAccess = $cap && $cap->client_id === $client->id;

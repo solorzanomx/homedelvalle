@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Mis documentos')
+@section('title', ($forObligado ?? false) ? 'Documentos de tu obligado' : 'Mis documentos')
 
 @section('styles')
 .td-row { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:.85rem .95rem; margin-bottom:.6rem; }
@@ -29,8 +29,9 @@
     $totalReq = array_sum($counts);
 @endphp
 
+@php $para = ($forObligado ?? false) ? ['para' => 'obligado'] : []; @endphp
 <a href="{{ route('portal.journey') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:600;color:#1D4ED8;text-decoration:none;margin-bottom:.6rem;">← Mi camino</a>
-<h1 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 .35rem;">Mis documentos</h1>
+<h1 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 .35rem;">{{ ($forObligado ?? false) ? 'Documentos de ' . $subject->name : 'Mis documentos' }}</h1>
 <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1rem;">
     @foreach(['corregir' => 'por corregir', 'falta' => 'faltan', 'revision' => 'en revisión', 'aprobado' => 'aprobados'] as $k => $txt)
         @if($counts[$k] > 0)
@@ -43,7 +44,7 @@
 @if(session('error'))<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:12px;padding:.75rem 1rem;margin-bottom:1rem;font-size:.85rem;font-weight:600;">⚠ {{ session('error') }}</div>@endif
 
 @if($next && ! $open)
-<a href="{{ route('portal.documents.index', ['open' => $next['key']]) }}#row-{{ $next['key'] }}" style="display:flex;align-items:center;gap:.75rem;background:linear-gradient(135deg,#1e3a8a,#1D4ED8);color:#fff;border-radius:16px;padding:1rem 1.1rem;margin-bottom:1rem;text-decoration:none;">
+<a href="{{ route('portal.documents.index', $para + ['open' => $next['key']]) }}#row-{{ $next['key'] }}" style="display:flex;align-items:center;gap:.75rem;background:linear-gradient(135deg,#1e3a8a,#1D4ED8);color:#fff;border-radius:16px;padding:1rem 1.1rem;margin-bottom:1rem;text-decoration:none;">
     <span style="flex:1;font-size:.85rem;line-height:1.4;"><span style="display:block;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8;">Sigue con</span><strong style="font-size:1rem;">{{ $next['key'] === 'domicilio' ? 'Tu comprobante de domicilio' : ($next['key'] === 'ingresos' ? 'Tu comprobante de ingresos' : $next['label']) }}</strong></span>
     <span style="font-weight:800;">{{ $next['state'] === 'corregir' ? 'Corregir' : 'Subir' }} →</span>
 </a>
@@ -73,7 +74,7 @@
                 </div>
                 @if(! $isOpen && $r['state'] !== 'aprobado')
                     <a class="td-btn" style="background:{{ $r['state'] === 'revision' ? '#eff6ff' : ($r['state'] === 'corregir' ? '#ef4444' : '#1D4ED8') }};color:{{ $r['state'] === 'revision' ? '#1D4ED8' : '#fff' }};"
-                       href="{{ route('portal.documents.index', ['open' => $r['key']]) }}#row-{{ $r['key'] }}">
+                       href="{{ route('portal.documents.index', $para + ['open' => $r['key']]) }}#row-{{ $r['key'] }}">
                         {{ $r['state'] === 'corregir' ? 'Corregir' : ($r['state'] === 'revision' ? 'Ver / agregar' : ($r['state'] === 'parcial' ? 'Subir el que falta' : ($r['key'] === 'identificacion' ? 'Elegir' : 'Subir'))) }}
                     </a>
                 @endif
@@ -89,7 +90,7 @@
                         <p style="margin:0 0 .5rem;font-size:.82rem;font-weight:700;color:#0f172a;">{{ $r['key'] === 'identificacion' ? '¿Qué identificación vas a usar?' : '¿Cuál vas a subir?' }}</p>
                         <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
                             @foreach($r['chips'] as $chip)
-                                <a class="td-chip" href="{{ isset($chip['open']) ? route('portal.documents.index', ['open' => $chip['open']]) . '#row-' . $chip['open'] : route('portal.documents.index', ['open' => $r['key'], 'cat' => $chip['cat']]) . '#row-' . $r['key'] }}">{{ $chip['label'] }}</a>
+                                <a class="td-chip" href="{{ isset($chip['open']) ? route('portal.documents.index', $para + ['open' => $chip['open']]) . '#row-' . $chip['open'] : route('portal.documents.index', $para + ['open' => $r['key'], 'cat' => $chip['cat']]) . '#row-' . $r['key'] }}">{{ $chip['label'] }}</a>
                             @endforeach
                         </div>
                     @else
@@ -97,14 +98,14 @@
                         @if($chosen)
                             <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.6rem;">
                                 @foreach($r['chips'] as $chip)
-                                    <a class="td-chip {{ $chip['cat'] === $cat ? 'on' : '' }}" style="min-height:38px;font-size:.78rem;" href="{{ route('portal.documents.index', ['open' => $r['key'], 'cat' => $chip['cat']]) }}#row-{{ $r['key'] }}">{{ $chip['label'] }}</a>
+                                    <a class="td-chip {{ $chip['cat'] === $cat ? 'on' : '' }}" style="min-height:38px;font-size:.78rem;" href="{{ route('portal.documents.index', $para + ['open' => $r['key'], 'cat' => $chip['cat']]) }}#row-{{ $r['key'] }}">{{ $chip['label'] }}</a>
                                 @endforeach
                             </div>
                         @endif
-                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rental->id, 'maxSlots' => $slots], key('td-' . $r['key'] . '-' . $cat))
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rental->id, 'maxSlots' => $slots, 'forClientId' => ($forObligado ?? false) ? $subject->id : null], key('td-' . $r['key'] . '-' . $cat))
                     @endif
 
-                    <a href="{{ route('portal.documents.index') }}" class="td-btn" style="margin-top:.8rem;width:100%;background:#f1f5f9;color:#334155;">Listo, volver a la lista</a>
+                    <a href="{{ route('portal.documents.index', $para) }}" class="td-btn" style="margin-top:.8rem;width:100%;background:#f1f5f9;color:#334155;">Listo, volver a la lista</a>
                 </div>
             @endif
         </div>

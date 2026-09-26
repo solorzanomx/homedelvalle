@@ -5,10 +5,9 @@
     $items = [
         ['route' => route('portal.journey'), 'on' => request()->routeIs('portal.journey') || request()->routeIs('portal.dashboard'), 'icon' => '🧭', 'label' => 'Mi camino', 'badge' => 0],
         ['route' => route('portal.documents.index'), 'on' => request()->routeIs('portal.documents.*'), 'icon' => '📄', 'label' => 'Documentos', 'badge' => $docsBadge],
-        ! ($isObligado ?? false) ? ['route' => route('portal.rentals.show', $rental->id), 'on' => request()->routeIs('portal.rentals.show'), 'icon' => '🏠', 'label' => 'Mi renta', 'badge' => 0] : null,
+        ['route' => route('portal.rentals.show', $rental->id), 'on' => request()->routeIs('portal.rentals.show'), 'icon' => '🏠', 'label' => 'Mi renta', 'badge' => 0],
         ['route' => $wa ? 'https://wa.me/' . $wa . '?text=' . rawurlencode('Hola, soy ' . Auth::user()->name . '. Tengo una duda sobre mi renta.') : route('portal.account'), 'on' => ! $wa && request()->routeIs('portal.account'), 'icon' => $wa ? '💬' : '⚙️', 'label' => $wa ? 'Asesor' : 'Cuenta', 'badge' => 0, 'external' => (bool) $wa],
     ];
-    $items = array_values(array_filter($items));
 @endphp
 <style>
 .tnav { display:none; }

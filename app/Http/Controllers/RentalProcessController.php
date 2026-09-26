@@ -248,7 +248,7 @@ class RentalProcessController extends Controller
     {
         $rental = RentalProcess::with(['tenantClient', 'ownerClient', 'obligado'])->findOrFail($id);
         $data = $request->validate([
-            'name' => 'required|string|max:150', 'email' => 'required|email|max:190', 'phone' => 'required|string|max:30', 'relationship' => 'nullable|string|max:80',
+            'name' => 'required|string|max:150', 'email' => 'nullable|email|max:190', 'phone' => 'required|string|max:30', 'relationship' => 'nullable|string|max:80',
         ]);
         try {
             $os = $service->register($rental, $data, 'advisor');
@@ -256,16 +256,7 @@ class RentalProcessController extends Controller
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Obligado solidario registrado: {$os->name}. Le enviamos la invitación a {$os->email}.");
-    }
-
-    public function resendObligado(string $id, \App\Services\ObligadoSolidarioService $service)
-    {
-        $rental = RentalProcess::with(['tenantClient', 'obligado'])->findOrFail($id);
-
-        return $service->resendInvitation($rental)
-            ? back()->with('success', 'Invitación reenviada al obligado solidario.')
-            : back()->with('error', 'No hay obligado solidario registrado o no se pudo enviar.');
+        return back()->with('success', "Obligado solidario registrado: {$os->name}. El inquilino captura sus datos y documentos desde su Portal (tú también puedes subirlos aquí).");
     }
 
     /** Exenta (o vuelve a requerir) al obligado solidario en este trato. */

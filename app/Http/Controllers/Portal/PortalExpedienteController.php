@@ -28,13 +28,20 @@ class PortalExpedienteController extends Controller
         $client = $this->portalService->getClientForUser($user);
         if (!$client) abort(404);
 
+        // ?para=obligado: el INQUILINO captura los datos de su obligado solidario (el obligado no tiene Portal). Todo el
+        // resto de la página trabaja con `$client` = el obligado; solo el inquilino de esa renta puede entrar.
+        $obligadoRental = null;
+        if (request('para') === 'obligado') {
+            $obligadoRental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($client, $this->portalService->activeTenantRental($client)?->obligado_client_id);
+            abort_unless($obligadoRental, 404);
+            $client = $obligadoRental->obligado;
+        }
+
         $interestTypes = $client->interest_types ?? [];
         $isArrendador  = in_array('renta_propietario', $interestTypes);
         // Inquilino = tiene una renta activa como arrendatario (misma fuente que "Mi camino"); el interés capturado
         // ya no es requisito (si faltaba, el asistente y las pestañas de inquilino no salían).
-        $tenantRental  = $this->portalService->activeTenantRental($client);
-        // Obligado solidario (póliza sin aval): mismo asistente, pero solo datos, identificación/domicilio e ingresos.
-        $obligadoRental = $tenantRental ? null : $this->portalService->activeObligadoRental($client);
+        $tenantRental  = $obligadoRental ? null : $this->portalService->activeTenantRental($client);
         $isArrendatario= in_array('renta_inquilino',   $interestTypes) || (bool) $tenantRental || (bool) $obligadoRental;
         $isComprador   = in_array('compra',            $interestTypes);
         $isVendedor    = in_array('venta',             $interestTypes);
@@ -110,8 +117,9 @@ class PortalExpedienteController extends Controller
             'ingresos' => ['Trabajo e ingresos', 'ingresos', 'ingresos'],
         ];
         if ($obligado) {
-            // El obligado solidario NO tiene hogar, referencias ni aval: solo lo que pide su rol.
-            unset($defs['hogar'], $defs['referencias']);
+            // El obligado solidario lleva el mismo cuestionario (datos, identificación, referencias, trabajo/arrendador
+            // anterior); NO "información del hogar" (es de quien va a vivir en el inmueble) ni aval.
+            unset($defs['hogar']);
         } elseif (\App\Support\TenantRoadmap::route($rental) === \App\Support\TenantRoadmap::ROUTE_AVAL) {
             $defs['garantia'] = ['Tu aval', 'garantia', 'garantia'];
         }
@@ -175,17 +183,34 @@ class PortalExpedienteController extends Controller
             return redirect()->route('portal.journey')->with('success', $message . ' ¡Terminaste tus datos!');
         }
         if (in_array($next, ['datos', 'identificacion', 'hogar', 'referencias', 'ingresos', 'garantia'], true)) {
-            return redirect()->route('portal.expediente', ['paso' => $next])->with('success', $message);
+            return redirect()->route('portal.expediente', ['paso' => $next] + ($request->input('para') === 'obligado' ? ['para' => 'obligado'] : []))->with('success', $message);
         }
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * A quién se guarda: el cliente del Portal, o —con `para=obligado`— su obligado solidario (solo el inquilino de esa
+     * renta, mientras el trato lo exija). Toda escritura a nombre del obligado pasa por aquí.
+     */
+    private function subject(Request $request): Client
+    {
+        $me = $this->portalService->getClientForUser(Auth::user());
+        abort_unless($me, 403);
+        if ($request->input('para') !== 'obligado') {
+            return $me;
+        }
+        $rental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($me, $this->portalService->activeTenantRental($me)?->obligado_client_id);
+        abort_unless($rental, 403);
+
+        return $rental->obligado;
     }
 
     /** Guardar datos personales / legales */
     public function saveDatos(Request $request)
     {
         $user   = Auth::user();
-        $client = $this->portalService->getClientForUser($user);
+        $client = $this->subject($request);
         if (!$client) abort(403);
 
         $validated = $request->validate([
@@ -233,7 +258,7 @@ class PortalExpedienteController extends Controller
     public function saveIngresos(Request $request)
     {
         $user   = Auth::user();
-        $client = $this->portalService->getClientForUser($user);
+        $client = $this->subject($request);
         if (!$client) abort(403);
 
         $validated = $request->validate([
@@ -290,7 +315,7 @@ class PortalExpedienteController extends Controller
     public function saveReferencias(Request $request)
     {
         $user   = Auth::user();
-        $client = $this->portalService->getClientForUser($user);
+        $client = $this->subject($request);
         if (!$client) abort(403);
 
         $validated = $request->validate([

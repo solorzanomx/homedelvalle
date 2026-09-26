@@ -29,6 +29,8 @@ class DocumentUploader extends Component
     use WithFileUploads;
 
     public ?int  $rentalProcessId    = null;
+    /** Cliente a cuyo nombre se sube (el obligado solidario, capturado por el inquilino). Se revalida en cada uso. */
+    public ?int  $forClientId        = null;
     public array $allowedCategories  = [];
     public bool  $showForm           = false;
     public string $successMsg        = '';
@@ -42,8 +44,9 @@ class DocumentUploader extends Component
     public string $label    = '';
     public bool  $uploading = false;
 
-    public function mount(?int $rentalProcessId = null, array $allowedCategories = [], int $maxSlots = 1)
+    public function mount(?int $rentalProcessId = null, array $allowedCategories = [], int $maxSlots = 1, ?int $forClientId = null)
     {
+        $this->forClientId = $forClientId;
         $this->rentalProcessId  = $rentalProcessId;
         $this->allowedCategories = $allowedCategories;
         $this->maxSlots = max(1, $maxSlots);
@@ -310,7 +313,16 @@ class DocumentUploader extends Component
 
     private function getClient(): ?\App\Models\Client
     {
-        return app(ClientPortalService::class)->getClientForUser(Auth::user());
+        $me = app(ClientPortalService::class)->getClientForUser(Auth::user());
+
+        // Subida a nombre del obligado solidario: solo si quien sube es el inquilino de esa renta y el obligado sigue vigente.
+        if ($this->forClientId) {
+            $rental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($me, $this->forClientId);
+
+            return $rental ? \App\Models\Client::find($this->forClientId) : null;
+        }
+
+        return $me;
     }
 
     public function getAvailableCategoriesProperty(): array

@@ -29,12 +29,10 @@
                 @if($osReq)
                     @if($osSt['registered'])
                         <div style="font-size:.82rem;line-height:1.55;">
-                            <strong>{{ $osSt['name'] }}</strong> · {{ $osSt['client']->email }} · {{ $osSt['client']->phone }}
-                            @if($osSt['invited_at']) · invitación {{ $osSt['invited_at']->format('d/m/Y') }}@endif<br>
+                            <strong>{{ $osSt['name'] }}</strong> · {{ $osSt['client']->phone }}@if($osSt['client']->email) · {{ $osSt['client']->email }}@endif · <span style="color:var(--text-muted);">lo captura el inquilino desde su Portal</span><br>
                             Datos {{ $osSt['data_pct'] }}% · Documentos: {{ $osSt['docs']['aprobado'] }} aprobados, {{ $osSt['docs']['revision'] }} en revisión, {{ $osSt['docs']['corregir'] }} por corregir, {{ $osSt['docs']['falta'] }} por subir
                             @if($osSt['docs_missing'])<br><span style="color:#92400e;">Falta aprobar: {{ implode(' · ', $osSt['docs_missing']) }}</span>@endif
                             <div style="margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap;">
-                                <form method="POST" action="{{ route('rentals.obligado.resend', $rental->id) }}">@csrf<button class="btn btn-sm btn-outline">✉️ Reenviar invitación</button></form>
                                 <a class="btn btn-sm btn-outline" href="{{ route('clients.show', $osSt['client']->id) }}">Ver ficha</a>
                                 <a class="btn btn-sm btn-outline" href="javascript:void(0)" onclick="switchTab('documents')">Ver sus documentos</a>
                             </div>
@@ -45,8 +43,8 @@
                         <form method="POST" action="{{ route('rentals.obligado.register', $rental->id) }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;margin-top:.5rem;">@csrf
                             <div class="form-group" style="margin:0;min-width:170px;"><label class="form-label" style="font-size:.72rem;">Nombre completo</label><input name="name" class="form-input" required></div>
                             <div class="form-group" style="margin:0;min-width:150px;"><label class="form-label" style="font-size:.72rem;">Celular</label><input name="phone" type="tel" class="form-input" required></div>
-                            <div class="form-group" style="margin:0;min-width:190px;"><label class="form-label" style="font-size:.72rem;">Correo</label><input name="email" type="email" class="form-input" required></div>
-                            <button class="btn btn-sm btn-primary">Registrar y enviar invitación</button>
+                            <div class="form-group" style="margin:0;min-width:190px;"><label class="form-label" style="font-size:.72rem;">Correo (opcional)</label><input name="email" type="email" class="form-input"></div>
+                            <button class="btn btn-sm btn-primary">Registrar</button>
                         </form>
                     </details>
                 @endif

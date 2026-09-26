@@ -112,7 +112,7 @@ class PortalRentalController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:150',
-            'email' => 'required|email|max:190',
+            'email' => 'nullable|email|max:190',
             'phone' => ['required', 'string', 'max:30', function ($attr, $value, $fail) {
                 if (strlen(preg_replace('/\D/', '', $value)) < 10) {
                     $fail('Escribe un celular de 10 dígitos.');
@@ -127,16 +127,7 @@ class PortalRentalController extends Controller
             return back()->withInput()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', "Listo. Le enviamos la invitación a {$os->name} ({$os->email}). Tú verás su avance aquí.");
-    }
-
-    public function resendObligado(string $id, \App\Services\ObligadoSolidarioService $service)
-    {
-        [, $rental] = $this->tenantRental($id);
-
-        return $service->resendInvitation($rental)
-            ? back()->with('success', 'Le reenviamos la invitación a tu obligado solidario.')
-            : back()->with('error', 'No pudimos reenviar la invitación. Avísale a tu asesor.');
+        return back()->with('success', "Listo. Ahora llena los datos de {$os->name} y sube sus documentos desde aquí.");
     }
 
     /**

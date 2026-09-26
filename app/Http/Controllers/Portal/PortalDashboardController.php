@@ -27,7 +27,7 @@ class PortalDashboardController extends Controller
         }
 
         // Inquilino con una renta activa: su "inicio" ES "Mi camino" (una sola pantalla que dice qué sigue).
-        if ($this->portalService->activeTenantRental($client) || $this->portalService->activeObligadoRental($client)) {
+        if ($this->portalService->activeTenantRental($client)) {
             return redirect()->route('portal.journey');
         }
 
