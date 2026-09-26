@@ -111,7 +111,7 @@
     @endforeach
 @endforeach
 
-@if($rental->tenant_has_aval === true || in_array($rental->guarantee_type, ['aval','aval_pagares'], true))
+@if(! ($forObligado ?? false) && ($rental->tenant_has_aval === true || in_array($rental->guarantee_type, ['aval','aval_pagares'], true)))
 <p style="font-size:.78rem;color:#64748b;margin-top:1rem;">Los <strong>datos</strong> de tu aval (nombre, domicilio, escritura) se llenan en <a href="{{ route('portal.expediente') }}" style="color:#1D4ED8;font-weight:700;">Tus datos</a>.</p>
 @endif
 @endsection

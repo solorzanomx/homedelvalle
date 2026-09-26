@@ -243,6 +243,41 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Forma de pago de la póliza actualizada.');
     }
 
+    /** El asesor registra o cambia al obligado solidario (a petición del inquilino o por teléfono/WhatsApp). */
+    public function registerObligado(Request $request, string $id, \App\Services\ObligadoSolidarioService $service)
+    {
+        $rental = RentalProcess::with(['tenantClient', 'ownerClient', 'obligado'])->findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:150', 'email' => 'required|email|max:190', 'phone' => 'required|string|max:30', 'relationship' => 'nullable|string|max:80',
+        ]);
+        try {
+            $os = $service->register($rental, $data, 'advisor');
+        } catch (\DomainException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', "Obligado solidario registrado: {$os->name}. Le enviamos la invitación a {$os->email}.");
+    }
+
+    public function resendObligado(string $id, \App\Services\ObligadoSolidarioService $service)
+    {
+        $rental = RentalProcess::with(['tenantClient', 'obligado'])->findOrFail($id);
+
+        return $service->resendInvitation($rental)
+            ? back()->with('success', 'Invitación reenviada al obligado solidario.')
+            : back()->with('error', 'No hay obligado solidario registrado o no se pudo enviar.');
+    }
+
+    /** Exenta (o vuelve a requerir) al obligado solidario en este trato. */
+    public function toggleObligado(Request $request, string $id)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $request->validate(['required' => 'required|in:0,1']);
+        $rental->update(['obligado_required' => $request->input('required') === '1' ? null : false]);
+
+        return back()->with('success', $request->input('required') === '1' ? 'El obligado solidario vuelve a ser requisito de este trato.' : 'Obligado solidario exentado: ya no se pide en este trato.');
+    }
+
     /** Vuelve a avisar al propietario (portal + correo) que le toca elegir la póliza. */
     public function remindOwnerPoliza(string $id, \App\Services\PolizaDecisionService $decisions)
     {

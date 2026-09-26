@@ -9,13 +9,15 @@
     $total = count($roadmap['steps']);
     $pct = (int) round($doneCount / max(1, $total) * 100);
     $address = $rental->property?->address;
+    $isOs = ($mode ?? null) === 'obligado';
 @endphp
 
 <div style="margin-bottom:1rem;">
     <div style="font-size:.78rem;color:var(--text-muted);">Hola, {{ $first }} 👋</div>
     <h1 style="font-size:1.35rem;font-weight:800;margin:.1rem 0 0;color:#0f172a;line-height:1.25;">
-        Tu camino a rentar{{ $address ? ' en ' . $address : '' }}
+        @if($isOs) Tu apoyo como obligado solidario @else Tu camino a rentar{{ $address ? ' en ' . $address : '' }} @endif
     </h1>
+    @if($isOs)<div style="font-size:.82rem;color:#64748b;margin-top:.25rem;line-height:1.45;">Estás respaldando a <strong>{{ $rental->tenantClient?->name }}</strong>{{ $address ? ' en su renta de ' . $address : '' }}. Tu información es confidencial: solo la ve tu asesor.</div>@endif
     <div style="display:flex;align-items:center;gap:.6rem;margin-top:.6rem;">
         <div style="flex:1;height:8px;border-radius:9999px;background:#e2e8f0;overflow:hidden;"><div style="width:{{ $pct }}%;height:100%;background:#10b981;"></div></div>
         <span style="font-size:.75rem;font-weight:700;color:#475569;">{{ $doneCount }} de {{ $total }} pasos</span>

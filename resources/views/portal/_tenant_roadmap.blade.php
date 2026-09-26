@@ -2,7 +2,7 @@
 @php
     $rm = $roadmap ?? \App\Support\TenantRoadmap::build($rental);
     $compact = $compact ?? false;   // compacto: pasos hechos = una línea, pasos futuros = solo título, el activo se expande
-    $icons = ['apartado' => '🔑', 'informacion' => '📝', 'documentos' => '📄', 'garantia' => '🛡️', 'contrato' => '✍️', 'entrega' => '🏠'];
+    $icons = ['apartado' => '🔑', 'informacion' => '📝', 'documentos' => '📄', 'obligado' => '🤝', 'revision' => '🔎', 'garantia' => '🛡️', 'contrato' => '✍️', 'entrega' => '🏠'];
 @endphp
 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem;">
     @if(! $compact)
@@ -86,6 +86,41 @@
                             </ul>
                         </details>
                     </div>
+                @endif
+
+                {{-- Obligado solidario: registrarlo (nombre, celular, correo) o ver su avance. NUNCA se muestran sus datos ni documentos. --}}
+                @if($step['key'] === 'obligado' && ! $slim)
+                    @php $os = $step['os_status']; @endphp
+                    @if(! $os['registered'])
+                        @if($errors->any())<div style="margin-top:.6rem;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:10px;padding:.55rem .8rem;font-size:.78rem;">⚠ {{ $errors->first() }}</div>@endif
+                        <form method="POST" action="{{ route('portal.rentals.obligado.store', $rental->id) }}" style="margin-top:.7rem;display:grid;gap:.6rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:.9rem;">
+                            @csrf
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Nombre completo</label>
+                                <input name="name" value="{{ old('name') }}" required autocomplete="off" style="width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;"></div>
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Celular</label>
+                                <input name="phone" type="tel" inputmode="tel" value="{{ old('phone') }}" required autocomplete="off" placeholder="10 dígitos" style="width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;"></div>
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Correo</label>
+                                <input name="email" type="email" inputmode="email" autocapitalize="none" value="{{ old('email') }}" required autocomplete="off" style="width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;"></div>
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Relación contigo <span style="font-weight:400;color:#94a3b8;">(opcional)</span></label>
+                                <input name="relationship" value="{{ old('relationship') }}" placeholder="Ej. mi mamá, mi socio" style="width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;"></div>
+                            <button style="min-height:50px;border:0;border-radius:12px;background:#1D4ED8;color:#fff;font-weight:800;font-size:1rem;cursor:pointer;">Registrar y enviar invitación</button>
+                            <p style="margin:0;font-size:.72rem;color:#94a3b8;line-height:1.45;">Le llega un correo con un enlace a su propio Portal (5–10 min). Su información es confidencial: solo la ve tu asesor.</p>
+                        </form>
+                    @else
+                        @php $bar = fn($p) => '<div style="height:7px;border-radius:9999px;background:#e2e8f0;overflow:hidden;"><div style="width:'.max(0,min(100,$p)).'%;height:100%;background:'.($p>=100?'#10b981':'#1D4ED8').';"></div></div>'; $docTot = array_sum($os['docs']); $docOk = $os['docs']['aprobado']; @endphp
+                        <div style="margin-top:.7rem;border:1px solid #e2e8f0;border-radius:14px;padding:.85rem 1rem;background:#fff;">
+                            <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;font-size:.85rem;"><strong>{{ $os['name'] }}</strong>
+                                <span style="font-size:.72rem;color:#64748b;">{{ $os['invited_at'] ? 'Invitación enviada el ' . $os['invited_at']->format('d/m/Y') : '' }}</span></div>
+                            <div style="margin-top:.55rem;font-size:.74rem;color:#475569;">Sus datos · {{ $os['data_pct'] }}%</div>{!! $bar($os['data_pct']) !!}
+                            <div style="margin-top:.5rem;font-size:.74rem;color:#475569;">Sus documentos aprobados · {{ $docOk }} de {{ $docTot }}</div>{!! $bar($docTot ? $docOk / $docTot * 100 : 0) !!}
+                            @if(! $os['complete'])
+                            <form method="POST" action="{{ route('portal.rentals.obligado.resend', $rental->id) }}" style="margin-top:.7rem;">@csrf
+                                <button style="border:1.5px solid #1D4ED8;background:#fff;color:#1D4ED8;border-radius:10px;min-height:42px;padding:0 .9rem;font-weight:700;font-size:.8rem;cursor:pointer;">✉️ Reenviar invitación</button>
+                            </form>
+                            @endif
+                            <p style="margin:.6rem 0 0;font-size:.7rem;color:#94a3b8;">Por privacidad no ves sus datos ni sus documentos, solo su avance.</p>
+                        </div>
+                    @endif
                 @endif
 
                 {{-- Contrato disponible --}}

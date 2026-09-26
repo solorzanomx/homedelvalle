@@ -95,6 +95,16 @@ class ClientPortalService
             ->first();
     }
 
+    /** La renta activa donde el cliente es el OBLIGADO SOLIDARIO del inquilino (define el "modo obligado" del Portal). */
+    public function activeObligadoRental(Client $client): ?\App\Models\RentalProcess
+    {
+        return \App\Models\RentalProcess::with(['property', 'broker', 'tenantClient'])
+            ->where('obligado_client_id', $client->id)
+            ->where('status', 'active')
+            ->latest()
+            ->first();
+    }
+
     public function getClientForUser(User $user): ?Client
     {
         return Client::where('user_id', $user->id)->first();

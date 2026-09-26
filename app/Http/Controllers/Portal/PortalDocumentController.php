@@ -29,9 +29,14 @@ class PortalDocumentController extends Controller
             ]);
         }
 
-        // Inquilino con renta activa: lista simple de lo que le toca subir, con estado por documento.
-        if ($tenantRental = $this->portalService->activeTenantRental($client)) {
-            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $client, request('open'));
+        // Inquilino u obligado solidario con renta activa: lista simple de lo que le toca subir, con estado por documento.
+        $forObligado = false;
+        $tenantRental = $this->portalService->activeTenantRental($client);
+        if (! $tenantRental && ($tenantRental = $this->portalService->activeObligadoRental($client))) {
+            $forObligado = true;
+        }
+        if ($tenantRental) {
+            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $client, request('open'), $forObligado);
 
             return view('portal.documents.tenant', [
                 'client' => $client,
@@ -41,6 +46,7 @@ class PortalDocumentController extends Controller
                 'next' => $rows['next'],
                 'open' => request('open'),
                 'openCat' => request('cat'),
+                'forObligado' => $forObligado,
             ]);
         }
 

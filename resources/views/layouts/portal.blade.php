@@ -449,15 +449,21 @@
     // Misma fuente de verdad que Mi camino y el redirect de /inicio (activeTenantRental): NO depende de que el
     // cliente tenga el interés 'renta_inquilino' capturado (antes, si faltaba, el menú corto y la barra inferior no salían).
     $tenantRentalNav = $portalClient ? app(\App\Services\ClientPortalService::class)->activeTenantRental($portalClient) : null;
-    $tenantNav = (bool) $tenantRentalNav;
+    // Obligado solidario (póliza sin aval): mismo menú corto, sin "Mi renta" (no es su renta) y con su propio rol.
+    $obligadoRentalNav = ($portalClient && ! $tenantRentalNav) ? app(\App\Services\ClientPortalService::class)->activeObligadoRental($portalClient) : null;
+    $isObligadoNav = (bool) $obligadoRentalNav;
+    $tenantNav = (bool) ($tenantRentalNav ?? $obligadoRentalNav);
     if ($tenantNav) {
-        $activeRental = $tenantRentalNav;
-        $isArrendatario = true;
+        $activeRental = $tenantRentalNav ?? $obligadoRentalNav;
+        $isArrendatario = ! $isObligadoNav;
+        if ($isObligadoNav) {
+            $portalRoleLabel = 'Portal del Obligado Solidario';
+        }
     }
     $onJourney = request()->routeIs('portal.journey');
     $tenantDocsBadge = 0;
     if ($tenantNav) {
-        $tenantRows = \App\Support\TenantDocumentRows::build($activeRental, $portalClient);
+        $tenantRows = \App\Support\TenantDocumentRows::build($activeRental, $portalClient, null, $isObligadoNav);
         $tenantDocsBadge = $tenantRows['counts']['falta'] + $tenantRows['counts']['corregir'];
     }
 
@@ -580,7 +586,7 @@
         </div>
         @elseif($activeRental?->property)
         <div class="sb-property">
-            <div class="sb-property-label">{{ $isArrendatario ? 'Estás rentando' : 'Tu inmueble en renta' }}</div>
+            <div class="sb-property-label">{{ ($isObligadoNav ?? false) ? 'Eres obligado solidario en' : ($isArrendatario ? 'Estás rentando' : 'Tu inmueble en renta') }}</div>
             <div class="sb-property-addr">{{ $activeRental->property->address ?? 'Inmueble en proceso' }}</div>
             @if($activeRental->property->colony)
             <div class="sb-property-colonia">{{ $activeRental->property->colony }}</div>
@@ -593,7 +599,7 @@
         {{-- Dashboard --}}
         @if($tenantNav)
         <div class="sb-section">
-            <div class="sb-section-label">Mi renta</div>
+            <div class="sb-section-label">{{ $isObligadoNav ? 'Mi apoyo' : 'Mi renta' }}</div>
             <a href="{{ route('portal.journey') }}" class="sb-item {{ $onJourney || $onDashboard ? 'active' : '' }}">
                 <span>&#129517;</span>
                 Mi camino
@@ -605,10 +611,12 @@
                 <span style="position:absolute;right:.75rem;top:50%;transform:translateY(-50%);min-width:20px;text-align:center;font-size:.68rem;font-weight:800;padding:1px 6px;border-radius:10px;background:#f59e0b;color:#fff;">{{ $tenantDocsBadge }}</span>
                 @endif
             </a>
+            @if(! $isObligadoNav)
             <a href="{{ route('portal.rentals.show', $activeRental->id) }}" class="sb-item {{ request()->routeIs('portal.rentals.show') ? 'active' : '' }}">
                 <span>&#127968;</span>
                 Mi renta
             </a>
+            @endif
             @php
                 $advWa = preg_replace('/\D/', '', $activeRental->broker?->whatsapp ?: $activeRental->broker?->phone ?: '');
                 if ($advWa && strlen($advWa) === 10) { $advWa = '52' . $advWa; }
@@ -954,7 +962,7 @@
     @include('portal._upload_assist')
     @endauth
     @if($tenantNav ?? false)
-        @include('portal._tenant_bottom_nav', ['rental' => $activeRental, 'docsBadge' => $tenantDocsBadge])
+        @include('portal._tenant_bottom_nav', ['rental' => $activeRental, 'docsBadge' => $tenantDocsBadge, 'isObligado' => $isObligadoNav])
     @endif
     @if(session('impersonating_as') && config('portal.impersonation_banner', true))
     <script>

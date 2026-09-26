@@ -17,6 +17,17 @@ class PortalJourneyController extends Controller
         $client = $this->portalService->getClientForUser(Auth::user());
         $rental = $client ? $this->portalService->activeTenantRental($client) : null;
 
+        // Obligado solidario: su propio "Mi camino" (datos → documentos → revisión).
+        if (! $rental && $client && ($osRental = $this->portalService->activeObligadoRental($client))) {
+            $roadmap = \App\Support\ObligadoRoadmap::build($osRental, $client);
+
+            return view('portal.journey', [
+                'client' => $client, 'rental' => $osRental, 'roadmap' => $roadmap,
+                'next' => \App\Support\ObligadoRoadmap::nextAction($roadmap),
+                'mode' => 'obligado',
+            ]);
+        }
+
         if (! $rental) {
             return redirect()->route('portal.dashboard');
         }

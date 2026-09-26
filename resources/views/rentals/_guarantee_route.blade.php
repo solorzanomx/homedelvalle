@@ -10,7 +10,48 @@
         <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.6rem;">
             <h4 style="font-size:.9rem;font-weight:700;margin:0;">🛡️ Garantía del inquilino</h4>
             @if($route === 'poliza')<span class="badge badge-purple">Póliza jurídica</span>
-            @elseif($route === 'aval')<span class="badge badge-blue">Aval + investigación</span>
+                {{-- Obligado solidario: se pide cuando la garantía es póliza (sin aval); mismos datos y documentos que el inquilino --}}
+            @php
+                $osSvc = app(\App\Services\ObligadoSolidarioService::class);
+                $osReq = $osSvc->isRequired($rental);
+                $osSt = $osSvc->status($rental);
+            @endphp
+            <div style="border-top:1px dashed var(--border);padding-top:.7rem;margin-top:.4rem;">
+                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.4rem;">
+                    <strong style="font-size:.85rem;">🤝 Obligado solidario</strong>
+                    @if(! $osReq)<span class="badge badge-blue">Exento en este trato</span>
+                    @elseif($osSt['complete'])<span class="badge badge-green">Completo y aprobado</span>
+                    @elseif($osSt['registered'])<span class="badge badge-yellow">En proceso</span>
+                    @else<span class="badge badge-red">Falta registrarlo</span>@endif
+                    <form method="POST" action="{{ route('rentals.obligado.toggle', $rental->id) }}" style="margin-left:auto;" onsubmit="return confirm('{{ $osReq ? '¿Exentar al obligado solidario en este trato?' : '¿Volver a requerirlo?' }}')">@csrf
+                        <input type="hidden" name="required" value="{{ $osReq ? 0 : 1 }}"><button class="btn btn-sm btn-outline">{{ $osReq ? 'No requerido en este trato' : 'Volver a requerirlo' }}</button></form>
+                </div>
+                @if($osReq)
+                    @if($osSt['registered'])
+                        <div style="font-size:.82rem;line-height:1.55;">
+                            <strong>{{ $osSt['name'] }}</strong> · {{ $osSt['client']->email }} · {{ $osSt['client']->phone }}
+                            @if($osSt['invited_at']) · invitación {{ $osSt['invited_at']->format('d/m/Y') }}@endif<br>
+                            Datos {{ $osSt['data_pct'] }}% · Documentos: {{ $osSt['docs']['aprobado'] }} aprobados, {{ $osSt['docs']['revision'] }} en revisión, {{ $osSt['docs']['corregir'] }} por corregir, {{ $osSt['docs']['falta'] }} por subir
+                            @if($osSt['docs_missing'])<br><span style="color:#92400e;">Falta aprobar: {{ implode(' · ', $osSt['docs_missing']) }}</span>@endif
+                            <div style="margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap;">
+                                <form method="POST" action="{{ route('rentals.obligado.resend', $rental->id) }}">@csrf<button class="btn btn-sm btn-outline">✉️ Reenviar invitación</button></form>
+                                <a class="btn btn-sm btn-outline" href="{{ route('clients.show', $osSt['client']->id) }}">Ver ficha</a>
+                                <a class="btn btn-sm btn-outline" href="javascript:void(0)" onclick="switchTab('documents')">Ver sus documentos</a>
+                            </div>
+                        </div>
+                    @endif
+                    <details style="margin-top:.5rem;" {{ $osSt['registered'] ? '' : 'open' }}>
+                        <summary style="cursor:pointer;font-size:.8rem;font-weight:700;color:var(--primary);">{{ $osSt['registered'] ? 'Cambiar a otra persona' : 'Registrarlo a nombre del inquilino' }}</summary>
+                        <form method="POST" action="{{ route('rentals.obligado.register', $rental->id) }}" style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;margin-top:.5rem;">@csrf
+                            <div class="form-group" style="margin:0;min-width:170px;"><label class="form-label" style="font-size:.72rem;">Nombre completo</label><input name="name" class="form-input" required></div>
+                            <div class="form-group" style="margin:0;min-width:150px;"><label class="form-label" style="font-size:.72rem;">Celular</label><input name="phone" type="tel" class="form-input" required></div>
+                            <div class="form-group" style="margin:0;min-width:190px;"><label class="form-label" style="font-size:.72rem;">Correo</label><input name="email" type="email" class="form-input" required></div>
+                            <button class="btn btn-sm btn-primary">Registrar y enviar invitación</button>
+                        </form>
+                    </details>
+                @endif
+            </div>
+        @elseif($route === 'aval')<span class="badge badge-blue">Aval + investigación</span>
             @else<span class="badge badge-yellow">Sin definir</span>@endif
             @if($rental->guarantee_declared_at)
                 <span style="font-size:.72rem;color:var(--text-muted);">definida el {{ $rental->guarantee_declared_at->format('d/m/Y') }}</span>

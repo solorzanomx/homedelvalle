@@ -88,7 +88,7 @@ class DocumentReviewService
     private function notifyIfExpedienteComplete(Document $doc): void
     {
         $rental = $doc->rentalProcess;
-        if (! $rental || ! RentalExpedienteStatus::isComplete($rental)) {
+        if (! $rental || ! RentalExpedienteStatus::isFullyComplete($rental)) {
             return;
         }
 
@@ -103,7 +103,7 @@ class DocumentReviewService
             'user_id' => $userId,
             'type' => 'expediente_completo',
             'title' => 'Expediente completo y aprobado',
-            'body' => "El expediente de {$name} en la renta #{$rental->id} tiene todos sus documentos aprobados. Ya puedes avanzar a la siguiente etapa.",
+            'body' => "El expediente de {$name} en la renta #{$rental->id} tiene todos sus documentos aprobados" . ($rental->obligado_client_id && $rental->obligado_required !== false ? ' (incluido su obligado solidario)' : '') . '. Ya puedes avanzar a la siguiente etapa.',
             'data' => ['url' => route('rentals.show', $rental->id), 'rental_id' => $rental->id],
         ]);
     }

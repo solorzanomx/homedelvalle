@@ -33,7 +33,9 @@ class PortalExpedienteController extends Controller
         // Inquilino = tiene una renta activa como arrendatario (misma fuente que "Mi camino"); el interés capturado
         // ya no es requisito (si faltaba, el asistente y las pestañas de inquilino no salían).
         $tenantRental  = $this->portalService->activeTenantRental($client);
-        $isArrendatario= in_array('renta_inquilino',   $interestTypes) || (bool) $tenantRental;
+        // Obligado solidario (póliza sin aval): mismo asistente, pero solo datos, identificación/domicilio e ingresos.
+        $obligadoRental = $tenantRental ? null : $this->portalService->activeObligadoRental($client);
+        $isArrendatario= in_array('renta_inquilino',   $interestTypes) || (bool) $tenantRental || (bool) $obligadoRental;
         $isComprador   = in_array('compra',            $interestTypes);
         $isVendedor    = in_array('venta',             $interestTypes);
 
@@ -45,6 +47,10 @@ class PortalExpedienteController extends Controller
                 ->with(['avales', 'pagares', 'property'])
                 ->latest()
                 ->first();
+        }
+
+        if (! $rentalAsInquilino && $obligadoRental) {
+            $rentalAsInquilino = $obligadoRental->load(['avales', 'pagares', 'property']);
         }
 
         // Active rental process (arrendador side)
@@ -73,13 +79,14 @@ class PortalExpedienteController extends Controller
         $references = $client->references;
 
         // Calcular completitud por sección
-        $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents, $references);
+        $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents, $references, $obligadoRental !== null);
 
         // Asistente "Tus datos" del inquilino: pasos cortos, uno por pantalla.
         $wizard = null;
         $prefilled = [];
-        if ($isArrendatario && $rentalAsInquilino && $tenantRental && $tenantRental->id === $rentalAsInquilino->id) {
-            $wizard = $this->wizardSteps($sections, $rentalAsInquilino, (string) request('paso'));
+        $wizardRental = $tenantRental ?? $obligadoRental;
+        if ($isArrendatario && $rentalAsInquilino && $wizardRental && $wizardRental->id === $rentalAsInquilino->id) {
+            $wizard = $this->wizardSteps($sections, $rentalAsInquilino, (string) request('paso'), $obligadoRental !== null);
             // Después de calcular el avance (para no inflarlo): prellena, SOLO en pantalla, lo que la IA leyó de sus documentos.
             $prefilled = $this->prefillFromDocuments($client, $documents);
         }
@@ -89,11 +96,11 @@ class PortalExpedienteController extends Controller
             'isArrendador', 'isArrendatario', 'isComprador', 'isVendedor',
             'rentalAsInquilino', 'rentalAsOwner',
             'documents', 'aval', 'references', 'wizard', 'prefilled',
-        ));
+        ) + ['obligadoMode' => $obligadoRental !== null]);
     }
 
     /** Pasos del asistente (orden fijo). El aval solo aparece si la garantía del inquilino es aval. */
-    private function wizardSteps(array $sections, RentalProcess $rental, string $requested): array
+    private function wizardSteps(array $sections, RentalProcess $rental, string $requested, bool $obligado = false): array
     {
         $defs = [
             'datos' => ['Datos personales', 'datos', 'datos'],
@@ -102,7 +109,10 @@ class PortalExpedienteController extends Controller
             'referencias' => ['Referencias personales', 'hogar', 'referencias'],
             'ingresos' => ['Trabajo e ingresos', 'ingresos', 'ingresos'],
         ];
-        if (\App\Support\TenantRoadmap::route($rental) === \App\Support\TenantRoadmap::ROUTE_AVAL) {
+        if ($obligado) {
+            // El obligado solidario NO tiene hogar, referencias ni aval: solo lo que pide su rol.
+            unset($defs['hogar'], $defs['referencias']);
+        } elseif (\App\Support\TenantRoadmap::route($rental) === \App\Support\TenantRoadmap::ROUTE_AVAL) {
             $defs['garantia'] = ['Tu aval', 'garantia', 'garantia'];
         }
 
@@ -458,7 +468,7 @@ class PortalExpedienteController extends Controller
     }
 
     /** Calcular completitud por sección */
-    private function calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rental, $documents, $references = null): array
+    private function calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rental, $documents, $references = null, bool $obligado = false): array
     {
         $sections = [];
         $references = $references ?? collect();
@@ -469,12 +479,12 @@ class PortalExpedienteController extends Controller
         // así que un cliente que llenara TODO lo que sí ve en esta pestaña
         // se quedaba atorado sin poder llegar a 100% (hallazgo 2026-09-24,
         // reportado por un cliente real vía WhatsApp).
-        $personalFields = ['first_name','last_name_paterno','last_name_materno','birth_date','birth_state','gender','nationality','marital_status'];
+        $personalFields = \App\Support\ExpedienteFields::PERSONAL;
         $personalFilled = collect($personalFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['datos'] = ['filled' => $personalFilled, 'total' => count($personalFields), 'pct' => round($personalFilled / count($personalFields) * 100)];
 
         // Identificación (todos) — incluye curp/rfc, que sí se llenan aquí.
-        $idFields = ['id_type','curp','rfc','id_number','id_expiry_month','id_expiry_year','address_street','address_colony','address_municipality','address_state','address_zip'];
+        $idFields = \App\Support\ExpedienteFields::IDENTIFICATION;
         $idFilled = collect($idFields)->filter(fn($f) => !empty($client->$f))->count();
         $sections['identificacion'] = ['filled' => $idFilled, 'total' => count($idFields), 'pct' => round($idFilled / count($idFields) * 100)];
 
@@ -490,16 +500,13 @@ class PortalExpedienteController extends Controller
         // elija) y buró de crédito (checklist real del cuestionario en
         // papel, ver App\Support\TenantDocumentChecklist).
         if ($isArrendatario) {
-            $incomeFields = [
-                'income_type', 'income_amount', 'income_proof_type',
-                'employer_name', 'employer_phone', 'job_seniority',
-                'previous_landlord_name', 'previous_landlord_phone',
-            ];
+            $incomeFields = $obligado ? \App\Support\ExpedienteFields::INCOME_OBLIGADO : \App\Support\ExpedienteFields::INCOME_TENANT;
             $incomeFilled = collect($incomeFields)->filter(fn($f) => !empty($client->$f))->count();
             $incomeProofCat = \App\Models\Client::INCOME_PROOF_CATEGORY[$client->income_proof_type] ?? null;
             $hasIncomeDoc = $incomeProofCat && $documents->has($incomeProofCat);
-            $incomeFilled += $hasIncomeDoc ? 1 : 0;
-            $incomeTotal = count($incomeFields) + 1;
+            // El obligado no cuenta el comprobante aquí (va en Mis documentos, con la regla de los últimos 3).
+            $incomeFilled += (! $obligado && $hasIncomeDoc) ? 1 : 0;
+            $incomeTotal = count($incomeFields) + ($obligado ? 0 : 1);
             $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => $incomeTotal, 'pct' => round($incomeFilled / $incomeTotal * 100)];
 
             // Referencias personales — 3 contactos estructurados

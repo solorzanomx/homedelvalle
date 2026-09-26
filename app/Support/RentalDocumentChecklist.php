@@ -47,6 +47,12 @@ class RentalDocumentChecklist
                 'icon' => '🧑', 'client' => 'tenant', 'categories' => $pick(self::INQUILINO)],
         ];
 
+        // Obligado solidario (póliza sin aval): sus documentos van en su propia sección, separados de los del inquilino.
+        if ($rental->obligado_client_id) {
+            $sections[] = ['key' => 'obligado', 'title' => 'Obligado solidario — ' . ($rental->obligado?->name ?? '—'),
+                'icon' => '🤝', 'client' => 'obligado', 'categories' => $pick(self::INQUILINO)];
+        }
+
         $garantia = match ($rental->guarantee_type) {
             'aval' => TenantDocumentChecklist::AVAL,
             'pagares' => TenantDocumentChecklist::PAGARE,
@@ -74,6 +80,7 @@ class RentalDocumentChecklist
         return match ($section['client']) {
             'tenant' => ! $doc->client_id || ! $rental->tenant_client_id || $doc->client_id === $rental->tenant_client_id,
             'owner' => ! $doc->client_id || $doc->client_id === $rental->owner_client_id,
+            'obligado' => $doc->client_id && $doc->client_id === $rental->obligado_client_id,
             default => true,
         };
     }

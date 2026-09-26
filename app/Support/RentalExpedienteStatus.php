@@ -26,19 +26,23 @@ class RentalExpedienteStatus
 
     const AVAL_REQUIRED = ['aval_ine_frente', 'aval_ine_reverso', 'aval_comprobante_domicilio', 'aval_escritura', 'aval_predial', 'aval_libertad_gravamen'];
 
-    /** @return string[] lo que falta por aprobar (vacío = completo) */
-    public static function missing(RentalProcess $rental): array
+    /**
+     * @param  int|null  $clientId  a quién se evalúa: el INQUILINO (por defecto) o el obligado solidario (sin aval ni pagarés)
+     * @return string[] lo que falta por aprobar (vacío = completo)
+     */
+    public static function missing(RentalProcess $rental, ?int $clientId = null): array
     {
-        $tenantId = $rental->tenant_client_id;
+        $forObligado = $clientId !== null;
+        $tenantId = $clientId ?? $rental->tenant_client_id;
         $verified = Document::where('rental_process_id', $rental->id)
             ->where('status', 'verified')
-            ->where(fn($q) => $q->whereNull('client_id')->orWhere('client_id', $tenantId))
+            ->where(fn($q) => $forObligado ? $q->where('client_id', $tenantId) : $q->whereNull('client_id')->orWhere('client_id', $tenantId))
             ->pluck('category')->unique()->all();
 
         // Comprobantes de ingresos: los ÚLTIMOS 3 (uno por mes) aprobados de un mismo tipo, no basta con uno.
         $verifiedCounts = Document::where('rental_process_id', $rental->id)
             ->where('status', 'verified')
-            ->where(fn($q) => $q->whereNull('client_id')->orWhere('client_id', $tenantId))
+            ->where(fn($q) => $forObligado ? $q->where('client_id', $tenantId) : $q->whereNull('client_id')->orWhere('client_id', $tenantId))
             ->pluck('category')->countBy();
 
         $missing = [];
@@ -64,12 +68,12 @@ class RentalExpedienteStatus
             }
         }
 
-        if (in_array($rental->guarantee_type, ['aval', 'aval_pagares'], true)) {
+        if (! $forObligado && in_array($rental->guarantee_type, ['aval', 'aval_pagares'], true)) {
             foreach (array_diff(self::AVAL_REQUIRED, $verified) as $cat) {
                 $missing[] = Document::CATEGORIES[$cat] ?? $cat;
             }
         }
-        if (in_array($rental->guarantee_type, ['pagares', 'aval_pagares'], true) && ! in_array('pagare', $verified, true)) {
+        if (! $forObligado && in_array($rental->guarantee_type, ['pagares', 'aval_pagares'], true) && ! in_array('pagare', $verified, true)) {
             $missing[] = Document::CATEGORIES['pagare'];
         }
 
@@ -79,5 +83,19 @@ class RentalExpedienteStatus
     public static function isComplete(RentalProcess $rental): bool
     {
         return $rental->tenant_client_id && ! self::missing($rental);
+    }
+
+    /**
+     * Expediente COMPLETO del trato: el del inquilino Y, si el trato exige obligado solidario (póliza sin aval), el suyo
+     * (datos completos + documentos aprobados). Es lo que dispara el aviso "expediente completo" al asesor.
+     */
+    public static function isFullyComplete(RentalProcess $rental): bool
+    {
+        if (! self::isComplete($rental)) {
+            return false;
+        }
+        $os = app(\App\Services\ObligadoSolidarioService::class);
+
+        return ! $os->isRequired($rental) || $os->status($rental)['complete'];
     }
 }

@@ -216,7 +216,7 @@
      Otros perfiles conservan el hero con progreso global. --}}
 @if($tenantMode && $wizard)
     @php $wz = $wizard; @endphp
-    <script>document.body.classList.add('tenant-wizard');</script>
+    <script>document.body.classList.add('tenant-wizard'); @if($obligadoMode ?? false) document.body.classList.add('obligado-mode'); @endif</script>
     <a href="{{ route('portal.journey') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:600;color:#1D4ED8;text-decoration:none;margin-bottom:.5rem;">← Mi camino</a>
     <div class="wiz-dots" aria-label="Pasos">
         @foreach($wz['steps'] as $st)
@@ -1073,6 +1073,7 @@
                 </div>
                 </div>{{-- /exp-doc-block --}}
 
+                <div class="exp-tenant-only">
                 <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin:1rem 0 .6rem;">Arrendador anterior</div>
                 <div class="form-grid">
                     <div class="form-group">
@@ -1096,6 +1097,7 @@
                         <input type="text" name="previous_landlord_years" class="form-input" value="{{ old('previous_landlord_years',$client->previous_landlord_years) }}" placeholder="Ej. 3 años">
                     </div>
                 </div>
+                </div>{{-- /exp-tenant-only --}}
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Guardar ingresos</button>
@@ -1340,6 +1342,7 @@
 @if($wizard ?? null)
 <style>
 .tenant-wizard .exp-tabs, .tenant-wizard .section-progress, .tenant-wizard .exp-doc-block { display:none !important; }
+.obligado-mode .exp-tenant-only { display:none !important; }
 .tenant-wizard .wiz-doc-note { display:block; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:.6rem .8rem; font-size:.78rem; color:#475569; margin-bottom:1rem; line-height:1.45; }
 .wiz-doc-note { display:none; }
 .wiz-doc-note a { color:#1D4ED8; }

@@ -102,6 +102,43 @@ class PortalRentalController extends Controller
             : 'Listo. Sin aval en CDMX tu garantía es una póliza jurídica: tu propietario elegirá el plan y te mostraremos lo que te toca.');
     }
 
+    /** El inquilino registra a su obligado solidario (nombre, celular, correo): recibe la invitación a su propio Portal. */
+    public function storeObligado(Request $request, string $id, \App\Services\ObligadoSolidarioService $service)
+    {
+        [$client, $rental] = $this->tenantRental($id);
+        if (! $service->isRequired($rental)) {
+            return back()->with('error', 'Tu trato no requiere obligado solidario.');
+        }
+
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'email' => 'required|email|max:190',
+            'phone' => ['required', 'string', 'max:30', function ($attr, $value, $fail) {
+                if (strlen(preg_replace('/\D/', '', $value)) < 10) {
+                    $fail('Escribe un celular de 10 dígitos.');
+                }
+            }],
+            'relationship' => 'nullable|string|max:80',
+        ]);
+
+        try {
+            $os = $service->register($rental, $data, 'tenant');
+        } catch (\DomainException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', "Listo. Le enviamos la invitación a {$os->name} ({$os->email}). Tú verás su avance aquí.");
+    }
+
+    public function resendObligado(string $id, \App\Services\ObligadoSolidarioService $service)
+    {
+        [, $rental] = $this->tenantRental($id);
+
+        return $service->resendInvitation($rental)
+            ? back()->with('success', 'Le reenviamos la invitación a tu obligado solidario.')
+            : back()->with('error', 'No pudimos reenviar la invitación. Avísale a tu asesor.');
+    }
+
     /**
      * El PROPIETARIO decide la póliza (plan) y cómo se reparte el costo (inquilino 100% o 50/50). El inquilino solo lo ve.
      * Solo el propietario de esa renta (403 para cualquier otro cliente).

@@ -70,7 +70,7 @@ class TenantDocumentRows
     /**
      * @return array{groups:array<int,array>, counts:array<string,int>, next:?array}
      */
-    public static function build(RentalProcess $rental, Client $client, ?string $open = null): array
+    public static function build(RentalProcess $rental, Client $client, ?string $open = null, bool $forObligado = false): array
     {
         $docs = Document::where('client_id', $client->id)->where('rental_process_id', $rental->id)->orderBy('created_at')->get();
         $labels = Document::CATEGORIES;
@@ -91,7 +91,8 @@ class TenantDocumentRows
 
         $groups = [];
 
-        if (! $rental->apartado_paid_at) {
+        // El apartado y el aval son del INQUILINO; el obligado solidario solo aporta identificación, domicilio e ingresos.
+        if (! $forObligado && ! $rental->apartado_paid_at) {
             $groups[] = ['title' => 'Apartado', 'icon' => '🔑', 'rows' => [
                 $row('comprobante_apartado', 'Comprobante de tu depósito de apartado', ['comprobante_apartado'], ['hint' => 'La captura de tu transferencia o el PDF del banco.']),
             ]];
@@ -139,7 +140,7 @@ class TenantDocumentRows
             ]),
         ]];
 
-        if ($route === TenantRoadmap::ROUTE_AVAL) {
+        if (! $forObligado && $route === TenantRoadmap::ROUTE_AVAL) {
             $optional = ['aval_acta_matrimonio', 'aval_id_conyuge'];
             $groups[] = ['title' => 'Documentos de tu aval', 'icon' => '🛡️', 'rows' => collect(TenantDocumentChecklist::AVAL)
                 ->map(fn($label, $cat) => $row($cat, $label, [$cat], ['camera' => in_array($cat, ['aval_ine_frente', 'aval_ine_reverso'], true), 'optional' => in_array($cat, $optional, true)]))

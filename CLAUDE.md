@@ -16,6 +16,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos |
 | Seguridad de archivos y accesos: almacenamiento privado, autorización por pertenencia, rutas del CRM solo personal | `docs/funcionalidades/seguridad-archivos.md` | tocas subidas/descargas, contratos, o agregas rutas con `auth` |
 | Portal del inquilino: "Mi camino", menú corto, barra inferior móvil, "Mis documentos" con estados | `docs/funcionalidades/portal-inquilino-navegacion.md` | tocas `layouts/portal`, `TenantRoadmap`, `TenantDocumentRows`, `portal/journey`, `portal/expediente` |
+| Obligado solidario (póliza sin aval): alta segura, su propio Portal, privacidad frente al inquilino | `docs/funcionalidades/obligado-solidario.md` | tocas `ObligadoSolidarioService`, altas de usuarios desde el Portal, `RentalExpedienteStatus`, modo obligado del layout |
 | Garantía del inquilino: póliza (Previsión Legal, 3 planes) vs. aval + $3,500, "¿qué sigue?", contrato del proveedor / con un clic | `docs/funcionalidades/garantia-y-poliza-inquilino.md` | tocas `TenantRoadmap`, planes de póliza, `guarantee_type`, pasos del inquilino en el Portal |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
@@ -34,6 +35,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 - **Propiedades públicas:** `reservada/vendida/rentada` se ven con letrero; `archived` se oculta.
 - **Cada módulo/feature nuevo entrega su artículo del Manual del Broker en la misma sesión:** `database/seeders/help-articles/{slug}.md` + migración que lo siembra (patrón de `2026_09_25_130000_seed_help_revision_documentos.php`; editar el .md después NO actualiza la BD, requiere migración de resync).
 - **SEGURIDAD de archivos:** todo archivo sensible se guarda/lee con `App\Support\SecureFiles` (disco privado), nunca en `public`; toda ruta `auth` del CRM lleva rol (`viewer`); toda ruta que sirve un archivo autoriza por pertenencia. Ver `docs/funcionalidades/seguridad-archivos.md`.
+- **Altas de personas desde el Portal (obligado solidario, etc.): NUNCA `ClientPortalService::createPortalAccount`** (reutiliza al usuario con ese correo y le cambia rol y contraseña). Ver `docs/funcionalidades/obligado-solidario.md`.
 - **Subidas de documentos:** jamás `capture=` en `<input type=file>`; todo punto de subida del Portal pasa por `DocumentQualityService` y lleva `data-hdv-assist`. **Aprobar/rechazar un documento SIEMPRE por `DocumentReviewService::apply()`.**
 
 ## 3. Deploy (se lo entregas a Alejandro; él lo corre en el servidor aaPanel, `/www/wwwroot/homedelvalle.mx`)

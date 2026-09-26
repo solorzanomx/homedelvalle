@@ -54,18 +54,21 @@ class TenantRoadmap
      */
     public static function build(RentalProcess $r): array
     {
-        $r->loadMissing(['documents', 'contracts', 'poliza', 'investigation', 'polizaPlan']);
+        $r->loadMissing(['documents', 'contracts', 'poliza', 'investigation', 'polizaPlan', 'obligado']);
         $route = self::route($r);
         $plans = PolizaPlan::offered()->get();
 
-        $steps = [
+        $obligado = app(\App\Services\ObligadoSolidarioService::class);
+        $steps = array_values(array_filter([
             self::apartado($r),
             self::informacion($r),
             self::documentos($r),
+            // Sin aval en CDMX (póliza) se pide un obligado solidario con los mismos datos y documentos que el inquilino.
+            $obligado->isRequired($r) ? self::obligado($r, $obligado) : null,
             self::garantia($r, $route, $plans),
             self::contrato($r, $route),
             self::entrega($r),
-        ];
+        ]));
 
         // El primer paso NO terminado (salvo el apartado, que va en paralelo) es el activo; los demás quedan pendientes.
         $current = null;
@@ -126,12 +129,30 @@ class TenantRoadmap
                     'cta_label' => 'Ver mi contrato', 'cta_url' => route('contracts.download', $steps['contrato']['contract']->id)]
                 : ['title' => 'Tu contrato está en preparación', 'body' => $steps['contrato']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
 
+            'obligado' => self::nextForObligado($steps['obligado'] ?? []),
+
             'entrega' => ['title' => 'Casi listo: la entrega de tu inmueble', 'body' => $steps['entrega']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
 
             default => ['title' => '¡Todo en orden!', 'body' => 'Completaste todos los pasos. Tu asesor te contactará ante cualquier novedad.', 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
         };
 
         return $a + ['step' => $step, 'secondary' => $secondary];
+    }
+
+    private static function nextForObligado(array $step): array
+    {
+        $st = $step['os_status'] ?? null;
+        if (! $st || ! $st['registered']) {
+            return ['title' => 'Registra a tu obligado solidario', 'body' => 'Es un requisito de la póliza sin aval. Solo necesitamos su nombre, celular y correo; él llena el resto en su Portal.',
+                'minutes' => 2, 'cta_label' => 'Registrarlo', 'cta_url' => '#step-obligado'];
+        }
+        $wa = preg_replace('/\D/', '', $st['client']?->phone ?? '');
+        $wa = strlen($wa) === 10 ? '52' . $wa : $wa;
+
+        return ['title' => 'Tu obligado solidario está completando su información', 'body' => $step['summary'],
+            'minutes' => null,
+            'cta_label' => $wa ? 'Recordárselo por WhatsApp' : null,
+            'cta_url' => $wa ? 'https://wa.me/' . $wa . '?text=' . rawurlencode('Hola, te recuerdo completar tu información como obligado solidario de mi renta: revisa tu correo para activar tu cuenta.') : null];
     }
 
     private static function nextForDocuments(array $step, string $docsUrl): array
@@ -171,6 +192,26 @@ class TenantRoadmap
             'summary' => $done
                 ? 'Tu información está completa. ✅'
                 : "Completa tus datos personales, domicilio, trabajo y referencias (llevas {$pct}%). Se guardan mientras avanzas."];
+    }
+
+    /** "Tu obligado solidario": quién es, su avance y si ya está completo (datos + documentos aprobados). El inquilino NO ve sus datos. */
+    private static function obligado(RentalProcess $r, \App\Services\ObligadoSolidarioService $svc): array
+    {
+        $st = $svc->status($r);
+        $base = ['key' => 'obligado', 'title' => 'Tu obligado solidario', 'os_status' => $st];
+
+        if (! $st['registered']) {
+            return $base + ['done' => false, 'action' => 'register_os',
+                'summary' => 'Sin aval en CDMX, la póliza requiere un obligado solidario: una persona que responde junto contigo y aporta los mismos datos y documentos que tú. Regístrala y le enviamos una invitación a su propio Portal; tú no verás su información, solo su avance.'];
+        }
+
+        $docTotal = array_sum($st['docs']);
+        $summary = $st['complete']
+            ? "{$st['name']} completó su información y sus documentos fueron aprobados. ✅"
+            : "{$st['name']} lleva {$st['data_pct']}% de sus datos y {$st['docs']['aprobado']} de {$docTotal} documentos aprobados."
+                . ($st['started'] ? '' : ' Aún no empieza: recuérdale revisar su correo (enlace de activación).');
+
+        return $base + ['done' => $st['complete'], 'action' => $st['complete'] ? null : 'os_status', 'summary' => $summary];
     }
 
     private static function documentos(RentalProcess $r): array
