@@ -284,6 +284,34 @@ class RentalProcessController extends Controller
         return back()->with('success', "Referencia rechazada. Se le pidió otra al inquilino.");
     }
 
+    /** El asesor captura o corrige una referencia personal (p. ej. ayudando al cliente por teléfono). Reemplaza el hueco `slot`. */
+    public function saveReference(Request $request, string $id)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $data = $request->validate([
+            'who' => 'required|in:tenant,obligado',
+            'slot' => 'required|integer|min:1|max:3',
+            'name' => 'required|string|max:150',
+            'address' => 'nullable|string|max:200',
+            'mobile_phone' => 'nullable|string|max:30',
+            'landline_phone' => 'nullable|string|max:30',
+            'email' => 'nullable|email|max:150',
+        ]);
+        $clientId = $data['who'] === 'tenant' ? $rental->tenant_client_id : $rental->obligado_client_id;
+        abort_unless($clientId, 422, 'Esta renta no tiene esa persona registrada.');
+
+        \App\Models\ClientReference::updateOrCreate(
+            ['client_id' => $clientId, 'sort_order' => (int) $data['slot']],
+            [
+                'name' => trim($data['name']), 'address' => $data['address'] ?? null, 'mobile_phone' => $data['mobile_phone'] ?? null,
+                'landline_phone' => $data['landline_phone'] ?? null, 'email' => $data['email'] ?? null,
+                'status' => 'pending', 'rejection_reason' => null, 'rejected_at' => null,
+            ]
+        );
+
+        return back()->with('success', 'Referencia guardada.');
+    }
+
     /** Deshace el rechazo de una referencia. */
     public function restoreReference(string $id, string $referenceId)
     {

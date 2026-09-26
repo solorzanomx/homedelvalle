@@ -46,7 +46,7 @@ class ObligadoSolidarioTest extends TestCase
 
     public function test_rejected_references_do_not_count_and_have_crm_routes(): void
     {
-        foreach (['rentals.references.reject', 'rentals.references.restore'] as $name) {
+        foreach (['rentals.references.reject', 'rentals.references.restore', 'rentals.references.save'] as $name) {
             $this->assertTrue(\Illuminate\Support\Facades\Route::has($name), "Falta la ruta {$name}");
             $this->assertContains('viewer', \Illuminate\Support\Facades\Route::getRoutes()->getByName($name)->gatherMiddleware());
         }

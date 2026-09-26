@@ -24,3 +24,5 @@ Solo el inquilino de esa renta puede capturar y subir información del obligado;
 
 ## Referencias personales: rechazar las que no sirven
 En **Renta → Investigación** ves las 3 referencias del inquilino (y las del obligado). Si una no sirve —mamá u otro familiar directo, alguien que vive en la misma casa, no contesta, no lo conoce— toca **✕ Rechazar esta referencia**, elige el motivo y **Rechazar y pedir otra**. Se le avisa al inquilino, la referencia deja de contar (queda "2 de 3 válidas") y en su Portal le pide capturar a otra persona. El sistema te marca con ⚠ las que coinciden en teléfono o domicilio con el de la persona. Puedes **Restaurar** una rechazada.
+
+**Capturarlas por teléfono:** si ayudas al cliente a distancia, en la misma sección toca **＋ Capturar referencia N** (o **✏️ Editar datos**) y llena nombre, teléfonos, dirección y correo; queda igual que si él la hubiera capturado. Si el hueco tenía una rechazada, la reemplaza.
