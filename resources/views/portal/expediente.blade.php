@@ -947,17 +947,24 @@
 
             {{-- Referencias personales (3, estructuradas) --}}
             <div data-wiz-part="referencias" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);">
-                @php $sr = $sections['referencias'] ?? ['filled'=>0,'total'=>3,'pct'=>0]; @endphp
+                @php $sr = $sections['referencias'] ?? ['filled'=>0,'total'=>3,'pct'=>0]; $refBySlot = $references->keyBy('sort_order'); @endphp
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
                     <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;">Referencias personales</div>
                     <span style="font-size:.72rem;color:var(--text-muted);">{{ $sr['filled'] }}/{{ $sr['total'] }}</span>
                 </div>
+                <p style="font-size:.78rem;color:var(--text-muted);margin:0 0 .75rem;line-height:1.45;">Da personas que te conozcan bien (amigos, compañeros de trabajo, conocidos). <strong>No pueden ser familiares directos ni personas que vivan contigo</strong>: las rechazaremos y tendrás que dar otras.</p>
                 <form method="POST" action="{{ route('portal.expediente.referencias') }}">
                     @csrf
                     @for($i = 0; $i < 3; $i++)
-                        @php $r = $references->get($i); @endphp
-                        <div style="border:1px solid var(--border);border-radius:8px;padding:.85rem;margin-bottom:.75rem;">
+                        @php $r = $refBySlot->get($i + 1); $rej = $r?->isRejected(); if ($rej) { $r = null; } @endphp
+                        <div style="border:1px solid {{ $rej ? '#fecaca' : 'var(--border)' }};border-radius:8px;padding:.85rem;margin-bottom:.75rem;">
                             <div style="font-size:.78rem;font-weight:700;margin-bottom:.5rem;">Referencia {{ $i + 1 }}</div>
+                            @if($rej)
+                            <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;padding:.55rem .7rem;margin-bottom:.6rem;font-size:.8rem;line-height:1.45;">
+                                ⚠ Tu asesor no pudo aceptar a <strong>{{ $refBySlot->get($i + 1)->name }}</strong>: {{ $refBySlot->get($i + 1)->rejection_reason }}.<br>
+                                Escribe aquí a <strong>otra persona</strong> (que no sea familiar directo ni viva contigo).
+                            </div>
+                            @endif
                             <div class="form-grid">
                                 <div class="form-group full-width">
                                     <label class="form-label">Nombre completo</label>

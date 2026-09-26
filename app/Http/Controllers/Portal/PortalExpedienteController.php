@@ -327,8 +327,16 @@ class PortalExpedienteController extends Controller
             'references.*.email'          => 'nullable|email|max:150',
         ]);
 
+        $existing = $client->references()->get()->keyBy('sort_order');
         foreach ($validated['references'] ?? [] as $i => $ref) {
             if (empty($ref['name'])) continue;
+
+            $prev = $existing->get($i + 1);
+            // Una referencia rechazada por el asesor no se "vuelve a guardar igual": debe cambiar de persona.
+            if ($prev && $prev->isRejected() && mb_strtolower(trim($prev->name)) === mb_strtolower(trim($ref['name']))
+                && preg_replace('/\D/', '', (string) $prev->mobile_phone) === preg_replace('/\D/', '', (string) ($ref['mobile_phone'] ?? ''))) {
+                continue;
+            }
 
             $client->references()->updateOrCreate(
                 ['sort_order' => $i + 1],
@@ -338,6 +346,9 @@ class PortalExpedienteController extends Controller
                     'mobile_phone'    => $ref['mobile_phone'] ?? null,
                     'landline_phone'  => $ref['landline_phone'] ?? null,
                     'email'           => $ref['email'] ?? null,
+                    'status'          => 'pending',
+                    'rejection_reason' => null,
+                    'rejected_at'     => null,
                 ]
             );
         }
@@ -535,7 +546,7 @@ class PortalExpedienteController extends Controller
             $sections['ingresos'] = ['filled' => $incomeFilled, 'total' => $incomeTotal, 'pct' => round($incomeFilled / $incomeTotal * 100)];
 
             // Referencias personales — 3 contactos estructurados
-            $refFilled = min($references->count(), 3);
+            $refFilled = min($references->filter(fn($r) => ! $r->isRejected())->count(), 3);
             $sections['referencias'] = ['filled' => $refFilled, 'total' => 3, 'pct' => round($refFilled / 3 * 100)];
         }
 

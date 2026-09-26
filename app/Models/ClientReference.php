@@ -15,7 +15,26 @@ class ClientReference extends Model
         'landline_phone',
         'email',
         'sort_order',
+        'status',
+        'rejection_reason',
+        'rejected_at',
     ];
+
+    protected function casts(): array
+    {
+        return ['rejected_at' => 'datetime'];
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
+    }
+
+    /** Las que cuentan para las 3 requeridas (una rechazada NO cuenta hasta que se reemplace). */
+    public function scopeValid($query)
+    {
+        return $query->where(fn($q) => $q->whereNull('status')->orWhere('status', '!=', 'rejected'));
+    }
 
     public function client(): BelongsTo
     {

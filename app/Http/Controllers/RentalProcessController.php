@@ -259,6 +259,48 @@ class RentalProcessController extends Controller
         return back()->with('success', "Obligado solidario registrado: {$os->name}. El inquilino captura sus datos y documentos desde su Portal (tú también puedes subirlos aquí).");
     }
 
+    /** El asesor rechaza una referencia personal que no sirve (familiar directo, vive en la misma casa, no contesta…). El cliente debe dar otra. */
+    public function rejectReference(Request $request, string $id, string $referenceId)
+    {
+        $rental = RentalProcess::with(['tenantClient', 'obligado'])->findOrFail($id);
+        $ref = $this->rentalReference($rental, $referenceId);
+        $data = $request->validate(['reason' => 'required|string|max:200']);
+
+        $ref->update(['status' => 'rejected', 'rejection_reason' => trim($data['reason']), 'rejected_at' => now()]);
+
+        // Avisa al inquilino (es quien captura, también las del obligado) para que dé otra persona.
+        $tenantUserId = $rental->tenantClient?->user_id;
+        if ($tenantUserId) {
+            $whose = $ref->client_id === $rental->obligado_client_id ? ' de tu obligado solidario' : '';
+            \App\Models\Notification::create([
+                'user_id' => $tenantUserId,
+                'type' => 'referencia_rechazada',
+                'title' => 'Necesitamos otra referencia personal',
+                'body' => "La referencia {$ref->name}{$whose} no nos sirve: {$ref->rejection_reason}. Entra a “Tus datos → Referencias personales” y captura a otra persona.",
+                'data' => ['url' => route('portal.expediente', ['paso' => 'referencias'] + ($whose ? ['para' => 'obligado'] : []))],
+            ]);
+        }
+
+        return back()->with('success', "Referencia rechazada. Se le pidió otra al inquilino.");
+    }
+
+    /** Deshace el rechazo de una referencia. */
+    public function restoreReference(string $id, string $referenceId)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $this->rentalReference($rental, $referenceId)->update(['status' => 'pending', 'rejection_reason' => null, 'rejected_at' => null]);
+
+        return back()->with('success', 'Referencia restaurada.');
+    }
+
+    /** Solo referencias del inquilino o del obligado de ESTA renta. */
+    private function rentalReference(RentalProcess $rental, string $referenceId): \App\Models\ClientReference
+    {
+        $ids = array_filter([$rental->tenant_client_id, $rental->obligado_client_id]);
+
+        return \App\Models\ClientReference::whereIn('client_id', $ids)->findOrFail($referenceId);
+    }
+
     /** Exenta (o vuelve a requerir) al obligado solidario en este trato. */
     public function toggleObligado(Request $request, string $id)
     {

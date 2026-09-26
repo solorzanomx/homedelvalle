@@ -97,7 +97,7 @@ class ObligadoSolidarioService
         $fields = array_merge(ExpedienteFields::PERSONAL, ExpedienteFields::IDENTIFICATION, ExpedienteFields::INCOME_OBLIGADO);
         $filled = collect($fields)->filter(fn($f) => ! empty($c->{$f}))->count();
         // Las 3 referencias personales también cuentan (mismo cuestionario que el inquilino).
-        $refs = min($c->references()->count(), ExpedienteFields::REFERENCES_REQUIRED);
+        $refs = min($c->references()->valid()->count(), ExpedienteFields::REFERENCES_REQUIRED);
 
         return (int) round(($filled + $refs) / (count($fields) + ExpedienteFields::REFERENCES_REQUIRED) * 100);
     }

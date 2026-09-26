@@ -43,4 +43,18 @@ class ObligadoSolidarioTest extends TestCase
         $this->assertFalse(Route::has('portal.rentals.obligado.resend'), 'ya no hay invitaciones: el obligado no tiene cuenta');
         $this->assertContains('viewer', Route::getRoutes()->getByName('rentals.obligado.register')->gatherMiddleware());
     }
+
+    public function test_rejected_references_do_not_count_and_have_crm_routes(): void
+    {
+        foreach (['rentals.references.reject', 'rentals.references.restore'] as $name) {
+            $this->assertTrue(\Illuminate\Support\Facades\Route::has($name), "Falta la ruta {$name}");
+            $this->assertContains('viewer', \Illuminate\Support\Facades\Route::getRoutes()->getByName($name)->gatherMiddleware());
+        }
+        $ref = new \App\Models\ClientReference(['status' => 'rejected']);
+        $this->assertTrue($ref->isRejected());
+        $this->assertFalse((new \App\Models\ClientReference(['status' => 'pending']))->isRejected());
+        // Toda cuenta de "3 referencias" debe excluir las rechazadas.
+        $this->assertStringContainsString('references()->valid()', file_get_contents(app_path('Services/ObligadoSolidarioService.php')));
+        $this->assertStringContainsString('isRejected()', file_get_contents(app_path('Http/Controllers/Portal/PortalExpedienteController.php')));
+    }
 }

@@ -316,6 +316,8 @@ Route::middleware(['auth', 'viewer'])->group(function () {
     Route::post('rentals/{rental}/poliza-decision', [RentalProcessController::class, 'setPolizaDecision'])->name('rentals.poliza-decision');
     Route::post('rentals/{rental}/poliza-payment', [RentalProcessController::class, 'setPolizaPayment'])->name('rentals.poliza-payment');
     Route::post('rentals/{rental}/obligado', [RentalProcessController::class, 'registerObligado'])->name('rentals.obligado.register');
+    Route::post('rentals/{rental}/referencias/{reference}/rechazar', [RentalProcessController::class, 'rejectReference'])->name('rentals.references.reject');
+    Route::post('rentals/{rental}/referencias/{reference}/restaurar', [RentalProcessController::class, 'restoreReference'])->name('rentals.references.restore');
     Route::post('rentals/{rental}/obligado/requerido', [RentalProcessController::class, 'toggleObligado'])->name('rentals.obligado.toggle');
     Route::post('rentals/{rental}/poliza-remind-owner', [RentalProcessController::class, 'remindOwnerPoliza'])->name('rentals.poliza-remind-owner');
     Route::post('rentals/{rental}/guarantee-route', [RentalProcessController::class, 'setGuaranteeRoute'])->name('rentals.guarantee-route');
