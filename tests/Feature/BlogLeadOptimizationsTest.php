@@ -80,6 +80,59 @@ class BlogLeadOptimizationsTest extends TestCase
         $this->assertStringNotContainsString('isr-venta-propiedad-heredada-mexico-2026', $source);
     }
 
+    /**
+     * Auditoría de conversión 2026-09-28: `isr-venta-propiedad-heredada-mexico-2026` es el post #1
+     * de tráfico de todo el blog y no tenía la calculadora — se activó por separado de la 170000
+     * (que a propósito la excluía, cuando el enfoque era otro: activar SOLO hermano-no-quiere-vender).
+     */
+    public function test_isr_herencia_post_gets_the_calculator(): void
+    {
+        $migration = require database_path('migrations/2026_09_30_180000_add_calculator_to_isr_herencia_post.php');
+        $this->assertInstanceOf(\Illuminate\Database\Migrations\Migration::class, $migration);
+
+        $source = file_get_contents(database_path('migrations/2026_09_30_180000_add_calculator_to_isr_herencia_post.php'));
+        $this->assertStringContainsString('isr-venta-propiedad-heredada-mexico-2026', $source);
+        $this->assertStringContainsString("'show_succession_calculator' => true", $source);
+    }
+
+    /** Alejandro confirmó las cifras con notario — quita el aviso "sin validar" para ambos escenarios. */
+    public function test_succession_calculator_configs_get_validated(): void
+    {
+        $migration = require database_path('migrations/2026_09_30_180001_validate_succession_calculator_configs.php');
+        $this->assertInstanceOf(\Illuminate\Database\Migrations\Migration::class, $migration);
+
+        $source = file_get_contents(database_path('migrations/2026_09_30_180001_validate_succession_calculator_configs.php'));
+        $this->assertStringContainsString("'validated' => true", $source);
+        $this->assertStringContainsString('con_testamento', $source);
+        $this->assertStringContainsString('sin_testamento', $source);
+    }
+
+    /**
+     * Hallazgo grave de la auditoría 2026-09-28: 50 de 59 posts publicados todavía traen un
+     * `{{CTA2}}` heredado en el cuerpo, y en 9 de ellos (58% del tráfico del blog, incluidos los
+     * 2 posts con más visitas de todo el sitio) ese bloque cae justo al final — lo que disparaba
+     * `$bodyEndsWithCta` y apagaba por completo el `cta-capture` final (el único formulario real de
+     * cierre) en esos posts. El `{{CTA2}}` viejo es un link estático, no un formulario — no hay
+     * "dos forms" compitiendo, así que el cta-capture debe mostrarse SIEMPRE que el post tenga
+     * cluster, sin importar cómo termine el cuerpo. `$bodyEndsWithCta` solo debe seguir protegiendo
+     * al CTA genérico de respaldo (el que si era una tarjeta duplicada real).
+     */
+    public function test_final_cta_capture_never_depends_on_body_ending_in_legacy_cta(): void
+    {
+        $view = file_get_contents(resource_path('views/blog/show.blade.php'));
+
+        $this->assertMatchesRegularExpression(
+            '/@if\(\$cluster\)\s*\{\{--.*?--\}\}\s*<livewire:blog\.cta-capture/s',
+            $view,
+            'El cta-capture final debe mostrarse siempre que haya cluster, sin condicionarlo a $bodyEndsWithCta.'
+        );
+        $this->assertStringNotContainsString('@if(!$bodyEndsWithCta && $cluster)', $view);
+
+        // El CTA genérico de respaldo (sin cluster) sí debe seguir protegido — ese caso original
+        // del bug (dos tarjetas estáticas encimadas) sigue siendo real.
+        $this->assertStringContainsString('@elseif(!$bodyEndsWithCta)', $view);
+    }
+
     private function setUpReminderSchema(): void
     {
         foreach (['email_settings' => fn($t) => $t->id(), 'legal_documents' => function ($t) {

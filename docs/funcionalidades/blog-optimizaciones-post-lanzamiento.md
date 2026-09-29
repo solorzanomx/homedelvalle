@@ -59,6 +59,47 @@ corriente solo (compara "al menos N días", no "exactamente N").
    vez que se agregue una clase de Tailwind nueva: correr `npm run build` antes de dar por buena la
    vista** — no basta con que compile el Blade, el CSS es un bundle estático que hay que regenerar.
 
+## 7. Auditoría de conversión 2026-09-28 — hallazgo grave y 3 arreglos
+
+Con las 7 fases + la ronda de optimizaciones ya en vivo, medí en serio: **19,236 vistas acumuladas
+del blog → solo 2 leads en 90 días** (0.01%). Verificado contra la BD real de producción (no
+supuestos) y probado en vivo con el navegador. Causa principal encontrada:
+
+**Bug: el `cta-capture` final se apagaba en el 58% del tráfico del blog.** `blog/show.blade.php`
+suprimía el formulario final (`<livewire:blog.cta-capture location="final">`) cada vez que el
+cuerpo del post ya terminaba con un bloque de clase `not-prose my-10` — pensado para evitar dos
+tarjetas de CTA encimadas (un bug real de antes). El problema: **50 de 59 posts publicados todavía
+traen un `{{CTA2}}` heredado** de antes de la Fase 3, y en **9 de ellos cae justo al final** —
+incluidos los **2 posts con más tráfico de todo el blog** (`isr-venta-propiedad-heredada-mexico-2026`,
+4,242 vistas, y `precio-metro-cuadrado-colonias-benito-juarez-2026`, 3,495 vistas). En esos 9 posts
+lo único que quedaba al final era el `{{CTA2}}` viejo — un **link estático, no un formulario** — así
+que quien llegaba al final del artículo no tenía ningún formulario real de cierre. Confirmado en
+vivo navegando a `isr-venta-propiedad-heredada-mexico-2026`: el `cta-capture` nunca se montaba
+(0 componentes Livewire de ese tipo en la página).
+
+**Arreglo 1 — el `cta-capture` ahora se muestra siempre que el post tenga cluster**, sin importar
+cómo termine el cuerpo (`resources/views/blog/show.blade.php`). `$bodyEndsWithCta` sigue protegiendo
+solo al CTA genérico de respaldo (el de posts sin cluster) — ahí sí seguía siendo una tarjeta
+duplicada real.
+
+**Arreglo 2 — calculadora activada en `isr-venta-propiedad-heredada-mexico-2026`** (el post #1 de
+tráfico de todo el blog). Los 2 únicos leads reales de 90 días vinieron del otro post de herencias
+que sí tiene calculadora — es la única señal dura de qué convierte, y este post responde justo la
+pregunta que la calculadora resuelve. Migración
+`2026_09_30_180000_add_calculator_to_isr_herencia_post`.
+
+**Arreglo 3 — calculadora marcada como validada.** Alejandro confirmó las cifras de los 2 escenarios
+(con/sin testamento) con notario — ya no son placeholder. `validated=true` en
+`succession_calculator_configs` quita el aviso "⚠ Estimación de referencia, todavía no confirmada"
+que veía cada persona justo después de dejar su WhatsApp. Migración
+`2026_09_30_180001_validate_succession_calculator_configs`. Las cifras en sí no se tocaron (son
+admin-editables en `/admin/succession-calculator`).
+
+**Pendiente de esta auditoría, fuera de alcance de código** (ver conversación, no bloquea nada):
+Pixel de Meta configurado pero apagado (`fb_pixel_enabled=0`, el Pixel ID sí está cargado) — decisión
+de Alejandro, no bug; revisar el copy de los 5 CTA por cluster en `/admin/blog-ctas`; registrar
+dimensiones GA4 personalizadas (acción en el admin de GA4, no en este repo).
+
 ## INVARIANTES — no romper
 - `SuccessionCalculator::calculate()` es la única acción del componente — no reintroducir un
   segundo paso de captura separado del cálculo.
@@ -68,8 +109,14 @@ corriente solo (compara "al menos N días", no "exactamente N").
   guardado con test — `BlogLeadOptimizationsTest`).
 - Cualquier clase de Tailwind nueva (sobre todo combinaciones responsivas como `sm:block`) necesita
   `npm run build` antes de deploy — verificado con test (`test_compiled_css_includes_the_class...`).
+- **El `<livewire:blog.cta-capture location="final">` se muestra siempre que el post tenga cluster
+  (`@if($cluster)`), nunca condicionado a `$bodyEndsWithCta`.** Ese flag solo protege al CTA genérico
+  de respaldo (posts sin cluster). Si se reintroduce la condición vieja, se vuelve a apagar el único
+  formulario de cierre real en cualquier post cuyo `{{CTA2}}` heredado caiga al final del cuerpo —
+  guardado con test (`test_final_cta_capture_never_depends_on_body_ending_in_legacy_cta`).
 
 ## Cómo probarlo
 `php artisan test --filter=BlogLeadOptimizationsTest` (Pixel de Meta, exclusión mutua
-calculadora/form genérico, CSS compilado, activación en hermano-no-quiere-vender, recordatorios) +
+calculadora/form genérico, CSS compilado, activación en hermano-no-quiere-vender y en isr-venta,
+calculadora validada, cta-capture final nunca condicionado al cuerpo, recordatorios) +
 `BlogSuccessionCalculatorTest` y `BlogCtaClustersTest` actualizados al nuevo flujo.

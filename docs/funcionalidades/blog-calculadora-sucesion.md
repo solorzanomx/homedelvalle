@@ -3,14 +3,19 @@
 > 2026-09-30. Fase 4 de `prompt-claude-code-blog-leads.md` (Alejandro). Léelo antes de tocar
 > `SuccessionCalculatorConfig`, `SuccessionCalculator`, o `/admin/succession-calculator`.
 
-## ⚠️ Ninguna cifra de esta fase viene de un notario real
-El prompt pidió explícitamente **no inventar cifras** y dejar todo marcado `PENDIENTE VALIDAR`. Así
-quedó: las 2 filas de `succession_calculator_configs` (con testamento / sin testamento) se sembraron
-con `validated = false` y rangos de referencia general — estructuralmente correctos (qué conceptos
-existen: trámite notarial o juicio, ISAI, registro, avalúo, otros, extra por heredero, regularizar
-escrituras), pero **las cifras necesitan que Alejandro las confirme con su notario** antes de que la
-calculadora se pueda llamar "precisa". Mientras `validated = false`, la calculadora se lo dice al
-lector en pantalla (aviso ámbar "estimación de referencia, no confirmada").
+## ✅ Actualización 2026-09-28: Alejandro confirmó las cifras con notario
+El prompt original pidió explícitamente **no inventar cifras** y dejar todo marcado
+`PENDIENTE VALIDAR`. Así quedó al sembrarse: las 2 filas de `succession_calculator_configs` (con
+testamento / sin testamento) con `validated = false` y rangos de referencia general —
+estructuralmente correctos (qué conceptos existen: trámite notarial o juicio, ISAI, registro,
+avalúo, otros, extra por heredero, regularizar escrituras), pendientes de que Alejandro los
+confirmara con su notario.
+
+**Ya se confirmaron.** Migración `2026_09_30_180001_validate_succession_calculator_configs` marca
+`validated = true` en los 2 escenarios — el aviso ámbar "estimación de referencia, no confirmada"
+ya no se muestra. Las cifras en sí (los %/montos por escenario) no cambiaron con esa migración; si
+Alejandro las ajusta más adelante, sigue siendo desde `/admin/succession-calculator`, sin tocar
+código.
 
 **Lista completa de parámetros pendientes de validar** (editables en `/admin/succession-calculator`,
 uno por escenario):
@@ -40,10 +45,14 @@ uno por escenario):
    la Fase 2, aquí se conectó de verdad.
 
 ## Dónde vive
-Se activa por post con la casilla **"Mostrar la calculadora de costo de sucesión"** en el editor —
-sembrada ya en `cuanto-cuesta-sucesion-cdmx-2026` y `propiedad-sin-testamento-cdmx-como-regularizar-vender-2026`
-(migración `2026_09_30_100001`), pero "queda disponible para otros posts" tal como pide el prompt:
-cualquier post puede activarla desde el admin, no hay lista fija en código.
+Se activa por post con la casilla **"Mostrar la calculadora de costo de sucesión"** en el editor.
+Activa en 3 posts a la fecha: `cuanto-cuesta-sucesion-cdmx-2026` y
+`propiedad-sin-testamento-cdmx-como-regularizar-vender-2026` (migración `2026_09_30_100001`),
+`hermano-no-quiere-vender-propiedad-heredada-opciones-legales-cdmx` (migración
+`2026_09_30_170000`) e `isr-venta-propiedad-heredada-mexico-2026` — el post #1 de tráfico de todo
+el blog, agregado en la auditoría de conversión del 2026-09-28 (migración
+`2026_09_30_180000_add_calculator_to_isr_herencia_post`) — pero "queda disponible para otros posts"
+tal como pide el prompt: cualquier post puede activarla desde el admin, no hay lista fija en código.
 
 ## Mapa de archivos
 | Qué | Dónde |
@@ -67,9 +76,8 @@ cualquier post puede activarla desde el admin, no hay lista fija en código.
   `SuccessionCalculator` de forma aislada.
 
 ## Pendiente / para ti (Alejandro)
-1. **Confirma con tu notario los 8 parámetros listados arriba**, para los 2 escenarios, y edítalos en
-   `/admin/succession-calculator` (marca "Ya confirmé estos rangos" cuando lo hagas — el aviso de la
-   calculadora cambia solo).
+1. ~~Confirma con tu notario los 8 parámetros listados arriba~~ — hecho (2026-09-28), `validated=true`.
+   Si más adelante ajustas algún rango, edítalo en `/admin/succession-calculator`.
 2. Registra `calculator_start`/`calculator_complete` en GA4 si quieres verlos en el funnel (Admin →
    Definiciones personalizadas → Eventos, se procesan solos tras la primera ejecución real).
-3. Decide si quieres activar la calculadora en más posts del cluster herencias además de los 2 iniciales.
+3. Decide si quieres activar la calculadora en más posts del cluster herencias además de los 4 actuales.

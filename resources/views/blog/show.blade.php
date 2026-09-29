@@ -235,10 +235,19 @@
             </article>
             @endif
 
-            {{-- Auto CTA by category — se SUPRIME si el cuerpo del post ya
-                 termina con un CTA propio (el {{CTA2}} de la BD suele vivir
-                 al final): dos tarjetas de CTA encimadas al cierre se
-                 canibalizan entre sí (bug real reportado con captura). --}}
+            {{-- Auto CTA por categoría (el de abajo, sin cluster) — se SUPRIME si el cuerpo del post
+                 ya termina con un CTA propio (el {{CTA2}} de la BD suele vivir al final): dos
+                 tarjetas de CTA encimadas al cierre se canibalizan entre sí (bug real reportado con
+                 captura).
+                 OJO (hallazgo 2026-09-28, auditoría de conversión): este mismo `$bodyEndsWithCta`
+                 ANTES también suprimía el `cta-capture` de abajo (el del cluster) — y 50 de 59 posts
+                 publicados todavía traen `{{CTA2}}` en el cuerpo, en 9 de ellos justo al final. Eso
+                 apagaba el ÚNICO formulario real de cierre en el 58% del tráfico del blog, incluidos
+                 los 2 posts con más visitas de todo el sitio. El `{{CTA2}}` viejo es un link estático
+                 (no un form), así que no hay "dos formularios" compitiendo — sí puede convivir con el
+                 cta-capture. El cta-capture ahora se muestra SIEMPRE que el post tenga cluster,
+                 pase lo que pase en el cuerpo; `$bodyEndsWithCta` solo sigue protegiendo al CTA
+                 genérico de respaldo (el que si era una tarjeta duplicada de verdad). --}}
             @php
                 $bodyTail = mb_substr($enhanced['second'] !== '' ? $enhanced['second'] : $enhanced['first'], -2200);
                 $bodyEndsWithCta = str_contains($bodyTail, 'not-prose my-10');
@@ -259,9 +268,10 @@
                 ];
                 $cta = $ctaMap[$slug] ?? ['icon' => 'message-circle', 'title' => '¿Tienes una propiedad en la Benito Juárez?', 'desc' => 'Platícanos tu caso. Asesoría personalizada, sin costo y sin compromiso.', 'btn' => 'Contactar a un asesor', 'url' => route('contacto')];
             @endphp
-            @if(!$bodyEndsWithCta && $cluster)
+            @if($cluster)
             {{-- CTA final por cluster (Fase 3): reemplaza al automático por categoría de abajo — es
-                 el mismo lugar, ahora con copy editable y un form real que crea el lead. --}}
+                 el mismo lugar, ahora con copy editable y un form real que crea el lead. Se muestra
+                 siempre que haya cluster, sin importar $bodyEndsWithCta — ver comentario arriba. --}}
             <livewire:blog.cta-capture :post-id="$post->id" location="final" :key="'cta-final-'.$post->id" />
             @elseif(!$bodyEndsWithCta)
             <div class="mt-10 not-prose" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
