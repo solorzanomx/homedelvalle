@@ -4,71 +4,28 @@ namespace Tests\Feature;
 
 use App\Models\BlogRedirect;
 use App\Models\Post;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
+use Tests\Concerns\SetsUpMinimalBlogSchema;
 use Tests\TestCase;
 
 /**
  * Fase 1 del prompt de leads del blog (docs/funcionalidades/blog-redirects.md).
  * No usamos RefreshDatabase (corre TODAS las migraciones y una antigua ajena — MySQL-only —
- * rompe en SQLite en memoria, mismo gotcha de PolizaPricingTest). Solo migramos lo que este
- * módulo toca: posts, post_categories (mínimas, tal cual sus migraciones reales) y blog_redirects.
+ * rompe en SQLite en memoria, mismo gotcha de PolizaPricingTest). Ver SetsUpMinimalBlogSchema.
  */
 class BlogRedirectsTest extends TestCase
 {
+    use SetsUpMinimalBlogSchema;
+
     protected function setUp(): void
     {
         parent::setUp();
-        if (! Schema::hasTable('blog_redirects')) {
-            Schema::create('post_categories', fn(Blueprint $t) => $t->id());
-            Schema::create('posts', function (Blueprint $t) {
-                $t->id();
-                $t->unsignedBigInteger('user_id');
-                $t->string('title');
-                $t->string('slug')->unique();
-                $t->text('excerpt')->nullable();
-                $t->longText('body');
-                $t->unsignedBigInteger('category_id')->nullable();
-                $t->string('status')->default('draft');
-                $t->timestamp('published_at')->nullable();
-                $t->timestamps();
-            });
-            // blog.not-found/blog.gone extienden layouts.public → el footer necesita que existan
-            // 'pages' y 'menus'/'menu_items' (AppServiceProvider las consulta con try/catch, pero el
-            // fallback a collect() cuando NO existen rompe $footerMenu->items — bug real, ajeno a este
-            // módulo). Vacías, sin migrar toda la cadena de 'pages' (tiene una MySQL-only más adelante).
-            Schema::create('pages', function (Blueprint $t) {
-                $t->id();
-                $t->string('title');
-                $t->string('slug')->unique();
-                $t->longText('body')->nullable();
-                $t->boolean('is_published')->default(false);
-                $t->boolean('show_in_nav')->default(false);
-                $t->unsignedInteger('nav_order')->default(0);
-                $t->string('nav_label')->nullable();
-                $t->string('nav_url')->nullable();
-                $t->string('nav_route')->nullable();
-                $t->string('nav_style')->nullable();
-                $t->timestamps();
-            });
-            Schema::create('menus', fn(Blueprint $t) => $t->id());
-            Schema::create('menu_items', fn(Blueprint $t) => $t->id());
-
-            Artisan::call('migrate', ['--force' => true, '--path' => [
-                'database/migrations/2026_03_29_135219_create_site_settings_table.php',
-                'database/migrations/2026_09_28_100000_create_blog_redirects_table.php',
-            ]]);
-        }
+        $this->migrateMinimalBlogSchema();
     }
 
     private function publishedPost(string $slug): Post
     {
-        return Post::create([
-            'user_id' => 1, 'title' => 'Título de prueba', 'slug' => $slug, 'body' => '<p>contenido</p>',
-            'status' => 'published', 'published_at' => now()->subDay(),
-        ]);
+        return $this->makePost(['slug' => $slug]);
     }
 
     public function test_seeded_redirect_sends_301_and_counts_hits(): void

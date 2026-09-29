@@ -117,6 +117,11 @@
         // Nunca ambos — gtag() ya empuja al dataLayer y duplicaría los triggers de GTM.
         window.hdvTrack = function (name, params) {
             params = params || {};
+            // Contexto del post (post_slug/post_cluster) SOLO existe en páginas de blog
+            // (blog/show.blade.php lo define) — en cualquier otra página se omite, no se manda vacío.
+            if (window.hdvBlogContext) {
+                params = Object.assign({}, window.hdvBlogContext, params);
+            }
             if (typeof window.gtag === 'function') {
                 window.gtag('event', name, params);
             } else {
@@ -134,6 +139,7 @@
                 link_text: (a.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80)
             };
             if (a.dataset.trackLocation) params.cta_location = a.dataset.trackLocation;
+            if (a.dataset.ctaVariant) params.cta_variant = a.dataset.ctaVariant;
 
             if (/wa\.me\/\?/.test(href)) {
                 window.hdvTrack('whatsapp_share', params); // compartir propiedad, sin número destino
@@ -167,6 +173,32 @@
                 page_path: window.location.pathname
             });
         }, true);
+
+        // cta_view: un CTA marcado con data-track-location entra al viewport — una vez por elemento
+        // por carga. Con cta_click/whatsapp_click da el "vio el CTA pero no tocó" (Fase 2, prompt
+        // de leads del blog). IntersectionObserver puede no existir en navegadores muy viejos —
+        // si no existe, simplemente no se manda el evento (no rompe nada).
+        if (window.IntersectionObserver) {
+            var ctaObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting || entry.target.dataset.hdvSeen) return;
+                    entry.target.dataset.hdvSeen = '1';
+                    var el = entry.target;
+                    window.hdvTrack('cta_view', {
+                        page_path: window.location.pathname,
+                        cta_location: el.dataset.trackLocation || null,
+                        cta_variant: el.dataset.ctaVariant || null
+                    });
+                    ctaObserver.unobserve(el);
+                });
+            }, { threshold: 0.5 });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('[data-track-location]').forEach(function (el) {
+                    ctaObserver.observe(el);
+                });
+            });
+        }
 
         // Formularios Livewire: cada form dispara 'lead-conversion' SOLO en el
         // camino de éxito real (honeypot y spam muestran éxito pero no disparan).

@@ -5,8 +5,7 @@
      orgánico) le habla al heredero — la casa vieja heredada en BJ es el
      lead de predio típico (docs/posicionamiento-marca.md). --}}
 @php
-    $esHerencia = (($post ?? null)?->category?->slug === 'herencias-y-sucesiones')
-        || (bool) preg_match('/hered|sucesion|testamento/i', ($post ?? null)?->slug ?? '');
+    $esHerencia = \App\Support\BlogCluster::forPost($post ?? null) === \App\Support\BlogCluster::HERENCIAS;
 @endphp
 <div class="not-prose my-8">
     <a href="{{ route('landing.vende-desarrolladora') }}"

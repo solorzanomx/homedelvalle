@@ -52,6 +52,15 @@
             ['@type' => 'ListItem', 'position' => 3, 'name' => $post->meta_title ?: $post->title, 'item' => url('/blog/' . $post->slug)],
         ],
     ]" />
+
+    {{-- Contexto para GA4 (Fase 2 del prompt de leads del blog): hdvTrack lo mezcla solo en cada
+         evento (whatsapp_click, generate_lead, cta_view…) — nunca hay que repetirlo a mano por CTA. --}}
+    <script>
+        window.hdvBlogContext = {
+            post_slug: @json($post->slug),
+            post_cluster: @json(\App\Support\BlogCluster::forPost($post))
+        };
+    </script>
 @endsection
 
 @section('content')

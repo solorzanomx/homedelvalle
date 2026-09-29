@@ -126,6 +126,17 @@ class FormSubmission extends Model implements HasMedia
         return $this->belongsTo(Post::class, 'landing_post_id');
     }
 
+    /** post_slug/post_cluster del lead, si entró desde un artículo del blog (Fase 2 del prompt de leads del blog). */
+    public function getPostSlugAttribute(): ?string
+    {
+        return $this->landingPost?->slug;
+    }
+
+    public function getPostClusterAttribute(): ?string
+    {
+        return \App\Support\BlogCluster::forPost($this->landingPost);
+    }
+
     /**
      * Get human-readable form type label
      */
