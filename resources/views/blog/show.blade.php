@@ -188,6 +188,14 @@
                 $decided = \App\Support\BlogCluster::showsSellCta($post);
                 $clusterCtaHtml = $cluster ? view('blog._cta-cluster-inline', compact('post', 'cluster', 'ctaConfig', 'decided'))->render() : '';
 
+                // "Respuesta corta" arriba del primer scroll (Fase 5.1), solo en los 2 posts que
+                // ya traen la calculadora — las cifras se leen en vivo de SuccessionCalculatorConfig.
+                $respuestaCortaHtml = match ($post->slug) {
+                    'cuanto-cuesta-sucesion-cdmx-2026' => view('blog._succession-cost-summary')->render(),
+                    'propiedad-sin-testamento-cdmx-como-regularizar-vender-2026' => view('blog._succession-steps-summary')->render(),
+                    default => '',
+                };
+
                 // Solo en herencias: el bloque predio→desarrolladora se mueve
                 // justo después de "Ejemplo práctico" (el heredero de casa
                 // vieja es el prospecto exacto de ese funnel) en vez de ir al
@@ -200,6 +208,7 @@
                     $post->title,
                     $isHerencia ? 'Ejemplo pr' : null,
                     $clusterCtaHtml,
+                    $respuestaCortaHtml,
                 );
             @endphp
             <article class="{{ $proseClasses }}"

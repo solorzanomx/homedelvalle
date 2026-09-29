@@ -29,11 +29,17 @@ class BlogBodyEnhancer
      * @return array{first: string, second: string} — 'second' vacío si no
      *         hubo dónde partir (el form se muestra al final igualmente).
      */
-    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = '', ?string $predioCtaAfterHeading = null, string $clusterCta = ''): array
+    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = '', ?string $predioCtaAfterHeading = null, string $clusterCta = '', string $respuestaCorta = ''): array
     {
         $html = self::stripImageSlots($html);
         $html = self::fixImages($html, $postTitle);
         $html = self::linkColonias($html);
+
+        // "Respuesta corta" (Fase 5.1) — SIEMPRE antes que cualquier otro módulo: va arriba del
+        // primer scroll, antes incluso del primer h2.
+        if ($respuestaCorta !== '') {
+            $html = self::injectBeforeFirstHeading($html, $respuestaCorta);
+        }
 
         // CTA por cluster (Fase 3 del prompt de leads del blog) — inline, después de la primera
         // sección completa: ya respondió la pregunta del título, es el momento de ofrecer ayuda.
@@ -225,6 +231,20 @@ class BlogBodyEnhancer
         $cut = $positions[1];
 
         return substr($html, 0, $cut) . $block . substr($html, $cut);
+    }
+
+    /**
+     * Inyecta $block ANTES del primer h2 — "respuesta corta arriba del primer scroll" (Fase 5.1 del
+     * prompt de leads del blog). Si el post no tiene ningún h2, se antepone a todo el HTML.
+     */
+    public static function injectBeforeFirstHeading(string $html, string $block): string
+    {
+        $pos = stripos($html, '<h2');
+        if ($pos === false) {
+            return $block . $html;
+        }
+
+        return substr($html, 0, $pos) . $block . substr($html, $pos);
     }
 
     public static function injectAfterFirstTable(string $html, string $block): string
