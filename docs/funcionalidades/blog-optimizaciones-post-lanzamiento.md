@@ -100,6 +100,32 @@ Pixel de Meta configurado pero apagado (`fb_pixel_enabled=0`, el Pixel ID sí es
 de Alejandro, no bug; revisar el copy de los 5 CTA por cluster en `/admin/blog-ctas`; registrar
 dimensiones GA4 personalizadas (acción en el admin de GA4, no en este repo).
 
+## 8. Auditoría 2026-09-28, parte 2 — el post fusionado tenía 6 CTAs apilados
+
+Alejandro pidió analizar en vivo `como-vender-una-propiedad-heredada-en-cdmx-guia-completa-2026`
+(uno de los 6 pilares fusionados) y preguntó por qué tenía tantos CTAs. Conteo real en la página:
+**6 bloques de conversión** en un solo artículo. Causa: 4 sistemas construidos en fases distintas
+(Fase 2 `ctaMap`/CTA por categoría, el sistema previo `{{CTA1}}/{{CTA2}}/{{CTA3}}` — más viejo
+todavía, nunca documentado en las fases de este prompt —, Fase 3 cluster CTA, Fase 4 calculadora,
+Fase 5 predio→desarrolladora) sin que ninguna sumara el total acumulado por post. El culpable
+principal: **`{{CTA1}}`/`{{CTA2}}`/`{{CTA3}}`**, presentes en 58/50/41 de los 59 posts publicados —
+`BlogAIService` seguía pidiéndole a la IA que los insertara en CADA post nuevo. Se resuelven desde
+`posts.ctas` (columna JSON), no desde el texto del body — `Post::getRenderedBodyAttribute()` los
+reemplaza por cadena vacía si esa entrada no tiene `title`.
+
+**Arreglo 4 — vaciar `ctas` en todos los posts publicados** (migración
+`2026_09_30_190000_clear_legacy_cta_shortcodes_from_posts`): apaga los 3 shortcodes de golpe, sin
+tocar `body` (el `{{CTAn}}` literal se queda en el texto pero ya no renderiza nada). No es
+reversible con datos — ese contenido era placeholder redundante, no vale la pena respaldarlo.
+
+**Arreglo 5 — `BlogAIService` ya no le pide a la IA insertar `{{CTA1}}/{{CTA2}}/{{CTA3}}`** ni un
+campo `ctas` en el JSON de generación — si no se corrige el prompt, cada post nuevo publicado vuelve
+a acumular el mismo ruido. Detalle completo y el inventario final de CTAs por post en
+`docs/funcionalidades/blog-cta-clusters.md`.
+
+Después de los 2 arreglos, el post analizado queda en 4 CTAs (inline, a media lectura, predio,
+final) — cada uno con un propósito distinto, sin duplicados.
+
 ## INVARIANTES — no romper
 - `SuccessionCalculator::calculate()` es la única acción del componente — no reintroducir un
   segundo paso de captura separado del cálculo.
@@ -114,9 +140,15 @@ dimensiones GA4 personalizadas (acción en el admin de GA4, no en este repo).
   de respaldo (posts sin cluster). Si se reintroduce la condición vieja, se vuelve a apagar el único
   formulario de cierre real en cualquier post cuyo `{{CTA2}}` heredado caiga al final del cuerpo —
   guardado con test (`test_final_cta_capture_never_depends_on_body_ending_in_legacy_cta`).
+- **`{{CTA1}}/{{CTA2}}/{{CTA3}}` quedan desactivados a propósito** (`posts.ctas` vacío en todos los
+  posts publicados) y `BlogAIService` ya no los pide en posts nuevos — no reactivar ninguno de los
+  dos sin revisar primero cuántos CTAs ya tiene un post con cluster (ver
+  `docs/funcionalidades/blog-cta-clusters.md`). Guardado con test
+  (`test_legacy_cta_shortcodes_get_cleared_from_all_published_posts`,
+  `test_ai_blog_generator_no_longer_requests_legacy_cta_shortcodes`).
 
 ## Cómo probarlo
 `php artisan test --filter=BlogLeadOptimizationsTest` (Pixel de Meta, exclusión mutua
 calculadora/form genérico, CSS compilado, activación en hermano-no-quiere-vender y en isr-venta,
-calculadora validada, cta-capture final nunca condicionado al cuerpo, recordatorios) +
-`BlogSuccessionCalculatorTest` y `BlogCtaClustersTest` actualizados al nuevo flujo.
+calculadora validada, cta-capture final nunca condicionado al cuerpo, CTAs legacy desactivados,
+recordatorios) + `BlogSuccessionCalculatorTest` y `BlogCtaClustersTest` actualizados al nuevo flujo.

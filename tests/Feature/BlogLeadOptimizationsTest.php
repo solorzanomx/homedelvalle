@@ -133,6 +133,38 @@ class BlogLeadOptimizationsTest extends TestCase
         $this->assertStringContainsString('@elseif(!$bodyEndsWithCta)', $view);
     }
 
+    /**
+     * Auditoría 2026-09-28, parte 2: un post fusionado (Fase 6) resultó con 6 CTAs apilados.
+     * La causa real: {{CTA1}}/{{CTA2}}/{{CTA3}} — el sistema legacy de antes de la Fase 3 — seguía
+     * vivo en 58/50/41 de 59 posts publicados (Post::getRenderedBodyAttribute() los resuelve desde
+     * la columna `ctas`, no del texto de `body`). Esta migración vacía `ctas` en todos los posts
+     * publicados, apagando los 3 shortcodes sin tocar el HTML del body.
+     */
+    public function test_legacy_cta_shortcodes_get_cleared_from_all_published_posts(): void
+    {
+        $migration = require database_path('migrations/2026_09_30_190000_clear_legacy_cta_shortcodes_from_posts.php');
+        $this->assertInstanceOf(\Illuminate\Database\Migrations\Migration::class, $migration);
+
+        $source = file_get_contents(database_path('migrations/2026_09_30_190000_clear_legacy_cta_shortcodes_from_posts.php'));
+        $this->assertStringContainsString("'ctas' => '[]'", $source);
+        $this->assertStringContainsString("where('status', 'published')", $source);
+    }
+
+    /**
+     * El generador de posts con IA (BlogAIService) seguía instruyendo a la IA a insertar
+     * {{CTA1}}/{{CTA2}}/{{CTA3}} en CADA post nuevo — sin este fix, el blog volvería a acumular el
+     * mismo ruido con cada post que se publique. Verifica que el prompt ya no lo pida.
+     */
+    public function test_ai_blog_generator_no_longer_requests_legacy_cta_shortcodes(): void
+    {
+        $source = file_get_contents(app_path('Services/BlogAIService.php'));
+
+        $this->assertStringNotContainsString('Coloca {{CTA1}}', $source);
+        $this->assertStringNotContainsString('Coloca {{CTA2}}', $source);
+        $this->assertStringNotContainsString('Coloca {{CTA3}}', $source);
+        $this->assertStringContainsString('NO incluyas {{CTA1}}, {{CTA2}} ni {{CTA3}}', $source);
+    }
+
     private function setUpReminderSchema(): void
     {
         foreach (['email_settings' => fn($t) => $t->id(), 'legal_documents' => function ($t) {

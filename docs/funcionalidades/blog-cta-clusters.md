@@ -60,9 +60,33 @@ soportarlo sin romper nada:
 | Sticky + supresión del flotante genérico en móvil | `blog/_cta-sticky-whatsapp.blade.php`, `components/public/whatsapp-float.blade.php` (`hideOnMobile`), `blog/show.blade.php` (`@section('hideWhatsappFloatMobile', ...)`) |
 | Selector de cluster manual | `resources/views/admin/posts/{create,edit}.blade.php` |
 
+## ⚠️ Actualización 2026-09-28 — el post ya traía MÁS de 4 módulos, y uno estaba duplicado
+
+La cuenta de "4 módulos de conversión" de arriba (de cuando se escribió esta fase) no incluía un
+quinto sistema, más viejo todavía: **`{{CTA1}}`/`{{CTA2}}`/`{{CTA3}}`**, tarjetas estáticas
+(`blog/_cta.blade.php`, sin captura real — solo un link) que `BlogAIService` seguía insertando en
+**cada post nuevo** desde antes de que existiera esta fase, resueltas por
+`Post::getRenderedBodyAttribute()` desde la columna `posts.ctas` (no desde el texto de `body`).
+Con eso sumado, un post con cluster + calculadora + fusión de varios posts podía llegar a **5-6
+CTAs apilados** — hallazgo real en `como-vender-una-propiedad-heredada-en-cdmx-guia-completa-2026`
+(auditoría de conversión, ver `docs/funcionalidades/blog-optimizaciones-post-lanzamiento.md`, sección 7).
+
+Arreglado: `ctas` se vació en todos los posts publicados (migración
+`2026_09_30_190000_clear_legacy_cta_shortcodes_from_posts`) y `BlogAIService` ya no le pide a la IA
+que use `{{CTA1}}/{{CTA2}}/{{CTA3}}` en posts nuevos. El inventario real de módulos de conversión
+por post (post con cluster + herencias) quedó en 4: inline (link), a media lectura
+(form/calculadora), predio→desarrolladora (solo herencias), final (form). Sin cluster: 2 (a media
+lectura + el `ctaMap` automático).
+
 ## INVARIANTES — no romper
 - El CTA final por cluster **reemplaza** al `ctaMap` automático (decisión confirmada) — no sumar un
-  tercero sin revisar con Alejandro; ya hay 4 módulos de conversión por post.
+  tercero sin revisar con Alejandro; un post con cluster ya tiene 4 módulos de conversión (ver
+  arriba) — cualquier sistema nuevo de CTA (incluido cualquier variante futura de `{{CTAn}}`) debe
+  revisar primero cuántos ya hay, no sumar a ciegas.
+- `{{CTA1}}/{{CTA2}}/{{CTA3}}` (el sistema pre-Fase-3) queda desactivado a propósito — no volver a
+  pedirle a `BlogAIService` que los use, ni reactivar `posts.ctas` en masa. Si un post puntual
+  necesita un CTA editorial extra, se edita a mano en `/admin/posts/{id}/edit` (el campo sigue
+  funcionando, solo se vació el contenido viejo).
 - `CtaCapture` es el único formulario Livewire de captura en la página — si se agrega otro, revisar
   que no se dupliquen honeypot/spam/legal en la misma vista sin necesidad.
 - El botón flotante genérico solo se oculta **en móvil** y solo en posts **con cluster** — en desktop

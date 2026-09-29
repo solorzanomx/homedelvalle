@@ -270,11 +270,6 @@ Devuelve exactamente este JSON (sin texto fuera del JSON):
   "categoria": "slug de la categoría (de la lista dada)",
   "tags": ["#TagCanonico1", "#TagCanonico2"],
   "body": "<p>HTML completo del artículo (mínimo 1200 palabras)...</p>",
-  "ctas": [
-    {"title": "...", "description": "...", "button_text": "...", "link": "/vende-a-desarrolladora"},
-    {"title": "...", "description": "...", "button_text": "...", "link": "/vende-tu-propiedad"},
-    {"title": "...", "description": "...", "button_text": "...", "link": "/precios"}
-  ],
   "internal_links": [
     {"anchor": "texto del enlace", "url": "/precios", "context": "frase donde aparece"}
   ],
@@ -289,12 +284,15 @@ Devuelve exactamente este JSON (sin texto fuera del JSON):
 Instrucciones para el body HTML:
 - Tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <a href='...'>
 - REGLA DURA: dentro del HTML de "body", usa SIEMPRE comillas simples en los atributos (href='...', no href="..."). El body va dentro de un string JSON delimitado por comillas dobles — una comilla doble sin escapar dentro del HTML rompe el JSON completo.
-- Coloca {{CTA1}} después del primer H2
 - Coloca {{IMG1}} después del segundo H2 (imagen de sección)
-- Coloca {{CTA2}} a mitad del artículo
 - Coloca {{IMG2}} después del tercer H2
 - Coloca {{IMG3}} antes de la sección de conclusión o FAQ
-- Coloca {{CTA3}} al final, antes del párrafo de cierre
+- NO incluyas {{CTA1}}, {{CTA2}} ni {{CTA3}} en el body ni un campo "ctas" en el JSON — el blog ya
+  inyecta automáticamente sus propios CTAs (link inline por cluster, formulario a media lectura,
+  formulario final) según la categoría y el cluster del post; agregar más CTAs de texto en el
+  cuerpo solo produce ruido duplicado (auditoría de conversión 2026-09-28: posts con 5-6 CTAs
+  apilados por esto). Si el artículo necesita un CTA editorial contextual único (poco común), que
+  sea prosa normal, no una tarjeta con botón separado.
 - Incluye los internal_links como <a href="url">anchor</a> en el texto
 - Menciona colonias de Benito Juárez cuando sea natural hacerlo
 - En image_prompts, reemplaza los corchetes [describe...] con descripciones específicas al tema del artículo
