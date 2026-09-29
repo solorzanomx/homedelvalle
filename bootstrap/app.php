@@ -32,6 +32,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SubdomainRedirect::class);
         // Redirige homedelvalle.mx/portal/* → miportal.homedelvalle.mx/*
         $middleware->append(\App\Http\Middleware\PortalRedirectLegacy::class);
+        // Slugs muertos del blog (301/410) y normalización de mayúsculas/barra final. Global (no en
+        // 'web'): una URL con barra final NUNCA hace match con `blog/{slug}`, así que sin ruta
+        // resuelta tampoco correría el grupo 'web' — necesita ir en el stack que sí ve TODO request.
+        $middleware->append(\App\Http\Middleware\BlogUrlHealth::class);
         // Captura la página de entrada de la sesión (para atribución de
         // leads) — necesita sesión ya iniciada, por eso va en el grupo
         // 'web' y no en el stack global (que corre antes de StartSession).

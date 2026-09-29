@@ -553,6 +553,11 @@
                             <span class="nav-icon"><x-icon name="list" class="w-4 h-4" /></span> Categorías
                         </a>
                         @endif
+                        @if(Route::has('admin.blog-redirects.index'))
+                        <a href="{{ route('admin.blog-redirects.index') }}" class="nav-item {{ request()->routeIs('admin.blog-redirects.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="link" class="w-4 h-4" /></span> Redirects
+                        </a>
+                        @endif
                         @if(Route::has('admin.tags.index'))
                         <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="flag" class="w-4 h-4" /></span> Etiquetas

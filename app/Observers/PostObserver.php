@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\BlogRedirect;
 use App\Models\Post;
 
 class PostObserver
@@ -22,6 +23,27 @@ class PostObserver
         }
 
         $post->body = self::injectAltText($post->body, $post->title ?? '');
+    }
+
+    /**
+     * Si cambia el slug de un post existente, deja un 301 del slug viejo al nuevo — nadie tiene que
+     * acordarse de crearlo a mano (fase 1 del prompt de leads: historial de slugs).
+     */
+    public function updated(Post $post): void
+    {
+        if (! $post->wasChanged('slug')) {
+            return;
+        }
+
+        $oldSlug = $post->getOriginal('slug');
+        if (empty($oldSlug) || $oldSlug === $post->slug) {
+            return;
+        }
+
+        BlogRedirect::updateOrCreate(
+            ['from_path' => BlogRedirect::normalize($oldSlug)],
+            ['to_path' => '/blog/' . $post->slug, 'status' => 301, 'active' => true, 'notes' => 'auto (cambio de slug)']
+        );
     }
 
     /**

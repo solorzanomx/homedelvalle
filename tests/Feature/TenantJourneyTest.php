@@ -138,9 +138,12 @@ class TenantJourneyTest extends TestCase
 
     public function test_crm_investigation_lists_the_references_the_tenant_captured(): void
     {
-        // Las 3 referencias del inquilino (Portal → Tus datos → Referencias) deben verse en Renta → Investigación → Referencias.
+        // Las 3 referencias del inquilino (Portal → Tus datos → Referencias) deben verse en Renta → Investigación →
+        // Referencias. Vive en un parcial reusado también para el obligado solidario (docs/funcionalidades/obligado-solidario.md).
         $view = file_get_contents(resource_path('views/rentals/show.blade.php'));
-        $this->assertStringContainsString('Referencias personales que dio el inquilino', $view);
+        $this->assertStringContainsString("_personal_references", $view);
+        $partial = file_get_contents(resource_path('views/rentals/_personal_references.blade.php'));
+        $this->assertStringContainsString('Referencias personales del', $partial);
         $this->assertStringContainsString("tenantClient.references", file_get_contents(app_path('Http/Controllers/RentalProcessController.php')));
     }
 }

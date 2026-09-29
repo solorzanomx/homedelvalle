@@ -18,6 +18,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Portal del inquilino: "Mi camino", menú corto, barra inferior móvil, "Mis documentos" con estados | `docs/funcionalidades/portal-inquilino-navegacion.md` | tocas `layouts/portal`, `TenantRoadmap`, `TenantDocumentRows`, `portal/journey`, `portal/expediente` |
 | Obligado solidario (póliza sin aval): sin cuenta propia, lo captura el inquilino desde su Portal (`?para=obligado`) | `docs/funcionalidades/obligado-solidario.md` | tocas `ObligadoSolidarioService`, `?para=obligado`, `DocumentUploader`, `RentalExpedienteStatus` |
 | Garantía del inquilino: póliza (Previsión Legal, 3 planes) vs. aval + $3,500, "¿qué sigue?", contrato del proveedor / con un clic | `docs/funcionalidades/garantia-y-poliza-inquilino.md` | tocas `TenantRoadmap`, planes de póliza, `guarantee_type`, pasos del inquilino en el Portal |
+| Blog: salud de URLs — redirects 301/410, fallback difuso a slugs parecidos, 404 útil | `docs/funcionalidades/blog-redirects.md` | tocas `BlogUrlHealth`, `BlogController@show`, `blog_redirects`, o cambias el slug de un post |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).

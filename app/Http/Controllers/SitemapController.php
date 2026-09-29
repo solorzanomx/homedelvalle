@@ -13,8 +13,9 @@ class SitemapController extends Controller
 {
     public function index(): Response
     {
-        $posts = Post::where('status', 'published')
-            ->where('published_at', '<=', now())
+        // published() es el MISMO criterio que usa BlogController::show() para decidir si un post
+        // existe públicamente — antes este filtro estaba duplicado a mano y podía desalinearse.
+        $posts = Post::published()
             ->orderBy('updated_at', 'desc')
             ->get(['slug', 'updated_at']);
 

@@ -618,6 +618,15 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
         Route::post('cms/upload-image', [PostController::class, 'uploadImage'])->name('cms.upload-image');
         Route::resource('posts', PostController::class)->names('posts');
 
+        // Salud de URLs del blog (redirects 301/410)
+        Route::prefix('blog-redirects')->name('blog-redirects.')->group(function () {
+            Route::get('/',                [\App\Http\Controllers\Admin\BlogRedirectController::class, 'index'])->name('index');
+            Route::post('/',                [\App\Http\Controllers\Admin\BlogRedirectController::class, 'store'])->name('store');
+            Route::post('/{blogRedirect}/toggle', [\App\Http\Controllers\Admin\BlogRedirectController::class, 'toggle'])->name('toggle');
+            Route::put('/{blogRedirect}',   [\App\Http\Controllers\Admin\BlogRedirectController::class, 'update'])->name('update');
+            Route::delete('/{blogRedirect}',[\App\Http\Controllers\Admin\BlogRedirectController::class, 'destroy'])->name('destroy');
+        });
+
         // Blog AI Generator
         Route::prefix('blog')->name('blog.')->group(function () {
             Route::get('/generar',              [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'index'])->name('generator');

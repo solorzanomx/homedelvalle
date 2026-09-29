@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlogRedirect;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\Page;
 
 class BlogController extends Controller
 {
+    // Levenshtein normalizado: 1 - distancia/longitud. 0.85 = tolera 1-2 dedazos en un slug típico,
+    // sin confundir dos artículos distintos que casualmente se parecen (fase 1 del prompt de leads).
+    private const FUZZY_THRESHOLD = 0.85;
     public function index()
     {
         $query = Post::published()->with(['author', 'category'])->orderByDesc('published_at');
@@ -39,7 +43,12 @@ class BlogController extends Controller
 
     public function show(string $slug)
     {
-        $post = Post::published()->where('slug', $slug)->with(['author', 'category', 'tags'])->firstOrFail();
+        $post = Post::published()->where('slug', $slug)->with(['author', 'category', 'tags'])->first();
+
+        if (! $post) {
+            return $this->notFoundOrFuzzyRedirect($slug);
+        }
+
         $post->recordView(request());
 
         $related = Post::published()
@@ -51,6 +60,41 @@ class BlogController extends Controller
             ->get();
 
         return view('blog.show', compact('post', 'related'));
+    }
+
+    /**
+     * Slug que no existe: busca el post publicado más parecido (Levenshtein normalizado) y, si pasa
+     * el umbral, redirige 301 dejando el redirect registrado como "auto" (así la próxima visita ya
+     * no recalcula nada). Si no hay candidato razonable, 404 útil con artículos relacionados.
+     */
+    private function notFoundOrFuzzyRedirect(string $slug)
+    {
+        $best = null;
+        $bestScore = 0.0;
+
+        foreach (Post::published()->pluck('slug') as $candidate) {
+            $len = max(strlen($slug), strlen($candidate), 1);
+            $score = 1 - (levenshtein($slug, $candidate) / $len);
+
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $candidate;
+            }
+        }
+
+        if ($best && $bestScore >= self::FUZZY_THRESHOLD) {
+            $path = BlogRedirect::normalize($slug);
+            BlogRedirect::firstOrCreate(
+                ['from_path' => $path],
+                ['to_path' => '/blog/' . $best, 'status' => 301, 'active' => true, 'notes' => 'auto (similitud ' . round($bestScore * 100) . '%)']
+            );
+
+            return redirect('/blog/' . $best, 301);
+        }
+
+        $related = Post::published()->latest('published_at')->take(4)->get();
+
+        return response()->view('blog.not-found', compact('related', 'slug'), 404);
     }
 
     public function page(string $slug)
