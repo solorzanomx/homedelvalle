@@ -92,6 +92,10 @@ class BlogController extends Controller
             return redirect('/blog/' . $best, 301);
         }
 
+        // Fase 7 del prompt de leads del blog: sin match ni siquiera difuso — registrado para el
+        // panel "los 404 más frecuentes" (antes esto no dejaba ningún rastro).
+        \App\Models\BlogNotFoundHit::register($slug);
+
         $related = Post::published()->latest('published_at')->take(4)->get();
 
         return response()->view('blog.not-found', compact('related', 'slug'), 404);

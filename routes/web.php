@@ -639,6 +639,9 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::put('/{successionCalculatorConfig}', [\App\Http\Controllers\Admin\SuccessionCalculatorConfigController::class, 'update'])->name('update');
         });
 
+        // Panel de leads del blog (Fase 7)
+        Route::get('blog-leads', [\App\Http\Controllers\Admin\BlogLeadsController::class, 'index'])->name('blog-leads.index');
+
         // Blog AI Generator
         Route::prefix('blog')->name('blog.')->group(function () {
             Route::get('/generar',              [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'index'])->name('generator');

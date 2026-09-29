@@ -83,6 +83,7 @@ trait SetsUpMinimalBlogSchema
         Artisan::call('migrate', ['--force' => true, '--path' => [
             'database/migrations/2026_03_29_135219_create_site_settings_table.php',
             'database/migrations/2026_09_28_100000_create_blog_redirects_table.php',
+            'database/migrations/2026_09_30_160000_create_blog_not_found_hits_table.php',
         ]]);
 
         \Illuminate\Support\Facades\DB::table('users')->insert(['id' => 1, 'name' => 'Autor de prueba', 'created_at' => now(), 'updated_at' => now()]);

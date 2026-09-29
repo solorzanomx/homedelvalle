@@ -568,6 +568,11 @@
                             <span class="nav-icon"><x-icon name="file-text" class="w-4 h-4" /></span> Calculadora de sucesión
                         </a>
                         @endif
+                        @if(Route::has('admin.blog-leads.index'))
+                        <a href="{{ route('admin.blog-leads.index') }}" class="nav-item {{ request()->routeIs('admin.blog-leads.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="trending-up" class="w-4 h-4" /></span> Blog → Leads
+                        </a>
+                        @endif
                         @if(Route::has('admin.tags.index'))
                         <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="flag" class="w-4 h-4" /></span> Etiquetas
