@@ -20,6 +20,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Garantía del inquilino: póliza (Previsión Legal, 3 planes) vs. aval + $3,500, "¿qué sigue?", contrato del proveedor / con un clic | `docs/funcionalidades/garantia-y-poliza-inquilino.md` | tocas `TenantRoadmap`, planes de póliza, `guarantee_type`, pasos del inquilino en el Portal |
 | Blog: salud de URLs — redirects 301/410, fallback difuso a slugs parecidos, 404 útil | `docs/funcionalidades/blog-redirects.md` | tocas `BlogUrlHealth`, `BlogController@show`, `blog_redirects`, o cambias el slug de un post |
 | Blog: eventos GA4 con contexto (post_slug/post_cluster/cta_variant), cta_view | `docs/funcionalidades/blog-ga4-tracking.md` | tocas `hdvTrack`, `BlogCluster`, o el bloque de tracking de `layouts/public.blade.php` |
+| Blog: CTAs por cluster (form corto sin email, WhatsApp con ref, sticky móvil) | `docs/funcionalidades/blog-cta-clusters.md` | tocas `BlogCluster`, `BlogCtaConfig`, `CtaCapture`, o los `blog/_cta-*.blade.php` |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).

@@ -29,11 +29,19 @@ class BlogBodyEnhancer
      * @return array{first: string, second: string} — 'second' vacío si no
      *         hubo dónde partir (el form se muestra al final igualmente).
      */
-    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = '', ?string $predioCtaAfterHeading = null): array
+    public static function enhance(string $html, string $valuationCta = '', string $predioCta = '', string $postTitle = '', ?string $predioCtaAfterHeading = null, string $clusterCta = ''): array
     {
         $html = self::stripImageSlots($html);
         $html = self::fixImages($html, $postTitle);
         $html = self::linkColonias($html);
+
+        // CTA por cluster (Fase 3 del prompt de leads del blog) — inline, después de la primera
+        // sección completa: ya respondió la pregunta del título, es el momento de ofrecer ayuda.
+        // Si el post no tiene ni 2 h2 (nada que llamar "primera sección"), se omite: el CTA final
+        // sigue ahí.
+        if ($clusterCta !== '') {
+            $html = self::injectAfterFirstHeadingSection($html, $clusterCta);
+        }
 
         if ($valuationCta !== '') {
             $html = self::injectAfterFirstTable($html, $valuationCta);
@@ -198,6 +206,25 @@ class BlogBodyEnhancer
         }
 
         return $html . $block;
+    }
+
+    /**
+     * Inyecta $block al terminar la PRIMERA sección h2 (antes del segundo h2). A diferencia de
+     * `injectAfterHeadingSection`, no necesita saber el texto del encabezado — sirve como posición
+     * por defecto para cualquier post, sin configuración editorial.
+     */
+    public static function injectAfterFirstHeadingSection(string $html, string $block): string
+    {
+        preg_match_all('/<h2\b/i', $html, $matches, PREG_OFFSET_CAPTURE);
+        $positions = array_column($matches[0], 1);
+
+        if (count($positions) < 2) {
+            return $html;
+        }
+
+        $cut = $positions[1];
+
+        return substr($html, 0, $cut) . $block . substr($html, $cut);
     }
 
     public static function injectAfterFirstTable(string $html, string $block): string

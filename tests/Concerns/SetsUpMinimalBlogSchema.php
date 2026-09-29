@@ -49,6 +49,7 @@ trait SetsUpMinimalBlogSchema
             $t->longText('body');
             $t->string('featured_image')->nullable();
             $t->unsignedBigInteger('category_id')->nullable();
+            $t->string('cluster', 40)->nullable();
             $t->string('status')->default('draft');
             $t->timestamp('published_at')->nullable();
             $t->string('meta_title')->nullable();

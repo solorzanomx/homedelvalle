@@ -265,7 +265,7 @@
     </main>
 
     <x-public.footer />
-    <x-public.whatsapp-float :siteSettings="$siteSettings" />
+    <x-public.whatsapp-float :siteSettings="$siteSettings" :hide-on-mobile="trim($__env->yieldContent('hideWhatsappFloatMobile')) !== ''" />
 
     @yield('scripts')
 

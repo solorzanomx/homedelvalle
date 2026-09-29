@@ -558,6 +558,11 @@
                             <span class="nav-icon"><x-icon name="link" class="w-4 h-4" /></span> Redirects
                         </a>
                         @endif
+                        @if(Route::has('admin.blog-ctas.index'))
+                        <a href="{{ route('admin.blog-ctas.index') }}" class="nav-item {{ request()->routeIs('admin.blog-ctas.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="message-circle" class="w-4 h-4" /></span> CTAs por cluster
+                        </a>
+                        @endif
                         @if(Route::has('admin.tags.index'))
                         <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="flag" class="w-4 h-4" /></span> Etiquetas

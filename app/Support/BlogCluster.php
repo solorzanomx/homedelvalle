@@ -5,14 +5,13 @@ namespace App\Support;
 use App\Models\Post;
 
 /**
- * En qué etapa del funnel está el lector de un post (Fase 3 del prompt de leads del blog:
- * docs/funcionalidades/blog-cta-clusters.md). Fuente única de verdad — antes el heurístico de
- * "es herencias" vivía duplicado a mano dentro de `blog/_cta-predio.blade.php`.
+ * En qué etapa del funnel está el lector de un post (Fase 2 y 3 del prompt de leads del blog:
+ * docs/funcionalidades/blog-ga4-tracking.md, docs/funcionalidades/blog-cta-clusters.md).
  *
- * Deliberadamente NO es una columna de `posts` todavía: se deriva de `category` (que ya existe y
- * ya enruta el CTA automático) más un ajuste por slug para herencias. Si el negocio pide poder
- * editarlo por post sin depender de la categoría, ahí sí se vuelve columna — de momento evita una
- * migración y una fuente de verdad extra que se pueda desalinear de la categoría real.
+ * `posts.cluster` (nullable) es la fuente cuando el asesor lo fija a mano; si está vacío se deriva
+ * de `category` + un ajuste por slug para herencias — así casi ningún post necesita edición manual,
+ * solo los que la categoría no describe bien. Antes de la Fase 3 el heurístico de "es herencias"
+ * vivía duplicado a mano en `blog/_cta-predio.blade.php`; ahora es la única fuente.
  */
 class BlogCluster
 {
@@ -21,6 +20,14 @@ class BlogCluster
     public const PRECIOS_INVERSION = 'precios_inversion';
     public const GUIAS_COLONIA = 'guias_colonia';
     public const PROCESO_VENTA = 'proceso_venta';
+
+    public const LABELS = [
+        self::HERENCIAS              => 'Herencias y sucesiones',
+        self::TERRENO_DESARROLLADORA => 'Predio → desarrolladora',
+        self::PRECIOS_INVERSION      => 'Precios e inversión',
+        self::GUIAS_COLONIA          => 'Guías de colonia',
+        self::PROCESO_VENTA          => 'Proceso de venta',
+    ];
 
     private const BY_CATEGORY = [
         'herencias-y-sucesiones'    => self::HERENCIAS,
@@ -31,19 +38,39 @@ class BlogCluster
         'vender-tu-propiedad'       => self::PROCESO_VENTA,
     ];
 
+    /** Posts de herencias donde el slug ya delata que el lector decidió vender (Fase 3.6 del prompt). */
+    private const DECIDED_SLUG_PATTERN = '/^vender-|isr-venta|hermano-no-quiere-vender/i';
+
     public static function forPost(?Post $post): ?string
     {
         if (! $post) {
             return null;
         }
 
+        if (! empty($post->cluster) && array_key_exists($post->cluster, self::LABELS)) {
+            return $post->cluster;
+        }
+
         // El slug manda sobre la categoría para herencias: hay posts de herencias categorizados
-        // distinto antes de que existiera "herencias-y-sucesiones" (mismo criterio que ya usaba
-        // _cta-predio.blade.php).
+        // distinto antes de que existiera "herencias-y-sucesiones".
         if (preg_match('/hered|sucesion|testamento/i', $post->slug ?? '')) {
             return self::HERENCIAS;
         }
 
         return self::BY_CATEGORY[$post->category?->slug] ?? null;
+    }
+
+    /**
+     * ¿El lector de ESTE post de herencias ya decidió vender? Solo aplica al cluster herencias — el
+     * CTA de "vender" se calla en los posts todavía informativos (cuánto cuesta la sucesión, cómo
+     * regularizar) y habla en los que ya asumen la decisión tomada.
+     */
+    public static function showsSellCta(?Post $post): bool
+    {
+        if (! $post || self::forPost($post) !== self::HERENCIAS) {
+            return false;
+        }
+
+        return (bool) preg_match(self::DECIDED_SLUG_PATTERN, $post->slug ?? '');
     }
 }

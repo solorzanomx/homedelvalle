@@ -61,6 +61,12 @@
             post_cluster: @json(\App\Support\BlogCluster::forPost($post))
         };
     </script>
+
+    {{-- Se oculta el botón flotante genérico en móvil cuando este post ya trae su propio sticky
+         de WhatsApp con mensaje del artículo (ver blog/_cta-sticky-whatsapp.blade.php). --}}
+    @if(\App\Support\BlogCluster::forPost($post))
+        @section('hideWhatsappFloatMobile', '1')
+    @endif
 @endsection
 
 @section('content')
@@ -173,6 +179,15 @@
 
                 $isHerencia = $post->category?->slug === 'herencias-y-sucesiones';
 
+                // CTA por cluster (Fase 3 del prompt de leads del blog): en qué etapa está el
+                // lector, con su copy editable en /admin/blog-ctas. Sin cluster, el post se
+                // comporta exactamente igual que antes (sin este bloque inline, CTA final de
+                // siempre, sin botón sticky propio).
+                $cluster = \App\Support\BlogCluster::forPost($post);
+                $ctaConfig = \App\Models\BlogCtaConfig::forCluster($cluster);
+                $decided = \App\Support\BlogCluster::showsSellCta($post);
+                $clusterCtaHtml = $cluster ? view('blog._cta-cluster-inline', compact('post', 'cluster', 'ctaConfig', 'decided'))->render() : '';
+
                 // Solo en herencias: el bloque predio→desarrolladora se mueve
                 // justo después de "Ejemplo práctico" (el heredero de casa
                 // vieja es el prospecto exacto de ese funnel) en vez de ir al
@@ -184,6 +199,7 @@
                     view('blog._cta-predio', ['post' => $post])->render(),
                     $post->title,
                     $isHerencia ? 'Ejemplo pr' : null,
+                    $clusterCtaHtml,
                 );
             @endphp
             <article class="{{ $proseClasses }}"
@@ -223,7 +239,11 @@
                 ];
                 $cta = $ctaMap[$slug] ?? ['icon' => 'message-circle', 'title' => '¿Tienes una propiedad en la Benito Juárez?', 'desc' => 'Platícanos tu caso. Asesoría personalizada, sin costo y sin compromiso.', 'btn' => 'Contactar a un asesor', 'url' => route('contacto')];
             @endphp
-            @if(!$bodyEndsWithCta)
+            @if(!$bodyEndsWithCta && $cluster)
+            {{-- CTA final por cluster (Fase 3): reemplaza al automático por categoría de abajo — es
+                 el mismo lugar, ahora con copy editable y un form real que crea el lead. --}}
+            <livewire:blog.cta-capture :post-id="$post->id" location="final" :key="'cta-final-'.$post->id" />
+            @elseif(!$bodyEndsWithCta)
             <div class="mt-10 not-prose" x-data x-intersect.once="$el.classList.add('animate-fade-in-up')">
                 <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-brand-50 to-white border border-brand-100">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-brand-500 rounded-l-2xl"></div>
@@ -248,6 +268,10 @@
                     </div>
                 </div>
             </div>
+            @endif
+
+            @if($cluster)
+                @include('blog._cta-sticky-whatsapp', ['post' => $post, 'cluster' => $cluster, 'copy' => $ctaConfig?->copyFor($decided)])
             @endif
 
             {{-- Caja de autor — señal E-E-A-T para contenido de dinero/legal:

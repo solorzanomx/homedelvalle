@@ -112,6 +112,17 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label">Cluster (etapa del lector, para el CTA)</label>
+                        <select name="cluster" class="form-select">
+                            <option value="">Automático (según categoría/slug)</option>
+                            @foreach(\App\Support\BlogCluster::LABELS as $val => $label)
+                                <option value="{{ $val }}" {{ old('cluster') === $val ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <p class="form-hint">Solo si la categoría no describe bien de qué trata el post. Configura el copy de cada cluster en <a href="{{ route('admin.blog-ctas.index') }}">CTAs por cluster</a>.</p>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">Autor</label>
                         <select name="user_id" class="form-select" required>
                             @foreach($users as $u)

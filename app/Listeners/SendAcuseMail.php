@@ -10,12 +10,20 @@ use Illuminate\Support\Facades\Mail;
 
 class SendAcuseMail {
     public function handle(FormSubmitted $event): void {
+        $submission = $event->submission;
+
+        // El CTA del blog (Fase 3 del prompt de leads) captura solo WhatsApp — sin email no hay a
+        // quién mandarle un acuse por correo (antes TODOS los formularios exigían email, así que
+        // este caso nunca ocurría; Mail::to(null)->send() no está garantizado a fallar en silencio).
+        if (empty($submission->email)) {
+            return;
+        }
+
         $cacheKey = 'acuse_sent_' . $event->submission->id;
         if (Cache::has($cacheKey)) return;
         Cache::put($cacheKey, true, now()->addMinutes(10));
 
         MailConfigurator::applyGlobalSettings();
-        $submission = $event->submission;
 
         Mail::to($submission->email)->send(
             new AcuseMail(new AcuseData(

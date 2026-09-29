@@ -627,6 +627,12 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::delete('/{blogRedirect}',[\App\Http\Controllers\Admin\BlogRedirectController::class, 'destroy'])->name('destroy');
         });
 
+        // CTAs del blog por cluster (Fase 3)
+        Route::prefix('blog-ctas')->name('blog-ctas.')->group(function () {
+            Route::get('/',            [\App\Http\Controllers\Admin\BlogCtaConfigController::class, 'index'])->name('index');
+            Route::put('/{blogCtaConfig}', [\App\Http\Controllers\Admin\BlogCtaConfigController::class, 'update'])->name('update');
+        });
+
         // Blog AI Generator
         Route::prefix('blog')->name('blog.')->group(function () {
             Route::get('/generar',              [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'index'])->name('generator');

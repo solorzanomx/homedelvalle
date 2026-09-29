@@ -1,4 +1,8 @@
-@props(['siteSettings' => null])
+{{-- $hideOnMobile: true cuando el post del blog ya trae su propio botón sticky con mensaje
+     prellenado del artículo (Fase 3 del prompt de leads del blog) — dos flotantes de WhatsApp
+     apilados en una pantalla de celular es un bug de UX, no una mejora. Solo en móvil: en desktop
+     este botón (más completo, con menú de opciones) se queda igual en todas las páginas. --}}
+@props(['siteSettings' => null, 'hideOnMobile' => false])
 
 @php
     // Query directo a BD para evitar cache stale — es un campo crítico
@@ -15,7 +19,7 @@
 @endphp
 
 @if($waNumber)
-<div x-data="{ open: false }" class="fixed z-[9999]" style="position:fixed !important;bottom:1.5rem !important;right:1.5rem !important;z-index:9999 !important">
+<div x-data="{ open: false }" class="{{ $hideOnMobile ? 'hidden sm:block ' : '' }}fixed z-[9999]" style="position:fixed !important;bottom:1.5rem !important;right:1.5rem !important;z-index:9999 !important">
     {{-- Botón flotante --}}
     <button
         @click="open = !open"

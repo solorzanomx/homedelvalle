@@ -14,7 +14,9 @@ class FormDataMapper
 
         return new LeadInternoData(
             nombre: $submission->full_name,
-            email: $submission->email,
+            // Los CTAs del blog por cluster (Fase 3 del prompt de leads) capturan solo WhatsApp —
+            // primer caso con email null; el DTO exige string, así que aquí se resuelve el nullable.
+            email: $submission->email ?? '',
             telefono: $submission->phone,
             origen: $origen,
             fecha: $submission->created_at->format('Y-m-d H:i'),
