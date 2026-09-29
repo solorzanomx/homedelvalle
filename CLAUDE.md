@@ -23,6 +23,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Blog: CTAs por cluster (form corto sin email, WhatsApp con ref, sticky móvil) | `docs/funcionalidades/blog-cta-clusters.md` | tocas `BlogCluster`, `BlogCtaConfig`, `CtaCapture`, o los `blog/_cta-*.blade.php` |
 | Blog: calculadora de costo de sucesión (cifras PENDIENTES DE VALIDAR con notario) | `docs/funcionalidades/blog-calculadora-sucesion.md` | tocas `SuccessionCalculatorConfig`, `SuccessionCalculator`, o `/admin/succession-calculator` |
 | Blog: contenido (respuesta corta, titles/metas, FAQPage, enlazado interno de herencias) | `docs/funcionalidades/blog-contenido-fase5.md` | tocas `BlogBodyEnhancer::injectBeforeFirstHeading`, o el contenido de los posts de herencias |
+| Blog: fusión de artículos en borrador (6 grupos, redirects inactivos hasta que Alejandro los active) | `docs/funcionalidades/blog-fusion-fase6.md` | tocas `database/seeders/blog-posts/fusion-*.html` o revisas/activas una fusión |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).
