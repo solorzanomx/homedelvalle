@@ -633,6 +633,12 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
             Route::put('/{blogCtaConfig}', [\App\Http\Controllers\Admin\BlogCtaConfigController::class, 'update'])->name('update');
         });
 
+        // Calculadora de costo de sucesión (Fase 4)
+        Route::prefix('succession-calculator')->name('succession-calculator.')->group(function () {
+            Route::get('/',            [\App\Http\Controllers\Admin\SuccessionCalculatorConfigController::class, 'index'])->name('index');
+            Route::put('/{successionCalculatorConfig}', [\App\Http\Controllers\Admin\SuccessionCalculatorConfigController::class, 'update'])->name('update');
+        });
+
         // Blog AI Generator
         Route::prefix('blog')->name('blog.')->group(function () {
             Route::get('/generar',              [\App\Http\Controllers\Admin\BlogGeneratorController::class, 'index'])->name('generator');

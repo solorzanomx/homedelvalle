@@ -21,6 +21,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Blog: salud de URLs — redirects 301/410, fallback difuso a slugs parecidos, 404 útil | `docs/funcionalidades/blog-redirects.md` | tocas `BlogUrlHealth`, `BlogController@show`, `blog_redirects`, o cambias el slug de un post |
 | Blog: eventos GA4 con contexto (post_slug/post_cluster/cta_variant), cta_view | `docs/funcionalidades/blog-ga4-tracking.md` | tocas `hdvTrack`, `BlogCluster`, o el bloque de tracking de `layouts/public.blade.php` |
 | Blog: CTAs por cluster (form corto sin email, WhatsApp con ref, sticky móvil) | `docs/funcionalidades/blog-cta-clusters.md` | tocas `BlogCluster`, `BlogCtaConfig`, `CtaCapture`, o los `blog/_cta-*.blade.php` |
+| Blog: calculadora de costo de sucesión (cifras PENDIENTES DE VALIDAR con notario) | `docs/funcionalidades/blog-calculadora-sucesion.md` | tocas `SuccessionCalculatorConfig`, `SuccessionCalculator`, o `/admin/succession-calculator` |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).

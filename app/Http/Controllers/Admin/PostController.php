@@ -46,6 +46,7 @@ class PostController extends Controller
             'user_id' => 'required|exists:users,id',
             'category_id' => 'nullable|exists:post_categories,id',
             'cluster' => 'nullable|in:' . implode(',', array_keys(\App\Support\BlogCluster::LABELS)),
+            'show_succession_calculator' => 'nullable|boolean',
             'status' => 'required|in:draft,scheduled,published,archived',
             'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
@@ -58,6 +59,7 @@ class PostController extends Controller
             'ctas.*.button_text' => 'nullable|string|max:100',
             'ctas.*.link' => 'nullable|string|max:500',
         ]);
+        $validated['show_succession_calculator'] = $request->boolean('show_succession_calculator');
 
         if ($validated['status'] === 'scheduled') {
             $request->validate(['published_at' => 'required|date|after:now']);
@@ -112,6 +114,7 @@ class PostController extends Controller
             'user_id' => 'required|exists:users,id',
             'category_id' => 'nullable|exists:post_categories,id',
             'cluster' => 'nullable|in:' . implode(',', array_keys(\App\Support\BlogCluster::LABELS)),
+            'show_succession_calculator' => 'nullable|boolean',
             'status' => 'required|in:draft,scheduled,published,archived',
             'published_at' => 'nullable|date',
             'meta_title' => 'nullable|string|max:255',
@@ -124,6 +127,7 @@ class PostController extends Controller
             'ctas.*.button_text' => 'nullable|string|max:100',
             'ctas.*.link' => 'nullable|string|max:500',
         ]);
+        $validated['show_succession_calculator'] = $request->boolean('show_succession_calculator');
 
         if ($validated['status'] === 'scheduled') {
             $request->validate(['published_at' => 'required|date|after:now']);

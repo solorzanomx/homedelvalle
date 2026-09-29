@@ -563,6 +563,11 @@
                             <span class="nav-icon"><x-icon name="message-circle" class="w-4 h-4" /></span> CTAs por cluster
                         </a>
                         @endif
+                        @if(Route::has('admin.succession-calculator.index'))
+                        <a href="{{ route('admin.succession-calculator.index') }}" class="nav-item {{ request()->routeIs('admin.succession-calculator.*') ? 'active' : '' }}">
+                            <span class="nav-icon"><x-icon name="file-text" class="w-4 h-4" /></span> Calculadora de sucesión
+                        </a>
+                        @endif
                         @if(Route::has('admin.tags.index'))
                         <a href="{{ route('admin.tags.index') }}" class="nav-item {{ request()->routeIs('admin.tags.*') ? 'active' : '' }}">
                             <span class="nav-icon"><x-icon name="flag" class="w-4 h-4" /></span> Etiquetas

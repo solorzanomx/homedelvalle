@@ -1,0 +1,148 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Livewire\Blog\SuccessionCalculator;
+use App\Models\FormSubmission;
+use App\Models\SuccessionCalculatorConfig;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+use Livewire\Livewire;
+use Tests\Concerns\SetsUpMinimalBlogSchema;
+use Tests\TestCase;
+
+/** Fase 4 del prompt de leads del blog (docs/funcionalidades/blog-calculadora-sucesion.md). */
+class BlogSuccessionCalculatorTest extends TestCase
+{
+    use SetsUpMinimalBlogSchema;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->migrateMinimalBlogSchema();
+        if (! \Illuminate\Support\Facades\Schema::hasTable('succession_calculator_configs')) {
+            \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true, '--path' => [
+                'database/migrations/2026_09_30_100000_create_succession_calculator_configs_table.php',
+            ]]);
+        }
+        foreach (['email_settings' => fn($t) => $t->id(), 'legal_documents' => function ($t) {
+            $t->id(); $t->string('type')->nullable(); $t->string('status')->nullable(); $t->unsignedBigInteger('current_version_id')->nullable();
+        }] as $table => $cb) {
+            if (! \Illuminate\Support\Facades\Schema::hasTable($table)) {
+                \Illuminate\Support\Facades\Schema::create($table, $cb);
+            }
+        }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('form_submissions')) {
+            \Illuminate\Support\Facades\Schema::create('form_submissions', function ($t) {
+                $t->id();
+                $t->string('form_type'); $t->string('source_page')->nullable(); $t->string('full_name');
+                $t->string('email')->nullable(); $t->string('phone'); $t->json('payload')->nullable();
+                $t->string('lead_tag')->nullable(); $t->string('client_type')->nullable();
+                $t->string('lead_temperature')->default('warm'); $t->string('status')->default('new');
+                $t->string('utm_source')->nullable(); $t->string('utm_medium')->nullable(); $t->string('utm_campaign')->nullable();
+                $t->string('referrer')->nullable(); $t->unsignedBigInteger('landing_post_id')->nullable(); $t->string('landing_label')->nullable();
+                $t->string('ip')->nullable(); $t->string('user_agent')->nullable(); $t->unsignedBigInteger('assigned_to')->nullable();
+                $t->unsignedBigInteger('client_id')->nullable(); $t->timestamp('contacted_at')->nullable(); $t->timestamp('seen_at')->nullable();
+                $t->text('notes')->nullable(); $t->timestamps();
+            });
+        }
+    }
+
+    public function test_seed_has_both_scenarios_unvalidated(): void
+    {
+        $this->assertSame(2, SuccessionCalculatorConfig::count());
+        foreach ([SuccessionCalculatorConfig::CON_TESTAMENTO, SuccessionCalculatorConfig::SIN_TESTAMENTO] as $scenario) {
+            $config = SuccessionCalculatorConfig::forScenario($scenario);
+            $this->assertNotNull($config);
+            $this->assertFalse($config->validated, "El seed de {$scenario} no debe llegar 'validado' — son placeholders.");
+        }
+    }
+
+    public function test_estimate_never_uses_numbers_outside_the_configured_ranges(): void
+    {
+        $config = SuccessionCalculatorConfig::forScenario(SuccessionCalculatorConfig::CON_TESTAMENTO);
+        $estimate = $config->estimate(1000000, 1, true);
+
+        $notarial = $estimate['items'][0];
+        $this->assertEqualsWithDelta($config->notarial_pct_min * 10000, $notarial['min'], 0.01);
+        $this->assertEqualsWithDelta($config->notarial_pct_max * 10000, $notarial['max'], 0.01);
+        $this->assertFalse($estimate['validated']);
+    }
+
+    public function test_extra_heirs_and_missing_title_add_their_own_line_items(): void
+    {
+        $config = SuccessionCalculatorConfig::forScenario(SuccessionCalculatorConfig::SIN_TESTAMENTO);
+
+        $base = $config->estimate(2000000, 1, true);
+        $withHeirs = $config->estimate(2000000, 4, true);
+        $withoutTitle = $config->estimate(2000000, 1, false);
+
+        $this->assertGreaterThan($base['total_min'], $withHeirs['total_min'], '3 herederos extra deben subir el total');
+        $this->assertGreaterThan($base['total_min'], $withoutTitle['total_min'], 'Sin escrituras debe agregar el costo de regularización');
+        $this->assertCount(count($base['items']) + 1, $withHeirs['items']);
+        $this->assertCount(count($base['items']) + 1, $withoutTitle['items']);
+    }
+
+    public function test_calculator_start_fires_on_first_input_only_once(): void
+    {
+        $post = $this->makePost(['slug' => 'cuanto-cuesta-sucesion-cdmx-2026-test']);
+
+        $lw = Livewire::test(SuccessionCalculator::class, ['postId' => $post->id]);
+        $this->assertFalse($lw->get('started'));
+        $lw->set('valorInmueble', '2000000');
+        $this->assertTrue($lw->get('started'));
+        $lw->assertDispatched('calculator-event', stage: 'start');
+    }
+
+    public function test_calculate_dispatches_complete_event_with_validation_flag(): void
+    {
+        $post = $this->makePost(['slug' => 'propiedad-sin-testamento-cdmx-como-regularizar-vender-2026-test']);
+
+        Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '2500000')
+            ->set('conTestamento', 'no')
+            ->set('numHerederos', 2)
+            ->set('tieneEscrituras', 'no')
+            ->call('calculate')
+            ->assertSet('calculated', true)
+            ->assertDispatched('calculator-event', stage: 'complete', conTestamento: 'no', validated: '0');
+    }
+
+    public function test_lead_carries_the_calculator_inputs_and_estimate(): void
+    {
+        Mail::fake();
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'whatsapp_number')) {
+            \Illuminate\Support\Facades\Schema::table('site_settings', fn($t) => $t->string('whatsapp_number')->nullable());
+        }
+        \App\Models\SiteSetting::query()->exists() || \App\Models\SiteSetting::create([]);
+        \App\Models\SiteSetting::query()->update(['whatsapp_number' => '5511112222']);
+        $post = $this->makePost(['slug' => 'post-calc-lead']);
+
+        $lw = Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '3000000')
+            ->set('conTestamento', 'si')
+            ->set('numHerederos', 1)
+            ->set('tieneEscrituras', 'si')
+            ->call('calculate')
+            ->set('whatsapp', '5511119999')
+            ->set('aviso', true)
+            ->call('submitLead')
+            ->assertSet('submitted', true);
+
+        $lead = FormSubmission::where('phone', '5511119999')->first();
+        $this->assertNotNull($lead);
+        $this->assertNull($lead->email);
+        $this->assertSame('blog_calculadora_sucesion', $lead->payload['origen']);
+        $this->assertEquals(3000000, $lead->payload['valor_inmueble']);
+        $this->assertArrayHasKey('estimado_min', $lead->payload);
+        $this->assertArrayHasKey('estimado_max', $lead->payload);
+        $this->assertNotNull($lw->get('whatsappContinueUrl'));
+    }
+
+    public function test_admin_routes_exist_and_require_staff(): void
+    {
+        $this->assertTrue(Route::has('admin.succession-calculator.index'));
+        $this->assertTrue(Route::has('admin.succession-calculator.update'));
+        $this->assertContains('viewer', Route::getRoutes()->getByName('admin.succession-calculator.index')->gatherMiddleware());
+    }
+}

@@ -207,6 +207,13 @@
                 {!! $enhanced['first'] !!}
             </article>
 
+            @if($post->show_succession_calculator)
+                {{-- Calculadora de costo de sucesión (Fase 4) justo antes del form de valuación:
+                     quien llegó hasta aquí ya leyó la respuesta corta, este es el momento de más
+                     intención — "y en mi caso, ¿cuánto sería?". --}}
+                <livewire:blog.succession-calculator :post-id="$post->id" :key="'succession-calc-'.$post->id" />
+            @endif
+
             <livewire:forms.blog-quick-valuation-form :source-page="'/blog/' . $post->slug" :is-herencia="$isHerencia" />
 
             @if($enhanced['second'] !== '')

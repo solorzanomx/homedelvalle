@@ -134,6 +134,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" style="display:flex;align-items:center;gap:.5rem;">
+                            <input type="checkbox" name="show_succession_calculator" value="1" {{ old('show_succession_calculator', $post->show_succession_calculator) ? 'checked' : '' }}>
+                            Mostrar la calculadora de costo de sucesión
+                        </label>
+                        <p class="form-hint">Parámetros en <a href="{{ route('admin.succession-calculator.index') }}">Calculadora de sucesión</a>.</p>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label">Autor</label>
                         <select name="user_id" class="form-select" required>
                             @foreach($users as $u)

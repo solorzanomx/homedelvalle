@@ -221,6 +221,16 @@
                     page_path: window.location.pathname
                 });
             });
+            // Calculadora de costo de sucesión (Fase 4, prompt de leads del blog): un solo evento
+            // Livewire con 'stage' en vez de dos nombres — hdvTrack ya trae post_slug/post_cluster.
+            Livewire.on('calculator-event', function (payload) {
+                var p = Array.isArray(payload) ? payload[0] : (payload || {});
+                window.hdvTrack(p.stage === 'complete' ? 'calculator_complete' : 'calculator_start', {
+                    page_path: window.location.pathname,
+                    con_testamento: p.conTestamento || null,
+                    rangos_validados: p.validated || null
+                });
+            });
         });
     })();
     </script>
