@@ -25,6 +25,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 | Blog: contenido (respuesta corta, titles/metas, FAQPage, enlazado interno de herencias) | `docs/funcionalidades/blog-contenido-fase5.md` | tocas `BlogBodyEnhancer::injectBeforeFirstHeading`, o el contenido de los posts de herencias |
 | Blog: fusión de artículos en borrador (6 grupos, redirects inactivos hasta que Alejandro los active) | `docs/funcionalidades/blog-fusion-fase6.md` | tocas `database/seeders/blog-posts/fusion-*.html` o revisas/activas una fusión |
 | Blog: panel "Blog → Leads" (leads por post/cluster/CTA, hits de redirects, 404 más frecuentes) | `docs/funcionalidades/blog-leads-panel.md` | tocas `BlogLeadsController`, `BlogNotFoundHit`, o `/admin/blog-leads` |
+| Blog: optimizaciones post-lanzamiento (Pixel de Meta, calculadora en 1 paso, correo opcional, recordatorios) | `docs/funcionalidades/blog-optimizaciones-post-lanzamiento.md` | tocas `SuccessionCalculator`, `CtaCapture`, `blog:remind-stale-leads`, o agregas una clase de Tailwind nueva (correr `npm run build`) |
 | Todo lo demás | memoria de Claude Code (`MEMORY.md`) | — |
 
 > **Al terminar una función nueva, agrega su fila aquí** (ver §4).
@@ -37,6 +38,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 - **Documentos de marca** (`/admin/documentos`): al tocar uno de los 5, actualiza `config/document_registry.php`.
 - **Copy y sitio público:** lee `docs/posicionamiento-marca.md` + nota de modelo de negocio (constructor-primero; predios→desarrolladoras es el ingreso #1).
 - **Blade:** no anidar `<style>` dentro de `@section('styles')`; un `{{token}}` literal en una vista se interpreta. Compila con `php artisan view:cache` para detectar errores.
+- **CSS es un bundle estático (`npm run build`, sin npm en el servidor):** si agregas una clase de Tailwind que ningún otro archivo del repo usa todavía (sobre todo combinaciones responsivas tipo `sm:block`), `view:cache` no lo detecta — corre `npm run build` y commitea `public/build/` antes de dar la vista por buena. Bug real (2026-09-30): el botón flotante de WhatsApp quedó invisible en todo post con cluster desde que se desplegó la Fase 3 del blog, porque `sm:block` nunca se agregó al bundle.
 - **Middleware con sesión** va en `$middleware->web()`, no `->append()`. **Schedules** viven en `routes/console.php` (`Kernel.php` no corre).
 - **Toda `Operation` nueva pasa por `OperationObserver`** (autocorrige phase/type/stage). Lee la nota antes de crear una por un camino nuevo.
 - **Propiedades públicas:** `reservada/vendida/rentada` se ven con letrero; `archived` se oculta.

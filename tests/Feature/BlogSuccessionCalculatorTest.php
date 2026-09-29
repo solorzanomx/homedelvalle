@@ -32,6 +32,11 @@ class BlogSuccessionCalculatorTest extends TestCase
                 \Illuminate\Support\Facades\Schema::create($table, $cb);
             }
         }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('clients')) {
+            \Illuminate\Support\Facades\Schema::create('clients', function ($t) {
+                $t->id(); $t->string('email')->nullable(); $t->timestamps();
+            });
+        }
         if (! \Illuminate\Support\Facades\Schema::hasTable('form_submissions')) {
             \Illuminate\Support\Facades\Schema::create('form_submissions', function ($t) {
                 $t->id();
@@ -94,7 +99,13 @@ class BlogSuccessionCalculatorTest extends TestCase
         $lw->assertDispatched('calculator-event', stage: 'start');
     }
 
-    public function test_calculate_dispatches_complete_event_with_validation_flag(): void
+    /**
+     * Optimización post-lanzamiento: calcular y capturar el lead ahora son UN SOLO paso (antes se
+     * pedía el WhatsApp DESPUÉS de mostrar el resultado — quien se iba sin dejarlo quedaba
+     * completamente perdido). Un solo submit valida todo, calcula, crea el lead y muestra el
+     * resultado — sin una promesa de "en 24h", la respuesta sigue siendo instantánea.
+     */
+    public function test_calculate_validates_calculator_and_contact_fields_together(): void
     {
         $post = $this->makePost(['slug' => 'propiedad-sin-testamento-cdmx-como-regularizar-vender-2026-test']);
 
@@ -103,12 +114,13 @@ class BlogSuccessionCalculatorTest extends TestCase
             ->set('conTestamento', 'no')
             ->set('numHerederos', 2)
             ->set('tieneEscrituras', 'no')
+            ->set('aviso', true)
             ->call('calculate')
-            ->assertSet('calculated', true)
-            ->assertDispatched('calculator-event', stage: 'complete', conTestamento: 'no', validated: '0');
+            ->assertHasErrors('whatsapp')   // sin WhatsApp no calcula NI captura
+            ->assertSet('calculated', false);
     }
 
-    public function test_lead_carries_the_calculator_inputs_and_estimate(): void
+    public function test_calculate_creates_the_lead_and_shows_the_result_in_the_same_step(): void
     {
         Mail::fake();
         if (! \Illuminate\Support\Facades\Schema::hasColumn('site_settings', 'whatsapp_number')) {
@@ -123,20 +135,58 @@ class BlogSuccessionCalculatorTest extends TestCase
             ->set('conTestamento', 'si')
             ->set('numHerederos', 1)
             ->set('tieneEscrituras', 'si')
-            ->call('calculate')
             ->set('whatsapp', '5511119999')
             ->set('aviso', true)
-            ->call('submitLead')
-            ->assertSet('submitted', true);
+            ->call('calculate')
+            ->assertSet('calculated', true)
+            ->assertDispatched('calculator-event', stage: 'complete', conTestamento: 'si', validated: '0')
+            ->assertDispatched('lead-conversion');
 
         $lead = FormSubmission::where('phone', '5511119999')->first();
         $this->assertNotNull($lead);
-        $this->assertNull($lead->email);
+        $this->assertNull($lead->email);   // no lo dieron — opcional
         $this->assertSame('blog_calculadora_sucesion', $lead->payload['origen']);
         $this->assertEquals(3000000, $lead->payload['valor_inmueble']);
         $this->assertArrayHasKey('estimado_min', $lead->payload);
         $this->assertArrayHasKey('estimado_max', $lead->payload);
         $this->assertNotNull($lw->get('whatsappContinueUrl'));
+        $this->assertNotNull($lw->get('result'));   // el desglose sigue mostrándose, no se gatea
+    }
+
+    public function test_optional_email_is_saved_and_wired_to_automation_engine(): void
+    {
+        Mail::fake();
+        $post = $this->makePost(['slug' => 'post-calc-email']);
+
+        Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '2000000')
+            ->set('conTestamento', 'no')
+            ->set('numHerederos', 1)
+            ->set('tieneEscrituras', 'si')
+            ->set('whatsapp', '5511118888')
+            ->set('email', 'prospecto@correo.com')
+            ->set('aviso', true)
+            ->call('calculate');
+
+        $lead = FormSubmission::where('phone', '5511118888')->first();
+        $this->assertSame('prospecto@correo.com', $lead->email);
+    }
+
+    public function test_honeypot_blocks_silently_without_creating_a_lead(): void
+    {
+        $post = $this->makePost(['slug' => 'post-calc-honeypot']);
+
+        Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '2000000')
+            ->set('conTestamento', 'si')
+            ->set('numHerederos', 1)
+            ->set('tieneEscrituras', 'si')
+            ->set('whatsapp', '5511117777')
+            ->set('aviso', true)
+            ->set('website_url', 'soy un bot')
+            ->call('calculate');
+
+        $this->assertDatabaseMissing('form_submissions', ['phone' => '5511117777']);
     }
 
     public function test_admin_routes_exist_and_require_staff(): void

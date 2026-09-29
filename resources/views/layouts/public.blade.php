@@ -122,6 +122,17 @@
             if (window.hdvBlogContext) {
                 params = Object.assign({}, window.hdvBlogContext, params);
             }
+            // Pixel de Meta: antes solo mandaba PageView — ciego a cualquier conversión real, así
+            // que ni optimización de campañas ni públicos similares podían usar estos eventos.
+            // 'Lead' es el evento estándar de Meta (lo reconoce para optimización); el resto van
+            // como eventos personalizados con el mismo nombre que ya usamos en GA4.
+            if (typeof window.fbq === 'function') {
+                if (name === 'generate_lead') {
+                    window.fbq('track', 'Lead', params);
+                } else if (name === 'calculator_complete' || name === 'whatsapp_click') {
+                    window.fbq('trackCustom', name, params);
+                }
+            }
             if (typeof window.gtag === 'function') {
                 window.gtag('event', name, params);
             } else {

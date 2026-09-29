@@ -45,6 +45,16 @@
                 </form>
                 @error('whatsapp')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
 
+                {{-- Correo: opcional a propósito (no se pide arriba, junto al WhatsApp, para no sumar
+                     fricción al campo obligatorio) — quien prefiera que le escribamos por correo
+                     además de WhatsApp lo abre aquí. --}}
+                <details class="mt-3">
+                    <summary class="text-xs font-bold text-brand-600 cursor-pointer">¿Prefieres que también te escribamos por correo? (opcional)</summary>
+                    <input type="email" wire:model="email" placeholder="tu@correo.com"
+                           class="mt-2 w-full sm:w-64 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none">
+                    @error('email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </details>
+
                 <label class="mt-3 flex items-start gap-2 text-xs text-gray-400 leading-relaxed">
                     <input type="checkbox" wire:model="aviso" class="mt-0.5">
                     Acepto el <a href="{{ url('/legal/aviso-de-privacidad') }}" target="_blank" class="underline">aviso de privacidad</a>.

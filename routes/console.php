@@ -18,6 +18,10 @@ Schedule::job(new \App\Jobs\RecalculateLeadScores)->daily()->withoutOverlapping(
 Schedule::job(new \App\Jobs\CheckClientInactivity)->dailyAt('06:00')->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('CheckClientInactivity scheduled run failed'));
 
+// ── Recordatorio de leads del blog sin contactar (optimización post-lanzamiento) ────
+Schedule::command('blog:remind-stale-leads')->dailyAt('09:00')->withoutOverlapping()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('blog:remind-stale-leads scheduled run failed'));
+
 // ── Blog Content Scheduler ───────────────────────────
 // PublishScheduledPosts (job, bulk update sin aislamiento de error por post)
 // se quito de aqui — duplicaba exactamente lo que hace blog:publish-scheduled

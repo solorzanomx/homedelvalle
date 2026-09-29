@@ -221,9 +221,13 @@
                      quien llegó hasta aquí ya leyó la respuesta corta, este es el momento de más
                      intención — "y en mi caso, ¿cuánto sería?". --}}
                 <livewire:blog.succession-calculator :post-id="$post->id" :key="'succession-calc-'.$post->id" />
+            @else
+                {{-- Optimización post-lanzamiento: en los posts CON calculadora se omite este form
+                     genérico — la calculadora ya captura el lead en este mismo punto del artículo,
+                     con datos más relevantes (valor, herederos, testamento) y sin la promesa de
+                     "en 24h". Mostrar los dos aquí, uno tras otro, pedía lo mismo dos veces. --}}
+                <livewire:forms.blog-quick-valuation-form :source-page="'/blog/' . $post->slug" :is-herencia="$isHerencia" />
             @endif
-
-            <livewire:forms.blog-quick-valuation-form :source-page="'/blog/' . $post->slug" :is-herencia="$isHerencia" />
 
             @if($enhanced['second'] !== '')
             <article class="{{ $proseClasses }}">

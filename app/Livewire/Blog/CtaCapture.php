@@ -7,6 +7,7 @@ use App\Models\FormSubmission;
 use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
 use App\Models\Post;
+use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
 use App\Support\BlogCluster;
 use App\Support\BlogWhatsapp;
@@ -16,8 +17,10 @@ use Livewire\Component;
 /**
  * El CTA por cluster del blog (Fase 3 del prompt de leads: docs/funcionalidades/blog-cta-clusters.md).
  * Un solo componente para las 2 posiciones (inline y final) — mismo copy, mismo formulario corto
- * (WhatsApp obligatorio, nombre opcional), sin email ni promesa de "en 24 horas": la respuesta va en
- * pantalla al enviar, con un botón para seguir por WhatsApp.
+ * (WhatsApp obligatorio, nombre y correo opcionales), sin promesa de "en 24 horas": la respuesta va
+ * en pantalla al enviar, con un botón para seguir por WhatsApp. El correo es opcional (Fase 3
+ * original: "sin email obligatorio") pero si lo dan, sí se usa: habilita el acuse automático y las
+ * automatizaciones de AutomationEngine, que sin correo no pueden correr (optimización post-lanzamiento).
  */
 class CtaCapture extends Component
 {
@@ -30,6 +33,9 @@ class CtaCapture extends Component
 
     public string $name = '';
     public string $whatsapp = '';
+    // Opcional a propósito (Fase 3: "sin email obligatorio") — pero si lo dan, sí sirve: habilita
+    // el acuse automático y las automatizaciones que dependen de correo (AutomationEngine).
+    public string $email = '';
     public bool $aviso = false;
 
     public bool $submitted = false;
@@ -70,11 +76,12 @@ class CtaCapture extends Component
         return [
             'name' => 'nullable|string|max:120',
             'whatsapp' => ['required', 'regex:/^(\+?52)?\s?[0-9]{10}$/'],
+            'email' => 'nullable|email|max:150',
             'aviso' => 'accepted',
         ];
     }
 
-    protected array $validationAttributes = ['name' => 'nombre', 'whatsapp' => 'WhatsApp', 'aviso' => 'aviso de privacidad'];
+    protected array $validationAttributes = ['name' => 'nombre', 'whatsapp' => 'WhatsApp', 'email' => 'correo', 'aviso' => 'aviso de privacidad'];
 
     public function submit(SpamProtectionService $spam): void
     {
@@ -111,6 +118,7 @@ class CtaCapture extends Component
             // full_name es NOT NULL en form_submissions (todos los forms anteriores lo exigían) —
             // como aquí el nombre es opcional, un fallback legible en vez de forzar otra columna nullable.
             'full_name' => $data['name'] ?: 'Lead del blog',
+            'email' => $data['email'] ?: null,
             'phone' => $data['whatsapp'],
             'payload' => ['origen' => 'blog_cta', 'cluster' => $this->cluster, 'cta_variant' => $decided ? 'decidido' : 'default', 'cta_location' => $this->location],
             'lead_tag' => 'LEAD_BLOG',
@@ -121,15 +129,20 @@ class CtaCapture extends Component
             'user_agent' => request()->userAgent(),
         ]);
 
-        // Sin AutomationEngine::processFormSubmitted(): exige email (ver docstring de la clase) y
-        // este form deliberadamente no lo pide. FormSubmission::create() ya disparó FormSubmitted
-        // (avisa al equipo interno, notifica admins) — es lo único que puede pasar sin email.
+        // AutomationEngine::processFormSubmitted() exige email (ver docstring de la clase) — este
+        // form no lo pide, pero si lo dieron (campo opcional), sí lo llamamos: activa el flujo
+        // normal de automatizaciones igual que cualquier otro formulario del sitio.
+        if ($data['email']) {
+            app(AutomationEngine::class)->processFormSubmitted([
+                'name' => $data['name'] ?: 'Lead del blog', 'email' => $data['email'], 'phone' => $data['whatsapp'],
+            ], $formType, notifyAdmins: false);
+        }
 
         $privacyDoc = LegalDocument::where('type', 'aviso_privacidad')->where('status', 'published')->first();
         if ($privacyDoc && $privacyDoc->current_version_id) {
             // LegalAcceptance::record() guarda el identificador en la columna 'email' sin validar
-            // formato — este form no pide correo, así que se usa el WhatsApp como identificador.
-            LegalAcceptance::record($privacyDoc->id, $privacyDoc->current_version_id, $data['whatsapp'], request(), $formType, ['name' => $data['name']]);
+            // formato — si no dieron correo, se usa el WhatsApp como identificador.
+            LegalAcceptance::record($privacyDoc->id, $privacyDoc->current_version_id, $data['email'] ?: $data['whatsapp'], request(), $formType, ['name' => $data['name']]);
         }
 
         $template = $config?->copyFor($decided)['whatsapp_message'] ?? 'Hola, vengo del artículo "{titulo}".';
@@ -140,7 +153,7 @@ class CtaCapture extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['website_url', 'name', 'whatsapp', 'aviso', 'isProcessing']);
+        $this->reset(['website_url', 'name', 'whatsapp', 'email', 'aviso', 'isProcessing']);
         $this->submitted = true;
     }
 

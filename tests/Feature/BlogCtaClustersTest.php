@@ -37,6 +37,11 @@ class BlogCtaClustersTest extends TestCase
                 $t->unsignedBigInteger('current_version_id')->nullable();
             });
         }
+        if (! \Illuminate\Support\Facades\Schema::hasTable('clients')) {
+            \Illuminate\Support\Facades\Schema::create('clients', function ($t) {
+                $t->id(); $t->string('email')->nullable(); $t->timestamps();
+            });
+        }
         if (! \Illuminate\Support\Facades\Schema::hasTable('form_submissions')) {
             \Illuminate\Support\Facades\Schema::create('form_submissions', function ($t) {
                 $t->id();
@@ -118,6 +123,22 @@ class BlogCtaClustersTest extends TestCase
         $this->assertNull($lead->email);
         $this->assertSame('vendedor_predio', $lead->form_type);
         $this->assertSame('Lead del blog', $lead->full_name);
+    }
+
+    /** Optimización post-lanzamiento: el correo sigue siendo opcional, pero si lo dan sí se guarda. */
+    public function test_cta_capture_saves_optional_email_when_given(): void
+    {
+        Mail::fake();
+        $post = $this->makePost(['slug' => 'post-con-correo-opcional']);
+
+        Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id, 'location' => 'inline'])
+            ->set('whatsapp', '5511113333')
+            ->set('email', 'prospecto@correo.com')
+            ->set('aviso', true)
+            ->call('submit');
+
+        $lead = FormSubmission::where('phone', '5511113333')->first();
+        $this->assertSame('prospecto@correo.com', $lead->email);
     }
 
     public function test_cta_capture_honeypot_blocks_silently(): void
