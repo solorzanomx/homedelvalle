@@ -47,8 +47,25 @@
                            class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none">
                 </div>
                 @error('whatsapp')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+
+                <div class="mt-3">
+                    <select wire:model="colonia" required
+                            class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none">
+                        <option value="">¿En qué colonia está el inmueble?</option>
+                        @foreach($coloniaOptions as $zona => $colonias)
+                        <optgroup label="{{ $zona }}">
+                            @foreach($colonias as $c)
+                            <option value="{{ $c }}">{{ $c }}</option>
+                            @endforeach
+                        </optgroup>
+                        @endforeach
+                        <option value="{{ \App\Support\BenitoJuarezColonias::FUERA_DE_BJ }}">{{ \App\Support\BenitoJuarezColonias::FUERA_DE_BJ }}</option>
+                    </select>
+                    @error('colonia')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+
                 <details class="mt-2">
-                    <summary class="text-xs font-bold text-brand-600 cursor-pointer">¿Prefieres que también te escribamos por correo? (opcional)</summary>
+                    <summary class="text-xs font-bold text-brand-600 cursor-pointer">¿Quieres tu estimado también por correo? (opcional)</summary>
                     <input type="email" wire:model="email" placeholder="tu@correo.com"
                            class="mt-2 w-full sm:w-64 rounded-xl border border-gray-200 px-4 py-2.5 text-sm outline-none">
                     @error('email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

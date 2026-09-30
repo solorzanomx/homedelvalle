@@ -113,6 +113,7 @@ class BlogCtaClustersTest extends TestCase
 
         Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id, 'location' => 'final'])
             ->set('whatsapp', '5511112222')
+            ->set('colonia', 'Del Valle Centro')
             ->set('aviso', true)
             ->call('submit')
             ->assertSet('submitted', true)
@@ -123,6 +124,7 @@ class BlogCtaClustersTest extends TestCase
         $this->assertNull($lead->email);
         $this->assertSame('vendedor_predio', $lead->form_type);
         $this->assertSame('Lead del blog', $lead->full_name);
+        $this->assertSame('Del Valle Centro', $lead->payload['colonia']);
     }
 
     /** Optimización post-lanzamiento: el correo sigue siendo opcional, pero si lo dan sí se guarda. */
@@ -133,6 +135,7 @@ class BlogCtaClustersTest extends TestCase
 
         Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id, 'location' => 'inline'])
             ->set('whatsapp', '5511113333')
+            ->set('colonia', 'Del Valle Centro')
             ->set('email', 'prospecto@correo.com')
             ->set('aviso', true)
             ->call('submit');
@@ -148,6 +151,7 @@ class BlogCtaClustersTest extends TestCase
 
         Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id, 'location' => 'inline'])
             ->set('whatsapp', '5599998888')
+            ->set('colonia', 'Del Valle Centro')
             ->set('aviso', true)
             ->set('website_url', 'soy un bot')
             ->call('submit');
@@ -164,6 +168,46 @@ class BlogCtaClustersTest extends TestCase
             ->call('submit')
             ->assertHasErrors('whatsapp')
             ->assertHasNoErrors('name');
+    }
+
+    /**
+     * Hallazgo 2026-09-30: leads con teléfonos obviamente falsos y sin forma de saber si eran de
+     * Benito Juárez. La colonia es obligatoria (catálogo real + "fuera de BJ" como catch-all) y el
+     * WhatsApp rechaza patrones evidentes de número falso.
+     */
+    public function test_cta_capture_requires_colonia_from_the_real_catalog(): void
+    {
+        Mail::fake();
+        $post = $this->makePost(['slug' => 'post-sin-colonia']);
+
+        Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id])
+            ->set('whatsapp', '5511114444')->set('aviso', true)
+            ->call('submit')
+            ->assertHasErrors('colonia');
+
+        Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id])
+            ->set('whatsapp', '5511114445')->set('colonia', 'zona que no existe')->set('aviso', true)
+            ->call('submit')
+            ->assertHasErrors('colonia');
+
+        Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id])
+            ->set('whatsapp', '5511114446')
+            ->set('colonia', \App\Support\BenitoJuarezColonias::FUERA_DE_BJ)
+            ->set('aviso', true)
+            ->call('submit')
+            ->assertHasNoErrors('colonia');
+    }
+
+    public function test_cta_capture_rejects_obviously_fake_phone_numbers(): void
+    {
+        $post = $this->makePost(['slug' => 'post-telefono-falso']);
+
+        Livewire::test(\App\Livewire\Blog\CtaCapture::class, ['postId' => $post->id])
+            ->set('whatsapp', '5555555555')->set('colonia', 'Del Valle Centro')->set('aviso', true)
+            ->call('submit')
+            ->assertHasErrors('whatsapp');
+
+        $this->assertDatabaseMissing('form_submissions', ['phone' => '5555555555']);
     }
 
     public function test_admin_cta_config_routes_exist_and_require_staff(): void

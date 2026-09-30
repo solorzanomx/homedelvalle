@@ -84,9 +84,19 @@ trait SetsUpMinimalBlogSchema
             'database/migrations/2026_03_29_135219_create_site_settings_table.php',
             'database/migrations/2026_09_28_100000_create_blog_redirects_table.php',
             'database/migrations/2026_09_30_160000_create_blog_not_found_hits_table.php',
+            // Catálogo real de colonias de BJ (BenitoJuarezColonias) — lo usan
+            // SuccessionCalculator y CtaCapture desde el hallazgo 2026-09-30 (leads con teléfonos
+            // falsos y fuera de zona). Cualquier test que monte esos componentes lo necesita.
+            'database/migrations/2026_04_22_000001_create_market_zones_table.php',
+            'database/migrations/2026_04_22_000002_create_market_colonias_table.php',
         ]]);
 
         \Illuminate\Support\Facades\DB::table('users')->insert(['id' => 1, 'name' => 'Autor de prueba', 'created_at' => now(), 'updated_at' => now()]);
+
+        \App\Models\MarketZone::create(['slug' => 'del-valle', 'name' => 'Del Valle', 'is_published' => true, 'sort_order' => 1])
+            ->colonias()->create(['name' => 'Del Valle Centro', 'slug' => 'del-valle-centro', 'alcaldia' => 'Benito Juárez', 'cp' => '03100', 'is_published' => true]);
+        \App\Models\MarketZone::create(['slug' => 'narvarte', 'name' => 'Narvarte & Vértiz', 'is_published' => true, 'sort_order' => 2])
+            ->colonias()->create(['name' => 'Narvarte Poniente', 'slug' => 'narvarte-poniente', 'alcaldia' => 'Benito Juárez', 'cp' => '03020', 'is_published' => true]);
     }
 
     protected function makePost(array $attrs = []): \App\Models\Post

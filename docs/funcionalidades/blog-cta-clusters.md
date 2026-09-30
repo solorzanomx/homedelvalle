@@ -49,6 +49,23 @@ soportarlo sin romper nada:
   `FormSubmitted` (avisa al equipo, notifica admins) sin necesitarlo.
 - `lead_tag = 'LEAD_BLOG'`, `client_type = 'owner'` solo si el `form_type` es vendedor/vendedor_predio.
 
+## ⚠️ Actualización 2026-09-30 — colonia obligatoria + filtro de teléfonos falsos
+Alejandro reportó leads con teléfono inventado (`1111111111`) y sin forma de saber si eran
+prospectos reales de Benito Juárez. Dos arreglos, en `CtaCapture` y `SuccessionCalculator`:
+- **Colonia obligatoria**, con el catálogo real de `MarketZone`/`MarketColonia` (el mismo que ya usa
+  el sistema de precios/valuación — no se inventó una lista aparte). Ver
+  `App\Support\BenitoJuarezColonias`. La última opción del select es
+  **"Otra colonia (fuera de Benito Juárez)"** — un catch-all explícito para quien no es de la zona,
+  en vez de dejarlo adivinar o forzarlo a mentir. Se guarda en `payload.colonia`, visible directo en
+  la ficha del lead (el panel ya renderiza cualquier key del payload).
+- **`App\Rules\RealisticMexicanPhone`**: rechaza teléfonos con el mismo dígito repetido
+  (`1111111111`) o secuencias consecutivas en cualquier rotación (`1234567890`, `0123456789`,
+  `9876543210`…). No verifica que el número sea real (eso requeriría SMS) — solo descarta los casos
+  evidentes de alguien tecleando cualquier cosa.
+- El correo sigue opcional, pero el copy cambió para sonar a beneficio real en vez de solo "otro
+  campo": "¿Prefieres tener esto también por correo, por si no ves el WhatsApp?" (CtaCapture) /
+  "¿Quieres tu estimado también por correo?" (calculadora).
+
 ## Mapa de archivos
 | Qué | Dónde |
 |---|---|
@@ -89,6 +106,9 @@ lectura + el `ctaMap` automático).
   funcionando, solo se vació el contenido viejo).
 - `CtaCapture` es el único formulario Livewire de captura en la página — si se agrega otro, revisar
   que no se dupliquen honeypot/spam/legal en la misma vista sin necesidad.
+- **`colonia` es obligatoria en `CtaCapture` y `SuccessionCalculator`** — solo acepta valores del
+  catálogo real (`BenitoJuarezColonias::validValues()`) o el catch-all "fuera de BJ", nunca texto
+  libre (evita que alguien invente una colonia igual que antes inventaba el teléfono).
 - El botón flotante genérico solo se oculta **en móvil** y solo en posts **con cluster** — en desktop
   y en el resto del sitio sigue exactamente igual.
 - `BlogCluster::showsSellCta()` solo aplica al cluster herencias — en el resto de clusters siempre

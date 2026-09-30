@@ -7,10 +7,13 @@ use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
 use App\Models\Post;
 use App\Models\SuccessionCalculatorConfig;
+use App\Rules\RealisticMexicanPhone;
 use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
+use App\Support\BenitoJuarezColonias;
 use App\Support\BlogWhatsapp;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 /**
@@ -41,6 +44,10 @@ class SuccessionCalculator extends Component
     public string $name = '';
     public string $whatsapp = '';
     public string $email = '';
+    // Colonia real (catálogo de MarketZone/MarketColonia) u "Otra colonia (fuera de Benito
+    // Juárez)" — obligatoria: hallazgo 2026-09-30, sin esto no había forma de saber de un
+    // vistazo si un lead era un prospecto real de la zona o no.
+    public string $colonia = '';
     public bool $aviso = false;
 
     public bool $started = false;
@@ -49,9 +56,13 @@ class SuccessionCalculator extends Component
     public ?array $result = null;
     public ?string $whatsappContinueUrl = null;
 
+    /** @var array<string, array<int, string>> */
+    public array $coloniaOptions = [];
+
     public function mount(int $postId): void
     {
         $this->postId = $postId;
+        $this->coloniaOptions = BenitoJuarezColonias::grouped();
     }
 
     public function updated(string $propertyName): void
@@ -69,7 +80,8 @@ class SuccessionCalculator extends Component
             'conTestamento' => 'required|in:si,no',
             'numHerederos' => 'required|integer|min:1|max:20',
             'tieneEscrituras' => 'required|in:si,no',
-            'whatsapp' => ['required', 'regex:/^(\+?52)?\s?[0-9]{10}$/'],
+            'whatsapp' => ['required', 'regex:/^(\+?52)?\s?[0-9]{10}$/', new RealisticMexicanPhone()],
+            'colonia' => ['required', Rule::in(BenitoJuarezColonias::validValues())],
             'name' => 'nullable|string|max:120',
             'email' => 'nullable|email|max:150',
             'aviso' => 'accepted',
@@ -78,7 +90,8 @@ class SuccessionCalculator extends Component
 
     protected array $validationAttributes = [
         'valorInmueble' => 'valor del inmueble', 'conTestamento' => 'testamento', 'numHerederos' => 'número de herederos',
-        'tieneEscrituras' => 'escrituras', 'whatsapp' => 'WhatsApp', 'name' => 'nombre', 'email' => 'correo', 'aviso' => 'aviso de privacidad',
+        'tieneEscrituras' => 'escrituras', 'whatsapp' => 'WhatsApp', 'colonia' => 'colonia',
+        'name' => 'nombre', 'email' => 'correo', 'aviso' => 'aviso de privacidad',
     ];
 
     /** Calcula Y captura el lead en un solo paso — ver el porqué en el docblock de la clase. */
@@ -134,6 +147,7 @@ class SuccessionCalculator extends Component
                 'con_testamento' => $data['conTestamento'],
                 'num_herederos' => $data['numHerederos'],
                 'tiene_escrituras' => $data['tieneEscrituras'],
+                'colonia' => $data['colonia'],
                 'estimado_min' => $this->result['total_min'],
                 'estimado_max' => $this->result['total_max'],
                 'rangos_validados' => $this->result['validated'],
@@ -162,7 +176,7 @@ class SuccessionCalculator extends Component
             'Hola, vengo del artículo "{titulo}". Usé la calculadora: mi estimado fue de $' . number_format($this->result['total_min']) . ' a $' . number_format($this->result['total_max']) . '. Quiero el desglose exacto para mi caso y saber cuánto pagaría de ISR si vendo después.'
         );
 
-        $this->reset(['website_url', 'name', 'whatsapp', 'email', 'aviso', 'isProcessing']);
+        $this->reset(['website_url', 'name', 'whatsapp', 'email', 'colonia', 'aviso', 'isProcessing']);
         $this->dispatch('lead-conversion', formType: 'vendedor_predio', variant: 'calculadora_sucesion');
     }
 

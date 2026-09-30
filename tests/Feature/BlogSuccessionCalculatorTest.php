@@ -136,6 +136,7 @@ class BlogSuccessionCalculatorTest extends TestCase
             ->set('numHerederos', 1)
             ->set('tieneEscrituras', 'si')
             ->set('whatsapp', '5511119999')
+            ->set('colonia', 'Del Valle Centro')
             ->set('aviso', true)
             ->call('calculate')
             ->assertSet('calculated', true)
@@ -147,10 +148,62 @@ class BlogSuccessionCalculatorTest extends TestCase
         $this->assertNull($lead->email);   // no lo dieron — opcional
         $this->assertSame('blog_calculadora_sucesion', $lead->payload['origen']);
         $this->assertEquals(3000000, $lead->payload['valor_inmueble']);
+        $this->assertSame('Del Valle Centro', $lead->payload['colonia']);
         $this->assertArrayHasKey('estimado_min', $lead->payload);
         $this->assertArrayHasKey('estimado_max', $lead->payload);
         $this->assertNotNull($lw->get('whatsappContinueUrl'));
         $this->assertNotNull($lw->get('result'));   // el desglose sigue mostrándose, no se gatea
+    }
+
+    /**
+     * Hallazgo 2026-09-30: leads con teléfonos obviamente falsos (ej. "1111111111") y sin ninguna
+     * forma de saber si eran de Benito Juárez o no. La colonia es obligatoria (catálogo real de
+     * MarketZone/MarketColonia, + "Otra colonia (fuera de Benito Juárez)" como catch-all) y el
+     * WhatsApp rechaza patrones evidentes de número falso.
+     */
+    public function test_colonia_is_required_and_accepts_the_real_catalog_or_fuera_de_bj(): void
+    {
+        Mail::fake();
+        $post = $this->makePost(['slug' => 'post-calc-colonia']);
+
+        Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '2000000')->set('conTestamento', 'si')->set('numHerederos', 1)
+            ->set('tieneEscrituras', 'si')->set('whatsapp', '5511116666')->set('aviso', true)
+            ->call('calculate')
+            ->assertHasErrors('colonia');
+
+        Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '2000000')->set('conTestamento', 'si')->set('numHerederos', 1)
+            ->set('tieneEscrituras', 'si')->set('whatsapp', '5511116665')
+            ->set('colonia', 'colonia inventada que no existe')->set('aviso', true)
+            ->call('calculate')
+            ->assertHasErrors('colonia');
+
+        Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+            ->set('valorInmueble', '2000000')->set('conTestamento', 'si')->set('numHerederos', 1)
+            ->set('tieneEscrituras', 'si')->set('whatsapp', '5511116664')
+            ->set('colonia', \App\Support\BenitoJuarezColonias::FUERA_DE_BJ)->set('aviso', true)
+            ->call('calculate')
+            ->assertHasNoErrors('colonia');
+
+        $lead = FormSubmission::where('phone', '5511116664')->first();
+        $this->assertSame(\App\Support\BenitoJuarezColonias::FUERA_DE_BJ, $lead->payload['colonia']);
+    }
+
+    public function test_calculate_rejects_obviously_fake_phone_numbers(): void
+    {
+        $post = $this->makePost(['slug' => 'post-calc-telefono-falso']);
+
+        foreach (['1111111111', '1234567890', '0123456789', '9876543210'] as $fake) {
+            Livewire::test(SuccessionCalculator::class, ['postId' => $post->id])
+                ->set('valorInmueble', '2000000')->set('conTestamento', 'si')->set('numHerederos', 1)
+                ->set('tieneEscrituras', 'si')->set('whatsapp', $fake)
+                ->set('colonia', 'Del Valle Centro')->set('aviso', true)
+                ->call('calculate')
+                ->assertHasErrors('whatsapp');
+        }
+
+        $this->assertDatabaseMissing('form_submissions', ['phone' => '1111111111']);
     }
 
     public function test_optional_email_is_saved_and_wired_to_automation_engine(): void
@@ -164,6 +217,7 @@ class BlogSuccessionCalculatorTest extends TestCase
             ->set('numHerederos', 1)
             ->set('tieneEscrituras', 'si')
             ->set('whatsapp', '5511118888')
+            ->set('colonia', 'Narvarte Poniente')
             ->set('email', 'prospecto@correo.com')
             ->set('aviso', true)
             ->call('calculate');
@@ -182,6 +236,7 @@ class BlogSuccessionCalculatorTest extends TestCase
             ->set('numHerederos', 1)
             ->set('tieneEscrituras', 'si')
             ->set('whatsapp', '5511117777')
+            ->set('colonia', 'Del Valle Centro')
             ->set('aviso', true)
             ->set('website_url', 'soy un bot')
             ->call('calculate');

@@ -35,6 +35,18 @@
                            class="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none">
                     <input type="tel" wire:model="whatsapp" placeholder="Tu WhatsApp (10 dígitos)" required
                            class="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none">
+                    <select wire:model="colonia" required
+                            class="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none">
+                        <option value="">Tu colonia</option>
+                        @foreach($coloniaOptions as $zona => $colonias)
+                        <optgroup label="{{ $zona }}">
+                            @foreach($colonias as $c)
+                            <option value="{{ $c }}">{{ $c }}</option>
+                            @endforeach
+                        </optgroup>
+                        @endforeach
+                        <option value="{{ \App\Support\BenitoJuarezColonias::FUERA_DE_BJ }}">{{ \App\Support\BenitoJuarezColonias::FUERA_DE_BJ }}</option>
+                    </select>
 
                     <button type="submit" wire:loading.attr="disabled"
                             class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 shrink-0 shadow-brand disabled:opacity-60"
@@ -44,12 +56,13 @@
                     </button>
                 </form>
                 @error('whatsapp')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
+                @error('colonia')<p class="mt-2 text-xs text-red-600">{{ $message }}</p>@enderror
 
                 {{-- Correo: opcional a propósito (no se pide arriba, junto al WhatsApp, para no sumar
                      fricción al campo obligatorio) — quien prefiera que le escribamos por correo
                      además de WhatsApp lo abre aquí. --}}
                 <details class="mt-3">
-                    <summary class="text-xs font-bold text-brand-600 cursor-pointer">¿Prefieres que también te escribamos por correo? (opcional)</summary>
+                    <summary class="text-xs font-bold text-brand-600 cursor-pointer">¿Prefieres tener esto también por correo, por si no ves el WhatsApp? (opcional)</summary>
                     <input type="email" wire:model="email" placeholder="tu@correo.com"
                            class="mt-2 w-full sm:w-64 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:border-brand-400 focus:ring-2 focus:ring-brand-100 outline-none">
                     @error('email')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror

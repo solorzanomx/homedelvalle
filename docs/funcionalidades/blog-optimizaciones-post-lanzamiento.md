@@ -126,6 +126,29 @@ a acumular el mismo ruido. Detalle completo y el inventario final de CTAs por po
 Después de los 2 arreglos, el post analizado queda en 4 CTAs (inline, a media lectura, predio,
 final) — cada uno con un propósito distinto, sin duplicados.
 
+## 9. Auditoría 2026-09-30 — colonia obligatoria y filtro de teléfonos falsos
+
+Alejandro vio un lead real con WhatsApp `1111111111`, sin correo ni colonia — imposible de
+contactar, y sin forma de saber si era un prospecto de Benito Juárez. Dos arreglos en `CtaCapture`
+y `SuccessionCalculator` (detalle completo en `docs/funcionalidades/blog-cta-clusters.md`):
+
+**Arreglo 6 — colonia obligatoria**, con el catálogo real de `MarketZone`/`MarketColonia`
+(`App\Support\BenitoJuarezColonias`) agrupado por zona + **"Otra colonia (fuera de Benito
+Juárez)"** como catch-all explícito. Se guarda en `payload.colonia` — visible de inmediato en la
+ficha del lead, sin cambios en el panel (ya renderiza cualquier key del payload). Con esto, un
+lead que no es de la zona se identifica de un vistazo, sin gastar el primer WhatsApp en
+descartarlo.
+
+**Arreglo 7 — `App\Rules\RealisticMexicanPhone`**: rechaza el mismo dígito repetido
+(`1111111111`) y secuencias consecutivas en cualquier rotación (`1234567890`, `0123456789`,
+`9876543210`…) — no solo la que empieza exacto en 0 o en 9 (bug real encontrado probando la propia
+regla: `1234567890` pasaba sin rechazarse en la primera versión). No verifica que el número sea
+real de verdad (eso requeriría SMS), solo descarta los casos evidentes.
+
+El correo se mantiene opcional (el colonia/teléfono resuelven el problema real sin sumar fricción
+al único campo que de verdad hace falta), pero el copy del correo opcional cambió para sonar a
+beneficio en vez de "otro campo".
+
 ## INVARIANTES — no romper
 - `SuccessionCalculator::calculate()` es la única acción del componente — no reintroducir un
   segundo paso de captura separado del cálculo.
@@ -146,9 +169,14 @@ final) — cada uno con un propósito distinto, sin duplicados.
   `docs/funcionalidades/blog-cta-clusters.md`). Guardado con test
   (`test_legacy_cta_shortcodes_get_cleared_from_all_published_posts`,
   `test_ai_blog_generator_no_longer_requests_legacy_cta_shortcodes`).
+- **`colonia` es obligatoria en `CtaCapture` y `SuccessionCalculator`** y solo acepta el catálogo
+  real (`BenitoJuarezColonias::validValues()`) o el catch-all "fuera de BJ" — nunca texto libre.
+  **`RealisticMexicanPhone`** corre siempre junto al regex de 10 dígitos en ambos formularios — no
+  quitarla pensando que "ya valida el regex", el regex no descarta patrones obvios de número falso.
 
 ## Cómo probarlo
 `php artisan test --filter=BlogLeadOptimizationsTest` (Pixel de Meta, exclusión mutua
 calculadora/form genérico, CSS compilado, activación en hermano-no-quiere-vender y en isr-venta,
 calculadora validada, cta-capture final nunca condicionado al cuerpo, CTAs legacy desactivados,
-recordatorios) + `BlogSuccessionCalculatorTest` y `BlogCtaClustersTest` actualizados al nuevo flujo.
+recordatorios) + `BlogSuccessionCalculatorTest` y `BlogCtaClustersTest` actualizados al nuevo flujo,
+con casos nuevos de colonia obligatoria y teléfonos falsos rechazados.

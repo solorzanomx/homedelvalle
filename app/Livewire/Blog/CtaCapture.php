@@ -7,11 +7,14 @@ use App\Models\FormSubmission;
 use App\Models\LegalAcceptance;
 use App\Models\LegalDocument;
 use App\Models\Post;
+use App\Rules\RealisticMexicanPhone;
 use App\Services\AutomationEngine;
 use App\Services\SpamProtectionService;
+use App\Support\BenitoJuarezColonias;
 use App\Support\BlogCluster;
 use App\Support\BlogWhatsapp;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 /**
@@ -36,6 +39,10 @@ class CtaCapture extends Component
     // Opcional a propósito (Fase 3: "sin email obligatorio") — pero si lo dan, sí sirve: habilita
     // el acuse automático y las automatizaciones que dependen de correo (AutomationEngine).
     public string $email = '';
+    // Colonia real (catálogo de MarketZone/MarketColonia) u "Otra colonia (fuera de Benito
+    // Juárez)" — obligatoria: hallazgo 2026-09-30, sin esto no había forma de saber de un
+    // vistazo si un lead era un prospecto real de la zona o no.
+    public string $colonia = '';
     public bool $aviso = false;
 
     public bool $submitted = false;
@@ -47,10 +54,14 @@ class CtaCapture extends Component
     public string $cluster = '';
     public ?string $whatsappContinueUrl = null;
 
+    /** @var array<string, array<int, string>> */
+    public array $coloniaOptions = [];
+
     public function mount(int $postId, string $location = 'inline'): void
     {
         $this->postId = $postId;
         $this->location = $location;
+        $this->coloniaOptions = BenitoJuarezColonias::grouped();
 
         $post = Post::find($postId);
         $this->cluster = BlogCluster::forPost($post) ?? '';
@@ -75,13 +86,17 @@ class CtaCapture extends Component
     {
         return [
             'name' => 'nullable|string|max:120',
-            'whatsapp' => ['required', 'regex:/^(\+?52)?\s?[0-9]{10}$/'],
+            'whatsapp' => ['required', 'regex:/^(\+?52)?\s?[0-9]{10}$/', new RealisticMexicanPhone()],
+            'colonia' => ['required', Rule::in(BenitoJuarezColonias::validValues())],
             'email' => 'nullable|email|max:150',
             'aviso' => 'accepted',
         ];
     }
 
-    protected array $validationAttributes = ['name' => 'nombre', 'whatsapp' => 'WhatsApp', 'email' => 'correo', 'aviso' => 'aviso de privacidad'];
+    protected array $validationAttributes = [
+        'name' => 'nombre', 'whatsapp' => 'WhatsApp', 'colonia' => 'colonia',
+        'email' => 'correo', 'aviso' => 'aviso de privacidad',
+    ];
 
     public function submit(SpamProtectionService $spam): void
     {
@@ -120,7 +135,10 @@ class CtaCapture extends Component
             'full_name' => $data['name'] ?: 'Lead del blog',
             'email' => $data['email'] ?: null,
             'phone' => $data['whatsapp'],
-            'payload' => ['origen' => 'blog_cta', 'cluster' => $this->cluster, 'cta_variant' => $decided ? 'decidido' : 'default', 'cta_location' => $this->location],
+            'payload' => [
+                'origen' => 'blog_cta', 'cluster' => $this->cluster, 'cta_variant' => $decided ? 'decidido' : 'default',
+                'cta_location' => $this->location, 'colonia' => $data['colonia'],
+            ],
             'lead_tag' => 'LEAD_BLOG',
             'client_type' => in_array($formType, ['vendedor', 'vendedor_predio'], true) ? 'owner' : null,
             'lead_temperature' => $decided ? 'hot' : 'warm',
@@ -153,7 +171,7 @@ class CtaCapture extends Component
 
     private function resetForm(): void
     {
-        $this->reset(['website_url', 'name', 'whatsapp', 'email', 'aviso', 'isProcessing']);
+        $this->reset(['website_url', 'name', 'whatsapp', 'email', 'colonia', 'aviso', 'isProcessing']);
         $this->submitted = true;
     }
 
