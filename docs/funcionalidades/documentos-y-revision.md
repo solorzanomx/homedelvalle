@@ -76,7 +76,8 @@
 - **El PDF del asistente es de imágenes:** el servidor lo acepta porque empieza con `%PDF` y no trae `/Encrypt`; la revisión de calidad con IA lo lee como documento.
 - **Aprobar en bloque nunca aprueba `comprobante_apartado` de una renta sin apartado confirmado** (se omite y se avisa); rechazar siempre es individual y con motivo.
 - **La bandeja y las métricas cuentan solo lo subido por `role='client'`** y excluyen `DocumentReviewInbox::GENERATED`.
-- **Los archivos están en el disco `public`** (URL directa). Pendiente de seguridad: servirlos con permiso. No prometas privacidad de esos archivos.
+- **Los archivos están en el disco `public`** (URL directa). Pendiente de seguridad: servirlos con permiso. No prometas privacidad de esos archivos. *(Nota: esto quedó resuelto el 2026-09-26 — ver `docs/funcionalidades/seguridad-archivos.md`, disco privado — esta línea no se actualizó entonces; no vuelvas a tocar el disco `public` para documentos sensibles.)*
+- **`documents.uploaded_by` nunca debe ser `cascadeOnDelete()` hacia `users`.** Incidente real 2026-10-01: al borrar la cuenta de portal de un cliente (`ClientController::deletePortalAccess`), los documentos que ese cliente había subido él mismo se borraban en cascada junto con su usuario — un cliente perdió así su INE, 3 estados de cuenta y su comprobante de domicilio (recuperados solo porque los archivos seguían en disco). Corregido con `nullOnDelete()` (migración `2026_10_01_120000_stop_cascading_document_deletes_from_uploader`, mismo patrón que ya tenía `verified_by`) — un documento nunca debe depender de que el usuario que lo subió siga existiendo. Guardado con test (`DocumentSurvivesUploaderDeletionTest`).
 
 ## Cómo probar sin romper (checklist)
 1. `php artisan view:cache` (compila TODOS los Blade — detecta errores de sintaxis) y luego `php artisan view:clear`.

@@ -13,7 +13,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 ## 1. Índice de funcionalidades documentadas
 | Área | Doc | Tocar con cuidado si… |
 |---|---|---|
-| Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas) | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos |
+| Documentos: subida guiada + asistente, calidad, visor, bandeja "Docs por revisar", avisos/recordatorios, métricas (Rentas y Ventas), `uploaded_by` nunca en cascada hacia `users` | `docs/funcionalidades/documentos-y-revision.md` | tocas uploads del Portal, `rentals/show` u `operations/show` (Documentos), `Document`, `capture=`, estados de documentos, borrado de usuarios/portal |
 | Seguridad de archivos y accesos: almacenamiento privado, autorización por pertenencia, rutas del CRM solo personal | `docs/funcionalidades/seguridad-archivos.md` | tocas subidas/descargas, contratos, o agregas rutas con `auth` |
 | Portal del inquilino: "Mi camino", menú corto, barra inferior móvil, "Mis documentos" con estados | `docs/funcionalidades/portal-inquilino-navegacion.md` | tocas `layouts/portal`, `TenantRoadmap`, `TenantDocumentRows`, `portal/journey`, `portal/expediente` |
 | Obligado solidario (póliza sin aval): sin cuenta propia, lo captura el inquilino desde su Portal (`?para=obligado`) | `docs/funcionalidades/obligado-solidario.md` | tocas `ObligadoSolidarioService`, `?para=obligado`, `DocumentUploader`, `RentalExpedienteStatus` |
@@ -44,6 +44,7 @@ Dueño: Alejandro Solórzano — broker activo que opera el negocio él mismo (n
 - **Propiedades públicas:** `reservada/vendida/rentada` se ven con letrero; `archived` se oculta.
 - **Cada módulo/feature nuevo entrega su artículo del Manual del Broker en la misma sesión:** `database/seeders/help-articles/{slug}.md` + migración que lo siembra (patrón de `2026_09_25_130000_seed_help_revision_documentos.php`; editar el .md después NO actualiza la BD, requiere migración de resync).
 - **SEGURIDAD de archivos:** todo archivo sensible se guarda/lee con `App\Support\SecureFiles` (disco privado), nunca en `public`; toda ruta `auth` del CRM lleva rol (`viewer`); toda ruta que sirve un archivo autoriza por pertenencia. Ver `docs/funcionalidades/seguridad-archivos.md`.
+- **Ningún FK de `documents` hacia `users` lleva `cascadeOnDelete()`** (incidente real 2026-10-01: borrar el portal de un cliente le borró sus documentos). Siempre `nullOnDelete()` — un documento nunca debe depender de que el usuario que lo subió siga existiendo.
 - **Altas de personas desde el Portal (obligado solidario, etc.): NUNCA `ClientPortalService::createPortalAccount`** (reutiliza al usuario con ese correo y le cambia rol y contraseña). Ver `docs/funcionalidades/obligado-solidario.md`.
 - **Subidas de documentos:** jamás `capture=` en `<input type=file>`; todo punto de subida del Portal pasa por `DocumentQualityService` y lleva `data-hdv-assist`. **Aprobar/rechazar un documento SIEMPRE por `DocumentReviewService::apply()`.**
 
