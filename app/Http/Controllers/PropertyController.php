@@ -487,11 +487,16 @@ class PropertyController extends Controller
         $validated = $request->validate([
             'client_id'               => 'required|exists:clients,id',
             'description'             => 'nullable|string|max:1000',
-            'scheduled_at_date'       => 'required|date',
+            // after_or_equal:today — hallazgo real 2026-10-01: sin esto, se podía agendar (y
+            // mandar confirmación por correo) una "visita" con fecha ya pasada. Ver
+            // docs/funcionalidades/ (flujo de visitas).
+            'scheduled_at_date'       => 'required|date|after_or_equal:today',
             'scheduled_at_time'       => 'required|date_format:H:i',
             'duracion'                => 'nullable|integer|in:30,60,90,120',
             'asesor_id'               => 'nullable|exists:users,id',
             'send_confirmation_email' => 'nullable|boolean',
+        ], [
+            'scheduled_at_date.after_or_equal' => 'La fecha de la visita no puede ser anterior a hoy.',
         ]);
 
         $client = Client::findOrFail($validated['client_id']);

@@ -321,13 +321,19 @@ class FormSubmissionController extends Controller
     public function scheduleVisit(Request $request, FormSubmission $formSubmission)
     {
         $validated = $request->validate([
-            'scheduled_at_date'       => 'required|date',
+            // after_or_equal:today — hallazgo real 2026-10-01: Yarlin (lead ya visitó y dejó
+            // feedback) recibió un correo de "tu visita está agendada" para una fecha ya pasada,
+            // porque se reabrió este mismo formulario sobre el lead viejo. Ver
+            // PropertyController::scheduleVisit.
+            'scheduled_at_date'       => 'required|date|after_or_equal:today',
             'scheduled_at_time'       => 'required|date_format:H:i',
             'duracion'                => 'nullable|integer|in:30,60,90,120',
             'asesor_id'               => 'nullable|exists:users,id',
             'property_id'             => 'nullable|exists:properties,id',
             'description'             => 'nullable|string|max:1000',
             'send_confirmation_email' => 'nullable|boolean',
+        ], [
+            'scheduled_at_date.after_or_equal' => 'La fecha de la visita no puede ser anterior a hoy.',
         ]);
 
         $scheduledAt = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . $validated['scheduled_at_time']);

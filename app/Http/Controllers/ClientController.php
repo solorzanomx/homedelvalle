@@ -583,12 +583,15 @@ class ClientController extends Controller
         $validated = $request->validate([
             'type'                   => 'required|in:note,call,visit,meeting,whatsapp',
             'description'            => 'required|string|max:1000',
-            'scheduled_at_date'      => 'required_if:type,visit|nullable|date',
+            // after_or_equal:today — hallazgo real 2026-10-01, ver PropertyController::scheduleVisit.
+            'scheduled_at_date'      => 'required_if:type,visit|nullable|date|after_or_equal:today',
             'scheduled_at_time'      => 'required_if:type,visit|nullable|date_format:H:i',
             'duracion'               => 'nullable|integer|in:30,60,90,120',
             'asesor_id'              => 'nullable|exists:users,id',
             'property_id'            => 'nullable|exists:properties,id',
             'send_confirmation_email'=> 'nullable|boolean',
+        ], [
+            'scheduled_at_date.after_or_equal' => 'La fecha de la visita no puede ser anterior a hoy.',
         ]);
 
         // Resolve asesor user data

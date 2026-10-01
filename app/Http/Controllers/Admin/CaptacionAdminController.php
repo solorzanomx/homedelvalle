@@ -228,8 +228,11 @@ class CaptacionAdminController extends Controller
     public function scheduleVisit(Request $request, Captacion $captacion)
     {
         $validated = $request->validate([
-            'scheduled_at_date' => 'required|date',
+            // after_or_equal:today — hallazgo real 2026-10-01, ver PropertyController::scheduleVisit.
+            'scheduled_at_date' => 'required|date|after_or_equal:today',
             'scheduled_at_time' => 'nullable|date_format:H:i',
+        ], [
+            'scheduled_at_date.after_or_equal' => 'La fecha de la visita no puede ser anterior a hoy.',
         ]);
 
         $scheduledAt = \Carbon\Carbon::parse($validated['scheduled_at_date'] . ' ' . ($validated['scheduled_at_time'] ?? '10:00'));
