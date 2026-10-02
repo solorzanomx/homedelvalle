@@ -43,6 +43,19 @@ rechaza con error de validación, en vez de crear la visita y mandar el correo i
 | El envío real del correo de confirmación | `App\Mail\V4\Mailables\CitaMail` (nueva visita) / `RecordatorioCitaMail` (reenvío/recordatorio) |
 | Creación de la `Interaction` para un `Client` ya existente | `VisitSchedulingService::createVisit()` |
 | Creación de la `Interaction` para un lead sin convertir (`FormSubmission`) | `VisitSchedulingService::createVisitForLead()` |
+| Tarjeta "Visitas" (historial + agendar) en la ficha de un lead | `resources/views/admin/form-submissions/show.blade.php`, sidebar — ver abajo |
+
+## Ficha del lead: "Visitas" vive en el sidebar (2026-10-02)
+Pedido real de Alejandro: la tarjeta "Visitas" aparecía como el primer bloque del área central
+de `/admin/form-submissions/{id}` — se movió al sidebar derecho, justo debajo de "Temperatura del
+lead", junto con el resto de acciones rápidas (convertir a cliente, WhatsApp, estado). El
+formulario de "+ Agendar visita" (fecha, hora, duración, asesor) viene **abierto por default**
+cuando el lead todavía no tiene ninguna visita — un clic menos para el caso más común.
+
+El selector **"Inmueble a visitar" ya preseleccionaba** el inmueble por el que llegó el lead
+(`$propiedadLocal`, detectado de `payload.propiedad_local_id` en leads de Inmuebles24) — eso no
+es nuevo, solo se le agregó una nota visible ("Preseleccionado — es el inmueble por el que
+llegó...") para que quede claro que se puede cambiar si la visita es de otro inmueble.
 
 ## INVARIANTES — no romper
 - **`scheduled_at_date` SIEMPRE lleva `after_or_equal:today`** en los 4 lugares — si agregas un
