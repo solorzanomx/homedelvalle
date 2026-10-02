@@ -133,6 +133,15 @@ class FormSubmissionsTable extends Component
     {
         $submissions = $this->getQuery()->paginate(25);
 
+        // Hallazgo real 2026-10-02: Livewire::originalPath() (lo que usa el resolver de paginación
+        // de Livewire por default) devuelve request()->path() SIN el "/" inicial — Paginator::url()
+        // lo concatena tal cual, así que el href queda "admin/form-submissions?page=2" (relativo).
+        // Con una ruta de un solo segmento el navegador lo resuelve bien por accidente; con el
+        // prefijo /admin (dos segmentos) lo resuelve relativo al directorio actual y duplica
+        // "admin" → 404. withPath() fuerza una URL absoluta correcta, reusando el path real tanto
+        // en la carga inicial como en los re-renders de Livewire (paginar, buscar, etc.).
+        $submissions->withPath(url(\Livewire\Livewire::originalPath()));
+
         $counts = [
             'total'     => FormSubmission::count(),
             'unseen'    => FormSubmission::whereNull('seen_at')->count(),
