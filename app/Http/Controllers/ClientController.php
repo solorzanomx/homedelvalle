@@ -419,6 +419,37 @@ class ClientController extends Controller
             // silencioso si la tabla aún no existe
         }
 
+        // "Todo lo que ha pasado desde que era lead" (pedido real 2026-10-02): hasta ahora la
+        // ficha del cliente no mostraba NADA del/los formulario(s) que lo trajeron — solo las
+        // interacciones (visitas, notas) que ya estuvieran bien ligadas. LeadConversionService ya
+        // adopta los leads duplicados del mismo contacto al convertir, así que esto cubre
+        // normalmente uno o más registros reales, no solo el que se convirtió.
+        $leads = \App\Models\FormSubmission::where('client_id', $client->id)->latest()->get();
+        foreach ($leads as $lead) {
+            $payload = $lead->payload ?? [];
+            $interes = $payload['propiedad_local'] ?? $payload['titulo_aviso'] ?? null;
+            $presupuesto = ($lead->budget_min || $lead->budget_max)
+                ? '$' . number_format((float) $lead->budget_min) . ' – $' . number_format((float) $lead->budget_max)
+                : null;
+
+            $bodyHtml = 'Llegó como lead — <strong>' . e(ucfirst($lead->form_type)) . '</strong>';
+            if ($interes) {
+                $bodyHtml .= '<div style="margin-top:3px;font-size:.82rem;color:#5a6573;">🏠 ' . e($interes) . '</div>';
+            }
+            if ($presupuesto) {
+                $bodyHtml .= '<div style="margin-top:2px;font-size:.82rem;color:#5a6573;">💰 ' . e($presupuesto) . '</div>';
+            }
+
+            $timeline->push([
+                'date'       => $lead->created_at,
+                'dot'        => 'lead',
+                'color'      => '#f97316',
+                'type_label' => 'Lead',
+                'body'       => $bodyHtml,
+                'meta'       => '<a href="' . route('admin.form-submissions.show', $lead) . '" style="color:var(--primary);">Ver formulario original →</a>',
+            ]);
+        }
+
         $timeline = $timeline->sortByDesc('date')->values();
 
         // Solicitudes de firma de Confidencialidad por Google Docs YA EN CURSO

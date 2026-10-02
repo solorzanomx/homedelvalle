@@ -67,6 +67,12 @@ class FormSubmissionsTable extends Component
         session()->flash('success', "{$count} leads eliminados");
     }
 
+    /**
+     * Delegado a LeadConversionService (compartido con Admin\FormSubmissionController::convertToClient)
+     * desde el hallazgo real 2026-10-01: esta versión no "adoptaba" leads/visitas duplicadas del
+     * mismo contacto ni detectaba la propiedad de interés — un cliente nuevo se convertía sin
+     * rastro de su historial previo como lead.
+     */
     public function convertToClient(int $id): void
     {
         $submission = FormSubmission::findOrFail($id);
@@ -76,47 +82,37 @@ class FormSubmissionsTable extends Component
             return;
         }
 
-        // client_type se re-deriva de interest_types en vez de copiarse tal
-        // cual del FormSubmission — antes heredaba directo cualquier valor
-        // inconsistente que ya trajera el submission (bug real, auditoría
-        // 2026-07-04).
-        $data = [
-            'name'             => $submission->full_name,
-            'phone'            => $submission->phone,
-            'whatsapp'         => $submission->phone,
-            'client_type'      => \App\Models\Client::deriveClientType($submission->interest_types ?? []) ?? $submission->client_type,
-            'lead_temperature' => $submission->lead_temperature ?? 'warm',
-            'budget_min'       => $submission->budget_min,
-            'budget_max'       => $submission->budget_max,
-            'property_type'    => $submission->property_type,
-            'interest_types'   => $submission->interest_types,
-            'utm_source'       => $submission->utm_source,
-            'utm_medium'       => $submission->utm_medium,
-            'utm_campaign'     => $submission->utm_campaign,
-            'lead_source'      => 'form_' . $submission->form_type,
-            'initial_notes'    => $submission->payload['mensaje'] ?? null,
-        ];
+        $result = app(\App\Services\LeadConversionService::class)->convert($submission);
+        $client = $result['client'];
 
-        // Si ya existe un cliente con ese email, vincularlo sin duplicar
-        $existing = Client::where('email', $submission->email)->first();
+        if (! $result['was_existing']) {
+            try {
+                app(\App\Services\AutomationEngine::class)->processNewClient($client);
+            } catch (\Throwable $e) {
+                \Log::warning('convertToClient: processNewClient falló', ['error' => $e->getMessage()]);
+            }
+        }
 
-        if ($existing) {
-            $submission->update(['client_id' => $existing->id]);
-            session()->flash('success', "Lead vinculado al cliente existente «{$existing->name}».");
+        $msg = $result['was_existing']
+            ? "Lead vinculado al cliente existente «{$client->name}»."
+            : "Cliente «{$client->name}» creado exitosamente.";
+        if ($result['reparented_leads'] > 0 || $result['reparented_interactions'] > 0) {
+            $msg .= ' Se recuperó su historial de ' . $result['reparented_leads'] . ' lead(s) y '
+                . $result['reparented_interactions'] . ' interacción(es) previas.';
+        }
+
+        // Inquilino con propiedad de interés detectada — directo al trato de renta prellenado.
+        if ($result['property_id'] && in_array('renta_inquilino', $client->interest_types ?? [], true)) {
+            session()->flash('success', $msg . ' Ya puedes crear el trato de renta del inmueble que le interesó.');
+            $this->redirect(route('rentals.create') . '?' . http_build_query([
+                'property' => $result['property_id'],
+                'owner'    => $result['owner_client_id'],
+                'tenant'   => $client->id,
+            ]), navigate: false);
             return;
         }
 
-        $client = Client::create(array_merge($data, ['email' => $submission->email]));
-        $submission->update(['client_id' => $client->id]);
-
-        // La conversión ES el nacimiento del cliente (política de seguimiento)
-        try {
-            app(\App\Services\AutomationEngine::class)->processNewClient($client);
-        } catch (\Throwable $e) {
-            \Log::warning('convertToClient: processNewClient falló', ['error' => $e->getMessage()]);
-        }
-
-        session()->flash('success', "Cliente «{$client->name}» creado exitosamente.");
+        session()->flash('success', $msg);
     }
 
     private function getQuery()

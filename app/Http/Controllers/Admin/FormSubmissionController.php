@@ -8,6 +8,7 @@ use App\Models\FormSubmission;
 use App\Models\Message;
 use App\Models\SiteSetting;
 use App\Services\EmailService;
+use App\Services\LeadConversionService;
 use Illuminate\Http\Request;
 
 class FormSubmissionController extends Controller
@@ -179,7 +180,7 @@ class FormSubmissionController extends Controller
         return back()->with('success', 'Notas guardadas');
     }
 
-    public function convertToClient(FormSubmission $formSubmission)
+    public function convertToClient(FormSubmission $formSubmission, LeadConversionService $conversion)
     {
         // Leads de propietario (quiere vender/rentar su inmueble, o vender su
         // predio a una desarrolladora) van directo al wizard de captación con
@@ -188,103 +189,52 @@ class FormSubmissionController extends Controller
         // captación. Ver docs/07-FLUJO-CAPTACION-Y-MEJORAS.md.
         $goesToCaptacion = in_array($formSubmission->form_type, ['vendedor', 'vendedor_predio']);
 
-        if ($formSubmission->client_id) {
-            if ($goesToCaptacion) {
-                return redirect()
-                    ->route('admin.captaciones.create-from-call', ['client_id' => $formSubmission->client_id, 'form_submission_id' => $formSubmission->id])
-                    ->with('success', 'Este lead ya tiene un cliente asociado.');
-            }
-            return back()->with('success', 'Este lead ya tiene un cliente asociado.');
+        if ($formSubmission->client_id && $goesToCaptacion) {
+            return redirect()
+                ->route('admin.captaciones.create-from-call', ['client_id' => $formSubmission->client_id, 'form_submission_id' => $formSubmission->id])
+                ->with('success', 'Este lead ya tiene un cliente asociado.');
         }
 
-        $wasExisting = Client::where('email', $formSubmission->email)->exists();
-        $client = $this->resolveOrCreateClientFromLead($formSubmission);
+        $result = $conversion->convert($formSubmission);
+        $client = $result['client'];
 
-        if ($wasExisting) {
-            if ($goesToCaptacion) {
-                return redirect()
-                    ->route('admin.captaciones.create-from-call', ['client_id' => $client->id, 'form_submission_id' => $formSubmission->id])
-                    ->with('success', "Lead vinculado al cliente existente «{$client->name}».");
+        // La conversión ES el nacimiento del cliente (política de seguimiento): aquí se
+        // disparan las automatizaciones de cliente nuevo — solo si de verdad es nuevo, no al
+        // volver a convertir un lead que ya tenía cliente o se vinculó a uno existente.
+        if (! $result['was_existing']) {
+            try {
+                app(\App\Services\AutomationEngine::class)->processNewClient($client);
+            } catch (\Throwable $e) {
+                \Log::warning('convertToClient: processNewClient falló', ['error' => $e->getMessage()]);
             }
-            return back()->with('success', "Lead vinculado al cliente existente «{$client->name}».");
         }
 
-        // La conversión ES el nacimiento del cliente (política de
-        // seguimiento): aquí se disparan las automatizaciones de cliente
-        // nuevo que antes corrían al llegar el formulario.
-        try {
-            app(\App\Services\AutomationEngine::class)->processNewClient($client);
-        } catch (\Throwable $e) {
-            \Log::warning('convertToClient: processNewClient falló', ['error' => $e->getMessage()]);
+        $successMsg = $result['was_existing']
+            ? "Lead vinculado al cliente existente «{$client->name}»."
+            : "Cliente «{$client->name}» creado exitosamente.";
+        if ($result['reparented_leads'] > 0 || $result['reparented_interactions'] > 0) {
+            $successMsg .= ' Se recuperó su historial de ' . $result['reparented_leads'] . ' lead(s) y '
+                . $result['reparented_interactions'] . ' interacción(es) previas (visitas, notas…).';
         }
 
         if ($goesToCaptacion) {
             return redirect()
                 ->route('admin.captaciones.create-from-call', ['client_id' => $client->id, 'form_submission_id' => $formSubmission->id])
-                ->with('success', "Cliente «{$client->name}» creado exitosamente.");
-        }
-        return back()->with('success', "Cliente «{$client->name}» creado exitosamente.");
-    }
-
-    /**
-     * Al convertir un lead con visitas ya agendadas/calificadas (registradas
-     * con form_submission_id porque todavia no existia el Client), el
-     * historial se "adopta": se les pone client_id sin borrar
-     * form_submission_id, para que el timeline del cliente nuevo lo muestre
-     * de inmediato sin duplicar filas.
-     */
-    private function reparentVisits(FormSubmission $formSubmission, Client $client): void
-    {
-        \App\Models\Interaction::where('form_submission_id', $formSubmission->id)
-            ->whereNull('client_id')
-            ->update(['client_id' => $client->id]);
-    }
-
-    /**
-     * Encuentra o crea el Client de un lead — misma lógica que usaba
-     * convertToClient() inline, extraída para que sendTenantChecklist()
-     * (2026-09-21) también pueda convertir el lead en un solo paso sin
-     * duplicar el criterio de client_type/interest_types.
-     */
-    private function resolveOrCreateClientFromLead(FormSubmission $formSubmission): Client
-    {
-        if ($formSubmission->client_id) {
-            return Client::findOrFail($formSubmission->client_id);
+                ->with('success', $successMsg);
         }
 
-        $existing = Client::where('email', $formSubmission->email)->first();
-        if ($existing) {
-            $formSubmission->update(['client_id' => $existing->id]);
-            $this->reparentVisits($formSubmission, $existing);
-            return $existing;
+        // Inquilino con una propiedad de interés detectada (de una visita, o del aviso de
+        // Inmuebles24 que lo trajo) — directo al trato de renta prellenado, en vez de perderlo
+        // en la lista de leads. Hallazgo real 2026-10-01 (Yarlin).
+        if ($result['property_id'] && in_array('renta_inquilino', $client->interest_types ?? [], true)) {
+            return redirect(route('rentals.create') . '?' . http_build_query([
+                'property' => $result['property_id'],
+                'owner'    => $result['owner_client_id'],
+                'tenant'   => $client->id,
+            ]))->with('success', $successMsg . ' Ya puedes crear el trato de renta del inmueble que le interesó.');
         }
 
-        // client_type se re-deriva de interest_types en vez de copiarse tal
-        // cual del FormSubmission — mismo bug ya corregido en
-        // FormSubmissionsTable::convertToClient() (auditoría 2026-07-04).
-        $data = [
-            'name'             => $formSubmission->full_name,
-            'email'            => $formSubmission->email,
-            'phone'            => $formSubmission->phone,
-            'whatsapp'         => $formSubmission->phone,
-            'client_type'      => Client::deriveClientType($formSubmission->interest_types ?? []) ?? $formSubmission->client_type,
-            'lead_temperature' => $formSubmission->lead_temperature ?? 'warm',
-            'budget_min'       => $formSubmission->budget_min,
-            'budget_max'       => $formSubmission->budget_max,
-            'property_type'    => $formSubmission->property_type,
-            'interest_types'   => $formSubmission->interest_types,
-            'utm_source'       => $formSubmission->utm_source,
-            'utm_medium'       => $formSubmission->utm_medium,
-            'utm_campaign'     => $formSubmission->utm_campaign,
-            'lead_source'      => 'form_' . $formSubmission->form_type,
-            'initial_notes'    => $formSubmission->payload['mensaje'] ?? null,
-        ];
-
-        $client = Client::create($data);
-        $formSubmission->update(['client_id' => $client->id]);
-        $this->reparentVisits($formSubmission, $client);
-
-        return $client;
+        return back()->with('success', $successMsg);
     }
 
     /**
