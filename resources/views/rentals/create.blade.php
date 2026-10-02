@@ -125,6 +125,14 @@
                                 @endforeach
                             </select>
                             <div class="form-hint">Solo propiedades tipo renta</div>
+                            {{-- Hallazgo 2026-10-02: crear/avanzar un trato nunca tocaba el status de
+                                 la propiedad — se quedaba "disponible" aunque ya tuviera un trato real
+                                 en curso. Checkbox explícito (no automático a ciegas, puede haber
+                                 varios tratos en paralelo a propósito) marcado por default. --}}
+                            <label style="display:flex;align-items:center;gap:0.4rem;margin-top:0.6rem;font-size:0.82rem;font-weight:500;">
+                                <input type="checkbox" name="mark_property_reserved" value="1" {{ old('mark_property_reserved', '1') ? 'checked' : '' }}>
+                                Marcar esta propiedad como "Reservada"
+                            </label>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Propietario</label>

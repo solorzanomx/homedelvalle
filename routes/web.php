@@ -463,6 +463,7 @@ Route::middleware(['auth', 'viewer'])->prefix('admin')->name('admin.')->group(fu
     Route::post('/form-submissions/{formSubmission}/reject-broker', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'rejectBroker'])->name('form-submissions.reject-broker');
     Route::post('/form-submissions/{formSubmission}/ai-suggest', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'aiSuggest'])->name('form-submissions.ai-suggest');
     Route::post('/form-submissions/{formSubmission}/send-email', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'sendEmail'])->name('form-submissions.send-email');
+    Route::get('/form-submissions/{formSubmission}/whatsapp', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'whatsappRedirect'])->name('form-submissions.whatsapp');
     Route::delete('/form-submissions/{formSubmission}', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'destroy'])->name('form-submissions.destroy');
     Route::delete('/form-submissions', [\App\Http\Controllers\Admin\FormSubmissionController::class, 'bulkDestroy'])->name('form-submissions.bulk-destroy');
 

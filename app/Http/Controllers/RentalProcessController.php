@@ -96,12 +96,24 @@ class RentalProcessController extends Controller
             'annual_increase_type'       => 'nullable|in:none,inpc,fixed',
             'annual_increase_percentage' => 'nullable|numeric|min:0|max:100',
             'notes'                      => 'nullable|string|max:2000',
+            // Hallazgo 2026-10-02: crear un trato nunca tocaba Property.status — la propiedad se
+            // quedaba "disponible" (visible en el sitio público, en el buscador) aunque ya tuviera
+            // un trato real en curso. Checkbox explícito, no automático a ciegas (puede haber
+            // varios tratos en paralelo sobre el mismo inmueble a propósito).
+            'mark_property_reserved'     => 'nullable|boolean',
         ]);
+
+        $markReserved = (bool) ($validated['mark_property_reserved'] ?? false);
+        unset($validated['mark_property_reserved']);
 
         $validated['user_id'] = Auth::id();
         $validated['stage'] = 'captacion';
 
         $rental = RentalProcess::create($validated);
+
+        if ($markReserved) {
+            Property::where('id', $rental->property_id)->update(['status' => 'reserved']);
+        }
 
         RentalStageLog::create([
             'rental_process_id' => $rental->id,

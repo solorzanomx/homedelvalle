@@ -525,6 +525,33 @@ class FormSubmissionController extends Controller
         return back()->with('success', 'Correo enviado a ' . $formSubmission->email . '.');
     }
 
+    /**
+     * El botón "Responder por WhatsApp" antes era un link plano a wa.me — nunca marcaba el lead
+     * como contactado (hallazgo real 2026-10-02: con la mayoría del contacto real siendo por
+     * WhatsApp, un lead podía llevar días de conversación y seguir viéndose "Nuevo" /
+     * "Contactado: —" en el panel). Ahora pasa por aquí primero: marca contactado (mismo criterio
+     * que sendEmail — solo la primera vez, nunca pisa un contacted_at ya puesto) y redirige a
+     * wa.me con el mensaje contextual ya armado.
+     */
+    public function whatsappRedirect(FormSubmission $formSubmission)
+    {
+        if (!$formSubmission->phone || $formSubmission->phone === 'sin teléfono') {
+            return back()->with('error', 'Este lead no tiene WhatsApp registrado.');
+        }
+
+        if (!$formSubmission->contacted_at) {
+            $formSubmission->update([
+                'contacted_at' => now(),
+                'status' => $formSubmission->status === 'new' ? 'contacted' : $formSubmission->status,
+            ]);
+        }
+
+        $phone = preg_replace('/[^0-9]/', '', $formSubmission->phone);
+        $message = \App\Support\LeadWhatsAppMessage::build($formSubmission);
+
+        return redirect('https://wa.me/' . $phone . '?text=' . urlencode($message));
+    }
+
     private function buildLeadReplyEmailHtml(string $message, FormSubmission $formSubmission, $user, string $siteName): string
     {
         $senderName = $user->full_name ?? $user->name;

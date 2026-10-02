@@ -33,40 +33,22 @@
     {{-- Main --}}
     <div>
         @php
-            // Mensaje de WhatsApp contextual: si el lead preguntó por una
-            // propiedad (portales), se menciona desde el primer mensaje —
-            // responder con contexto gana la conversación.
+            // El mensaje de WhatsApp contextual (si el lead preguntó por una propiedad, se
+            // menciona desde el primer mensaje) ya no se arma aquí — los botones de WhatsApp
+            // pasan por admin.form-submissions.whatsapp (marca "contactado" y redirige), que usa
+            // App\Support\LeadWhatsAppMessage::build() del lado del servidor. $propiedadLocal y
+            // $nombreCorto sí se siguen usando en esta vista (tarjeta "Propiedad de interés",
+            // preselección en "Agendar visita", encabezados).
             $propiedadLocal = null;
             if (!empty($submission->payload['propiedad_local_id'])) {
                 $propiedadLocal = \App\Models\Property::find($submission->payload['propiedad_local_id']);
             }
             $nombreCorto = explode(' ', trim($submission->full_name))[0] ?: 'Hola';
-            if ($propiedadLocal) {
-                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$propiedadLocal->title}» (" . '$' . number_format((float) $propiedadLocal->price) . " {$propiedadLocal->currency}). Sigue disponible — ¿te gustaría agendar una visita esta semana?";
-            } elseif (!empty($submission->payload['eb_titulo'])) {
-                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$submission->payload['eb_titulo']}»"
-                    . (!empty($submission->payload['eb_precio']) ? " ({$submission->payload['eb_precio']}" . (($submission->payload['eb_operacion'] ?? null) === 'renta' ? ' de renta' : '') . ')' : '')
-                    . ". ¿Te gustaría agendar una visita esta semana?";
-            } elseif (!empty($submission->payload['eb_property_id'])) {
-                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en la propiedad {$submission->payload['eb_property_id']} — con gusto te comparto los detalles. ¿Qué estás buscando: comprar o rentar?";
-            } elseif (!empty($submission->payload['titulo_aviso'])) {
-                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Vi tu interés en «{$submission->payload['titulo_aviso']}»"
-                    . (!empty($submission->payload['precio']) ? " ({$submission->payload['precio']})" : '')
-                    . ". ¿Te gustaría agendar una visita esta semana?";
-            } elseif (in_array($submission->form_type, ['vendedor', 'vendedor_predio'])) {
-                $waMsg = "Hola {$nombreCorto}, soy de Home del Valle. Recibimos tu solicitud de valuación — ¿tienes 5 minutos para platicar de tu propiedad?";
-            } else {
-                $waMsg = "Hola {$nombreCorto}, te contactamos de Home del Valle sobre tu solicitud. ¿En qué horario te queda bien platicar?";
-            }
+
             $esPosibleBroker = ($submission->lead_tag === 'LEAD_BROKER') || !empty($submission->payload['posible_broker']);
             $verificacionBroker = $submission->payload['broker_verification_data'] ?? null;
             $verificacionCompletada = !empty($submission->payload['broker_verification_completed_at']);
             $verificacionDecidida = $submission->status === 'qualified' || ($submission->payload['broker_verification_decision'] ?? null) === 'rejected';
-
-            // Si la IA ya redactó la respuesta, el WhatsApp sale con ella
-            if (!empty($submission->payload['ai_respuesta'])) {
-                $waMsg = $submission->payload['ai_respuesta'];
-            }
         @endphp
 
         @if(!empty($submission->payload['ai_resumen']))
@@ -245,7 +227,7 @@
             <div class="card-body" style="padding:0">
                 @foreach([
                     ['Email',    $submission->email,   'mailto:'.$submission->email],
-                    ['Teléfono', $submission->phone,   'https://wa.me/'.preg_replace('/[^0-9]/','',$submission->phone).'?text='.urlencode($waMsg)],
+                    ['Teléfono', $submission->phone,   ($submission->phone && $submission->phone !== 'sin teléfono') ? route('admin.form-submissions.whatsapp', $submission) : null],
                     ['Fuente',   $submission->source_page,  null],
                     ['IP',       $submission->ip,      null],
                     ['UTM',      collect(['utm_source'=>$submission->utm_source,'utm_medium'=>$submission->utm_medium,'utm_campaign'=>$submission->utm_campaign])->filter()->map(fn($v,$k)=>"{$k}={$v}")->implode(' · ') ?: '—', null],
@@ -359,11 +341,14 @@
             <div class="card-header"><h3>Contactar</h3></div>
             <div class="card-body">
                 @if($submission->phone && $submission->phone !== 'sin teléfono')
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/','',$submission->phone) }}?text={{ urlencode($waMsg) }}"
+                {{-- Pasa por el servidor (marca contactado la primera vez) y de ahí redirige a
+                     wa.me — hallazgo real 2026-10-02: antes era un link directo, nunca quedaba
+                     registro de que ya se le había escrito. --}}
+                <a href="{{ route('admin.form-submissions.whatsapp', $submission) }}"
                    target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;background:#25D366;border-color:#25D366">
                     💬 Responder por WhatsApp
                 </a>
-                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Mensaje pre-armado con la propiedad de interés — edítalo en WhatsApp antes de enviar si hace falta.</p>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Mensaje pre-armado con la propiedad de interés — edítalo en WhatsApp antes de enviar si hace falta. Al abrir, este lead queda marcado como "Contactado".</p>
                 @endif
 
                 @if($submission->email && !empty($submission->payload['ai_respuesta'] ?? null))
