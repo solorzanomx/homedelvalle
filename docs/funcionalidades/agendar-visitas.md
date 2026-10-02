@@ -45,12 +45,18 @@ rechaza con error de validación, en vez de crear la visita y mandar el correo i
 | Creación de la `Interaction` para un lead sin convertir (`FormSubmission`) | `VisitSchedulingService::createVisitForLead()` |
 | Tarjeta "Visitas" (historial + agendar) en la ficha de un lead | `resources/views/admin/form-submissions/show.blade.php`, sidebar — ver abajo |
 
-## Ficha del lead: "Visitas" vive en el sidebar (2026-10-02)
+## Ficha del lead: "Visitas" vive en el sidebar, en orden lógico (2026-10-02)
 Pedido real de Alejandro: la tarjeta "Visitas" aparecía como el primer bloque del área central
-de `/admin/form-submissions/{id}` — se movió al sidebar derecho, justo debajo de "Temperatura del
-lead", junto con el resto de acciones rápidas (convertir a cliente, WhatsApp, estado). El
-formulario de "+ Agendar visita" (fecha, hora, duración, asesor) viene **abierto por default**
-cuando el lead todavía no tiene ninguna visita — un clic menos para el caso más común.
+de `/admin/form-submissions/{id}` — se movió al sidebar derecho. El formulario de "+ Agendar
+visita" (fecha, hora, duración, asesor) viene **abierto por default** cuando el lead todavía no
+tiene ninguna visita — un clic menos para el caso más común.
+
+El sidebar completo quedó reordenado siguiendo el flujo real de trabajar un lead — **Temperatura
+→ Contactar (WhatsApp + correo con respuesta IA) → Visitas → Checklist de requisitos (si es
+inquilino) → Convertir a cliente → Estado del lead** (el select + tag/registrado/contactado,
+que es bitácora, no una acción, así que va al final). Antes, "Responder por WhatsApp" y "Enviar
+por correo" vivían enterrados hasta el fondo, adentro de la tarjeta "Estado del lead" — ahora son
+su propia tarjeta "Contactar", justo después de ver qué tan urgente es el lead.
 
 El selector **"Inmueble a visitar" ya preseleccionaba** el inmueble por el que llegó el lead
 (`$propiedadLocal`, detectado de `payload.propiedad_local_id` en leads de Inmuebles24) — eso no

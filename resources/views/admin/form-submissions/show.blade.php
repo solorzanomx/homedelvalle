@@ -351,6 +351,35 @@
             @endif
         </div>
 
+        {{-- Contactar: lo primero que se hace con un lead nuevo — antes vivía hasta el fondo,
+             adentro de "Estado del lead" (2026-10-02, reordenado por orden lógico del flujo:
+             temperatura → contactar → visita → checklist → convertir → estado). --}}
+        @if(($submission->phone && $submission->phone !== 'sin teléfono') || ($submission->email && !empty($submission->payload['ai_respuesta'] ?? null)))
+        <div class="card" style="margin-bottom:1rem">
+            <div class="card-header"><h3>Contactar</h3></div>
+            <div class="card-body">
+                @if($submission->phone && $submission->phone !== 'sin teléfono')
+                <a href="https://wa.me/{{ preg_replace('/[^0-9]/','',$submission->phone) }}?text={{ urlencode($waMsg) }}"
+                   target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;background:#25D366;border-color:#25D366">
+                    💬 Responder por WhatsApp
+                </a>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Mensaje pre-armado con la propiedad de interés — edítalo en WhatsApp antes de enviar si hace falta.</p>
+                @endif
+
+                @if($submission->email && !empty($submission->payload['ai_respuesta'] ?? null))
+                <form method="POST" action="{{ route('admin.form-submissions.send-email', $submission) }}" style="margin-top:0.75rem"
+                      onsubmit="return confirm('¿Enviar la respuesta sugerida por correo a {{ $submission->email }}?')">
+                    @csrf
+                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#1d4ed8;border-color:#1d4ed8">
+                        ✉️ Enviar por correo
+                    </button>
+                </form>
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Envía la misma respuesta sugerida de arriba a {{ $submission->email }}, queda registrada en "Mensajes enviados" y verás ahí si la abrió.</p>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Visitas: agendar manualmente (sin auto-agendado público, decisión 2026-09-21),
              confirmación, y calificación de la visita — el lead no necesita convertirse a
              Client para pasar por este flujo. Movido al sidebar 2026-10-02 (antes era el primer
@@ -564,25 +593,6 @@
                     </div>
                     @endforeach
                 </div>
-
-                @if($submission->phone && $submission->phone !== 'sin teléfono')
-                <a href="https://wa.me/{{ preg_replace('/[^0-9]/','',$submission->phone) }}?text={{ urlencode($waMsg) }}"
-                   target="_blank" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:1rem;background:#25D366;border-color:#25D366">
-                    💬 Responder por WhatsApp
-                </a>
-                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Mensaje pre-armado con la propiedad de interés — edítalo en WhatsApp antes de enviar si hace falta.</p>
-                @endif
-
-                @if($submission->email && !empty($submission->payload['ai_respuesta'] ?? null))
-                <form method="POST" action="{{ route('admin.form-submissions.send-email', $submission) }}" style="margin-top:0.5rem"
-                      onsubmit="return confirm('¿Enviar la respuesta sugerida por correo a {{ $submission->email }}?')">
-                    @csrf
-                    <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:#1d4ed8;border-color:#1d4ed8">
-                        ✉️ Enviar por correo
-                    </button>
-                </form>
-                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Envía la misma respuesta sugerida de arriba a {{ $submission->email }}, queda registrada en "Mensajes enviados" y verás ahí si la abrió.</p>
-                @endif
 
                 @if(!$esPosibleBroker && $submission->form_type === 'easybroker')
                 <form method="POST" action="{{ route('admin.form-submissions.convert-broker', $submission) }}" style="margin-top:0.5rem">
