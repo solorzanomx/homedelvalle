@@ -1,4 +1,4 @@
-# Propuesta de Servicios (PDF) — logo correcto + 2 páginas de verdad
+# Propuesta de Servicios (PDF) — logo correcto, 2 páginas de verdad, nombre completo del asesor
 
 > 2026-10-02. Lee esto antes de tocar `ServiciosGeneratorService` o `resources/views/pdf/servicios.blade.php`.
 
@@ -22,6 +22,13 @@ documento, no en posición fija) se iba solo a una página 3 casi en blanco, emp
 diferenciadores, grid de servicios, foto de portada) — sin tocar el contenido ni el diseño, solo
 márgenes/padding. Verificado con `pdfinfo` que el PDF generado ahora tiene exactamente 2 páginas
 (antes: 3).
+
+## Hallazgo 3 — el nombre del asesor salía sin apellido
+`buildVars()` usaba `$agent?->name` ("Ana Laura") en vez de `$agent?->full_name` ("Ana Laura
+Monsivais Flores") — `User::getFullNameAttribute()` ya existe y junta `name` + `last_name`, y
+`PresentationGeneratorService` (el servicio hermano) ya lo usaba bien; este no.
+
+**Arreglo**: `'nombreAgente' => $agent?->full_name ?: 'Home del Valle'`.
 
 ## Mapa de archivos
 | Qué | Dónde |

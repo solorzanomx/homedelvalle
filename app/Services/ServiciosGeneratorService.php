@@ -187,7 +187,10 @@ class ServiciosGeneratorService
             'm2Total'           => $property?->total_area ?? null,
             'comisionLabel'     => $comisionLabel,
             'esRenta'           => $esRenta,
-            'nombreAgente'      => $agent?->name ?? 'Home del Valle',
+            // full_name (nombre + apellido), no name a secas — bug real 2026-10-02: salía "Ana
+            // Laura" sin "Monsivais". PresentationGeneratorService (el servicio hermano) ya
+            // usaba full_name correctamente; este no.
+            'nombreAgente'      => $agent?->full_name ?: 'Home del Valle',
             'telefonoAgente'    => $agent?->phone ?? '',
             'emailAgente'       => $agent?->email ?? '',
             'logoUrl'           => $logoUrl,
