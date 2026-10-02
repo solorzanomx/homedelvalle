@@ -132,11 +132,15 @@ class ServiciosGeneratorService
         $intent   = $captacion->intent ?? 'general';
         $esRenta  = str_starts_with($intent, 'renta_');
 
-        // Logo
+        // Logo — el header de este PDF es fondo oscuro (navy), así que necesita el logo
+        // "para fondo oscuro" (logo_path_dark), no el de fondo claro. Bug real 2026-10-02:
+        // se estaba usando siempre logo_path (claro), que casi no se ve sobre el navy.
+        // Fallback a logo_path solo si no hay versión oscura cargada.
         $logoUrl = null;
         $siteSettings = \App\Models\SiteSetting::first();
-        if ($siteSettings?->logo_path) {
-            $logoUrl = url('storage/' . $siteSettings->logo_path);
+        $logoPath = $siteSettings?->logo_path_dark ?: $siteSettings?->logo_path;
+        if ($logoPath) {
+            $logoUrl = url('storage/' . $logoPath);
         }
 
         // Comisión

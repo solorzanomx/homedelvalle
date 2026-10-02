@@ -102,7 +102,7 @@ body {
 }
 .hero-photo {
     width: 100%;
-    height: 190px;
+    height: 145px;
     object-fit: cover;
     display: block;
 }
@@ -210,7 +210,7 @@ body {
     border-left: 4px solid var(--hdv-accent);
     border-radius: 0 10px 10px 0;
     padding: 16px 20px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 .intro-box p {
     font-size: 12.5px;
@@ -244,20 +244,20 @@ body {
     height: 3px;
     background: var(--hdv-accent);
     border-radius: 2px;
-    margin-bottom: 18px;
+    margin-bottom: 12px;
 }
 
 /* ── Por qué nosotros ───────────────────────────────────────────────── */
 .differentiators {
     display: flex;
     gap: 10px;
-    margin-bottom: 28px;
+    margin-bottom: 18px;
 }
 .diff-card {
     flex: 1;
     background: var(--hdv-navy);
     border-radius: 10px;
-    padding: 16px 14px;
+    padding: 12px 14px;
     text-align: center;
 }
 .diff-icon {
@@ -280,19 +280,19 @@ body {
 
 /* ── Servicios grid ─────────────────────────────────────────────────── */
 .section-wrapper {
-    margin-bottom: 26px;
+    margin-bottom: 16px;
 }
 .svc-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
     margin-top: 4px;
 }
 .svc-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 9px;
-    padding: 13px 14px;
+    padding: 8px 14px;
     display: flex;
     gap: 10px;
     align-items: flex-start;
