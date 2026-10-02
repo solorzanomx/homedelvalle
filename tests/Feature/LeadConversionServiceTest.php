@@ -52,6 +52,19 @@ class LeadConversionServiceTest extends TestCase
             $t->unsignedBigInteger('client_id')->nullable();
             $t->timestamps();
         });
+        Schema::create('deals', function (Blueprint $t) {
+            $t->id();
+            $t->unsignedBigInteger('client_id');
+            $t->unsignedBigInteger('property_id');
+            $t->unsignedBigInteger('broker_id')->nullable();
+            $t->string('stage')->default('lead');
+            $t->decimal('amount', 14, 2)->nullable();
+            $t->decimal('commission_amount', 14, 2)->nullable();
+            $t->text('notes')->nullable();
+            $t->date('expected_close_date')->nullable();
+            $t->timestamp('closed_at')->nullable();
+            $t->timestamps();
+        });
         Schema::create('form_submissions', function (Blueprint $t) {
             $t->id();
             $t->string('form_type');
@@ -123,6 +136,10 @@ class LeadConversionServiceTest extends TestCase
         $visit->refresh();
         $this->assertSame($result['client']->id, $oldLead->client_id, 'El lead viejo debe quedar ligado al mismo cliente.');
         $this->assertSame($result['client']->id, $visit->client_id, 'La visita debe dejar de estar huérfana.');
+
+        $this->assertDatabaseHas('deals', [
+            'client_id' => $result['client']->id, 'property_id' => 29, 'stage' => 'lead',
+        ]);
     }
 
     public function test_converting_an_already_converted_lead_does_not_duplicate_or_re_run_automation(): void

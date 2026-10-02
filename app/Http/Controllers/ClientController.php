@@ -70,7 +70,8 @@ class ClientController extends Controller
         $brokers = Broker::all();
         $channels = MarketingChannel::active()->ordered()->get();
         $campaigns = MarketingCampaign::active()->get();
-        return view('clients.create', compact('brokers', 'channels', 'campaigns'));
+        $properties = Property::where('status', 'available')->orderBy('address')->get(['id', 'title', 'address', 'colony']);
+        return view('clients.create', compact('brokers', 'channels', 'campaigns', 'properties'));
     }
 
     public function store(Request $request)
@@ -129,7 +130,14 @@ class ClientController extends Controller
             'spouse_curp'       => 'nullable|string|max:18',
             'bank_clabe'        => 'nullable|string|max:18',
             'bank_name'         => 'nullable|string|max:80',
+            // Hallazgo 2026-10-02 (expediente de Yarlin): no había forma de decir desde la
+            // captura del cliente de qué propiedad se trata — se guarda como Deal (la misma
+            // pieza que ya alimenta la pestaña "Propiedades" de la ficha).
+            'property_of_interest_id' => 'nullable|exists:properties,id',
         ]);
+
+        $propertyOfInterestId = $validated['property_of_interest_id'] ?? null;
+        unset($validated['property_of_interest_id']);
 
         $validated['assigned_user_id'] = Auth::id();
         $validated['lead_source'] = 'manual';
@@ -140,14 +148,18 @@ class ClientController extends Controller
             $validated['photo'] = $request->file('photo')->store('clients', 'public');
         }
 
-        Client::create($validated);
+        $newClient = Client::create($validated);
+
+        if ($propertyOfInterestId) {
+            \App\Models\Deal::firstOrCreate(
+                ['client_id' => $newClient->id, 'property_id' => $propertyOfInterestId],
+                ['stage' => 'lead']
+            );
+        }
 
         // Trigger new_client automations
-        $newClient = Client::where('email', $validated['email'])->first();
-        if ($newClient) {
-            app(\App\Services\AutomationEngine::class)->processNewClient($newClient);
-            \App\Models\LeadEvent::record($newClient->id, 'new_client_created', ['source' => 'manual']);
-        }
+        app(\App\Services\AutomationEngine::class)->processNewClient($newClient);
+        \App\Models\LeadEvent::record($newClient->id, 'new_client_created', ['source' => 'manual']);
 
         return redirect()->route('clients.index')->with('success', 'Cliente creado exitosamente');
     }
@@ -514,7 +526,11 @@ class ClientController extends Controller
         $channels = MarketingChannel::active()->ordered()->get();
         $campaigns = MarketingCampaign::active()->get();
         $agents = User::where('is_active', true)->orderBy('name')->get();
-        return view('clients.edit', compact('client', 'brokers', 'channels', 'campaigns', 'agents'));
+        $properties = Property::where('status', 'available')->orderBy('address')->get(['id', 'title', 'address', 'colony']);
+        // El trato más reciente del cliente — si ya tiene uno, el select de "propiedad de
+        // interés" arranca con ese valor en vez de vacío.
+        $currentPropertyOfInterestId = $client->deals()->latest()->value('property_id');
+        return view('clients.edit', compact('client', 'brokers', 'channels', 'campaigns', 'agents', 'properties', 'currentPropertyOfInterestId'));
     }
 
     public function update(Request $request, string $id)
@@ -568,7 +584,12 @@ class ClientController extends Controller
             'spouse_curp'       => 'nullable|string|max:18',
             'bank_clabe'        => 'nullable|string|max:18',
             'bank_name'         => 'nullable|string|max:80',
+            // Ver store() — mismo criterio, se guarda como Deal, no como columna de clients.
+            'property_of_interest_id' => 'nullable|exists:properties,id',
         ]);
+
+        $propertyOfInterestId = $validated['property_of_interest_id'] ?? null;
+        unset($validated['property_of_interest_id']);
 
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('clients', 'public');
@@ -589,6 +610,16 @@ class ClientController extends Controller
         }
 
         $client->update($validated);
+
+        // firstOrCreate, no updateOrCreate: si el trato ya existe (y quizás ya avanzó de
+        // etapa), guardar el cliente no debe resetearle el stage — solo se crea si es nuevo.
+        if ($propertyOfInterestId) {
+            \App\Models\Deal::firstOrCreate(
+                ['client_id' => $client->id, 'property_id' => $propertyOfInterestId],
+                ['stage' => 'lead']
+            );
+        }
+
         return redirect()->route('clients.edit', $client)->with('success', 'Cliente actualizado exitosamente');
     }
 

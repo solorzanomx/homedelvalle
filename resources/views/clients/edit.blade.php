@@ -146,7 +146,18 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group" style="display:none;"></div>
+                <div class="form-group">
+                    <label class="form-label">Propiedad de interés</label>
+                    <select name="property_of_interest_id" class="form-select">
+                        <option value="">— Sin propiedad específica —</option>
+                        @foreach($properties as $property)
+                            <option value="{{ $property->id }}" {{ old('property_of_interest_id', $currentPropertyOfInterestId) == $property->id ? 'selected' : '' }}>
+                                {{ $property->title ?? $property->address }}{{ $property->colony ? ' — '.$property->colony : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="form-hint">De qué propiedad se trata — se guarda como trato para que aparezca en su pestaña "Propiedades".</div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Presupuesto Minimo</label>
                     <input type="number" name="budget_min" class="form-input" value="{{ old('budget_min', $client->budget_min) }}" min="0" step="0.01">

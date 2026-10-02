@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Client;
+use App\Models\Deal;
 use App\Models\FormSubmission;
 use App\Models\Interaction;
 use App\Models\Property;
@@ -36,6 +37,17 @@ class LeadConversionService
 
         $propertyId = $this->findInterestedPropertyId($siblingIds);
         $ownerClientId = $propertyId ? Property::find($propertyId)?->client_id : null;
+
+        // Hallazgo 2026-10-02 (mismo caso de Yarlin): detectar la propiedad no bastaba — su
+        // pestaña "Propiedades" seguía en 0 porque nada creaba el Deal que esa pestaña lee
+        // (ClientController::show(), $dealProperties). firstOrCreate: si ya existe un trato
+        // para este par cliente+propiedad (quizás ya avanzado de etapa), no se toca.
+        if ($propertyId) {
+            Deal::firstOrCreate(
+                ['client_id' => $client->id, 'property_id' => $propertyId],
+                ['stage' => 'lead']
+            );
+        }
 
         return [
             'client'                   => $client,
