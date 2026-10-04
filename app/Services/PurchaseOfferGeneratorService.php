@@ -52,16 +52,23 @@ class PurchaseOfferGeneratorService
      */
     public static function buyerInfo(?\App\Models\Client $client): array
     {
-        // Client.name se captura siempre desde el primer contacto (nombre completo);
-        // los campos divididos (first_name/last_name_*) se llenan después, si acaso,
-        // durante la verificación legal — por eso Client.name es la fuente principal
-        // aquí, no al revés, para no truncar el nombre a solo "Juan" cuando falten
-        // los apellidos divididos pero name ya tenga el nombre completo.
-        $buyerName = self::tituloCase($client?->name) ?: self::tituloCase(trim(implode(' ', array_filter([
+        // Estos documentos son legales (recibo de apartado, oferta de compra, adéndum de
+        // comisión): el nombre debe coincidir con la identificación oficial/escritura, no con
+        // el nombre informal con el que el cliente se presentó. `first_name`/`last_name_paterno`/
+        // `last_name_materno` son los campos "legales" — se llenan durante la verificación de
+        // identidad — así que tienen PRIORIDAD cuando están completos (nombre + al menos un
+        // apellido). Si faltan (no se ha hecho la verificación), se usa `Client.name` como
+        // respaldo para no dejar el documento sin nombre. Antes era al revés y un cliente con
+        // `name` distinto a su nombre legal (ej. un apodo o el nombre con el que llamó por
+        // teléfono) salía mal en documentos legales reales (hallazgo 2026-10-03).
+        $legalName = trim(implode(' ', array_filter([
             $client?->first_name,
             $client?->last_name_paterno,
             $client?->last_name_materno,
-        ])))) ?: null;
+        ])));
+        $buyerName = ($client?->first_name && ($client?->last_name_paterno || $client?->last_name_materno))
+            ? self::tituloCase($legalName)
+            : (self::tituloCase($client?->name) ?: self::tituloCase($legalName) ?: null);
 
         $buyerId = $client?->id_type && $client?->id_number
             ? "{$client->id_type} {$client->id_number}"
