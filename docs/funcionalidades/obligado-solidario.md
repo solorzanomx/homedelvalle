@@ -1,6 +1,10 @@
 # Obligado solidario (garantía por póliza)
 
 > 2026-09-28 (rediseñado). Léelo antes de tocar `ObligadoSolidarioService`, el paso "Tu obligado solidario" de `TenantRoadmap`, `?para=obligado` del Portal o `DocumentUploader`.
+>
+> **No confundir con [[co-arrendatario]]** (2026-10-03): el obligado es un respaldo que NO renta; el co-arrendatario
+> sí es parte directa del contrato. Comparten mecanismo de captura (`PortalExpedienteController`/`PortalDocumentController`
+> ahora manejan un `$secondaryRole` genérico, no solo obligado) pero son servicios y columnas separados.
 
 ## Regla de negocio (decidida por Alejandro)
 - **Cuando el inquilino NO tiene aval en CDMX (ruta de póliza) se pide un obligado solidario**, con **el mismo cuestionario y documentos que el arrendatario**: datos personales, identificación y domicilio, **nombre de su trabajo (teléfono y antigüedad)**, ingresos, **antiguo arrendador**, **3 referencias personales**; y 3 documentos (INE por ambos lados o pasaporte, comprobante de domicilio, ingresos de los **últimos 3 meses**). Solo se omite "información del hogar".
@@ -13,7 +17,7 @@
 | Alta, estado, avance y **autorización** | `app/Services/ObligadoSolidarioService.php` (`isRequired`, `register`, `status`, `dataProgress`, `tenantMayActFor`) |
 | Columnas | `rental_processes.obligado_client_id`, `obligado_required` (`obligado_invited_at` quedó sin uso) — migración `2026_09_28_100000` |
 | Paso del inquilino (registro, avance, 2 botones) | `TenantRoadmap::obligado()/nextForObligado()`, `portal/_tenant_roadmap.blade.php`, `PortalRentalController::storeObligado` (`portal.rentals.obligado.store`) |
-| Cuestionario a nombre del obligado | `PortalExpedienteController` (`?para=obligado`, `subject()`, `wizardSteps($obligado)`), `portal/expediente.blade.php` (`$obligadoMode`, banner) |
+| Cuestionario a nombre del obligado | `PortalExpedienteController` (`?para=obligado`, `subject()`, `wizardSteps($isSecondary)`), `portal/expediente.blade.php` (`$secondaryRole === 'obligado'`, banner) |
 | Documentos a nombre del obligado | `PortalDocumentController::index` (`?para=obligado`), `portal/documents/tenant.blade.php`, `Livewire/Portal/DocumentUploader` (`forClientId`) |
 | Campos que cuentan (una sola lista) | `app/Support/ExpedienteFields.php` (`PERSONAL`, `IDENTIFICATION`, `INCOME_TENANT`, `INCOME_OBLIGADO`, `REFERENCES_REQUIRED`) |
 | Documentos por persona | `TenantDocumentRows::build($rental,$client,$open,$forObligado)`; `RentalExpedienteStatus::missing($rental,$clientId)` / `isFullyComplete()` |

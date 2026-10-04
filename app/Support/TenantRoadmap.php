@@ -54,17 +54,20 @@ class TenantRoadmap
      */
     public static function build(RentalProcess $r): array
     {
-        $r->loadMissing(['documents', 'contracts', 'poliza', 'investigation', 'polizaPlan', 'obligado']);
+        $r->loadMissing(['documents', 'contracts', 'poliza', 'investigation', 'polizaPlan', 'obligado', 'coTenant']);
         $route = self::route($r);
         $plans = PolizaPlan::offered()->get();
 
         $obligado = app(\App\Services\ObligadoSolidarioService::class);
+        $coTenantSvc = app(\App\Services\CoTenantService::class);
         $steps = array_values(array_filter([
             self::apartado($r),
             self::informacion($r),
             self::documentos($r),
             // Sin aval en CDMX (póliza) se pide un obligado solidario con los mismos datos y documentos que el inquilino.
             $obligado->isRequired($r) ? self::obligado($r, $obligado) : null,
+            // Co-arrendatario: solo aparece si ya se registró uno (es opcional y manual, no lo dispara ninguna ruta).
+            $r->co_tenant_client_id ? self::coTenant($r, $coTenantSvc) : null,
             self::garantia($r, $route, $plans),
             self::contrato($r, $route),
             self::entrega($r),
@@ -131,7 +134,9 @@ class TenantRoadmap
 
             'obligado' => self::nextForObligado($steps['obligado'] ?? []),
 
-            'entrega' => ['title' => 'Casi listo: la entrega de tu inmueble', 'body' => $steps['entrega']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
+            'co_tenant' => self::nextForCoTenant($steps['co_tenant'] ?? []),
+
+            'entrega' =>['title' => 'Casi listo: la entrega de tu inmueble', 'body' => $steps['entrega']['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
 
             default => ['title' => '¡Todo en orden!', 'body' => 'Completaste todos los pasos. Tu asesor te contactará ante cualquier novedad.', 'minutes' => null, 'cta_label' => null, 'cta_url' => null],
         };
@@ -154,6 +159,23 @@ class TenantRoadmap
         if (! empty($st['docs_missing']) && ($st['docs']['falta'] + $st['docs']['corregir']) > 0) {
             return ['title' => "Sube los documentos de {$name}", 'body' => $step['summary'],
                 'minutes' => 5, 'cta_label' => 'Subir sus documentos', 'cta_url' => route('portal.documents.index', ['para' => 'obligado'])];
+        }
+
+        return ['title' => "Tu asesor está revisando los documentos de {$name}", 'body' => $step['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null];
+    }
+
+    /** El co-arrendatario ya existe cuando este paso aparece (se agrega desde el admin o desde la Portal, fuera del camino). */
+    private static function nextForCoTenant(array $step): array
+    {
+        $st = $step['os_status'] ?? null;
+        $name = $st['name'] ?? '';
+        if (($st['data_pct'] ?? 0) < 100) {
+            return ['title' => "Llena los datos de {$name}", 'body' => 'Es el mismo cuestionario que el tuyo: datos personales, identificación, trabajo/ingresos y referencias.',
+                'minutes' => 10, 'cta_label' => 'Llenar sus datos', 'cta_url' => route('portal.expediente', ['para' => 'co_tenant'])];
+        }
+        if (! empty($st['docs_missing']) && (($st['docs']['falta'] ?? 0) + ($st['docs']['corregir'] ?? 0)) > 0) {
+            return ['title' => "Sube los documentos de {$name}", 'body' => $step['summary'],
+                'minutes' => 5, 'cta_label' => 'Subir sus documentos', 'cta_url' => route('portal.documents.index', ['para' => 'co_tenant'])];
         }
 
         return ['title' => "Tu asesor está revisando los documentos de {$name}", 'body' => $step['summary'], 'minutes' => null, 'cta_label' => null, 'cta_url' => null];
@@ -216,6 +238,21 @@ class TenantRoadmap
                 . ($st['started'] ? '' : ' Aún no se sube ningún documento suyo.');
 
         return $base + ['done' => $st['complete'], 'action' => $st['complete'] ? null : 'os_status', 'summary' => $summary];
+    }
+
+    /** "Tu co-arrendatario": quién es, su avance y si ya está completo. A diferencia del obligado, siempre está ya registrado cuando este paso aparece. */
+    private static function coTenant(RentalProcess $r, \App\Services\CoTenantService $svc): array
+    {
+        $st = $svc->status($r);
+        $base = ['key' => 'co_tenant', 'title' => 'Tu co-arrendatario', 'os_status' => $st];
+
+        $docTotal = array_sum($st['docs']);
+        $summary = $st['complete']
+            ? "{$st['name']} completó su información y sus documentos fueron aprobados. ✅"
+            : "{$st['name']} lleva {$st['data_pct']}% de sus datos y {$st['docs']['aprobado']} de {$docTotal} documentos aprobados."
+                . ($st['started'] ? '' : ' Aún no se sube ningún documento suyo.');
+
+        return $base + ['done' => $st['complete'], 'action' => $st['complete'] ? null : 'co_tenant_status', 'summary' => $summary];
     }
 
     private static function documentos(RentalProcess $r): array

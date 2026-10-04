@@ -28,21 +28,30 @@ class PortalExpedienteController extends Controller
         $client = $this->portalService->getClientForUser($user);
         if (!$client) abort(404);
 
-        // ?para=obligado: el INQUILINO captura los datos de su obligado solidario (el obligado no tiene Portal). Todo el
-        // resto de la página trabaja con `$client` = el obligado; solo el inquilino de esa renta puede entrar.
-        $obligadoRental = null;
+        // ?para=obligado|co_tenant: el INQUILINO TITULAR captura los datos de una SEGUNDA persona del trato (su
+        // obligado solidario, o su co-arrendatario si el contrato queda a nombre de varios) — ninguna de las dos
+        // tiene Portal propio. Todo el resto de la página trabaja con `$client` = esa segunda persona; solo el
+        // inquilino titular de esa renta puede entrar. $secondaryRole distingue el rol para textos y reglas.
+        $secondaryRental = null;
+        $secondaryRole = null;
         if (request('para') === 'obligado') {
-            $obligadoRental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($client, $this->portalService->activeTenantRental($client)?->obligado_client_id);
-            abort_unless($obligadoRental, 404);
-            $client = $obligadoRental->obligado;
+            $secondaryRental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($client, $this->portalService->activeTenantRental($client)?->obligado_client_id);
+            abort_unless($secondaryRental, 404);
+            $client = $secondaryRental->obligado;
+            $secondaryRole = 'obligado';
+        } elseif (request('para') === 'co_tenant') {
+            $secondaryRental = app(\App\Services\CoTenantService::class)->tenantMayActFor($client, $this->portalService->activeTenantRental($client)?->co_tenant_client_id);
+            abort_unless($secondaryRental, 404);
+            $client = $secondaryRental->coTenant;
+            $secondaryRole = 'co_tenant';
         }
 
         $interestTypes = $client->interest_types ?? [];
         $isArrendador  = in_array('renta_propietario', $interestTypes);
         // Inquilino = tiene una renta activa como arrendatario (misma fuente que "Mi camino"); el interés capturado
         // ya no es requisito (si faltaba, el asistente y las pestañas de inquilino no salían).
-        $tenantRental  = $obligadoRental ? null : $this->portalService->activeTenantRental($client);
-        $isArrendatario= in_array('renta_inquilino',   $interestTypes) || (bool) $tenantRental || (bool) $obligadoRental;
+        $tenantRental  = $secondaryRental ? null : $this->portalService->activeTenantRental($client);
+        $isArrendatario= in_array('renta_inquilino',   $interestTypes) || (bool) $tenantRental || (bool) $secondaryRental;
         $isComprador   = in_array('compra',            $interestTypes);
         $isVendedor    = in_array('venta',             $interestTypes);
 
@@ -56,8 +65,8 @@ class PortalExpedienteController extends Controller
                 ->first();
         }
 
-        if (! $rentalAsInquilino && $obligadoRental) {
-            $rentalAsInquilino = $obligadoRental->load(['avales', 'pagares', 'property']);
+        if (! $rentalAsInquilino && $secondaryRental) {
+            $rentalAsInquilino = $secondaryRental->load(['avales', 'pagares', 'property']);
         }
 
         // Active rental process (arrendador side)
@@ -86,14 +95,14 @@ class PortalExpedienteController extends Controller
         $references = $client->references;
 
         // Calcular completitud por sección
-        $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents, $references, $obligadoRental !== null);
+        $sections = $this->calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rentalAsInquilino, $documents, $references, $secondaryRole);
 
         // Asistente "Tus datos" del inquilino: pasos cortos, uno por pantalla.
         $wizard = null;
         $prefilled = [];
-        $wizardRental = $tenantRental ?? $obligadoRental;
+        $wizardRental = $tenantRental ?? $secondaryRental;
         if ($isArrendatario && $rentalAsInquilino && $wizardRental && $wizardRental->id === $rentalAsInquilino->id) {
-            $wizard = $this->wizardSteps($sections, $rentalAsInquilino, (string) request('paso'), $obligadoRental !== null);
+            $wizard = $this->wizardSteps($sections, $rentalAsInquilino, (string) request('paso'), $secondaryRole !== null);
             // Después de calcular el avance (para no inflarlo): prellena, SOLO en pantalla, lo que la IA leyó de sus documentos.
             $prefilled = $this->prefillFromDocuments($client, $documents);
         }
@@ -103,11 +112,15 @@ class PortalExpedienteController extends Controller
             'isArrendador', 'isArrendatario', 'isComprador', 'isVendedor',
             'rentalAsInquilino', 'rentalAsOwner',
             'documents', 'aval', 'references', 'wizard', 'prefilled',
-        ) + ['obligadoMode' => $obligadoRental !== null]);
+        ) + [
+            'secondaryRole' => $secondaryRole,
+            'secondaryLabel' => $secondaryRole === 'co_tenant' ? 'co-arrendatario' : 'obligado solidario',
+            'obligadoMode' => $secondaryRole === 'obligado', // compat: código/vistas viejas que solo conocían al obligado
+        ]);
     }
 
     /** Pasos del asistente (orden fijo). El aval solo aparece si la garantía del inquilino es aval. */
-    private function wizardSteps(array $sections, RentalProcess $rental, string $requested, bool $obligado = false): array
+    private function wizardSteps(array $sections, RentalProcess $rental, string $requested, bool $isSecondary = false): array
     {
         $defs = [
             'datos' => ['Datos personales', 'datos', 'datos'],
@@ -116,9 +129,10 @@ class PortalExpedienteController extends Controller
             'referencias' => ['Referencias personales', 'hogar', 'referencias'],
             'ingresos' => ['Trabajo e ingresos', 'ingresos', 'ingresos'],
         ];
-        if ($obligado) {
-            // El obligado solidario lleva el mismo cuestionario (datos, identificación, referencias, trabajo/arrendador
-            // anterior); NO "información del hogar" (es de quien va a vivir en el inmueble) ni aval.
+        if ($isSecondary) {
+            // El obligado solidario y el co-arrendatario llevan el mismo cuestionario (datos, identificación,
+            // referencias, trabajo/arrendador anterior); NO "información del hogar" (es la del titular, que ya vive
+            // o vivirá ahí) ni garantía propia (la del trato es una sola, ya capturada por el titular).
             unset($defs['hogar']);
         } elseif (\App\Support\TenantRoadmap::route($rental) === \App\Support\TenantRoadmap::ROUTE_AVAL) {
             $defs['garantia'] = ['Tu aval', 'garantia', 'garantia'];
@@ -182,28 +196,38 @@ class PortalExpedienteController extends Controller
         if ($next === 'fin') {
             return redirect()->route('portal.journey')->with('success', $message . ' ¡Terminaste tus datos!');
         }
+        $para = (string) $request->input('para');
         if (in_array($next, ['datos', 'identificacion', 'hogar', 'referencias', 'ingresos', 'garantia'], true)) {
-            return redirect()->route('portal.expediente', ['paso' => $next] + ($request->input('para') === 'obligado' ? ['para' => 'obligado'] : []))->with('success', $message);
+            return redirect()->route('portal.expediente', ['paso' => $next] + (in_array($para, ['obligado', 'co_tenant'], true) ? ['para' => $para] : []))->with('success', $message);
         }
 
         return back()->with('success', $message);
     }
 
     /**
-     * A quién se guarda: el cliente del Portal, o —con `para=obligado`— su obligado solidario (solo el inquilino de esa
-     * renta, mientras el trato lo exija). Toda escritura a nombre del obligado pasa por aquí.
+     * A quién se guarda: el cliente del Portal, o —con `para=obligado`/`para=co_tenant`— la segunda persona del
+     * trato (solo el inquilino titular de esa renta, y mientras siga vigente). Toda escritura a nombre de esa
+     * segunda persona pasa por aquí.
      */
     private function subject(Request $request): Client
     {
         $me = $this->portalService->getClientForUser(Auth::user());
         abort_unless($me, 403);
-        if ($request->input('para') !== 'obligado') {
-            return $me;
-        }
-        $rental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($me, $this->portalService->activeTenantRental($me)?->obligado_client_id);
-        abort_unless($rental, 403);
+        $para = $request->input('para');
+        if ($para === 'obligado') {
+            $rental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($me, $this->portalService->activeTenantRental($me)?->obligado_client_id);
+            abort_unless($rental, 403);
 
-        return $rental->obligado;
+            return $rental->obligado;
+        }
+        if ($para === 'co_tenant') {
+            $rental = app(\App\Services\CoTenantService::class)->tenantMayActFor($me, $this->portalService->activeTenantRental($me)?->co_tenant_client_id);
+            abort_unless($rental, 403);
+
+            return $rental->coTenant;
+        }
+
+        return $me;
     }
 
     /** Guardar datos personales / legales */
@@ -504,9 +528,10 @@ class PortalExpedienteController extends Controller
         return back()->with('success', 'Documento subido correctamente.');
     }
 
-    /** Calcular completitud por sección */
-    private function calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rental, $documents, $references = null, bool $obligado = false): array
+    /** Calcular completitud por sección. $secondaryRole: null (titular), 'obligado' o 'co_tenant'. */
+    private function calcSections($client, $isArrendador, $isArrendatario, $isComprador, $isVendedor, $aval, $rental, $documents, $references = null, ?string $secondaryRole = null): array
     {
+        $obligado = $secondaryRole === 'obligado'; // el obligado solidario tiene un cuestionario de ingresos reducido; el co-arrendatario lleva el completo, igual que el titular.
         $sections = [];
         $references = $references ?? collect();
 

@@ -271,25 +271,50 @@ class RentalProcessController extends Controller
         return back()->with('success', "Obligado solidario registrado: {$os->name}. El inquilino captura sus datos y documentos desde su Portal (tú también puedes subirlos aquí).");
     }
 
+    /** El asesor registra o cambia al co-arrendatario (contrato a nombre de dos personas, ej. una pareja que renta junta). */
+    public function registerCoTenant(Request $request, string $id, \App\Services\CoTenantService $service)
+    {
+        $rental = RentalProcess::with(['tenantClient', 'ownerClient', 'coTenant'])->findOrFail($id);
+        $data = $request->validate([
+            'name' => 'required|string|max:150', 'email' => 'nullable|email|max:190', 'phone' => 'required|string|max:30', 'relationship' => 'nullable|string|max:80',
+        ]);
+        try {
+            $ct = $service->register($rental, $data, 'advisor');
+        } catch (\DomainException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', "Co-arrendatario registrado: {$ct->name}. El inquilino titular captura sus datos y documentos desde su Portal (tú también puedes subirlos aquí).");
+    }
+
     /** El asesor rechaza una referencia personal que no sirve (familiar directo, vive en la misma casa, no contesta…). El cliente debe dar otra. */
     public function rejectReference(Request $request, string $id, string $referenceId)
     {
-        $rental = RentalProcess::with(['tenantClient', 'obligado'])->findOrFail($id);
+        $rental = RentalProcess::with(['tenantClient', 'obligado', 'coTenant'])->findOrFail($id);
         $ref = $this->rentalReference($rental, $referenceId);
         $data = $request->validate(['reason' => 'required|string|max:200']);
 
         $ref->update(['status' => 'rejected', 'rejection_reason' => trim($data['reason']), 'rejected_at' => now()]);
 
-        // Avisa al inquilino (es quien captura, también las del obligado) para que dé otra persona.
+        // Avisa al inquilino titular (es quien captura, también las de la segunda persona) para que dé otra persona.
         $tenantUserId = $rental->tenantClient?->user_id;
         if ($tenantUserId) {
-            $whose = $ref->client_id === $rental->obligado_client_id ? ' de tu obligado solidario' : '';
+            $whose = match (true) {
+                $ref->client_id === $rental->obligado_client_id => ' de tu obligado solidario',
+                $ref->client_id === $rental->co_tenant_client_id => ' de tu co-arrendatario',
+                default => '',
+            };
+            $paraParam = match (true) {
+                $ref->client_id === $rental->obligado_client_id => ['para' => 'obligado'],
+                $ref->client_id === $rental->co_tenant_client_id => ['para' => 'co_tenant'],
+                default => [],
+            };
             \App\Models\Notification::create([
                 'user_id' => $tenantUserId,
                 'type' => 'referencia_rechazada',
                 'title' => 'Necesitamos otra referencia personal',
                 'body' => "La referencia {$ref->name}{$whose} no nos sirve: {$ref->rejection_reason}. Entra a “Tus datos → Referencias personales” y captura a otra persona.",
-                'data' => ['url' => route('portal.expediente', ['paso' => 'referencias'] + ($whose ? ['para' => 'obligado'] : []))],
+                'data' => ['url' => route('portal.expediente', ['paso' => 'referencias'] + $paraParam)],
             ]);
         }
 
@@ -301,7 +326,7 @@ class RentalProcessController extends Controller
     {
         $rental = RentalProcess::findOrFail($id);
         $data = $request->validate([
-            'who' => 'required|in:tenant,obligado',
+            'who' => 'required|in:tenant,obligado,co_tenant',
             'slot' => 'required|integer|min:1|max:3',
             'name' => 'required|string|max:150',
             'address' => 'nullable|string|max:200',
@@ -309,7 +334,11 @@ class RentalProcessController extends Controller
             'landline_phone' => 'nullable|string|max:30',
             'email' => 'nullable|email|max:150',
         ]);
-        $clientId = $data['who'] === 'tenant' ? $rental->tenant_client_id : $rental->obligado_client_id;
+        $clientId = match ($data['who']) {
+            'tenant' => $rental->tenant_client_id,
+            'obligado' => $rental->obligado_client_id,
+            'co_tenant' => $rental->co_tenant_client_id,
+        };
         abort_unless($clientId, 422, 'Esta renta no tiene esa persona registrada.');
 
         \App\Models\ClientReference::updateOrCreate(
@@ -324,12 +353,12 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Referencia guardada.');
     }
 
-    /** El asesor captura/corrige los datos del arrendador anterior del inquilino u obligado (p. ej. por teléfono). */
+    /** El asesor captura/corrige los datos del arrendador anterior del inquilino, obligado o co-arrendatario (p. ej. por teléfono). */
     public function savePreviousLandlord(Request $request, string $id)
     {
         $rental = RentalProcess::findOrFail($id);
         $data = $request->validate([
-            'who' => 'required|in:tenant,obligado',
+            'who' => 'required|in:tenant,obligado,co_tenant',
             'previous_landlord_name' => 'nullable|string|max:150',
             'previous_landlord_phone' => 'nullable|string|max:30',
             'previous_landlord_mobile' => 'nullable|string|max:30',
@@ -337,7 +366,11 @@ class RentalProcessController extends Controller
             'previous_landlord_address' => 'nullable|string|max:200',
             'previous_landlord_years' => 'nullable|string|max:60',
         ]);
-        $clientId = $data['who'] === 'tenant' ? $rental->tenant_client_id : $rental->obligado_client_id;
+        $clientId = match ($data['who']) {
+            'tenant' => $rental->tenant_client_id,
+            'obligado' => $rental->obligado_client_id,
+            'co_tenant' => $rental->co_tenant_client_id,
+        };
         abort_unless($clientId, 422, 'Esta renta no tiene esa persona registrada.');
         unset($data['who']);
 
@@ -355,10 +388,10 @@ class RentalProcessController extends Controller
         return back()->with('success', 'Referencia restaurada.');
     }
 
-    /** Solo referencias del inquilino o del obligado de ESTA renta. */
+    /** Solo referencias del inquilino, el obligado o el co-arrendatario de ESTA renta. */
     private function rentalReference(RentalProcess $rental, string $referenceId): \App\Models\ClientReference
     {
-        $ids = array_filter([$rental->tenant_client_id, $rental->obligado_client_id]);
+        $ids = array_filter([$rental->tenant_client_id, $rental->obligado_client_id, $rental->co_tenant_client_id]);
 
         return \App\Models\ClientReference::whereIn('client_id', $ids)->findOrFail($referenceId);
     }

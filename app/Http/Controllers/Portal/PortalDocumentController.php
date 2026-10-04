@@ -30,18 +30,24 @@ class PortalDocumentController extends Controller
         }
 
         // Inquilino con renta activa: lista simple de lo que le toca subir, con estado por documento.
-        // Con ?para=obligado el inquilino sube los documentos de SU obligado solidario (sin cuenta propia).
-        $forObligado = false;
+        // Con ?para=obligado|co_tenant el inquilino TITULAR sube los documentos de esa segunda persona del trato
+        // (su obligado solidario, o su co-arrendatario si el contrato queda a nombre de varios); ninguna tiene cuenta propia.
+        $secondaryRole = null;
         $subject = $client;
         $tenantRental = $this->portalService->activeTenantRental($client);
         if ($tenantRental && request('para') === 'obligado') {
             $os = app(\App\Services\ObligadoSolidarioService::class);
             abort_unless($os->tenantMayActFor($client, $tenantRental->obligado_client_id), 403);
             $subject = \App\Models\Client::findOrFail($tenantRental->obligado_client_id);
-            $forObligado = true;
+            $secondaryRole = 'obligado';
+        } elseif ($tenantRental && request('para') === 'co_tenant') {
+            $ct = app(\App\Services\CoTenantService::class);
+            abort_unless($ct->tenantMayActFor($client, $tenantRental->co_tenant_client_id), 403);
+            $subject = \App\Models\Client::findOrFail($tenantRental->co_tenant_client_id);
+            $secondaryRole = 'co_tenant';
         }
         if ($tenantRental) {
-            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $subject, request('open'), $forObligado);
+            $rows = \App\Support\TenantDocumentRows::build($tenantRental, $subject, request('open'), $secondaryRole !== null);
 
             return view('portal.documents.tenant', [
                 'client' => $client,
@@ -52,7 +58,8 @@ class PortalDocumentController extends Controller
                 'next' => $rows['next'],
                 'open' => request('open'),
                 'openCat' => request('cat'),
-                'forObligado' => $forObligado,
+                'forObligado' => $secondaryRole !== null, // compat: vistas viejas
+                'secondaryRole' => $secondaryRole,
             ]);
         }
 
@@ -91,8 +98,9 @@ class PortalDocumentController extends Controller
             if ($document->client_id === $client->id) {
                 $hasAccess = true;
             } elseif ($document->client_id && $document->rental_process_id
-                && app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($client, $document->client_id)?->id === (int) $document->rental_process_id) {
-                $hasAccess = true;   // el inquilino ve los documentos de SU obligado solidario (los captura él)
+                && ((app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($client, $document->client_id)?->id === (int) $document->rental_process_id)
+                    || (app(\App\Services\CoTenantService::class)->tenantMayActFor($client, $document->client_id)?->id === (int) $document->rental_process_id))) {
+                $hasAccess = true;   // el inquilino titular ve los documentos de su obligado solidario o co-arrendatario (los captura él)
             } elseif (! $document->client_id && $document->captacion_id) {
                 $cap = Captacion::find($document->captacion_id);
                 $hasAccess = $cap && $cap->client_id === $client->id;

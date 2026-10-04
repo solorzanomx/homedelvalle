@@ -287,6 +287,7 @@
         {{-- TAB: Investigación de candidato --}}
         <div class="tab-content" id="tab-investigacion">
             @include('rentals._guarantee_route', ['rental' => $rental])
+            @include('rentals._co_tenant', ['rental' => $rental])
 
         @php $inv = $rental->investigation; @endphp
 

@@ -86,8 +86,9 @@ class RentalExpedienteStatus
     }
 
     /**
-     * Expediente COMPLETO del trato: el del inquilino Y, si el trato exige obligado solidario (póliza sin aval), el suyo
-     * (datos completos + documentos aprobados). Es lo que dispara el aviso "expediente completo" al asesor.
+     * Expediente COMPLETO del trato: el del inquilino Y, si el trato exige obligado solidario (póliza sin aval), el
+     * suyo, Y si el trato tiene un co-arrendatario asignado, el suyo (datos completos + documentos aprobados en
+     * ambos casos). Es lo que dispara el aviso "expediente completo" al asesor.
      */
     public static function isFullyComplete(RentalProcess $rental): bool
     {
@@ -95,7 +96,13 @@ class RentalExpedienteStatus
             return false;
         }
         $os = app(\App\Services\ObligadoSolidarioService::class);
+        if ($os->isRequired($rental) && ! $os->status($rental)['complete']) {
+            return false;
+        }
+        if ($rental->co_tenant_client_id && ! app(\App\Services\CoTenantService::class)->status($rental)['complete']) {
+            return false;
+        }
 
-        return ! $os->isRequired($rental) || $os->status($rental)['complete'];
+        return true;
     }
 }

@@ -2,7 +2,7 @@
 @php
     $rm = $roadmap ?? \App\Support\TenantRoadmap::build($rental);
     $compact = $compact ?? false;   // compacto: pasos hechos = una línea, pasos futuros = solo título, el activo se expande
-    $icons = ['apartado' => '🔑', 'informacion' => '📝', 'documentos' => '📄', 'obligado' => '🤝', 'revision' => '🔎', 'garantia' => '🛡️', 'contrato' => '✍️', 'entrega' => '🏠'];
+    $icons = ['apartado' => '🔑', 'informacion' => '📝', 'documentos' => '📄', 'obligado' => '🤝', 'co_tenant' => '👫', 'revision' => '🔎', 'garantia' => '🛡️', 'contrato' => '✍️', 'entrega' => '🏠'];
 @endphp
 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem;">
     @if(! $compact)
@@ -122,6 +122,35 @@
                         </form>
                     </details>
                     @endif
+                @endif
+
+                {{-- Co-arrendatario: el titular captura SUS datos y documentos (no tiene cuenta propia). A diferencia del
+                     obligado, cuando este paso aparece ya está registrado (se agregó desde el admin o desde aquí mismo). --}}
+                @if($step['key'] === 'co_tenant' && ! $slim)
+                    @php $ct = $step['os_status']; $bar2 = fn($p) => '<div style="height:7px;border-radius:9999px;background:#e2e8f0;overflow:hidden;"><div style="width:'.max(0,min(100,$p)).'%;height:100%;background:'.($p>=100?'#10b981':'#1D4ED8').';"></div></div>'; $docTot2 = array_sum($ct['docs']); $docOk2 = $ct['docs']['aprobado']; @endphp
+                    <div style="margin-top:.7rem;border:1px solid #e2e8f0;border-radius:14px;padding:.85rem 1rem;background:#fff;">
+                        <strong style="font-size:.9rem;">{{ $ct['name'] }}</strong>
+                        <div style="margin-top:.55rem;font-size:.74rem;color:#475569;">Sus datos · {{ $ct['data_pct'] }}%</div>{!! $bar2($ct['data_pct']) !!}
+                        <div style="margin-top:.5rem;font-size:.74rem;color:#475569;">Sus documentos aprobados · {{ $docOk2 }} de {{ $docTot2 }}</div>{!! $bar2($docTot2 ? $docOk2 / $docTot2 * 100 : 0) !!}
+                        <div style="display:grid;gap:.5rem;margin-top:.8rem;">
+                            <a href="{{ route('portal.expediente', ['para' => 'co_tenant']) }}" style="display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;background:#1D4ED8;color:#fff;font-weight:800;font-size:.9rem;text-decoration:none;">📝 Llenar sus datos</a>
+                            <a href="{{ route('portal.documents.index', ['para' => 'co_tenant']) }}" style="display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;border:1.5px solid #1D4ED8;background:#fff;color:#1D4ED8;font-weight:800;font-size:.9rem;text-decoration:none;">📄 Subir sus documentos</a>
+                        </div>
+                    </div>
+                    <details style="margin-top:.6rem;">
+                        <summary style="cursor:pointer;font-size:.8rem;font-weight:700;color:#1D4ED8;">✏️ Corregir su nombre o celular</summary>
+                        <form method="POST" action="{{ route('portal.rentals.co-tenant.store', $rental->id) }}" style="margin-top:.6rem;display:grid;gap:.6rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:.9rem;">
+                            @csrf
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Nombre completo</label>
+                                <input name="name" value="{{ old('name', $ct['name']) }}" required autocomplete="off" style="{{ $inp ?? 'width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;' }}"></div>
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Celular</label>
+                                <input name="phone" type="tel" inputmode="tel" value="{{ old('phone', $ct['client']?->phone) }}" required autocomplete="off" placeholder="10 dígitos" style="{{ $inp ?? 'width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;' }}"></div>
+                            <div><label style="font-size:.74rem;font-weight:700;color:#475569;">Correo <span style="font-weight:400;color:#94a3b8;">(opcional)</span></label>
+                                <input name="email" type="email" inputmode="email" autocapitalize="none" value="{{ old('email', $ct['client']?->email) }}" autocomplete="off" style="{{ $inp ?? 'width:100%;min-height:46px;font-size:16px;border:1px solid #cbd5e1;border-radius:10px;padding:0 .8rem;' }}"></div>
+                            <button style="min-height:50px;border:0;border-radius:12px;background:#1D4ED8;color:#fff;font-weight:800;font-size:1rem;cursor:pointer;">Guardar cambios</button>
+                            <p style="margin:0;font-size:.72rem;color:#94a3b8;line-height:1.45;">Tu co-arrendatario no necesita cuenta: tú capturas su información y subes sus documentos. Es confidencial: solo la ve tu asesor.</p>
+                        </form>
+                    </details>
                 @endif
 
                 {{-- Contrato disponible --}}

@@ -315,9 +315,11 @@ class DocumentUploader extends Component
     {
         $me = app(ClientPortalService::class)->getClientForUser(Auth::user());
 
-        // Subida a nombre del obligado solidario: solo si quien sube es el inquilino de esa renta y el obligado sigue vigente.
+        // Subida a nombre de una segunda persona del trato (obligado solidario o co-arrendatario): solo si quien
+        // sube es el inquilino titular de esa renta y esa persona sigue vigente en el trato.
         if ($this->forClientId) {
-            $rental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($me, $this->forClientId);
+            $rental = app(\App\Services\ObligadoSolidarioService::class)->tenantMayActFor($me, $this->forClientId)
+                ?? app(\App\Services\CoTenantService::class)->tenantMayActFor($me, $this->forClientId);
 
             return $rental ? \App\Models\Client::find($this->forClientId) : null;
         }

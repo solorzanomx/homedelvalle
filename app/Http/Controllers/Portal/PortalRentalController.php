@@ -131,6 +131,35 @@ class PortalRentalController extends Controller
     }
 
     /**
+     * El inquilino titular registra a su co-arrendatario (nombre, celular y, si hay, correo) cuando el contrato va
+     * a quedar a nombre de los dos. A diferencia del obligado, siempre está disponible (no lo exige ninguna ruta
+     * de garantía): es la decisión del inquilino (o la captura el asesor por teléfono/WhatsApp).
+     */
+    public function storeCoTenant(Request $request, string $id, \App\Services\CoTenantService $service)
+    {
+        [$client, $rental] = $this->tenantRental($id);
+
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'email' => 'nullable|email|max:190',
+            'phone' => ['required', 'string', 'max:30', function ($attr, $value, $fail) {
+                if (strlen(preg_replace('/\D/', '', $value)) < 10) {
+                    $fail('Escribe un celular de 10 dígitos.');
+                }
+            }],
+            'relationship' => 'nullable|string|max:80',
+        ]);
+
+        try {
+            $ct = $service->register($rental, $data, 'tenant');
+        } catch (\DomainException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', "Listo. Ahora llena los datos de {$ct->name} y sube sus documentos desde aquí.");
+    }
+
+    /**
      * El PROPIETARIO decide la póliza (plan) y cómo se reparte el costo (inquilino 100% o 50/50). El inquilino solo lo ve.
      * Solo el propietario de esa renta (403 para cualquier otro cliente).
      */

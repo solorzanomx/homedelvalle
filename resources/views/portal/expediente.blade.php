@@ -212,15 +212,17 @@
 
 @php
     $tenantMode = isset($isArrendatario, $rentalAsInquilino) && $isArrendatario && $rentalAsInquilino;
-    // Con ?para=obligado el inquilino captura a nombre de su obligado solidario: todos los enlaces conservan ese sujeto.
-    $expPara = ($obligadoMode ?? false) ? ['para' => 'obligado'] : [];
+    // Con ?para=obligado|co_tenant el inquilino titular captura a nombre de una segunda persona del trato (su
+    // obligado solidario, o su co-arrendatario): todos los enlaces conservan ese sujeto.
+    $expPara = ($secondaryRole ?? null) ? ['para' => $secondaryRole] : [];
+    $secondaryLabel = $secondaryLabel ?? 'obligado solidario';
 @endphp
 
 {{-- Inquilino: encabezado sencillo con regreso a "Mi camino" (sin el % duplicado: el avance real es el del camino).
      Otros perfiles conservan el hero con progreso global. --}}
 @if($tenantMode && $wizard)
     @php $wz = $wizard; @endphp
-    <script>document.body.classList.add('tenant-wizard'); @if($obligadoMode ?? false) document.body.classList.add('obligado-mode'); @endif</script>
+    <script>document.body.classList.add('tenant-wizard'); @if($secondaryRole ?? null) document.body.classList.add('secondary-mode'); @endif</script>
     <a href="{{ route('portal.journey') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:600;color:#1D4ED8;text-decoration:none;margin-bottom:.5rem;">← Mi camino</a>
     <div class="wiz-dots" aria-label="Pasos">
         @foreach($wz['steps'] as $st)
@@ -228,9 +230,9 @@
             <a href="{{ route('portal.expediente', ['paso' => $st['key']] + $expPara) }}" class="wiz-dot {{ $cls }}" title="{{ $st['title'] }}">{{ $st['pct'] >= 100 && $cls !== 'active' ? '✓' : $loop->iteration }}</a>
         @endforeach
     </div>
-    @if($obligadoMode ?? false)
+    @if($secondaryRole ?? null)
     <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:.6rem .85rem;margin:.2rem 0 .7rem;font-size:.8rem;color:#92400e;line-height:1.45;">
-        🤝 Estás llenando los datos de tu <strong>obligado solidario</strong>: <strong>{{ $client->name }}</strong>. Pídele la información y captúrala aquí; es el mismo cuestionario que el tuyo.
+        🤝 Estás llenando los datos de tu <strong>{{ $secondaryLabel }}</strong>: <strong>{{ $client->name }}</strong>. Pídele la información y captúrala aquí; es el mismo cuestionario que el tuyo.
     </div>
     @endif
     <div style="font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#64748b;">Paso {{ $wz['index'] }} de {{ $wz['total'] }}</div>
@@ -511,7 +513,7 @@
             <form method="POST" action="{{ route('portal.expediente.datos') }}">
                 @csrf
 
-                <div class="wiz-doc-note">📄 Tu INE o pasaporte se sube en <a href="{{ route('portal.documents.index', $expPara) }}"><strong>{{ $obligadoMode ?? false ? 'Documentos de tu obligado' : 'Mis documentos' }}</strong></a>; lo que leemos de ahí se llena solo abajo.</div>
+                <div class="wiz-doc-note">📄 Tu INE o pasaporte se sube en <a href="{{ route('portal.documents.index', $expPara) }}"><strong>{{ ($secondaryRole ?? null) ? 'Documentos de tu ' . $secondaryLabel : 'Mis documentos' }}</strong></a>; lo que leemos de ahí se llena solo abajo.</div>
                 <div class="exp-doc-block">
                 {{-- PASO 1: Tipo de Identificación — decide qué casilla de subida
                      aparece justo abajo. --}}
@@ -606,7 +608,7 @@
 
                 <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.75rem;">Domicilio para contratos</div>
 
-                <div class="wiz-doc-note">📄 Tu recibo de luz, agua o gas se sube en <a href="{{ route('portal.documents.index', $expPara) }}"><strong>{{ $obligadoMode ?? false ? 'Documentos de tu obligado' : 'Mis documentos' }}</strong></a>; tu dirección se llena sola con lo que leemos.</div>
+                <div class="wiz-doc-note">📄 Tu recibo de luz, agua o gas se sube en <a href="{{ route('portal.documents.index', $expPara) }}"><strong>{{ ($secondaryRole ?? null) ? 'Documentos de tu ' . $secondaryLabel : 'Mis documentos' }}</strong></a>; tu dirección se llena sola con lo que leemos.</div>
                 <div class="exp-doc-block">
                 {{-- PASO 1: ¿Qué comprobante de domicilio vas a subir? — decide
                      qué casilla de subida aparece justo abajo. --}}
@@ -1063,7 +1065,7 @@
                     </div>
                 </div>
 
-                <div class="wiz-doc-note">📄 Tus comprobantes de ingresos (los últimos 3) se suben en <a href="{{ route('portal.documents.index', $expPara) }}"><strong>{{ $obligadoMode ?? false ? 'Documentos de tu obligado' : 'Mis documentos' }}</strong></a>.</div>
+                <div class="wiz-doc-note">📄 Tus comprobantes de ingresos (los últimos 3) se suben en <a href="{{ route('portal.documents.index', $expPara) }}"><strong>{{ ($secondaryRole ?? null) ? 'Documentos de tu ' . $secondaryLabel : 'Mis documentos' }}</strong></a>.</div>
                 <div class="exp-doc-block">
                 {{-- PASO 2: ¿Cómo vas a comprobar tus ingresos? — decide qué
                      casilla de subida aparece justo abajo. --}}
@@ -1403,8 +1405,8 @@ document.addEventListener('DOMContentLoaded', function () {   // showSection() s
 
     // 2. Al guardar, el servidor sigue con el siguiente paso.
     var nx = document.createElement('input'); nx.type = 'hidden'; nx.name = 'next'; nx.value = NEXT; form.appendChild(nx);
-    @if($obligadoMode ?? false)
-    var pa = document.createElement('input'); pa.type = 'hidden'; pa.name = 'para'; pa.value = 'obligado'; form.appendChild(pa);   // el guardado es a nombre del obligado
+    @if($secondaryRole ?? null)
+    var pa = document.createElement('input'); pa.type = 'hidden'; pa.name = 'para'; pa.value = '{{ $secondaryRole }}'; form.appendChild(pa);   // el guardado es a nombre de la segunda persona (obligado o co-arrendatario)
     @endif
 
     // 3. Teclado y autocompletado correctos en el teléfono, según el campo.

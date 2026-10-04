@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', ($forObligado ?? false) ? 'Documentos de tu obligado' : 'Mis documentos')
+@section('title', ($secondaryRole ?? null) ? 'Documentos de tu ' . (($secondaryRole ?? null) === 'co_tenant' ? 'co-arrendatario' : 'obligado') : 'Mis documentos')
 
 @section('styles')
 .td-row { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:.85rem .95rem; margin-bottom:.6rem; }
@@ -29,9 +29,9 @@
     $totalReq = array_sum($counts);
 @endphp
 
-@php $para = ($forObligado ?? false) ? ['para' => 'obligado'] : []; @endphp
+@php $para = ($secondaryRole ?? null) ? ['para' => $secondaryRole] : []; @endphp
 <a href="{{ route('portal.journey') }}" style="display:inline-flex;align-items:center;gap:.4rem;font-size:.82rem;font-weight:600;color:#1D4ED8;text-decoration:none;margin-bottom:.6rem;">← Mi camino</a>
-<h1 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 .35rem;">{{ ($forObligado ?? false) ? 'Documentos de ' . $subject->name : 'Mis documentos' }}</h1>
+<h1 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin:0 0 .35rem;">{{ ($secondaryRole ?? null) ? 'Documentos de ' . $subject->name : 'Mis documentos' }}</h1>
 <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1rem;">
     @foreach(['corregir' => 'por corregir', 'falta' => 'faltan', 'revision' => 'en revisión', 'aprobado' => 'aprobados'] as $k => $txt)
         @if($counts[$k] > 0)
@@ -102,7 +102,7 @@
                                 @endforeach
                             </div>
                         @endif
-                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rental->id, 'maxSlots' => $slots, 'forClientId' => ($forObligado ?? false) ? $subject->id : null], key('td-' . $r['key'] . '-' . $cat))
+                        @livewire('portal.document-uploader', ['allowedCategories' => [$cat], 'rentalProcessId' => $rental->id, 'maxSlots' => $slots, 'forClientId' => ($secondaryRole ?? null) ? $subject->id : null], key('td-' . $r['key'] . '-' . $cat))
                     @endif
 
                     <a href="{{ route('portal.documents.index', $para) }}" class="td-btn" style="margin-top:.8rem;width:100%;background:#f1f5f9;color:#334155;">Listo, volver a la lista</a>
@@ -112,7 +112,7 @@
     @endforeach
 @endforeach
 
-@if(! ($forObligado ?? false) && ($rental->tenant_has_aval === true || in_array($rental->guarantee_type, ['aval','aval_pagares'], true)))
+@if(! ($secondaryRole ?? null) && ($rental->tenant_has_aval === true || in_array($rental->guarantee_type, ['aval','aval_pagares'], true)))
 <p style="font-size:.78rem;color:#64748b;margin-top:1rem;">Los <strong>datos</strong> de tu aval (nombre, domicilio, escritura) se llenan en <a href="{{ route('portal.expediente') }}" style="color:#1D4ED8;font-weight:700;">Tus datos</a>.</p>
 @endif
 @endsection
