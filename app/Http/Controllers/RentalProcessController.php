@@ -101,10 +101,26 @@ class RentalProcessController extends Controller
             // un trato real en curso. Checkbox explícito, no automático a ciegas (puede haber
             // varios tratos en paralelo sobre el mismo inmueble a propósito).
             'mark_property_reserved'     => 'nullable|boolean',
+            // Co-arrendatario: el contrato va a nombre de dos personas (ej. una pareja que renta
+            // junta) — no es un aval, pasa la misma investigación completa que el titular.
+            'has_co_tenant'               => 'nullable|boolean',
+            'co_tenant_name'              => 'nullable|required_if:has_co_tenant,1|string|max:150',
+            'co_tenant_phone'              => 'nullable|required_if:has_co_tenant,1|string|max:30',
+            'co_tenant_email'              => 'nullable|email|max:190',
+            'co_tenant_relationship'      => 'nullable|string|max:80',
         ]);
 
         $markReserved = (bool) ($validated['mark_property_reserved'] ?? false);
         unset($validated['mark_property_reserved']);
+
+        $hasCoTenant = (bool) ($validated['has_co_tenant'] ?? false);
+        $coTenantData = [
+            'name' => $validated['co_tenant_name'] ?? null,
+            'phone' => $validated['co_tenant_phone'] ?? null,
+            'email' => $validated['co_tenant_email'] ?? null,
+            'relationship' => $validated['co_tenant_relationship'] ?? null,
+        ];
+        unset($validated['has_co_tenant'], $validated['co_tenant_name'], $validated['co_tenant_phone'], $validated['co_tenant_email'], $validated['co_tenant_relationship']);
 
         $validated['user_id'] = Auth::id();
         $validated['stage'] = 'captacion';
@@ -113,6 +129,10 @@ class RentalProcessController extends Controller
 
         if ($markReserved) {
             Property::where('id', $rental->property_id)->update(['status' => 'reserved']);
+        }
+
+        if ($hasCoTenant) {
+            app(\App\Services\CoTenantService::class)->register($rental, $coTenantData, 'advisor');
         }
 
         RentalStageLog::create([

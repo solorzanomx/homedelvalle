@@ -45,6 +45,8 @@ el titular).
 | Campos que cuentan | `app/Support/ExpedienteFields::INCOME_TENANT` (el co-arrendatario usa el set completo, no `INCOME_OBLIGADO`) |
 | Documentos por persona (reusado tal cual, sin cambios) | `TenantDocumentRows::build($rental,$client,$open,true)`; `RentalExpedienteStatus::missing($rental,$clientId)` / `isFullyComplete()` (ahora también exige al co-arrendatario si está presente) |
 | CRM: tarjeta (registrar/cambiar, ficha, documentos) | `rentals/_co_tenant.blade.php` (incluida en `rentals/show.blade.php`, tab Investigación), `RentalProcessController::registerCoTenant` |
+| CRM: captura rápida al **crear** el trato (checkbox + nombre/celular) | `rentals/create.blade.php` (checkbox `has_co_tenant` junto a Arrendatario), `RentalProcessController::store()` (llama a `CoTenantService::register(..., 'advisor')` tras crear el `RentalProcess`) |
+| CRM: comisión de medio mes (quick-pick) | `rentals/create.blade.php` — `setCommission(0.5)` junto al botón de 1 mes (no es parte del co-arrendatario, pedido en la misma sesión) |
 | Referencias y arrendador anterior del co-arrendatario | `RentalProcessController::saveReference/savePreviousLandlord/rejectReference/rentalReference` — `who` ahora acepta `tenant|obligado|co_tenant` |
 
 ## INVARIANTES — no romper
@@ -71,7 +73,8 @@ el titular).
 
 ## Pendiente / ideas
 1. Tests formales (`tests/Feature/CoTenantTest.php`), mirror de `ObligadoSolidarioTest.php`.
-2. Alta 100% self-service desde el Portal (hoy el paso del camino solo aparece una vez creado desde el CRM o desde
-   el formulario de corrección — no hay un "+ Agregar co-arrendatario" visible antes de que exista).
+2. Alta 100% self-service desde el Portal (hoy el paso del camino solo aparece una vez creado desde el CRM — ya sea
+   al crear el trato en `rentals/create` o después desde `rentals/show` — o desde el formulario de corrección; no
+   hay un "+ Agregar co-arrendatario" visible en el Portal antes de que exista).
 3. Si en el futuro se necesita un tercer co-arrendatario (3+ personas en el contrato), este diseño (una sola
    columna `co_tenant_client_id`) no escala — habría que pasar a una tabla pivote.

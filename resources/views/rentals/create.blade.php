@@ -53,6 +53,7 @@
         commissionAgency: {{ old('commission_amount', 0) ?: 0 }},
         brokerCommission: {{ old('broker_commission_amount', 0) ?: 0 }},
         hasBroker: {{ old('broker_id', '0') !== '0' ? 'true' : 'false' }},
+        hasCoTenant: {{ old('has_co_tenant') ? 'true' : 'false' }},
         increaseType: '{{ old('annual_increase_type', 'inpc') }}',
         depositAmount: {{ old('deposit_amount', 0) ?: 0 }},
 
@@ -92,7 +93,7 @@
         fmt(n) {
             return new Intl.NumberFormat('es-MX', {style:'currency', currency:'MXN', minimumFractionDigits:0, maximumFractionDigits:0}).format(n || 0);
         },
-        setCommission() { this.commissionAgency = this.monthlyRent; },
+        setCommission(months = 1) { this.commissionAgency = this.monthlyRent * months; },
         setDeposit(months) { this.depositAmount = this.monthlyRent * months; },
      }">
 
@@ -151,6 +152,20 @@
                                     <option value="{{ $client->id }}" {{ old('tenant_client_id', $prefill['tenant_client_id']) == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
                                 @endforeach
                             </select>
+                            {{-- Co-arrendatario (2026-10-03): el contrato va a nombre de dos personas (ej. una
+                                 pareja que renta junta) — no es un aval, pasa la misma investigación que el
+                                 titular. Captura rápida aquí; sus datos/documentos completos los llena después
+                                 el titular desde su Portal (App\Services\CoTenantService). --}}
+                            <label style="display:flex;align-items:center;gap:0.4rem;margin-top:0.6rem;font-size:0.82rem;font-weight:500;">
+                                <input type="checkbox" name="has_co_tenant" value="1" x-model="hasCoTenant" {{ old('has_co_tenant') ? 'checked' : '' }}>
+                                Esta renta va a nombre de 2 personas (co-arrendatario)
+                            </label>
+                            <div x-show="hasCoTenant" x-cloak style="margin-top:0.5rem;display:grid;gap:0.5rem;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:0.7rem;">
+                                <input type="text" name="co_tenant_name" value="{{ old('co_tenant_name') }}" class="form-input" placeholder="Nombre completo del co-arrendatario">
+                                <input type="tel" name="co_tenant_phone" value="{{ old('co_tenant_phone') }}" class="form-input" placeholder="Celular (10 dígitos)">
+                                <input type="email" name="co_tenant_email" value="{{ old('co_tenant_email') }}" class="form-input" placeholder="Correo (opcional)">
+                                <input type="text" name="co_tenant_relationship" value="{{ old('co_tenant_relationship') }}" class="form-input" placeholder="Relación con el titular (opcional, ej. su pareja)">
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="form-label">Broker externo</label>
@@ -289,7 +304,8 @@
                                    class="form-input" step="0.01" min="0" placeholder="0.00">
                             <div class="calc-hint">
                                 <span>Calcular:</span>
-                                <button type="button" @click="setCommission()">= 1 mes de renta</button>
+                                <button type="button" @click="setCommission(0.5)">= 1/2 mes de renta</button>
+                                <button type="button" @click="setCommission(1)">= 1 mes de renta</button>
                                 <template x-if="commissionAgency > 0 && monthlyRent > 0">
                                     <span x-text="'(' + commissionPct + '% de la renta)'"></span>
                                 </template>
