@@ -647,6 +647,12 @@ class RentalProcessController extends Controller
      * inquilino — no es automático al confirmar (decisión 2026-09-24): el
      * asesor decide cuándo mandarlo, como ya existe con resendInvitation()
      * del portal.
+     *
+     * Hallazgo 2026-10-03: esto nunca dejaba rastro en ningún lado — no se
+     * podía saber si ya se había enviado un recibo (y con qué versión/datos)
+     * sin revisar el buzón de correo real. Ahora registra un `Message`
+     * (misma tabla de "Mensajes enviados") con el documento exacto que se
+     * mandó, para poder verificarlo después.
      */
     public function sendApartadoReceipt(string $id, \App\Services\EmailService $emailService)
     {
@@ -668,11 +674,58 @@ class RentalProcessController extends Controller
             . '<p>Adjunto tu recibo de apartado para <strong>' . e($inmueble) . '</strong>. Puedes descargarlo también desde tu Portal en cualquier momento.</p>'
             . '<p>Saludos,<br>Home del Valle Bienes Raíces</p>';
 
-        $sent = $emailService->send($tenant->email, $subject, $body, $tenant->name, null, Auth::user(), [$recibo->file_path]);
+        $msg = \App\Models\Message::create([
+            'client_id' => $tenant->id,
+            'user_id' => Auth::id(),
+            'trackable_type' => RentalProcess::class,
+            'trackable_id' => $rental->id,
+            'channel' => 'email',
+            'direction' => 'outbound',
+            'subject' => $subject,
+            'body' => 'Recibo de apartado adjunto: ' . $recibo->file_name,
+            'status' => 'queued',
+            'metadata' => ['kind' => 'recibo_apartado', 'document_id' => $recibo->id],
+        ]);
+
+        $sent = $emailService->send($tenant->email, $subject, $body, $tenant->name, null, Auth::user(), [$recibo->file_path], $msg->id);
+
+        $msg->update(['status' => $sent ? 'sent' : 'failed', 'sent_at' => $sent ? now() : null]);
 
         return back()->with($sent ? 'success' : 'error', $sent
             ? 'Recibo enviado por correo a ' . $tenant->email . '.'
             : 'No se pudo enviar el correo — revisa la configuración de correo saliente.');
+    }
+
+    /**
+     * Regenera el PDF del recibo de apartado con los datos ACTUALES del trato y de las partes
+     * (propietario/inquilino) — sin tener que volver a capturar monto/fecha/forma de pago, que ya
+     * están guardados. Crea una nueva versión del documento (igual que storeApartado); "Ver recibo"
+     * y "Reenviar" siempre toman la más reciente. Pensado para cuando se corrige un dato de la
+     * persona (ej. su nombre legal) DESPUÉS de haber generado el recibo la primera vez.
+     */
+    public function regenerateApartadoReceipt(string $id, \App\Services\RentalDepositReceiptGeneratorService $generator)
+    {
+        $rental = RentalProcess::with('tenantClient', 'ownerClient', 'property', 'user')->findOrFail($id);
+
+        if (! $rental->apartado_paid_at) {
+            return back()->with('error', 'Este trato todavía no tiene un apartado registrado.');
+        }
+
+        $path = $generator->generatePdf($rental);
+
+        \App\Models\Document::create([
+            'rental_process_id' => $rental->id,
+            'client_id' => $rental->tenant_client_id,
+            'uploaded_by' => Auth::id(),
+            'category' => 'recibo_apartado',
+            'label' => 'Recibo de Apartado — ' . now()->format('d/m/Y H:i') . ' (regenerado)',
+            'file_path' => $path,
+            'file_name' => 'RA-' . str_pad((string) $rental->id, 5, '0', STR_PAD_LEFT) . '.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => file_exists($path) ? filesize($path) : null,
+        ]);
+
+        return back()->with('success', 'Recibo regenerado con los datos actuales. Revísalo antes de enviarlo.');
     }
 
     public function storeInvestigacionPago(Request $request, string $id, \App\Services\InvestigacionReceiptGeneratorService $generator)

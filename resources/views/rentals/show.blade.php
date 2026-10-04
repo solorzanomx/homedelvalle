@@ -296,7 +296,23 @@
             <div class="card-header"><h3>Apartado</h3></div>
             <div class="card-body">
                 @if($rental->apartado_amount)
-                    @php $recibo = $rental->documents->where('category', 'recibo_apartado')->sortByDesc('created_at')->first(); @endphp
+                    @php
+                        $recibo = $rental->documents->where('category', 'recibo_apartado')->sortByDesc('created_at')->first();
+                        // ¿Se editó el nombre/datos del propietario o del inquilino DESPUÉS de generar este
+                        // recibo? Si sí, lo que está en el PDF ya no coincide con lo que hay en el sistema —
+                        // es justo el caso real que generó este candado (hallazgo 2026-10-03: recibo con el
+                        // nombre viejo del propietario, enviado sin darse cuenta de que los datos habían
+                        // cambiado).
+                        $datosDesactualizados = $recibo && (
+                            ($rental->ownerClient && $rental->ownerClient->updated_at->gt($recibo->created_at)) ||
+                            ($rental->tenantClient && $rental->tenantClient->updated_at->gt($recibo->created_at))
+                        );
+                        $ultimoEnvio = \App\Models\Message::where('trackable_type', \App\Models\RentalProcess::class)
+                            ->where('trackable_id', $rental->id)
+                            ->where('channel', 'email')
+                            ->whereNotNull('sent_at')
+                            ->latest('sent_at')->first();
+                    @endphp
                     <div style="display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:.75rem;">
                         <div><div style="font-size:.72rem;color:var(--text-muted);">Monto</div><div style="font-weight:600;">${{ number_format($rental->apartado_amount, 2) }} MXN</div></div>
                         <div><div style="font-size:.72rem;color:var(--text-muted);">Fecha</div><div style="font-weight:600;">{{ $rental->apartado_paid_at?->format('d/m/Y') }}</div></div>
@@ -306,12 +322,42 @@
                     @if($rental->apartado_notes)
                     <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:.75rem;">{{ $rental->apartado_notes }}</p>
                     @endif
+
+                    <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.6rem;">
+                        @if($ultimoEnvio)
+                            ✉️ Enviado el <strong>{{ $ultimoEnvio->sent_at->format('d/m/Y H:i') }}</strong> a {{ $rental->tenantClient?->email }}
+                            @if($recibo && ($ultimoEnvio->metadata['document_id'] ?? null) !== $recibo->id)
+                                <span style="color:#92400e;"> — era una versión anterior del recibo, no esta</span>
+                            @endif
+                        @else
+                            ⚪ Este recibo todavía no se ha enviado por correo.
+                        @endif
+                    </div>
+
+                    @if($datosDesactualizados)
+                    <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;border-radius:8px;padding:.6rem .85rem;font-size:.8rem;margin-bottom:.75rem;">
+                        ⚠ Los datos del propietario o del inquilino se editaron <strong>después</strong> de generar este recibo — es muy probable que ya no coincida (ej. el nombre legal). <strong>Regénéralo antes de enviarlo.</strong>
+                    </div>
+                    @endif
+
                     @if($recibo)
-                    <a href="{{ route('documents.download', $recibo->id) }}" class="btn btn-sm btn-outline">📄 Ver recibo</a>
-                    <form method="POST" action="{{ route('rentals.apartado.send-email', $rental->id) }}" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-outline">✉️ Reenviar por correo</button>
-                    </form>
+                    <div x-data="{ revisado: false }">
+                        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+                            <a href="{{ route('documents.download', $recibo->id) }}" class="btn btn-sm btn-outline" target="_blank" @click="revisado = true">📄 Ver recibo</a>
+                            <form method="POST" action="{{ route('rentals.apartado.regenerate', $rental->id) }}" onsubmit="return confirm('¿Regenerar el recibo con los datos actuales del propietario/inquilino? Queda como una versión nueva, no borra la anterior.')">
+                                @csrf
+                                <button type="submit" class="btn btn-sm btn-outline">🔄 Regenerar</button>
+                            </form>
+                        </div>
+                        <form method="POST" action="{{ route('rentals.apartado.send-email', $rental->id) }}" style="margin-top:.6rem;">
+                            @csrf
+                            <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted);margin-bottom:.4rem;">
+                                <input type="checkbox" x-model="revisado">
+                                Ya abrí y revisé el recibo (nombre, monto y fecha correctos) — no se ha editado nada desde entonces.
+                            </label>
+                            <button type="submit" class="btn btn-sm btn-primary" :disabled="! revisado" :style="! revisado ? 'opacity:.5;cursor:not-allowed;' : ''">✉️ {{ $ultimoEnvio ? 'Reenviar' : 'Enviar' }} por correo</button>
+                        </form>
+                    </div>
                     @endif
                 @else
                     @php $comprobanteApartado = $rental->documents->where('category', 'comprobante_apartado')->sortByDesc('created_at')->first(); @endphp
