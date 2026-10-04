@@ -378,7 +378,13 @@
                     @else
                     <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:.85rem;">El cliente aún no ha subido su comprobante de depósito. Puedes registrar el apartado de todos modos si ya te confirmó el pago por otro medio.</p>
                     @endif
-                    <form method="POST" action="{{ route('rentals.apartado.store', $rental->id) }}">
+                    {{-- Hallazgo 2026-10-03: este único submit confirmaba el apartado como recibido Y
+                         generaba el recibo a la vez — un asesor que solo quería ver cómo quedaba el
+                         documento (sin haber recibido el depósito todavía) terminó marcando "Apartado"
+                         como hecho en el camino del inquilino (Portal), sin que el dinero hubiera
+                         llegado. "Vista previa" nunca confirma nada (siempre disponible); el botón que
+                         SÍ confirma pide marcar antes que el depósito ya se recibió de verdad. --}}
+                    <form method="POST" action="{{ route('rentals.apartado.store', $rental->id) }}" x-data="{ confirmado: false }">
                         @csrf
                         <div style="display:flex;gap:.65rem;flex-wrap:wrap;align-items:flex-end;">
                             <div class="form-group" style="margin:0;min-width:140px;">
@@ -407,8 +413,12 @@
                             <label class="form-label" style="font-size:.72rem;">Notas (opcional)</label>
                             <textarea name="apartado_notes" class="form-textarea" rows="2"></textarea>
                         </div>
-                        <button type="submit" formaction="{{ route('rentals.apartado.preview', $rental->id) }}" formtarget="_blank" class="btn btn-outline" style="margin-top:.75rem;">👁 Vista previa</button>
-                        <button type="submit" class="btn btn-primary" style="margin-top:.75rem;">Generar recibo de apartado</button>
+                        <button type="submit" formaction="{{ route('rentals.apartado.preview', $rental->id) }}" formtarget="_blank" class="btn btn-outline" style="margin-top:.75rem;">👁 Vista previa (no confirma nada)</button>
+                        <label style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--text-muted);margin-top:.75rem;">
+                            <input type="checkbox" x-model="confirmado">
+                            Confirmo que este depósito <strong>ya se recibió</strong> — esto se verá como completado en el Portal del inquilino.
+                        </label>
+                        <button type="submit" class="btn btn-primary" style="margin-top:.5rem;" :disabled="! confirmado" :style="! confirmado ? 'opacity:.5;cursor:not-allowed;' : ''">✅ Confirmar apartado y generar recibo</button>
                         <p style="font-size:.72rem;color:var(--text-muted);margin-top:.4rem;">La vista previa abre el PDF con estos mismos datos en una pestaña nueva, sin confirmar el apartado todavía.</p>
                     </form>
                 @endif
