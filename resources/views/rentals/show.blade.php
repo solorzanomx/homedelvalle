@@ -124,6 +124,18 @@
                     <button type="submit" class="btn btn-sm btn-primary" style="margin-bottom:0;">Cambiar</button>
                 </form>
 
+                {{-- Administración de renta: decide si el trato se cierra solo al llegar a Entrega
+                     (sin administración) o si el Portal del inquilino sigue activo durante toda la
+                     vigencia del contrato (con administración) — ver CloseCompletedRentals. --}}
+                <form method="POST" action="{{ route('rentals.management.toggle', $rental->id) }}" style="margin-bottom:1rem;border-top:1px solid var(--border);padding-top:.75rem;" onsubmit="return confirm('{{ $rental->management_contracted ? '¿Quitar la administración de renta? El trato se cerrará automáticamente unos días después de la entrega.' : '¿Marcar que el propietario contrató administración de renta? El Portal del inquilino seguirá activo durante toda la vigencia del contrato.' }}')">
+                    @csrf
+                    <input type="hidden" name="contracted" value="{{ $rental->management_contracted ? 0 : 1 }}">
+                    <label style="font-size:.75rem;color:var(--text-muted);display:block;margin-bottom:.3rem;">Administración de renta</label>
+                    <button type="submit" class="btn btn-sm {{ $rental->management_contracted ? 'btn-primary' : 'btn-outline' }}" style="width:100%;">
+                        {{ $rental->management_contracted ? '✅ Contratada — Portal activo todo el contrato' : '◻ No contratada — se cierra solo tras la entrega' }}
+                    </button>
+                </form>
+
                 {{-- Detail Rows --}}
                 <div class="detail-rows" style="border-top:1px solid var(--border);">
                     @if($rental->property)

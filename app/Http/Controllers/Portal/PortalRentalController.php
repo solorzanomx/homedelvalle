@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Portal;
 use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\RentalProcess;
+use App\Models\Task;
 use App\Services\ClientPortalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -157,6 +158,44 @@ class PortalRentalController extends Controller
         }
 
         return back()->with('success', "Listo. Ahora llena los datos de {$ct->name} y sube sus documentos desde aquí.");
+    }
+
+    /**
+     * El inquilino reporta una incidencia (mantenimiento, avería, etc.) durante una renta activa bajo
+     * administración de Home del Valle — crea una Tarea para el asesor y le avisa (2026-10-04, panel
+     * de "renta activa" del Portal).
+     */
+    public function reportIssue(Request $request, string $id)
+    {
+        [$client, $rental] = $this->tenantRental($id);
+
+        $data = $request->validate([
+            'description' => 'required|string|max:1000',
+        ]);
+
+        $task = Task::create([
+            'user_id' => $rental->broker_id ?? $rental->user_id,
+            'rental_process_id' => $rental->id,
+            'client_id' => $client->id,
+            'property_id' => $rental->property_id,
+            'title' => 'Incidencia reportada por ' . $client->name,
+            'description' => $data['description'],
+            'priority' => 'high',
+            'status' => 'pending',
+        ]);
+
+        $userId = $rental->broker_id ?? $rental->user_id;
+        if ($userId) {
+            Notification::create([
+                'user_id' => $userId,
+                'type' => 'incidencia_renta',
+                'title' => 'Incidencia reportada — ' . ($rental->property?->title ?? 'renta #' . $rental->id),
+                'body' => $client->name . ' reportó: ' . \Illuminate\Support\Str::limit($data['description'], 150),
+                'data' => ['url' => route('rentals.show', $rental->id), 'rental_id' => $rental->id, 'task_id' => $task->id],
+            ]);
+        }
+
+        return back()->with('success', 'Incidencia reportada — tu asesor ya la tiene y le dará seguimiento.');
     }
 
     /**

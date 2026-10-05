@@ -416,6 +416,27 @@ class RentalProcessController extends Controller
         return \App\Models\ClientReference::whereIn('client_id', $ids)->findOrFail($referenceId);
     }
 
+    /**
+     * Marca (o desmarca) si el propietario contrató administración continua de la renta — decide si
+     * el trato se cierra solo al llegar a Entrega (sin administración, ver `CloseCompletedRentals`)
+     * o si el Portal sigue activo durante toda la vigencia del contrato (con administración).
+     */
+    public function toggleManagement(Request $request, string $id)
+    {
+        $rental = RentalProcess::findOrFail($id);
+        $request->validate(['contracted' => 'required|in:0,1']);
+        $contracted = $request->input('contracted') === '1';
+
+        $rental->update([
+            'management_contracted' => $contracted,
+            'management_contracted_at' => $contracted ? ($rental->management_contracted_at ?? now()) : null,
+        ]);
+
+        return back()->with('success', $contracted
+            ? 'Administración de renta contratada — el Portal del inquilino seguirá activo durante todo el contrato.'
+            : 'Administración de renta desmarcada — el trato se cerrará automáticamente unos días después de la entrega.');
+    }
+
     /** Exenta (o vuelve a requerir) al obligado solidario en este trato. */
     public function toggleObligado(Request $request, string $id)
     {

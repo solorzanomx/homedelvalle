@@ -105,3 +105,5 @@ Schedule::command('market:update-prices')
 
 Schedule::command('ai:rollup-usage')->dailyAt('00:10')->withoutOverlapping()
     ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('ai:rollup-usage scheduled run failed'));
+Schedule::command('rentals:close-after-entrega')->dailyAt('08:30')->withoutOverlapping()
+    ->onFailure(fn () => \Illuminate\Support\Facades\Log::error('rentals:close-after-entrega scheduled run failed'));
