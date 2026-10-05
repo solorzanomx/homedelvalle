@@ -224,6 +224,18 @@ class DocumentUploader extends Component
 
         $quality->record($document, $gate);
 
+        // Si lo que subió es un comprobante de ingresos (nómina/estado de cuenta/CFDI), sincroniza
+        // Client.income_proof_type con la categoría real del documento — sin esto, alguien podía
+        // subir y que le aprobaran sus 3 comprobantes de ingresos ("Tus documentos" ✓) y aun así
+        // quedarse atorado en "Tus datos" (el % de ExpedienteFields::INCOME_TENANT y de
+        // Client::legal_completeness cuentan income_proof_type como campo aparte, que nadie llenaba
+        // solo). Hallazgo real 2026-10-04: Yarlin subió todo pero el camino nunca avanzaba al paso
+        // del co-arrendatario porque "Tus datos" se quedaba en 96% por este único campo.
+        $incomeCategoryToType = ['nomina' => 'nomina', 'estado_cuenta' => 'estado_cuenta', 'cfdi_honorarios' => 'cfdi_honorarios'];
+        if (isset($incomeCategoryToType[$this->category]) && $client->income_proof_type !== $incomeCategoryToType[$this->category]) {
+            $client->update(['income_proof_type' => $incomeCategoryToType[$this->category]]);
+        }
+
         $this->notifyBroker($client, $document);
 
         if (app(IdDocumentAIVerificationService::class)->shouldVerify($document)) {
