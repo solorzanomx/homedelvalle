@@ -113,10 +113,18 @@ class ContratoExclusivaGeneratorService
             ? '$' . number_format((float) $captacion->precio_acordado, 2) . ' MXN'
             : null;
 
+        // Quien firma legalmente en representación de Home del Valle siempre es la Directora
+        // General, sin importar qué asesor atendió el trato (mismo criterio ya usado en el Recibo
+        // de Apartado, decisión 2026-09-24 — aquí faltaba, hallazgo real 2026-10-05: un Acuerdo de
+        // Representación generado para un cliente real salió sin ningún nombre de representante).
+        $representanteName = 'Ana Laura Monsiváis Flores';
+        $representanteTitle = 'Directora General';
+
         return view('pdf.contrato-exclusiva', compact(
             'captacion', 'client', 'property', 'folio', 'fecha', 'vigenciaDias', 'vigenciaHasta',
             'ownerName', 'ownerId', 'ownerCurpRfc', 'ownerAddress',
-            'propertyAddress', 'propertyColonyLabel', 'propertyFull', 'comisionPct', 'precioLista'
+            'propertyAddress', 'propertyColonyLabel', 'propertyFull', 'comisionPct', 'precioLista',
+            'representanteName', 'representanteTitle'
         ))->render();
     }
 

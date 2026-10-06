@@ -148,7 +148,8 @@ strong { color: #0f172a; }
       </div>
       <div class="sign-col">
         <div class="sign-line">
-          <div class="sign-name">Home del Valle Bienes Raíces</div>
+          <div class="sign-name">{{ $representanteName ?? 'Home del Valle Bienes Raíces' }}</div>
+          {{ $representanteTitle ?? '' }}{{ $representanteTitle ? ' — ' : '' }}Home del Valle Bienes Raíces<br>
           Nombre y firma del representante
         </div>
       </div>
