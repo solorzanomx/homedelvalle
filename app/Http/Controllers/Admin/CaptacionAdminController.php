@@ -311,6 +311,13 @@ class CaptacionAdminController extends Controller
             return back()->with('error', 'Establece el precio antes de generar el Acuerdo de Representación.');
         }
 
+        // Mismo requisito que el Acuerdo de renta (hallazgo 2026-10-06: el de venta no lo
+        // exigía, y es la garantía real de que quien firma es el dueño — Declaración de Propiedad).
+        $missing = \App\Services\ContratoExclusivaGeneratorService::missingOwnershipFields($captacion->property);
+        if ($missing) {
+            return back()->with('error', 'Completa los datos de escritura del inmueble antes de generar el Acuerdo: ' . implode(', ', $missing) . '.');
+        }
+
         $validated = $request->validate(['vigencia_dias' => 'nullable|integer|min:90|max:365']);
         $vigenciaDias = $validated['vigencia_dias'] ?? 180;
 

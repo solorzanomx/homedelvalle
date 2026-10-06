@@ -838,7 +838,14 @@
                 <p style="font-size:.75rem;color:var(--success);margin-top:.5rem;">&#10003; Acuerdo firmado</p>
                 @endif
                 @else
+                @php $arMissing = \App\Services\ContratoExclusivaGeneratorService::missingOwnershipFields($captacion->property); @endphp
                 <p style="font-size:.8rem;color:var(--text-muted);margin-bottom:.75rem;">Genera el Acuerdo de Representación para el cliente.</p>
+                @if($arMissing)
+                <p style="font-size:.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;margin-bottom:.6rem;">
+                    Completa en la ficha del inmueble los datos de escritura antes de generar el Acuerdo (Declaración de Propiedad): <strong>{{ implode(', ', $arMissing) }}</strong>.
+                    @if($captacion->property)<br><a href="{{ route('properties.edit', $captacion->property_id) }}" target="_blank" style="color:var(--danger);text-decoration:underline;">Editar inmueble &rarr;</a>@endif
+                </p>
+                @endif
                 <form method="POST" action="{{ route('admin.captaciones.generar-exclusiva', $captacion) }}">
                     @csrf
                     <div class="form-group" style="margin-bottom:.5rem;">
@@ -846,7 +853,7 @@
                         <input type="number" name="vigencia_dias" class="form-input" value="180" min="90" max="365" style="font-size:.82rem;">
                     </div>
                     <button type="submit" class="btn btn-primary btn-sm" style="width:100%;"
-                        {{ !$captacion->etapa3_completed_at ? 'disabled' : '' }}>
+                        {{ (!$captacion->etapa3_completed_at || $arMissing) ? 'disabled' : '' }}>
                         Generar Contrato
                     </button>
                 </form>

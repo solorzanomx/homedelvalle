@@ -32,10 +32,9 @@ body {
 
 .page {
     width: 215.9mm;
-    height: 279.4mm;
+    min-height: 279.4mm;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     break-after: page;
     page-break-after: always;
 }
@@ -47,10 +46,11 @@ body {
 .page-header-inner img { height: 18px; max-width: 140px; object-fit: contain; display: block; }
 .page-header-inner span.phi-text { font-size: 12px; font-weight: 700; color: #fff; }
 .page-header-inner .phi-tag { font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: rgba(199,210,254,.7); }
-.page-body  { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-.inner      { flex: 1; padding: 30px 52px 14px; display: flex; flex-direction: column; overflow: hidden; }
+.page-body  { flex: 1; display: flex; flex-direction: column; }
+.inner      { flex: 1; padding: 30px 52px 36px; display: flex; flex-direction: column; }
 .page-foot  {
-    flex-shrink: 0; border-top: 1px solid #e2e8f0; padding: 8px 52px;
+    position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+    border-top: 1px solid #e2e8f0; padding: 8px 52px;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 8.5px; color: #94a3b8;
 }
@@ -71,6 +71,14 @@ strong { color: #0f172a; }
 .owner-box .lbl { color: #94a3b8; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-top: 1px; }
 .owner-box .val { color: #0f172a; font-weight: 600; }
 
+.section-label { font-size: 9px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--hdv-navy); margin: 10px 0 5px; }
+
+.decl-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 16px 4px; margin: 4px 0 12px; break-inside: avoid; page-break-inside: avoid; }
+.decl-box .row { display: flex; gap: 6px; font-size: 10px; margin-bottom: 6px; }
+.decl-box .lbl { color: #92400e; min-width: 130px; text-transform: uppercase; font-size: 8.5px; font-weight: 700; letter-spacing: .5px; padding-top: 1px; }
+.decl-box .val { color: #0f172a; font-weight: 600; }
+.decl-text { font-size: 10.5px; line-height: 1.55; color: #334155; text-align: justify; padding: 8px 0 10px; border-top: 1px dashed #fde68a; margin-top: 4px; }
+
 .terms-table { width: 100%; border-collapse: collapse; margin: 4px 0 10px; font-size: 11px; }
 .terms-table td { padding: 6px 12px; border-bottom: 1px solid #f1f5f9; }
 .terms-table td:first-child { color: #64748b; width: 42%; }
@@ -78,9 +86,9 @@ strong { color: #0f172a; }
 .terms-table tr:last-child td { border-bottom: none; }
 
 .clauses { counter-reset: clause; margin: 4px 0 10px; }
-.clause { counter-increment: clause; padding: 5px 0 5px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; }
+.clause { counter-increment: clause; padding: 26px 0 20px 26px; position: relative; border-bottom: 1px solid #f8fafc; font-size: 10.5px; line-height: 1.5; color: #334155; text-align: justify; break-inside: avoid; page-break-inside: avoid; }
 .clause:last-child { border-bottom: none; }
-.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 5px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
+.clause::before { content: counter(clause) "."; position: absolute; left: 0; top: 26px; color: var(--hdv-navy); font-weight: 800; font-size: 10.5px; }
 .clause strong { color: #0f172a; }
 
 .sign-row { display: flex; justify-content: center; gap: 40px; margin-top: 8px; }
@@ -107,7 +115,7 @@ strong { color: #0f172a; }
 
     <p class="meta-line"><strong>HOME DEL VALLE BIENES RAÍCES</strong><br>P R E S E N T E. —</p>
 
-    <p>Por medio del presente, el/la propietario(a) que suscribe designa a <strong>Home del Valle Bienes Raíces</strong> como su representante para la comercialización del inmueble ubicado en <strong>{{ $propertyAddress }}</strong>{{ $propertyColonyLabel ? ', ' . $propertyColonyLabel : '' }}, sujeto a los términos y condiciones establecidos en este documento:</p>
+    <p>Por medio del presente, el/la propietario(a) que suscribe designa a <strong>Home del Valle Bienes Raíces</strong> —representada en este acto por <strong>{{ \App\Services\ContratoExclusivaGeneratorService::REPRESENTANTE_NOMBRE }}</strong>, {{ \App\Services\ContratoExclusivaGeneratorService::REPRESENTANTE_CARGO }}— como su representante para la comercialización del inmueble ubicado en <strong>{{ $propertyAddress }}</strong>{{ $propertyColonyLabel ? ', ' . $propertyColonyLabel : '' }}, sujeto a los términos y condiciones establecidos en este documento:</p>
 
     <div class="owner-box">
       <div class="row"><span class="lbl">Propietario</span><span class="val">{{ $ownerName }}</span></div>
@@ -117,26 +125,31 @@ strong { color: #0f172a; }
       @if($propertyFull)<div class="row"><span class="lbl">Inmueble</span><span class="val">{{ $propertyFull }}</span></div>@endif
     </div>
 
+    <div class="section-label">Declaraciones</div>
+    <div class="decl-box">
+      <div class="row"><span class="lbl">Folio Real</span><span class="val">{{ $folioReal }}</span></div>
+      <div class="row"><span class="lbl">Escritura Pública</span><span class="val">No. {{ $escrituraNumero }}, {{ $escrituraFecha }}</span></div>
+      <div class="row"><span class="lbl">Notario</span><span class="val">Lic. {{ $notarioNombre }} — Notaría No. {{ $notarioNumero }}, {{ $notarioPlaza }}</span></div>
+      <div class="decl-text">{!! $declaracionPropiedad !!}</div>
+    </div>
+
+    <div class="section-label">Cláusulas</div>
     <table class="terms-table">
-      @if($precioLista)
       <tr><td>Precio de lista</td><td>{{ $precioLista }}</td></tr>
-      @endif
       <tr><td>Comisión pactada</td><td>{{ number_format($comisionPct, 2) }}%</td></tr>
       <tr><td>Vigencia</td><td>{{ $vigenciaDias }} días naturales</td></tr>
     </table>
 
     <div class="clauses">
-      <div class="clause">{!! \App\Services\ContratoExclusivaGeneratorService::clause('objeto') !!}</div>
-
-      <div class="clause">{!! \App\Services\ContratoExclusivaGeneratorService::clause('vigencia', ['vigencia_dias' => $vigenciaDias, 'vigencia_hasta' => $vigenciaHasta]) !!}</div>
-
-      <div class="clause">{!! \App\Services\ContratoExclusivaGeneratorService::clause('comision', ['comision_pct' => number_format($comisionPct, 2)]) !!}</div>
-
-      <div class="clause">{!! \App\Services\ContratoExclusivaGeneratorService::clause('obligaciones_hdv') !!}</div>
-
-      <div class="clause">{!! \App\Services\ContratoExclusivaGeneratorService::clause('obligaciones_propietario') !!}</div>
-
-      <div class="clause">{!! \App\Services\ContratoExclusivaGeneratorService::clause('privacidad') !!}</div>
+      @foreach(\App\Services\ContratoExclusivaGeneratorService::NUMBERED_CLAUSES as $ck)
+        <div class="clause" data-clause="{{ $ck }}">
+          {!! \App\Services\ContratoExclusivaGeneratorService::clause($ck, [
+              'vigencia_dias' => $vigenciaDias,
+              'vigencia_hasta' => $vigenciaHasta,
+              'comision_pct' => number_format($comisionPct, 2),
+          ]) !!}
+        </div>
+      @endforeach
     </div>
 
     <div class="sign-row">
@@ -148,9 +161,8 @@ strong { color: #0f172a; }
       </div>
       <div class="sign-col">
         <div class="sign-line">
-          <div class="sign-name">{{ $representanteName ?? 'Home del Valle Bienes Raíces' }}</div>
-          {{ $representanteTitle ?? '' }}{{ $representanteTitle ? ' — ' : '' }}Home del Valle Bienes Raíces<br>
-          Nombre y firma del representante
+          <div class="sign-name">{{ \App\Services\ContratoExclusivaGeneratorService::REPRESENTANTE_NOMBRE }}</div>
+          {{ \App\Services\ContratoExclusivaGeneratorService::REPRESENTANTE_CARGO }} · Home del Valle Bienes Raíces<br>Nombre y firma del representante
         </div>
       </div>
     </div>
