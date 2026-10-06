@@ -8,6 +8,7 @@ use App\Models\PresentationSend;
 use App\Models\User;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Spatie\Browsershot\Browsershot;
 
 // PresentationGeneratorService is in the same namespace (App\Services),
@@ -93,12 +94,18 @@ class ServiciosGeneratorService
               ->attach($path, ['as' => 'HDV-Propuesta-Servicios.pdf', 'mime' => 'application/pdf']);
         });
 
+        // Mismas columnas reales de presentation_sends que usa PresentationGeneratorService
+        // (channel es ENUM email|whatsapp|download; tracking_token es NOT NULL/UNIQUE sin default
+        // — bug real 2026-10-06: esto usaba nombres de columna y un valor de channel que no existen,
+        // nunca se había probado de punta a punta hasta un envío real).
         PresentationSend::create([
-            'captacion_id' => $captacion->id,
-            'channel'      => 'servicios_email',
-            'sent_to'      => $email,
-            'sent_by'      => $agent->id,
-            'sent_at'      => now(),
+            'captacion_id'    => $captacion->id,
+            'channel'         => 'email',
+            'sent_by_user_id' => $agent->id,
+            'recipient_email' => $email,
+            'tracking_token'  => Str::random(48),
+            'sent_at'         => now(),
+            'metadata'        => ['kind' => 'propuesta_servicios'],
         ]);
     }
 
@@ -115,11 +122,13 @@ class ServiciosGeneratorService
         $waUrl   = 'https://wa.me/' . $phone . '?text=' . urlencode($msg);
 
         PresentationSend::create([
-            'captacion_id' => $captacion->id,
-            'channel'      => 'servicios_whatsapp',
-            'sent_to'      => $phone,
-            'sent_by'      => $agent->id,
-            'sent_at'      => now(),
+            'captacion_id'    => $captacion->id,
+            'channel'         => 'whatsapp',
+            'sent_by_user_id' => $agent->id,
+            'recipient_phone' => $phone,
+            'tracking_token'  => Str::random(48),
+            'sent_at'         => now(),
+            'metadata'        => ['kind' => 'propuesta_servicios'],
         ]);
 
         return ['wa_me_url' => $waUrl];
