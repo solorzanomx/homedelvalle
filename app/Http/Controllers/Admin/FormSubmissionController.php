@@ -449,9 +449,11 @@ class FormSubmissionController extends Controller
      */
     public function aiSuggest(FormSubmission $formSubmission, \App\Services\AILeadClassifierService $classifier)
     {
-        // Firma con el nombre de pila de quien está atendiendo (Alejandro,
-        // Ana Laura…) — la respuesta la envía una persona, no "la empresa".
-        $asesor = collect(explode(' ', trim((string) auth()->user()?->name)))->take(2)->implode(' ') ?: null;
+        // Firma con el nombre completo de quien está atendiendo (Alejandro Solórzano,
+        // Ana Laura Monsiváis…) — la respuesta la envía una persona, no "la empresa".
+        // Antes solo tomaba el nombre de pila (2 primeras palabras de `name`, sin
+        // apellido) — más formal con el nombre completo (decisión 2026-10-06).
+        $asesor = trim((string) auth()->user()?->full_name) ?: null;
 
         $respuesta = $classifier->suggestReply($formSubmission, $asesor);
 

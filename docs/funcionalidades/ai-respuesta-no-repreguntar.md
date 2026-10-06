@@ -43,6 +43,16 @@ cubría compra/renta (inquilino)/vendedor.
   preguntar" en la regla de pregunta calificadora — dejarlo genérico es lo que causó este bug para
   `propietario_renta`.
 
+## Tercera vuelta (mismo día): nombre completo + sin modismos
+Alejandro pidió dos ajustes más al revisar el mensaje ya corregido:
+- **Firma con nombre completo, no solo de pila**: `FormSubmissionController::aiSuggest()` armaba
+  `$asesor` tomando las 2 primeras palabras de `auth()->user()->name` — para un usuario cuyo `name`
+  solo trae el nombre de pila (el apellido vive aparte, en `last_name`), eso cortaba el apellido por
+  completo. Cambiado a `auth()->user()->full_name` (el accessor que ya junta `name` + `last_name`).
+- **Sin modismos/jerga informal**: el mensaje decía "¿si te late...?" — no refleja el tono formal de
+  la empresa. Regla nueva explícita: nunca usar "te late", "no manches", "va que va", "órale" — usar
+  "¿te interesa?" o "¿te gustaría?" en su lugar.
+
 ## Cómo probarlo
 Regenerar la respuesta sugerida ("🤖 Sugerir respuesta" / "Regenerar") en un lead cuyo brief ya
 conteste el dato típico de su tipo (ej. `timing` en un `propietario_renta`) y confirmar que la
