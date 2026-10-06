@@ -11,6 +11,7 @@ class Automation extends Model
     protected $fillable = [
         'name', 'description', 'trigger_type', 'trigger_config',
         'is_active', 'allow_reentry', 'enrollment_count', 'created_by',
+        'exit_on_engagement',
     ];
 
     protected function casts(): array
@@ -19,6 +20,7 @@ class Automation extends Model
             'trigger_config' => 'array',
             'is_active' => 'boolean',
             'allow_reentry' => 'boolean',
+            'exit_on_engagement' => 'boolean',
         ];
     }
 

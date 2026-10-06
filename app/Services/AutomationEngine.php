@@ -349,6 +349,37 @@ class AutomationEngine
             return true;
         }
 
+        // Salida automática por actividad real (2026-10-06): antes de ejecutar CUALQUIER paso, si
+        // la automatización lo pide (exit_on_engagement) y el cliente ya muestra actividad real
+        // (trato activo o una interacción reciente), se cancela la inscripción en vez de seguir la
+        // cadena ciega por tiempo. Caso real: a Yarlin Nava le llegó "¿Seguimos en contacto?" en
+        // plena negociación activa de su renta — la automatización nunca revisaba esto.
+        if ($enrollment->automation->exit_on_engagement && $this->hasRealEngagement($enrollment->client)) {
+            AutomationStepLog::create([
+                'enrollment_id' => $enrollment->id,
+                'step_id' => $step->id,
+                'status' => 'skipped',
+                'result' => ['reason' => 'exit_on_engagement: cliente con actividad real detectada (trato activo o interacción reciente)'],
+                'executed_at' => now(),
+            ]);
+            $enrollment->update(['status' => 'cancelled', 'next_run_at' => null]);
+
+            $userId = $enrollment->client->assigned_user_id;
+            if ($userId) {
+                \App\Models\Notification::create([
+                    'user_id' => $userId,
+                    'type' => 'automation_cancelled_engagement',
+                    'title' => 'Automatización cancelada — cliente activo',
+                    'body' => "\"{$enrollment->automation->name}\" se canceló sola para {$enrollment->client->name}: ya tiene actividad real (trato activo o interacción reciente), no tiene sentido seguirla tratando como lead sin respuesta.",
+                    'data' => ['url' => route('clients.show', $enrollment->client_id), 'client_id' => $enrollment->client_id],
+                ]);
+            }
+
+            Log::info("AutomationEngine: enrollment #{$enrollment->id} cancelado por actividad real del cliente #{$enrollment->client_id}");
+
+            return true;
+        }
+
         // Prevent re-execution of already completed steps
         $alreadyExecuted = AutomationStepLog::where('enrollment_id', $enrollment->id)
             ->where('step_id', $step->id)
@@ -431,6 +462,34 @@ class AutomationEngine
         }
 
         $enrollment->update(['next_run_at' => now()->addMinutes(15 * $enrollment->attempts)]);
+    }
+
+    /**
+     * ¿Este cliente ya muestra señales reales de que no es un lead sin respuesta? Usado solo por
+     * automatizaciones con exit_on_engagement=true (2026-10-06). Intencionalmente simple y
+     * independiente del momento de la inscripción (un trato activo HOY basta, sin importar cuándo
+     * empezó) — un cliente con trato en curso o contacto reciente nunca debería seguir recibiendo
+     * una secuencia de "no contestó".
+     */
+    private function hasRealEngagement(Client $client): bool
+    {
+        $hasActiveRental = \App\Models\RentalProcess::where(fn ($q) => $q->where('tenant_client_id', $client->id)->orWhere('owner_client_id', $client->id))
+            ->where('status', 'active')
+            ->exists();
+        if ($hasActiveRental) {
+            return true;
+        }
+
+        $hasActiveOperation = Operation::where(fn ($q) => $q->where('client_id', $client->id)->orWhere('secondary_client_id', $client->id))
+            ->where('status', 'active')
+            ->exists();
+        if ($hasActiveOperation) {
+            return true;
+        }
+
+        return \App\Models\Interaction::where('client_id', $client->id)
+            ->where('created_at', '>=', now()->subDays(14))
+            ->exists();
     }
 
     // ──────────────────────────────────────────────────

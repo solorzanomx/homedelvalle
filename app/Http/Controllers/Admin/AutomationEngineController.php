@@ -41,6 +41,7 @@ class AutomationEngineController extends Controller
             'trigger_config' => 'nullable|array',
             'is_active' => 'boolean',
             'allow_reentry' => 'boolean',
+            'exit_on_engagement' => 'boolean',
             'steps' => 'required|array|min:1',
             'steps.*.type' => 'required|string|in:' . implode(',', array_keys(Automation::STEP_TYPES)),
             'steps.*.config' => 'required|array',
@@ -53,6 +54,7 @@ class AutomationEngineController extends Controller
             'trigger_config' => $validated['trigger_config'] ?? null,
             'is_active' => $request->boolean('is_active'),
             'allow_reentry' => $request->boolean('allow_reentry'),
+            'exit_on_engagement' => $request->boolean('exit_on_engagement'),
             'created_by' => auth()->id(),
         ]);
 
@@ -97,6 +99,7 @@ class AutomationEngineController extends Controller
             'trigger_config' => 'nullable|array',
             'is_active' => 'boolean',
             'allow_reentry' => 'boolean',
+            'exit_on_engagement' => 'boolean',
             'steps' => 'required|array|min:1',
             'steps.*.type' => 'required|string|in:' . implode(',', array_keys(Automation::STEP_TYPES)),
             'steps.*.config' => 'required|array',
@@ -109,6 +112,7 @@ class AutomationEngineController extends Controller
             'trigger_config' => $validated['trigger_config'] ?? null,
             'is_active' => $request->boolean('is_active'),
             'allow_reentry' => $request->boolean('allow_reentry'),
+            'exit_on_engagement' => $request->boolean('exit_on_engagement'),
         ]);
 
         // Rebuild steps
