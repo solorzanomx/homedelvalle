@@ -1,4 +1,4 @@
-# Respuesta sugerida de IA: no repreguntar datos que ya vienen en el brief
+# Respuesta sugerida de IA: no repreguntar datos que ya vienen en el brief + estrategia propietario_renta
 
 > 2026-10-06. Léelo antes de tocar `AILeadClassifierService::suggestReply()` o `reglasDeRespuesta()`.
 
@@ -17,8 +17,17 @@ cubría compra/renta (inquilino)/vendedor.
 ## El arreglo
 - Regla nueva: antes de elegir la pregunta calificadora, revisar el brief completo — si el dato ya
   viene contestado, no volver a preguntarlo, usarlo para avanzar.
-- Guía específica para `propietario_renta`: preguntar la **dirección exacta** (calle y número) —
-  es el dato real que falta para poder dar de alta la captación (la colonia sola no alcanza).
+- **Segunda vuelta (mismo día, decisión de Alejandro sobre el caso real)**: para `propietario_renta`
+  el primer mensaje no debe pedir datos de entrada — primero da valor, pide después. La primera
+  versión de este fix hacía que el primer mensaje pidiera la dirección exacta; Alejandro decidió que
+  lo lógico es que el propietario primero sepa qué servicios da Home del Valle y cuánto cuesta (eso
+  es lo que de verdad está preguntando implícitamente), no que le pidamos más datos de entrada.
+  Estructura nueva del primer mensaje para este tipo de lead: (1) presentarse y generar confianza
+  (buenos resultados/presencia en la zona), (2) ofrecer ayuda concreta para poner el inmueble en
+  renta, (3) invitar a ampliar información si gusta (sin exigir un dato puntual), (4) ofrecer mandar
+  una Propuesta de Servicios para que la revise y, si le interesa, agendar una visita. La dirección
+  exacta y demás datos para dar de alta el inmueble se piden DESPUÉS, cuando ya conteste mostrando
+  interés — nunca en el primer mensaje.
 
 ## Mapa de archivos
 | Qué | Dónde |
@@ -37,4 +46,6 @@ cubría compra/renta (inquilino)/vendedor.
 ## Cómo probarlo
 Regenerar la respuesta sugerida ("🤖 Sugerir respuesta" / "Regenerar") en un lead cuyo brief ya
 conteste el dato típico de su tipo (ej. `timing` en un `propietario_renta`) y confirmar que la
-pregunta calificadora NO repite ese dato. Verificado a mano con el lead real #179 tras el fix.
+pregunta calificadora NO repite ese dato. Para `propietario_renta`: confirmar que el primer mensaje
+NO pide ningún dato (ni la dirección) y en vez de eso ofrece ayuda + propuesta de servicios + visita.
+Verificado a mano con el lead real #179 (Alonso Aldama) en ambas vueltas del fix.
