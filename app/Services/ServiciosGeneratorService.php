@@ -116,7 +116,10 @@ class ServiciosGeneratorService
         }
 
         $address = $captacion->property?->address ?? $captacion->property_address ?? 'su inmueble';
-        $msg = "Hola {$captacion->client?->name}, le comparto la propuesta de servicios de Home del Valle para la comercialización de {$address}. Quedo a sus órdenes. {$agent->name}";
+        // Siempre de "tú" (nunca "usted"), sin modismos, con la puerta abierta a llamada/dudas/cita
+        // — texto revisado y aprobado por Alejandro 2026-10-06 (probado primero con un envío real a
+        // un propietario). Antes decía "le comparto... sus órdenes" (usted) y no invitaba a nada.
+        $msg = "Hola {$captacion->client?->name}, te comparto la propuesta de servicios de Home del Valle para la comercialización de {$address}. Si tienes dudas, quieres que platiquemos por teléfono o prefieres que agendemos una visita, aquí estoy. Quedo a tus órdenes. {$agent->name}";
 
         $phone   = preg_replace('/[^0-9]/', '', $phone);
         $waUrl   = 'https://wa.me/' . $phone . '?text=' . urlencode($msg);
