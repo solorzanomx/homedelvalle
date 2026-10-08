@@ -306,6 +306,8 @@ Route::middleware(['auth', 'viewer'])->group(function () {
     Route::post('operations/{operation}/contrato-compraventa/confirmar-firma', [\App\Http\Controllers\ContratoCompraventaController::class, 'markSigned'])->name('operations.contrato-compraventa.confirmar-firma');
     Route::post('operations/{operation}/acta-entrega/generar', [\App\Http\Controllers\ActaEntregaController::class, 'generar'])->name('operations.acta-entrega.generar');
     Route::get('operations/{operation}/acta-entrega/pdf', [\App\Http\Controllers\ActaEntregaController::class, 'pdf'])->name('operations.acta-entrega.pdf');
+    Route::post('operations/{operation}/recibo-pago-parcial/generar', [\App\Http\Controllers\ReciboPagoParcialController::class, 'generar'])->name('operations.recibo-pago-parcial.generar');
+    Route::get('operations/{operation}/recibo-pago-parcial/{document}/pdf', [\App\Http\Controllers\ReciboPagoParcialController::class, 'pdf'])->name('operations.recibo-pago-parcial.pdf');
     Route::post('operations/{operation}/acuerdo-representacion-renta/generar', [\App\Http\Controllers\AcuerdoRepresentacionRentaController::class, 'generar'])->name('operations.acuerdo-representacion-renta.generar');
     Route::get('operations/{operation}/acuerdo-representacion-renta/pdf', [\App\Http\Controllers\AcuerdoRepresentacionRentaController::class, 'pdf'])->name('operations.acuerdo-representacion-renta.pdf');
     Route::post('operations/{operation}/acuerdo-representacion-renta/confirmar-firma', [\App\Http\Controllers\AcuerdoRepresentacionRentaController::class, 'markSigned'])->name('operations.acuerdo-representacion-renta.confirmar-firma');

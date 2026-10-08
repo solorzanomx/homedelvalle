@@ -48,6 +48,7 @@ class Document extends Model
         'contrato_exclusiva_renta' => 'Acuerdo de Representación (Renta)',
         'contrato_compraventa' => 'Contrato de Compraventa',
         'acta_entrega' => 'Acta de Entrega',
+        'recibo_pago_parcial' => 'Recibo de Pago Parcial',
         'adendum_comision' => 'Adéndum de Comisión Mercantil',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',

@@ -25,6 +25,16 @@ class NumeroALetras
         return mb_strtoupper($letras) . ' ' . str_pad((string) $centavos, 2, '0', STR_PAD_LEFT) . '/100 M.N.';
     }
 
+    /**
+     * Igual que pesos(), pero termina en "MONEDA NACIONAL" en vez de "M.N." — para el texto
+     * parentético de recibos (ej. "...PESOS 67/100 MONEDA NACIONAL)") donde el "M.N." ya aparece
+     * antes, en la cifra numérica ("$X M.N. (... MONEDA NACIONAL)").
+     */
+    public static function pesosMonedaNacional(float $monto): string
+    {
+        return preg_replace('/ M\.N\.$/', ' MONEDA NACIONAL', self::pesos($monto));
+    }
+
     public static function entero(int $n): string
     {
         if ($n === 0) {
