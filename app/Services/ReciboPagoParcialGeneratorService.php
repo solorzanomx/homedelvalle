@@ -26,11 +26,19 @@ class ReciboPagoParcialGeneratorService
     const DEFAULT_CLAUSES = [
         'recepcion' => 'Por medio del presente, {{seller_name}}, en mi carácter de propietario del inmueble que se identifica más adelante, hago constar que recibí a mi entera satisfacción, {{metodo_pago}}, por parte de {{buyer_name}} la cantidad de:<br><br><strong class="monto-letras">{{monto_numero}} M.N. ({{monto_letras}}),</strong><br><br>cantidad que se recibe y reconoce como pago parcial del precio de compraventa del inmueble de mi propiedad, ubicado en {{property_full}}.',
         'otorgamiento' => 'En virtud de lo anterior, mediante la suscripción del presente documento otorgo el recibo más amplio que en derecho proceda exclusivamente respecto de la cantidad aquí consignada, dejando constancia de su recepción a mi entera satisfacción y de su aplicación como pago parcial de la operación de compraventa antes referida. El presente recibo se suscribe para todos los efectos legales a que haya lugar.',
+        // Variantes para cuando este pago es el ÚLTIMO (finiquito) — misma estructura, solo cambia
+        // "pago parcial" por "finiquito de pago". Caso real que las originó: segundo recibo del caso
+        // Nogues/Ruiz Ramírez (Infonavit, $1,648,672.82) — Ana Laura pidió explícitamente "finiquito
+        // de pago" en vez de "pago parcial" para ese recibo.
+        'recepcion_finiquito' => 'Por medio del presente, {{seller_name}}, en mi carácter de propietario del inmueble que se identifica más adelante, hago constar que recibí a mi entera satisfacción, {{metodo_pago}}, por parte de {{buyer_name}} la cantidad de:<br><br><strong class="monto-letras">{{monto_numero}} M.N. ({{monto_letras}}),</strong><br><br>cantidad que se recibe y reconoce como finiquito de pago por la compraventa del inmueble de mi propiedad, ubicado en {{property_full}}.',
+        'otorgamiento_finiquito' => 'En virtud de lo anterior, mediante la suscripción del presente documento otorgo el recibo más amplio que en derecho proceda exclusivamente respecto de la cantidad aquí consignada, dejando constancia de su recepción a mi entera satisfacción y de que, con la presente, queda cubierto en su totalidad el precio pactado por la operación de compraventa antes referida. El presente recibo se suscribe para todos los efectos legales a que haya lugar.',
     ];
 
     const CLAUSE_LABELS = [
         'recepcion' => 'Recepción del pago',
         'otorgamiento' => 'Otorgamiento del recibo',
+        'recepcion_finiquito' => 'Recepción del pago (finiquito)',
+        'otorgamiento_finiquito' => 'Otorgamiento del recibo (finiquito)',
     ];
 
     public static function clause(string $clauseKey, array $tokens = []): string
@@ -66,8 +74,10 @@ class ReciboPagoParcialGeneratorService
      *         crédito hipotecario a través de INFONAVIT". Se captura al generar porque cambia cada vez.
      * @param  \Illuminate\Support\Carbon|string|null  $fechaRecibo  fecha real en que se recibió el
      *         pago — no siempre coincide con el día en que se genera el PDF. Default: hoy.
+     * @param  bool  $esFiniquito  true si este pago es el ÚLTIMO y deja saldado el precio total —
+     *         cambia "pago parcial" por "finiquito de pago" en el texto y el título del documento.
      */
-    public function renderHtml(Operation $operation, float $monto, string $metodoPago, $fechaRecibo = null): string
+    public function renderHtml(Operation $operation, float $monto, string $metodoPago, $fechaRecibo = null, bool $esFiniquito = false): string
     {
         $operation->loadMissing('client', 'secondaryClient', 'property');
         $seller   = $operation->client;
@@ -94,21 +104,24 @@ class ReciboPagoParcialGeneratorService
             'monto_letras' => $montoLetras,
         ];
 
-        $clauses = collect(['recepcion', 'otorgamiento'])->map(fn ($key) => [
+        $clauseKeys = $esFiniquito ? ['recepcion_finiquito', 'otorgamiento_finiquito'] : ['recepcion', 'otorgamiento'];
+        $clauses = collect($clauseKeys)->map(fn ($key) => [
             'key' => $key,
             'body' => self::clause($key, $tokens),
         ])->values();
 
+        $docTitle = $esFiniquito ? 'Recibo de Finiquito de Pago' : 'Recibo de Pago Parcial';
+
         return view('pdf.recibo-pago-parcial', compact(
-            'operation', 'folio', 'fecha', 'sellerName', 'sellerNameUpper', 'montoNumero', 'clauses'
+            'operation', 'folio', 'fecha', 'sellerName', 'sellerNameUpper', 'montoNumero', 'clauses', 'docTitle'
         ))->render();
     }
 
-    public function generatePdf(Operation $operation, float $monto, string $metodoPago, $fechaRecibo = null): string
+    public function generatePdf(Operation $operation, float $monto, string $metodoPago, $fechaRecibo = null, bool $esFiniquito = false): string
     {
         set_time_limit(120);
 
-        $html = $this->renderHtml($operation, $monto, $metodoPago, $fechaRecibo);
+        $html = $this->renderHtml($operation, $monto, $metodoPago, $fechaRecibo, $esFiniquito);
 
         $dir  = storage_path('app/recibos-pago-parcial/' . $operation->id);
         File::ensureDirectoryExists($dir);

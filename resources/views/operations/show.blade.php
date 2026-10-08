@@ -782,9 +782,13 @@
                                 <label class="form-label" style="font-size:0.72rem;">Método / origen del pago</label>
                                 <input type="text" name="metodo_pago" class="form-input" placeholder="mediante transferencia interbancaria efectuada a través de BANORTE" required>
                             </div>
+                            <div class="form-group" style="margin:0;display:flex;align-items:center;gap:.35rem;padding-bottom:.4rem;">
+                                <input type="checkbox" id="rpp-finiquito" name="es_finiquito" value="1" style="width:auto;">
+                                <label for="rpp-finiquito" class="form-label" style="font-size:0.72rem;margin:0;">Es el pago final (finiquito)</label>
+                            </div>
                             <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
                         </div>
-                        <p class="form-hint" style="margin:.4rem 0 0;">Documenta un pago parcial del precio de venta — genera un recibo por cada pago (anticipo, crédito hipotecario, Infonavit, etc.). Vendedor que firma: {{ $operation->client?->name }}.</p>
+                        <p class="form-hint" style="margin:.4rem 0 0;">Documenta un pago parcial del precio de venta — genera un recibo por cada pago (anticipo, crédito hipotecario, Infonavit, etc.). Marca "Es el pago final" si con este pago se liquida el precio completo — el texto cambia de "pago parcial" a "finiquito de pago". Vendedor que firma: {{ $operation->client?->name }}.</p>
                     </form>
                 </div>
             </div>

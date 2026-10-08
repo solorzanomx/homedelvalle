@@ -3,7 +3,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Recibo de Pago Parcial — {{ $folio }}</title>
+<title>{{ $docTitle }} — {{ $folio }}</title>
 <style>
 {!! $brandCssVars ?? '' !!}
 @if($brandFontB64)
@@ -95,7 +95,7 @@ strong { color: #0f172a; }
   </div>
   <div class="page-body"><div class="inner">
 
-    <div class="doc-title">Recibo de Pago Parcial</div>
+    <div class="doc-title">{{ $docTitle }}</div>
     <div class="doc-folio">Folio {{ $folio }} · Ciudad de México, a {{ $fecha }}</div>
 
     <div class="bueno-por">
@@ -123,7 +123,7 @@ strong { color: #0f172a; }
     <div class="privacy-note">Documento confidencial. Generado por el sistema de Home del Valle el {{ $fecha }}. Folio {{ $folio }}.</div>
 
   </div></div>
-  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>Recibo de Pago Parcial · {{ $folio }}</span></div>
+  <div class="page-foot"><strong>Home del Valle</strong><span>Pocos inmuebles. Más control. Mejores resultados.</span><span>{{ $docTitle }} · {{ $folio }}</span></div>
 </div>
 
 </body>

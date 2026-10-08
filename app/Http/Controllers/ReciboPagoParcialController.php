@@ -17,22 +17,25 @@ class ReciboPagoParcialController extends Controller
             'monto' => 'required|numeric|min:0.01',
             'metodo_pago' => 'required|string|max:255',
             'fecha_recibo' => 'nullable|date',
+            'es_finiquito' => 'nullable|boolean',
         ]);
+        $esFiniquito = (bool) ($validated['es_finiquito'] ?? false);
 
         try {
-            $path = $generator->generatePdf($operation, (float) $validated['monto'], $validated['metodo_pago'], $validated['fecha_recibo'] ?? null);
+            $path = $generator->generatePdf($operation, (float) $validated['monto'], $validated['metodo_pago'], $validated['fecha_recibo'] ?? null, $esFiniquito);
         } catch (\Throwable $e) {
             return back()->with('error', 'Error al generar el Recibo de Pago Parcial: ' . $e->getMessage());
         }
 
         $fechaLabel = $validated['fecha_recibo'] ? \Illuminate\Support\Carbon::parse($validated['fecha_recibo'])->format('d/m/Y') : now()->format('d/m/Y');
+        $labelTitulo = $esFiniquito ? 'Recibo de Finiquito de Pago' : 'Recibo de Pago Parcial';
 
         Document::create([
             'operation_id' => $operation->id,
             'client_id'    => $operation->client_id,
             'uploaded_by'  => Auth::id(),
             'category'     => 'recibo_pago_parcial',
-            'label'        => 'Recibo de Pago Parcial — $' . number_format((float) $validated['monto'], 2) . ' — ' . $fechaLabel,
+            'label'        => $labelTitulo . ' — $' . number_format((float) $validated['monto'], 2) . ' — ' . $fechaLabel,
             'file_path'    => $path,
             'file_name'    => 'RPP-' . str_pad((string) $operation->id, 5, '0', STR_PAD_LEFT) . '-' . now()->format('YmdHis') . '.pdf',
             'mime_type'    => 'application/pdf',
