@@ -13,27 +13,47 @@ use Spatie\Browsershot\Browsershot;
  * Acta de Entrega y Recepción de Inmueble (venta) — se genera al llegar a la etapa 'entrega' del
  * pipeline de venta, una vez que la propiedad ya se transmitió legalmente (escritura firmada); esta
  * acta solo formaliza la entrega FÍSICA del inmueble y la liberación de responsabilidad del
- * vendedor. Basado en el acta real que Home del Valle ya usa en la práctica (caso Díaz Galvis /
- * Nieto, 2026-08-21) — 4 cláusulas, sin agregar nada de más (decisión explícita de Alejandro
- * 2026-10-07: "con este documento crea un profesional... nada de pies de página como en Word").
+ * vendedor Y de Home del Valle.
+ *
+ * v2 (2026-10-08): reescrita con base en el acta real usada en el caso Nogues/Ruiz Ramírez
+ * (Cuauhtémoc 947, depto 703) — mucho más robusta que la v1 (basada en un acta anterior más simple,
+ * caso Díaz Galvis/Nieto): 5 cláusulas en vez de 4, deslinde EXPLÍCITO de Home del Valle (no solo
+ * del vendedor) por vicios ocultos/defectos/instalaciones/adeudos, inventario de lo entregado con
+ * disclaimer de que el estado de servicios se reporta con base en lo visto en notaría (sin que HDV
+ * garantice nada), cláusula de seguridad/cambio de cerraduras, y quien hace la entrega físicamente
+ * ya no es el vendedor sino Home del Valle (representada por REPRESENTANTE_NOMBRE) por su cuenta —
+ * así la propia acta documenta que HDV actuó solo como intermediaria, nunca como garante.
+ * Pedido explícito de Alejandro: "es importante en esta carta tambien deslindar a home del valle de
+ * posibles problemas ya que aqui es la entrega y sigue adelante."
+ *
+ * Soporta co-comprador (ej. cónyuge que también firma) como texto libre capturado al generar — no
+ * es un Client del sistema necesariamente (caso real: Araceli Bautista Fabián no existe como client).
+ * Con co-comprador, el rol colectivo se vuelve "LA PARTE COMPRADORA" (neutro, gramaticalmente
+ * singular) en vez de "LA COMPRADORA"/"EL COMPRADOR" por género — evita tener que conjugar plural.
  */
 class ActaEntregaGeneratorService
 {
+    /** Mismo representante legal que firma Acuerdos de Representación — quien hace la entrega por cuenta del vendedor. */
+    const REPRESENTANTE_NOMBRE = 'Ana Laura Monsivais Flores';
+    const REPRESENTANTE_CARGO = 'Directora General';
+
     const DEFAULT_CLAUSES = [
-        'entrega' => '<strong>Primera. Entrega del inmueble.</strong> En este acto, EL VENDEDOR hace entrega material, física y jurídica a {{compradora_rol}} de {{property_full}}, objeto de la operación de compraventa celebrada entre las partes.',
-        'recepcion' => '<strong>Segunda. Recepción de conformidad.</strong> {{COMPRADORA_ROL}} manifiesta recibir el inmueble a su entera satisfacción, en el estado físico y de conservación en que actualmente se encuentra, declarando haberlo revisado previamente y encontrándolo conforme con las condiciones convenidas entre las partes.',
-        'llaves' => '<strong>Tercera. Entrega de llaves y posesión.</strong> En este mismo acto, EL VENDEDOR entrega a {{compradora_rol}} {{juegos_llaves}} correspondientes al inmueble, mismos que ésta recibe de conformidad. Con la entrega del inmueble y de las llaves antes señaladas, {{COMPRADORA_ROL}} recibe la posesión material del inmueble, quedando formalmente realizada su entrega y recepción.',
-        'liberacion' => '<strong>Cuarta. Liberación de responsabilidad.</strong> A partir de la fecha y hora de firma de la presente Acta y de la entrega material del inmueble, EL VENDEDOR queda liberado de toda responsabilidad respecto de la posesión, uso, ocupación, conservación, mantenimiento, seguridad y cualquier hecho o circunstancia que se produzca en el inmueble, quedando éstos bajo la exclusiva responsabilidad de {{compradora_rol}}, quien manifiesta recibirlo a su entera satisfacción.',
+        'objeto' => '<strong>Primero. Objeto de la entrega.</strong> Por medio de la presente, {{seller_name}}, por conducto de Home del Valle Bienes Raíces, representada en este acto por {{representante_nombre}}, hace entrega material del inmueble ubicado en {{property_full}} a {{COMPRADORA_ROL}}, {{buyer_name}}, quien recibe la posesión material del inmueble y {{juegos_llaves}} correspondientes. La presente acta tiene por objeto documentar la entrega física y material del inmueble, sin sustituir, modificar ni alterar los derechos y obligaciones establecidos en la escritura pública de compraventa.',
+        'deslinde' => '<strong>Segundo. Deslinde de responsabilidad del vendedor y de la inmobiliaria.</strong> A partir de la fecha y hora de la presente entrega, {{COMPRADORA_ROL}} asume las responsabilidades ordinarias derivadas de la posesión, uso, seguridad, conservación y mantenimiento del inmueble. {{seller_name}} queda liberado de las responsabilidades que correspondan a {{compradora_rol}} por hechos posteriores a la entrega, sin perjuicio de aquellas obligaciones que legal o contractualmente continúen siendo exigibles al vendedor. Asimismo, los comparecientes reconocen expresamente que Home del Valle Bienes Raíces, por conducto de {{representante_nombre}}, interviene exclusivamente en calidad de intermediaria inmobiliaria y encargada de formalizar la entrega material del inmueble por cuenta del vendedor. En consecuencia, Home del Valle Bienes Raíces y su representante no asumen responsabilidad por vicios ocultos, defectos constructivos, fallas estructurales, instalaciones hidráulicas, sanitarias, eléctricas o de gas, impermeabilización, conservación, mantenimiento, ni por obligaciones jurídicas, administrativas o económicas que correspondan al vendedor, a {{compradora_rol}}, al condominio o a terceros. La intervención de la inmobiliaria no constituye garantía personal, obligación solidaria ni sustitución de las responsabilidades propias de las partes de la compraventa, sin perjuicio de aquellas responsabilidades que legalmente pudieran derivarse de actos u omisiones directamente imputables a la inmobiliaria o a su representante.',
+        'inventario' => '<strong>Tercero. Inventario, servicios y documentación.</strong> {{COMPRADORA_ROL}} manifiesta haber tenido oportunidad de inspeccionar el inmueble y recibirlo con los bienes, instalaciones y elementos integrados que se encuentren físicamente en el mismo al momento de la entrega, incluyendo puertas, chapas y cerraduras, instalaciones eléctrica e hidrosanitaria, y demás accesorios fijos del inmueble. Asimismo, se deja constancia de que la documentación correspondiente a los pagos de servicios, derechos y obligaciones relacionados con el inmueble fue presentada y revisada ante la notaría con motivo de la formalización de la compraventa, encontrándose al corriente conforme a dicha documentación. La presente constancia se realiza con base en la documentación exhibida ante la notaría, sin que implique que Home del Valle Bienes Raíces asuma obligaciones de pago, garantía o responsabilidad por adeudos que pudieran corresponder legalmente a las partes de la compraventa.',
+        'conformidad' => '<strong>Cuarto. Conformidad y recepción del inmueble.</strong> {{COMPRADORA_ROL}}, {{buyer_name}}, manifiesta haber tenido oportunidad de inspeccionar el inmueble y recibirlo materialmente en las condiciones físicas en que se encuentra, a su entera satisfacción y sin objeciones aparentes al momento de la entrega. Asimismo, reconoce expresamente que Home del Valle Bienes Raíces interviene únicamente para formalizar la entrega material por cuenta del vendedor, sin asumir las obligaciones propias de las partes de la compraventa. La conformidad expresada se refiere al estado aparente del inmueble al momento de la entrega y no implica renuncia a los derechos que legalmente pudieran corresponder a {{compradora_rol}}.',
+        'seguridad' => '<strong>Quinto. Seguridad y cambio de cerraduras.</strong> A partir de la fecha y hora de entrega material del inmueble, {{COMPRADORA_ROL}} queda en plena libertad de sustituir las chapas, cerraduras, cilindros, combinaciones y llaves de acceso al inmueble, así como de implementar las medidas de seguridad que considere convenientes. Cualquier modificación será realizada por su cuenta, costo y bajo su exclusiva responsabilidad, debiendo observar, en su caso, las disposiciones del régimen de condominio aplicable. Asimismo, a partir de la recepción del inmueble, {{compradora_rol}} asume la responsabilidad por el control, resguardo y administración de las llaves y dispositivos de acceso, así como por la seguridad ordinaria del inmueble. En consecuencia, {{seller_name}} y Home del Valle Bienes Raíces, así como su representante, quedan deslindados de responsabilidad por el uso, pérdida, duplicación o manejo de las llaves y dispositivos de acceso posteriores a la entrega, salvo por actos u omisiones que les sean directamente imputables conforme a la ley.',
     ];
 
     const CLAUSE_LABELS = [
-        'entrega' => 'Entrega del inmueble',
-        'recepcion' => 'Recepción de conformidad',
-        'llaves' => 'Entrega de llaves y posesión',
-        'liberacion' => 'Liberación de responsabilidad',
+        'objeto' => 'Objeto de la entrega',
+        'deslinde' => 'Deslinde de responsabilidad del vendedor y de la inmobiliaria',
+        'inventario' => 'Inventario, servicios y documentación',
+        'conformidad' => 'Conformidad y recepción del inmueble',
+        'seguridad' => 'Seguridad y cambio de cerraduras',
     ];
 
-    const NUMBERED_CLAUSES = ['entrega', 'recepcion', 'llaves', 'liberacion'];
+    const NUMBERED_CLAUSES = ['objeto', 'deslinde', 'inventario', 'conformidad', 'seguridad'];
 
     public static function clause(string $clauseKey, array $tokens = []): string
     {
@@ -62,8 +82,10 @@ class ActaEntregaGeneratorService
 
     /**
      * @param  int  $juegosLlaves  cuántos juegos de llaves se entregan — varía por caso, se captura al generar.
+     * @param  string|null  $coCompradorNombre  nombre de un segundo comprador que también firma (ej. cónyuge),
+     *         texto libre porque no necesariamente es un Client del sistema.
      */
-    public function renderHtml(Operation $operation, int $juegosLlaves = 2): string
+    public function renderHtml(Operation $operation, int $juegosLlaves = 2, ?string $coCompradorNombre = null): string
     {
         $operation->loadMissing('client', 'secondaryClient', 'property');
         $seller   = $operation->client;
@@ -74,15 +96,22 @@ class ActaEntregaGeneratorService
         $fecha = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 
         $sellerName = self::partyName($seller);
-        $buyerName  = self::partyName($buyer);
+        $buyerNameBase = self::partyName($buyer);
+        $coCompradorNombre = $coCompradorNombre ? trim($coCompradorNombre) : null;
+        $buyerName = $coCompradorNombre ? "{$buyerNameBase} y {$coCompradorNombre}" : $buyerNameBase;
         $propertyFull = self::propertyInfo($property);
 
-        // "LA COMPRADORA"/"EL COMPRADOR" según género — Client.gender: 'M' = Mujer (mismo criterio
-        // ya usado en el Recibo de Apartado para "arrendataria"/"arrendatario").
-        $esFemenino = $buyer?->gender === 'M';
-        $compradoraRol = $esFemenino ? 'la compradora' : 'el comprador';
-        $compradoraRolUpper = $esFemenino ? 'LA COMPRADORA' : 'EL COMPRADOR';
-        $compradoraRolLabel = $esFemenino ? 'LA COMPRADORA' : 'EL COMPRADOR';
+        // Con co-comprador se vuelve un rol colectivo neutro (evita tener que conjugar en plural);
+        // sin co-comprador, "LA COMPRADORA"/"EL COMPRADOR" según género (Client.gender === 'M'),
+        // mismo criterio que el Recibo de Apartado para "arrendataria"/"arrendatario".
+        if ($coCompradorNombre) {
+            $compradoraRol = 'la parte compradora';
+            $compradoraRolUpper = 'LA PARTE COMPRADORA';
+        } else {
+            $esFemenino = $buyer?->gender === 'M';
+            $compradoraRol = $esFemenino ? 'la compradora' : 'el comprador';
+            $compradoraRolUpper = $esFemenino ? 'LA COMPRADORA' : 'EL COMPRADOR';
+        }
 
         $numLetras = ['1' => 'uno (1)', '2' => 'dos (2)', '3' => 'tres (3)', '4' => 'cuatro (4)', '5' => 'cinco (5)'];
         $juegosTexto = ($numLetras[(string) $juegosLlaves] ?? "{$juegosLlaves} ({$juegosLlaves})") . ' juego' . ($juegosLlaves == 1 ? '' : 's') . ' de llaves';
@@ -90,8 +119,11 @@ class ActaEntregaGeneratorService
         $tokens = [
             'compradora_rol' => $compradoraRol,
             'COMPRADORA_ROL' => $compradoraRolUpper,
+            'seller_name' => $sellerName,
+            'buyer_name' => $buyerName,
             'property_full' => $propertyFull,
             'juegos_llaves' => $juegosTexto,
+            'representante_nombre' => self::REPRESENTANTE_NOMBRE,
         ];
 
         $clauses = collect(self::NUMBERED_CLAUSES)->map(fn ($key) => [
@@ -101,15 +133,18 @@ class ActaEntregaGeneratorService
 
         return view('pdf.acta-entrega', compact(
             'operation', 'seller', 'buyer', 'property', 'folio', 'fecha',
-            'sellerName', 'buyerName', 'propertyFull', 'compradoraRolLabel', 'clauses'
-        ))->render();
+            'sellerName', 'buyerName', 'coCompradorNombre', 'propertyFull', 'compradoraRolUpper', 'clauses'
+        ) + [
+            'representanteNombre' => self::REPRESENTANTE_NOMBRE,
+            'representanteCargo' => self::REPRESENTANTE_CARGO,
+        ])->render();
     }
 
-    public function generatePdf(Operation $operation, int $juegosLlaves = 2): string
+    public function generatePdf(Operation $operation, int $juegosLlaves = 2, ?string $coCompradorNombre = null): string
     {
         set_time_limit(120);
 
-        $html = $this->renderHtml($operation, $juegosLlaves);
+        $html = $this->renderHtml($operation, $juegosLlaves, $coCompradorNombre);
 
         $dir  = storage_path('app/actas-entrega/' . $operation->id);
         File::ensureDirectoryExists($dir);

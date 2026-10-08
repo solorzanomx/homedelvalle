@@ -721,14 +721,18 @@
                     @if($operation->secondaryClient)
                     <form id="ae-form" method="POST" action="{{ route('operations.acta-entrega.generar', $operation->id) }}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
                         @csrf
-                        <div style="display:flex;gap:.5rem;align-items:flex-end;">
-                            <div class="form-group" style="flex:1;margin:0;">
+                        <div style="display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;min-width:140px;margin:0;">
                                 <label class="form-label" style="font-size:0.72rem;">Juegos de llaves entregados</label>
                                 <input type="number" name="juegos_llaves" class="form-input" value="2" min="1" max="10">
                             </div>
+                            <div class="form-group" style="flex:2;min-width:220px;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Co-comprador(a) (opcional — ej. cónyuge, también firma)</label>
+                                <input type="text" name="co_comprador_nombre" class="form-input" placeholder="Nombre completo">
+                            </div>
                             <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
                         </div>
-                        <p class="form-hint" style="margin:.4rem 0 0;">Genera la entrega física del inmueble ya escriturado — vendedor: {{ $operation->client?->name }}, compradora/comprador: {{ $operation->secondaryClient?->name }}.</p>
+                        <p class="form-hint" style="margin:.4rem 0 0;">Genera la entrega física del inmueble ya escriturado — vendedor: {{ $operation->client?->name }}, compradora/comprador: {{ $operation->secondaryClient?->name }}. La entrega la hace Home del Valle por cuenta del vendedor (deslinde explícito), no el vendedor directamente.</p>
                     </form>
                     @endif
                 </div>

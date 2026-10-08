@@ -17,11 +17,15 @@ class ActaEntregaController extends Controller
             return back()->with('error', 'Esta Operation no tiene un comprador vinculado (secondary_client_id) — no se puede generar el Acta.');
         }
 
-        $validated = $request->validate(['juegos_llaves' => 'nullable|integer|min:1|max:10']);
+        $validated = $request->validate([
+            'juegos_llaves' => 'nullable|integer|min:1|max:10',
+            'co_comprador_nombre' => 'nullable|string|max:150',
+        ]);
         $juegosLlaves = $validated['juegos_llaves'] ?? 2;
+        $coCompradorNombre = $validated['co_comprador_nombre'] ?? null;
 
         try {
-            $path = $generator->generatePdf($operation, $juegosLlaves);
+            $path = $generator->generatePdf($operation, $juegosLlaves, $coCompradorNombre);
         } catch (\Throwable $e) {
             return back()->with('error', 'Error al generar el Acta de Entrega: ' . $e->getMessage());
         }
