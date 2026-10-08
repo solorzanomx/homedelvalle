@@ -686,6 +686,55 @@
             </div>
             @endif
 
+            @if($operation->type === 'venta')
+            @php $aeDocs = $operation->documents->where('category', 'acta_entrega')->sortByDesc('created_at'); @endphp
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-body" style="padding:0.85rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;{{ $aeDocs->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
+                        <span style="font-size:0.82rem;font-weight:600;">&#128220; Acta de Entrega</span>
+                        @if($operation->secondaryClient)
+                        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('ae-form').style.display = document.getElementById('ae-form').style.display === 'none' ? 'block' : 'none';">
+                            + Generar Acta
+                        </button>
+                        @endif
+                    </div>
+
+                    @if(!$operation->secondaryClient)
+                    <p style="font-size:0.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;">
+                        Esta Operation no tiene un comprador vinculado (secondary_client_id) — no se puede generar el Acta.
+                    </p>
+                    @endif
+
+                    @if($aeDocs->isNotEmpty())
+                    <div style="display:flex;flex-direction:column;gap:.4rem;">
+                        @foreach($aeDocs as $doc)
+                        <div style="padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div><strong>{{ $doc->label }}</strong> <span style="color:var(--text-muted);"> &middot; {{ $doc->created_at->format('d/m/Y') }}</span></div>
+                                <a href="{{ route('operations.acta-entrega.pdf', $operation->id) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @if($operation->secondaryClient)
+                    <form id="ae-form" method="POST" action="{{ route('operations.acta-entrega.generar', $operation->id) }}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
+                        @csrf
+                        <div style="display:flex;gap:.5rem;align-items:flex-end;">
+                            <div class="form-group" style="flex:1;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Juegos de llaves entregados</label>
+                                <input type="number" name="juegos_llaves" class="form-input" value="2" min="1" max="10">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
+                        </div>
+                        <p class="form-hint" style="margin:.4rem 0 0;">Genera la entrega física del inmueble ya escriturado — vendedor: {{ $operation->client?->name }}, compradora/comprador: {{ $operation->secondaryClient?->name }}.</p>
+                    </form>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:0.85rem;">
                     <form method="POST" action="{{ route('operations.documents.store', $operation->id) }}" enctype="multipart/form-data">
