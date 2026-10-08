@@ -83,7 +83,9 @@ class ActaEntregaGeneratorService
         $alcaldia = self::tituloCase($property?->marketColonia?->alcaldia);
         $alcaldiaLabel = $alcaldia ? "Alcaldía {$alcaldia}" : null;
 
-        return collect([$address, $colonyLabel, $alcaldiaLabel])->filter()->implode(', ') ?: '—';
+        // El negocio opera solo en Ciudad de México (predios Benito Juárez) — no es un dato de la
+        // propiedad, es la ciudad fija del acta, igual que en el documento real.
+        return collect([$address, $colonyLabel, $alcaldiaLabel, 'Ciudad de México'])->filter()->implode(', ') ?: '—';
     }
 
     /**
