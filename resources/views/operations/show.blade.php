@@ -722,6 +722,10 @@
                     <form id="ae-form" method="POST" action="{{ route('operations.acta-entrega.generar', $operation->id) }}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
                         @csrf
                         <div style="display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;min-width:150px;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Fecha de la entrega</label>
+                                <input type="date" name="fecha_entrega" class="form-input" value="{{ now()->format('Y-m-d') }}">
+                            </div>
                             <div class="form-group" style="flex:1;min-width:140px;margin:0;">
                                 <label class="form-label" style="font-size:0.72rem;">Juegos de llaves entregados</label>
                                 <input type="number" name="juegos_llaves" class="form-input" value="2" min="1" max="10">

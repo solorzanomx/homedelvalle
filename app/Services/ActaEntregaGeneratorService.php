@@ -75,17 +75,26 @@ class ActaEntregaGeneratorService
         $address = self::tituloCase($property?->address ?: ($property ? ($property->colony . ', ' . $property->city) : null));
         $colony  = self::tituloCase($property?->colony);
         $colonyLabel = $colony && !str_contains(mb_strtolower($colony), 'colonia') ? "Colonia {$colony}" : $colony;
-        $municipio = self::tituloCase($property?->city) ?: 'Ciudad de México';
 
-        return collect([$address, $colonyLabel, 'Alcaldía ' . $municipio])->filter()->implode(', ') ?: '—';
+        // La alcaldía real vive en MarketColonia (property->city solo trae "mexico" genérico, no
+        // sirve como alcaldía — bug real: el acta decía "Alcaldía Mexico" en vez de "Alcaldía Benito
+        // Juárez"). Si la propiedad no tiene market_colonia_id vinculado, se omite el dato en vez de
+        // inventar uno con property->city.
+        $alcaldia = self::tituloCase($property?->marketColonia?->alcaldia);
+        $alcaldiaLabel = $alcaldia ? "Alcaldía {$alcaldia}" : null;
+
+        return collect([$address, $colonyLabel, $alcaldiaLabel])->filter()->implode(', ') ?: '—';
     }
 
     /**
      * @param  int  $juegosLlaves  cuántos juegos de llaves se entregan — varía por caso, se captura al generar.
      * @param  string|null  $coCompradorNombre  nombre de un segundo comprador que también firma (ej. cónyuge),
      *         texto libre porque no necesariamente es un Client del sistema.
+     * @param  \Illuminate\Support\Carbon|string|null  $fechaEntrega  fecha real de la entrega física —
+     *         no siempre coincide con el día en que se genera el PDF (ej. se prepara un día antes para
+     *         la cita del día siguiente). Default: hoy.
      */
-    public function renderHtml(Operation $operation, int $juegosLlaves = 2, ?string $coCompradorNombre = null): string
+    public function renderHtml(Operation $operation, int $juegosLlaves = 2, ?string $coCompradorNombre = null, $fechaEntrega = null): string
     {
         $operation->loadMissing('client', 'secondaryClient', 'property');
         $seller   = $operation->client;
@@ -93,7 +102,7 @@ class ActaEntregaGeneratorService
         $property = $operation->property;
 
         $folio = 'AE-' . str_pad((string) $operation->id, 5, '0', STR_PAD_LEFT);
-        $fecha = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+        $fecha = ($fechaEntrega ? \Illuminate\Support\Carbon::parse($fechaEntrega) : now())->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
 
         $sellerName = self::partyName($seller);
         $buyerNameBase = self::partyName($buyer);
@@ -140,11 +149,11 @@ class ActaEntregaGeneratorService
         ])->render();
     }
 
-    public function generatePdf(Operation $operation, int $juegosLlaves = 2, ?string $coCompradorNombre = null): string
+    public function generatePdf(Operation $operation, int $juegosLlaves = 2, ?string $coCompradorNombre = null, $fechaEntrega = null): string
     {
         set_time_limit(120);
 
-        $html = $this->renderHtml($operation, $juegosLlaves, $coCompradorNombre);
+        $html = $this->renderHtml($operation, $juegosLlaves, $coCompradorNombre, $fechaEntrega);
 
         $dir  = storage_path('app/actas-entrega/' . $operation->id);
         File::ensureDirectoryExists($dir);

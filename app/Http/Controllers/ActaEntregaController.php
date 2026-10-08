@@ -20,12 +20,14 @@ class ActaEntregaController extends Controller
         $validated = $request->validate([
             'juegos_llaves' => 'nullable|integer|min:1|max:10',
             'co_comprador_nombre' => 'nullable|string|max:150',
+            'fecha_entrega' => 'nullable|date',
         ]);
         $juegosLlaves = $validated['juegos_llaves'] ?? 2;
         $coCompradorNombre = $validated['co_comprador_nombre'] ?? null;
+        $fechaEntrega = $validated['fecha_entrega'] ?? null;
 
         try {
-            $path = $generator->generatePdf($operation, $juegosLlaves, $coCompradorNombre);
+            $path = $generator->generatePdf($operation, $juegosLlaves, $coCompradorNombre, $fechaEntrega);
         } catch (\Throwable $e) {
             return back()->with('error', 'Error al generar el Acta de Entrega: ' . $e->getMessage());
         }
@@ -35,7 +37,7 @@ class ActaEntregaController extends Controller
             'client_id'    => $operation->secondary_client_id,
             'uploaded_by'  => Auth::id(),
             'category'     => 'acta_entrega',
-            'label'        => 'Acta de Entrega — ' . now()->format('d/m/Y'),
+            'label'        => 'Acta de Entrega — ' . ($fechaEntrega ? \Illuminate\Support\Carbon::parse($fechaEntrega)->format('d/m/Y') : now()->format('d/m/Y')),
             'file_path'    => $path,
             'file_name'    => 'AE-' . str_pad((string) $operation->id, 5, '0', STR_PAD_LEFT) . '.pdf',
             'mime_type'    => 'application/pdf',
