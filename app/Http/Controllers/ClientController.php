@@ -856,6 +856,40 @@ class ClientController extends Controller
     }
 
     /**
+     * Igual que createPortalAccount()/resendInvitation() pero por WhatsApp — crea (o reusa) el
+     * acceso al portal, arma el link real de activación/login (mismo token que usa el correo),
+     * y redirige a wa.me con todo precargado. El cliente casi nunca abre el correo de bienvenida;
+     * por WhatsApp sí lo ve. Mismo patrón que sendTenantChecklistWhatsApp(), pero genérico — no
+     * solo para inquilinos, sirve para cualquier tipo de cliente con portal.
+     */
+    public function sendPortalInvitationWhatsApp(Client $client)
+    {
+        $digits = \App\Support\TenantDocumentChecklist::normalizedPhone($client->phone);
+        if (!$digits) {
+            return back()->with('error', 'El cliente necesita un teléfono válido para mandarle el acceso por WhatsApp.');
+        }
+        if (!$client->user_id && !$client->email) {
+            return back()->with('error', 'El cliente necesita un email para crear acceso al portal.');
+        }
+
+        $service = app(ClientPortalService::class);
+        $isNewAccount = !$client->user_id;
+        $result = $service->createPortalAccount($client);
+        $user = $result['user'];
+
+        $portalUrl = $isNewAccount
+            ? rtrim(config('portal.url'), '/') . '/activar/' . $service->generateInvitationToken($user)
+            : config('portal.url');
+
+        $firstName = explode(' ', trim($client->name))[0] ?: 'Hola';
+        $message = $isNewAccount
+            ? "Hola {$firstName}, soy de Home del Valle. Ya puedes activar tu acceso al Portal del Cliente aquí: {$portalUrl}"
+            : "Hola {$firstName}, soy de Home del Valle. Aquí tienes el acceso a tu Portal del Cliente: {$portalUrl}";
+
+        return redirect()->away('https://wa.me/' . $digits . '?text=' . urlencode($message));
+    }
+
+    /**
      * Vista previa del Portal como el cliente la vería — activa el acceso
      * si no existe (sin mandar el correo de bienvenida, a diferencia de
      * createPortalAccount()) e impersona al asesor como ese cliente.

@@ -787,10 +787,16 @@
                             <button class="btn btn-sm btn-outline">Reset</button>
                         </form>
                     </div>
-                    <form method="POST" action="{{ route('clients.resend-invitation', $client) }}" style="margin-top:0.5rem;">
-                        @csrf
-                        <button class="btn btn-sm btn-outline" style="width:100%;">Enviar link de activación por correo</button>
-                    </form>
+                    <div style="display:flex;gap:0.4rem;margin-top:0.5rem;">
+                        <form method="POST" action="{{ route('clients.resend-invitation', $client) }}" style="flex:1;">
+                            @csrf
+                            <button class="btn btn-sm btn-outline" style="width:100%;">✉️ Correo</button>
+                        </form>
+                        <form method="POST" action="{{ route('clients.send-portal-invitation-whatsapp', $client) }}" style="flex:1;" target="_blank">
+                            @csrf
+                            <button class="btn btn-sm btn-outline" style="width:100%;border-color:#25D366;color:#128C4A;">💬 WhatsApp</button>
+                        </form>
+                    </div>
                 @else
                     <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">Sin acceso al portal</div>
 
@@ -827,10 +833,16 @@
                          portal exige aceptarlo (junto con el Aviso de Privacidad)
                          por clic en el primer login — ver
                          EnsurePortalLegalAcceptance / config/portal.php. --}}
-                    <form method="POST" action="{{ route('clients.create-portal', $client) }}">
-                        @csrf
-                        <button class="btn btn-sm btn-primary" style="width:100%;">Crear acceso y enviar link de activación</button>
-                    </form>
+                    <div style="display:flex;gap:0.4rem;">
+                        <form method="POST" action="{{ route('clients.create-portal', $client) }}" style="flex:1;">
+                            @csrf
+                            <button class="btn btn-sm btn-primary" style="width:100%;">✉️ Crear acceso (correo)</button>
+                        </form>
+                        <form method="POST" action="{{ route('clients.send-portal-invitation-whatsapp', $client) }}" style="flex:1;" target="_blank">
+                            @csrf
+                            <button class="btn btn-sm btn-outline" style="width:100%;border-color:#25D366;color:#128C4A;">💬 WhatsApp</button>
+                        </form>
+                    </div>
                     <p style="font-size:0.72rem;color:var(--text-muted);margin-top:0.4rem;line-height:1.4">Al entrar por primera vez, el portal le pedirá aceptar el Aviso de Privacidad y el Acuerdo de Confidencialidad antes de continuar.</p>
 
                     <form method="POST" action="{{ route('clients.preview-portal', $client) }}" style="margin-top:0.5rem;" target="_blank">
