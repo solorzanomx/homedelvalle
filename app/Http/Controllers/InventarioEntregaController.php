@@ -15,9 +15,6 @@ class InventarioEntregaController extends Controller
     {
         $validated = $request->validate([
             'items_detalle' => 'required|string|max:8000',
-            'lectura_luz' => 'nullable|string|max:50',
-            'lectura_gas' => 'nullable|string|max:50',
-            'lectura_agua' => 'nullable|string|max:50',
             'llaves_recamaras' => 'nullable|string|max:50',
             'llaves_entrada' => 'nullable|string|max:50',
             'chips_acceso' => 'nullable|string|max:50',
@@ -30,9 +27,6 @@ class InventarioEntregaController extends Controller
             $path = $generator->generatePdf(
                 $rental,
                 $validated['items_detalle'],
-                $validated['lectura_luz'] ?? null,
-                $validated['lectura_gas'] ?? null,
-                $validated['lectura_agua'] ?? null,
                 $validated['llaves_recamaras'] ?? null,
                 $validated['llaves_entrada'] ?? null,
                 $validated['chips_acceso'] ?? null,

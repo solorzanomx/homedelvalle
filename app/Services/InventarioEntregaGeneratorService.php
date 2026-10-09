@@ -43,6 +43,7 @@ Regaderas y mezcladoras de las mismas funcionando y sin goteras.
 WC funcionando sin goteras.
 Muebles de baño con herrajes completos y funcionando.
 Muebles de cocina integral completos con herrajes completos sin rayones.
+Campana de cocina funcionando, con filtro limpio y sin fugas.
 Fregadero en buen estado sin fracturas y sin goteras.
 Instalación hidráulica para lavadora en buen estado sin goteras.
 Persianas instaladas en todo el departamento, funcionando.
@@ -62,9 +63,6 @@ TXT;
     public function renderHtml(
         RentalProcess $rental,
         string $itemsDetalle,
-        ?string $lecturaLuz = null,
-        ?string $lecturaGas = null,
-        ?string $lecturaAgua = null,
         ?string $llavesRecamaras = null,
         ?string $llavesEntrada = null,
         ?string $chipsAcceso = null,
@@ -92,7 +90,6 @@ TXT;
 
         return view('pdf.inventario-entrega', compact(
             'rental', 'folio', 'fecha', 'arrendatario', 'arrendador', 'inmueble', 'items',
-            'lecturaLuz', 'lecturaGas', 'lecturaAgua',
             'llavesRecamaras', 'llavesEntrada', 'chipsAcceso', 'controlesEstacionamiento',
             'observaciones'
         ))->render();
@@ -101,9 +98,6 @@ TXT;
     public function generatePdf(
         RentalProcess $rental,
         string $itemsDetalle,
-        ?string $lecturaLuz = null,
-        ?string $lecturaGas = null,
-        ?string $lecturaAgua = null,
         ?string $llavesRecamaras = null,
         ?string $llavesEntrada = null,
         ?string $chipsAcceso = null,
@@ -114,7 +108,7 @@ TXT;
         set_time_limit(120);
 
         $html = $this->renderHtml(
-            $rental, $itemsDetalle, $lecturaLuz, $lecturaGas, $lecturaAgua,
+            $rental, $itemsDetalle,
             $llavesRecamaras, $llavesEntrada, $chipsAcceso, $controlesEstacionamiento,
             $observaciones, $fechaEntrega
         );

@@ -128,13 +128,6 @@ body {
       @endforeach
     </div>
 
-    <div class="section-label">Lecturas de medidores al día de hoy</div>
-    <div class="grid-3">
-      <div class="field-box"><div class="label">Luz (CFE)</div>@if($lecturaLuz)<div class="value">{{ $lecturaLuz }}</div>@else<div class="value-blank"></div>@endif</div>
-      <div class="field-box"><div class="label">Gas</div>@if($lecturaGas)<div class="value">{{ $lecturaGas }}</div>@else<div class="value-blank"></div>@endif</div>
-      <div class="field-box"><div class="label">Agua</div>@if($lecturaAgua)<div class="value">{{ $lecturaAgua }}</div>@else<div class="value-blank"></div>@endif</div>
-    </div>
-
     <div class="section-label">Llaves y accesos entregados</div>
     <div class="grid-4">
       <div class="field-box"><div class="label">Llaves de recámaras</div>@if($llavesRecamaras)<div class="value">{{ $llavesRecamaras }}</div>@else<div class="value-blank"></div>@endif</div>

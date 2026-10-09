@@ -718,20 +718,6 @@
                             <label class="form-label" style="font-size:0.72rem;">Estado del inmueble (un renglón por línea — edítalo según lo que encuentres en el recorrido)</label>
                             <textarea name="items_detalle" class="form-input" rows="10" style="font-family:inherit;font-size:.78rem;">{{ \App\Services\InventarioEntregaGeneratorService::defaultItemsText() }}</textarea>
                         </div>
-                        <div class="form-grid" style="margin-top:.5rem;">
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:0.72rem;">Lectura de luz (CFE)</label>
-                                <input type="text" name="lectura_luz" class="form-input" placeholder="ej. 04521">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:0.72rem;">Lectura de gas</label>
-                                <input type="text" name="lectura_gas" class="form-input">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:0.72rem;">Lectura de agua</label>
-                                <input type="text" name="lectura_agua" class="form-input">
-                            </div>
-                        </div>
                         <div class="form-grid">
                             <div class="form-group">
                                 <label class="form-label" style="font-size:0.72rem;">Llaves de recámaras</label>
