@@ -40,6 +40,7 @@ Instalación eléctrica funcionando.
 Instalación hidráulica funcionando.
 Mezcladoras en lavabos de baños y cocina funcionando sin goteras.
 Regaderas y mezcladoras de las mismas funcionando y sin goteras.
+Cancel de vidrio templado en los 2 baños, nuevo y funcionando.
 WC funcionando sin goteras.
 Muebles de baño con herrajes completos y funcionando.
 Muebles de cocina integral completos con herrajes completos sin rayones.
