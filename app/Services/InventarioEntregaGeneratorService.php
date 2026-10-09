@@ -33,8 +33,8 @@ Herrajes en puertas de closets y puertas de acceso a recámaras y baños complet
 Tubos de colgar ropa y tablas para almacenamiento en closets en buen estado y completos.
 Herrajes en ventanas de todo el departamento completos y funcionando.
 Muros de todo el departamento en buen estado sin rayones ni grietas.
-Piso de laminado en recámaras y estancia en buen estado.
-Pisos de loseta cerámica en baños y cocina en buen estado sin grietas ni fisuras.
+Piso de recámaras y estancia en buen estado, sin golpes ni desgaste.
+Piso de baños y cocina en buen estado, sin grietas ni fisuras.
 Zoclo en todo el departamento en buen estado.
 Instalación eléctrica funcionando.
 Instalación hidráulica funcionando.
