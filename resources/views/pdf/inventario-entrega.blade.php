@@ -68,8 +68,8 @@ body {
 .section-label { font-size: 8.8px; font-weight: 800; color: var(--hdv-navy); text-transform: uppercase; letter-spacing: .4px; margin: 6px 0 3px; border-bottom: 1.5px solid #e2e8f0; padding-bottom: 2px; }
 
 .items-list { margin: 0 0 4px; padding-left: 4px; columns: 2; column-gap: 20px; }
-.item-row { padding: 1.5px 0 1.5px 12px; position: relative; font-size: 8.6px; line-height: 1.38; color: #334155; break-inside: avoid; }
-.item-row::before { content: "•"; position: absolute; left: 0; color: var(--hdv-navy); font-weight: 800; }
+.item-row { padding: 2px 0 2px 15px; position: relative; font-size: 8.6px; line-height: 1.38; color: #334155; break-inside: avoid; }
+.item-row::before { content: ""; position: absolute; left: 0; top: 2.5px; width: 8px; height: 8px; border: 1px solid #334155; border-radius: 2px; background: #fff; }
 
 .grid-3 { display: flex; gap: 8px; margin-bottom: 6px; }
 .grid-4 { display: flex; gap: 8px; margin-bottom: 6px; }
@@ -77,7 +77,9 @@ body {
 .field-box .label { font-size: 6.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: .3px; }
 .field-box .value { font-size: 9px; font-weight: 700; color: #0f172a; margin-top: 1px; }
 
-.obs-box { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 9px; min-height: 26px; font-size: 9px; color: #334155; margin-bottom: 6px; white-space: pre-wrap; }
+.obs-box { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 9px; min-height: 26px; font-size: 9px; color: #334155; margin-bottom: 4px; white-space: pre-wrap; }
+.obs-lines { margin-bottom: 6px; }
+.obs-line { border-bottom: 1px solid #cbd5e1; height: 15px; }
 
 .sign-row { display: flex; justify-content: center; gap: 36px; margin-top: 10px; }
 .sign-col { width: 210px; text-align: center; }
@@ -141,7 +143,15 @@ body {
     </div>
 
     <div class="section-label">Observaciones</div>
-    <div class="obs-box">{{ $observaciones ?: '—' }}</div>
+    @if($observaciones)
+    <div class="obs-box">{{ $observaciones }}</div>
+    @endif
+    <div class="obs-lines">
+      <div class="obs-line"></div>
+      <div class="obs-line"></div>
+      <div class="obs-line"></div>
+      <div class="obs-line"></div>
+    </div>
 
     <div class="sign-row">
       <div class="sign-col">
