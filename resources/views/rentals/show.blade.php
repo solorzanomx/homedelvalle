@@ -674,6 +674,93 @@
 
         {{-- TAB: Documents --}}
         <div class="tab-content" id="tab-documents">
+            @php $invDocs = $rental->documents->where('category', 'inventario_entrega')->sortByDesc('created_at'); @endphp
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-body" style="padding:0.85rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;{{ $invDocs->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
+                        <span style="font-size:0.82rem;font-weight:600;">&#128220; Inventario de Entrega</span>
+                        @if($rental->tenantClient && $rental->ownerClient)
+                        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('inv-form').style.display = document.getElementById('inv-form').style.display === 'none' ? 'block' : 'none';">
+                            + Generar Inventario
+                        </button>
+                        @endif
+                    </div>
+
+                    @if(!$rental->tenantClient || !$rental->ownerClient)
+                    <p style="font-size:0.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;">
+                        Falta vincular {{ !$rental->tenantClient ? 'inquilino' : 'propietario' }} a esta Renta — no se puede generar el Inventario.
+                    </p>
+                    @endif
+
+                    @if($invDocs->isNotEmpty())
+                    <div style="display:flex;flex-direction:column;gap:.4rem;">
+                        @foreach($invDocs as $doc)
+                        <div style="padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div><strong>{{ $doc->label }}</strong> <span style="color:var(--text-muted);"> &middot; {{ $doc->created_at->format('d/m/Y') }}</span></div>
+                                <a href="{{ route('rentals.inventario-entrega.pdf', $rental->id) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @if($rental->tenantClient && $rental->ownerClient)
+                    <form id="inv-form" method="POST" action="{{ route('rentals.inventario-entrega.generar', $rental->id) }}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
+                        @csrf
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Fecha de entrega</label>
+                                <input type="date" name="fecha_entrega" class="form-input" value="{{ now()->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:0.72rem;">Estado del inmueble (un renglón por línea — edítalo según lo que encuentres en el recorrido)</label>
+                            <textarea name="items_detalle" class="form-input" rows="10" style="font-family:inherit;font-size:.78rem;">{{ \App\Services\InventarioEntregaGeneratorService::defaultItemsText() }}</textarea>
+                        </div>
+                        <div class="form-grid" style="margin-top:.5rem;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Lectura de luz (CFE)</label>
+                                <input type="text" name="lectura_luz" class="form-input" placeholder="ej. 04521">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Lectura de gas</label>
+                                <input type="text" name="lectura_gas" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Lectura de agua</label>
+                                <input type="text" name="lectura_agua" class="form-input">
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Llaves de recámaras</label>
+                                <input type="text" name="llaves_recamaras" class="form-input" placeholder="ej. 3 juegos">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Llaves de entrada principal</label>
+                                <input type="text" name="llaves_entrada" class="form-input" placeholder="ej. 2 juegos">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Chips / tarjetas de acceso</label>
+                                <input type="text" name="chips_acceso" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:0.72rem;">Controles de estacionamiento</label>
+                                <input type="text" name="controles_estacionamiento" class="form-input">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" style="font-size:0.72rem;">Observaciones</label>
+                            <textarea name="observaciones" class="form-input" rows="3" style="font-family:inherit;"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
+                        <p class="form-hint" style="margin:.4rem 0 0;">Firman directamente arrendador ({{ $rental->ownerClient?->name }}) y arrendatario ({{ $rental->tenantClient?->name }}) — Home del Valle no firma como intermediaria en este documento.</p>
+                    </form>
+                    @endif
+                </div>
+            </div>
+
             {{-- Upload Form --}}
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:1rem;">

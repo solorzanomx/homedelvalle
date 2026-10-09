@@ -332,6 +332,8 @@ Route::middleware(['auth', 'viewer'])->group(function () {
     Route::post('rentals/{rental}/contracts/auto-generate', [\App\Http\Controllers\ContractController::class, 'autoGenerate'])->name('rentals.contracts.auto-generate');
     Route::patch('rentals/{rental}/stage', [RentalProcessController::class, 'updateStage'])->name('rentals.update-stage');
     Route::post('rentals/{rental}/documents', [RentalDocumentController::class, 'store'])->name('rentals.documents.store');
+    Route::post('rentals/{rental}/inventario-entrega/generar', [\App\Http\Controllers\InventarioEntregaController::class, 'generar'])->name('rentals.inventario-entrega.generar');
+    Route::get('rentals/{rental}/inventario-entrega/pdf', [\App\Http\Controllers\InventarioEntregaController::class, 'pdf'])->name('rentals.inventario-entrega.pdf');
     // Apartado (reserva previa a investigación/póliza)
     Route::post('rentals/{rental}/apartado', [RentalProcessController::class, 'storeApartado'])->name('rentals.apartado.store');
     Route::post('rentals/{rental}/apartado/preview', [RentalProcessController::class, 'previewApartado'])->name('rentals.apartado.preview');
