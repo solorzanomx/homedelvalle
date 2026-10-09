@@ -76,6 +76,7 @@ body {
 .field-box { flex: 1; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 7px; }
 .field-box .label { font-size: 6.5px; color: #94a3b8; text-transform: uppercase; letter-spacing: .3px; }
 .field-box .value { font-size: 9px; font-weight: 700; color: #0f172a; margin-top: 1px; }
+.field-box .value-blank { border-bottom: 1px solid #cbd5e1; height: 12px; margin-top: 3px; }
 
 .obs-box { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 9px; min-height: 26px; font-size: 9px; color: #334155; margin-bottom: 4px; white-space: pre-wrap; }
 .obs-lines { margin-bottom: 6px; }
@@ -129,17 +130,17 @@ body {
 
     <div class="section-label">Lecturas de medidores al día de hoy</div>
     <div class="grid-3">
-      <div class="field-box"><div class="label">Luz (CFE)</div><div class="value">{{ $lecturaLuz ?: '—' }}</div></div>
-      <div class="field-box"><div class="label">Gas</div><div class="value">{{ $lecturaGas ?: '—' }}</div></div>
-      <div class="field-box"><div class="label">Agua</div><div class="value">{{ $lecturaAgua ?: '—' }}</div></div>
+      <div class="field-box"><div class="label">Luz (CFE)</div>@if($lecturaLuz)<div class="value">{{ $lecturaLuz }}</div>@else<div class="value-blank"></div>@endif</div>
+      <div class="field-box"><div class="label">Gas</div>@if($lecturaGas)<div class="value">{{ $lecturaGas }}</div>@else<div class="value-blank"></div>@endif</div>
+      <div class="field-box"><div class="label">Agua</div>@if($lecturaAgua)<div class="value">{{ $lecturaAgua }}</div>@else<div class="value-blank"></div>@endif</div>
     </div>
 
     <div class="section-label">Llaves y accesos entregados</div>
     <div class="grid-4">
-      <div class="field-box"><div class="label">Llaves de recámaras</div><div class="value">{{ $llavesRecamaras ?: '—' }}</div></div>
-      <div class="field-box"><div class="label">Llaves de entrada principal</div><div class="value">{{ $llavesEntrada ?: '—' }}</div></div>
-      <div class="field-box"><div class="label">Chips / tarjetas de acceso</div><div class="value">{{ $chipsAcceso ?: '—' }}</div></div>
-      <div class="field-box"><div class="label">Controles de estacionamiento</div><div class="value">{{ $controlesEstacionamiento ?: '—' }}</div></div>
+      <div class="field-box"><div class="label">Llaves de recámaras</div>@if($llavesRecamaras)<div class="value">{{ $llavesRecamaras }}</div>@else<div class="value-blank"></div>@endif</div>
+      <div class="field-box"><div class="label">Llaves de entrada principal</div>@if($llavesEntrada)<div class="value">{{ $llavesEntrada }}</div>@else<div class="value-blank"></div>@endif</div>
+      <div class="field-box"><div class="label">Chips / tarjetas de acceso</div>@if($chipsAcceso)<div class="value">{{ $chipsAcceso }}</div>@else<div class="value-blank"></div>@endif</div>
+      <div class="field-box"><div class="label">Controles de estacionamiento</div>@if($controlesEstacionamiento)<div class="value">{{ $controlesEstacionamiento }}</div>@else<div class="value-blank"></div>@endif</div>
     </div>
 
     <div class="section-label">Observaciones</div>
