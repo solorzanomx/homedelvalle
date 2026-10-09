@@ -747,6 +747,61 @@
                 </div>
             </div>
 
+            @php $comDocs = $rental->documents->where('category', 'recibo_comision')->sortByDesc('created_at'); @endphp
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-body" style="padding:0.85rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;{{ $comDocs->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
+                        <span style="font-size:0.82rem;font-weight:600;">&#128220; Recibo de Comisión</span>
+                        @if($rental->ownerClient)
+                        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('com-form').style.display = document.getElementById('com-form').style.display === 'none' ? 'block' : 'none';">
+                            + Generar Recibo
+                        </button>
+                        @endif
+                    </div>
+
+                    @if(!$rental->ownerClient)
+                    <p style="font-size:0.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;">
+                        Falta vincular propietario a esta Renta — no se puede generar el Recibo de Comisión.
+                    </p>
+                    @endif
+
+                    @if($comDocs->isNotEmpty())
+                    <div style="display:flex;flex-direction:column;gap:.4rem;">
+                        @foreach($comDocs as $doc)
+                        <div style="padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div><strong>{{ $doc->label }}</strong> <span style="color:var(--text-muted);"> &middot; {{ $doc->created_at->format('d/m/Y') }}</span></div>
+                                <a href="{{ route('rentals.recibo-comision.pdf', [$rental->id, $doc->id]) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+
+                    @if($rental->ownerClient)
+                    <form id="com-form" method="POST" action="{{ route('rentals.recibo-comision.generar', $rental->id) }}" style="display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border);">
+                        @csrf
+                        <div style="display:flex;gap:.5rem;align-items:flex-end;flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;min-width:150px;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Monto recibido</label>
+                                <input type="number" step="0.01" min="0.01" name="monto" class="form-input" value="{{ $rental->commission_amount }}" required>
+                            </div>
+                            <div class="form-group" style="flex:1;min-width:150px;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Fecha del recibo</label>
+                                <input type="date" name="fecha_recibo" class="form-input" value="{{ now()->format('Y-m-d') }}">
+                            </div>
+                            <div class="form-group" style="flex:2;min-width:260px;margin:0;">
+                                <label class="form-label" style="font-size:0.72rem;">Método / origen del pago</label>
+                                <input type="text" name="metodo_pago" class="form-input" placeholder="mediante transferencia interbancaria" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Generar PDF</button>
+                        </div>
+                        <p class="form-hint" style="margin:.4rem 0 0;">Documenta el pago de la comisión que hace el propietario ({{ $rental->ownerClient?->name }}) a Home del Valle — genera un recibo por cada pago si se cobra en partes. Firma Ana Laura Monsiváis por Home del Valle, no el propietario.</p>
+                    </form>
+                    @endif
+                </div>
+            </div>
+
             {{-- Upload Form --}}
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:1rem;">

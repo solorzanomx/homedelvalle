@@ -50,6 +50,7 @@ class Document extends Model
         'acta_entrega' => 'Acta de Entrega',
         'recibo_pago_parcial' => 'Recibo de Pago Parcial',
         'inventario_entrega' => 'Inventario de Entrega',
+        'recibo_comision' => 'Recibo de Comisión',
         'adendum_comision' => 'Adéndum de Comisión Mercantil',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',
