@@ -29,6 +29,28 @@
     @endif
 </div>
 
+{{-- ── Persona física / persona moral (2026-10-29) ──
+     Ungated: a diferencia del resto de este partial, esto aplica a cualquier tipo de
+     interés — un inquilino (renta_inquilino) también puede ser una empresa, como
+     Andromeda Services (caso que originó esto). Cuando es empresa, el resto de los
+     campos de abajo (nombre, CURP, domicilio) son los del REPRESENTANTE que firma,
+     no los de la empresa — la razón social va aparte, en company_name. --}}
+<div class="section-title" style="margin-top:0;font-size:.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;border-bottom:none;padding-bottom:0;margin-bottom:.6rem;">Tipo de persona</div>
+<div class="form-grid">
+    <div class="form-group">
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.88rem;cursor:pointer;">
+            <input type="checkbox" name="is_company" id="is_company_chk" value="1"
+                   {{ old('is_company', $c?->is_company) ? 'checked' : '' }}
+                   onchange="toggleCompanyFields(this.checked)">
+            Es una empresa (persona moral) — el resto de los datos de esta sección son de quien la representa y firma
+        </label>
+    </div>
+    <div class="form-group" id="company_name_group" style="display:{{ old('is_company', $c?->is_company) ? 'block' : 'none' }};">
+        <label class="form-label">Razón Social</label>
+        <input type="text" name="company_name" class="form-input" value="{{ old('company_name', $c?->company_name) }}" placeholder='Ej. Andromeda Services SA de CV'>
+    </div>
+</div>
+
 {{-- Bloque de identidad — aplica a quien representa a un inmueble propio (vendedor o propietario en renta) --}}
 <div class="type-section" data-types="venta,renta_propietario">
 
@@ -338,6 +360,11 @@ function validateClabe(input) {
 function toggleSpouseFields(val) {
     var show = val === 'casado' || val === 'union_libre';
     document.getElementById('spouse-section').style.display = show ? 'block' : 'none';
+}
+
+// ── Persona moral toggle ────────────────────────────────────────
+function toggleCompanyFields(checked) {
+    document.getElementById('company_name_group').style.display = checked ? 'block' : 'none';
 }
 
 // ── Progressive disclosure por tipo de cliente ─────────────────

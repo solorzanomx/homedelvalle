@@ -113,32 +113,41 @@ class TenantDocumentRows
         };
         $groups[] = ['title' => 'Identificación oficial', 'icon' => '🪪', 'rows' => $idRows];
 
-        $groups[] = ['title' => 'Comprobante de domicilio', 'icon' => '🏠', 'rows' => [
-            $row('domicilio', 'Recibo de luz, agua o gas', ['luz', 'agua', 'gas', 'comprobante_domicilio'], [
-                'hint' => 'De los últimos 3 meses, a tu nombre. Mejor en PDF.',
-                'chips' => [['cat' => 'luz', 'label' => 'Luz (CFE)'], ['cat' => 'agua', 'label' => 'Agua'], ['cat' => 'gas', 'label' => 'Gas']],
-            ]),
-        ]];
+        if ($client->is_company) {
+            // Persona moral: nada de domicilio "a tu nombre" ni nómina de la representante —
+            // lo que prueba que la empresa es quien es y que ella puede firmar por la empresa.
+            // 2026-10-29, caso Andromeda Services / Aída Ornelas (Renta #10).
+            $groups[] = ['title' => 'Documentos de la empresa', 'icon' => '🏢', 'rows' => collect(TenantDocumentChecklist::PERSONA_MORAL)
+                ->map(fn($label, $cat) => $row($cat, $label, [$cat]))
+                ->values()->all()];
+        } else {
+            $groups[] = ['title' => 'Comprobante de domicilio', 'icon' => '🏠', 'rows' => [
+                $row('domicilio', 'Recibo de luz, agua o gas', ['luz', 'agua', 'gas', 'comprobante_domicilio'], [
+                    'hint' => 'De los últimos 3 meses, a tu nombre. Mejor en PDF.',
+                    'chips' => [['cat' => 'luz', 'label' => 'Luz (CFE)'], ['cat' => 'agua', 'label' => 'Agua'], ['cat' => 'gas', 'label' => 'Gas']],
+                ]),
+            ]];
 
-        // Ingresos: los ÚLTIMOS 3 (uno por mes) de UN mismo tipo. El tipo "elegido" es el que ya tiene archivos; el
-        // avance se mide contra 3 ("Faltan 2 de 3").
-        $incomeCats = ['nomina', 'estado_cuenta', 'cfdi_honorarios'];
-        $chosenIncome = collect($incomeCats)
-            ->filter(fn($c) => $docs->where('category', $c)->isNotEmpty())
-            ->sortByDesc(fn($c) => $docs->where('category', $c)->count())
-            ->first(); // null = aún no sube ninguno
-        $groups[] = ['title' => 'Comprobante de ingresos', 'icon' => '💼', 'rows' => [
-            $row('ingresos', 'Los últimos 3 meses', $chosenIncome ? [$chosenIncome] : array_merge($incomeCats, ['proof_of_income']), [
-                'needed' => self::INCOME_MONTHS,
-                'chosen_cat' => $chosenIncome,
-                'hint' => 'Elige un tipo y sube uno por cada uno de los últimos 3 meses (nómina, estado de cuenta o CFDI). En PDF se leen mejor.',
-                'chips' => [
-                    ['cat' => 'nomina', 'label' => 'Recibos de nómina', 'slots' => self::INCOME_MONTHS],
-                    ['cat' => 'estado_cuenta', 'label' => 'Estados de cuenta', 'slots' => self::INCOME_MONTHS],
-                    ['cat' => 'cfdi_honorarios', 'label' => 'CFDI de honorarios', 'slots' => self::INCOME_MONTHS],
-                ],
-            ]),
-        ]];
+            // Ingresos: los ÚLTIMOS 3 (uno por mes) de UN mismo tipo. El tipo "elegido" es el que ya tiene archivos; el
+            // avance se mide contra 3 ("Faltan 2 de 3").
+            $incomeCats = ['nomina', 'estado_cuenta', 'cfdi_honorarios'];
+            $chosenIncome = collect($incomeCats)
+                ->filter(fn($c) => $docs->where('category', $c)->isNotEmpty())
+                ->sortByDesc(fn($c) => $docs->where('category', $c)->count())
+                ->first(); // null = aún no sube ninguno
+            $groups[] = ['title' => 'Comprobante de ingresos', 'icon' => '💼', 'rows' => [
+                $row('ingresos', 'Los últimos 3 meses', $chosenIncome ? [$chosenIncome] : array_merge($incomeCats, ['proof_of_income']), [
+                    'needed' => self::INCOME_MONTHS,
+                    'chosen_cat' => $chosenIncome,
+                    'hint' => 'Elige un tipo y sube uno por cada uno de los últimos 3 meses (nómina, estado de cuenta o CFDI). En PDF se leen mejor.',
+                    'chips' => [
+                        ['cat' => 'nomina', 'label' => 'Recibos de nómina', 'slots' => self::INCOME_MONTHS],
+                        ['cat' => 'estado_cuenta', 'label' => 'Estados de cuenta', 'slots' => self::INCOME_MONTHS],
+                        ['cat' => 'cfdi_honorarios', 'label' => 'CFDI de honorarios', 'slots' => self::INCOME_MONTHS],
+                    ],
+                ]),
+            ]];
+        }
 
         if (! $forObligado && $route === TenantRoadmap::ROUTE_AVAL) {
             $optional = ['aval_acta_matrimonio', 'aval_id_conyuge'];

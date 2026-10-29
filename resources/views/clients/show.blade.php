@@ -671,7 +671,16 @@
                 </span>
             </div>
             <div class="side-card-body" style="padding:.5rem 1rem;">
-                @if($client->first_name || $client->last_name_paterno)
+                @if($client->is_company)
+                <div class="side-card-row">
+                    <span class="label">Empresa</span>
+                    <span class="value" style="font-size:.77rem;font-weight:700;">🏢 {{ $client->company_name ?: '— sin razón social —' }}</span>
+                </div>
+                <div class="side-card-row">
+                    <span class="label">Representante</span>
+                    <span class="value" style="font-size:.77rem;">{{ ($client->first_name ? trim($client->first_name.' '.$client->last_name_paterno.' '.$client->last_name_materno) : null) ?: $client->name }}</span>
+                </div>
+                @elseif($client->first_name || $client->last_name_paterno)
                 <div class="side-card-row">
                     <span class="label">Nombre legal</span>
                     <span class="value" style="font-size:.77rem;">{{ $client->full_name_legal }}</span>

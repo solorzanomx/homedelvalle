@@ -113,6 +113,15 @@ class RentalProcessController extends Controller
         $markReserved = (bool) ($validated['mark_property_reserved'] ?? false);
         unset($validated['mark_property_reserved']);
 
+        // Hallazgo 2026-10-29: guarantee_type tiene default('deposito') en la BD, pero
+        // Eloquent manda NULL explícito cuando el select queda vacío, lo cual pisa ese
+        // default y revienta el INSERT (columna NOT NULL). Quitarlo del array si viene
+        // vacío deja que el default de la BD se aplique, igual que el resto de los campos
+        // opcionales de este formulario que se llenan después, por etapas.
+        if (empty($validated['guarantee_type'])) {
+            unset($validated['guarantee_type']);
+        }
+
         $hasCoTenant = (bool) ($validated['has_co_tenant'] ?? false);
         $coTenantData = [
             'name' => $validated['co_tenant_name'] ?? null,
@@ -490,6 +499,12 @@ class RentalProcessController extends Controller
             'annual_increase_percentage' => 'nullable|numeric|min:0|max:100',
             'notes'                      => 'nullable|string|max:2000',
         ]);
+
+        // Mismo hallazgo que en store(): la columna es NOT NULL con default — no dejar que
+        // un select vacío la ponga en NULL explícito (ver comentario en store()).
+        if (empty($validated['guarantee_type'])) {
+            unset($validated['guarantee_type']);
+        }
 
         $rental->update($validated);
 

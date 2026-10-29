@@ -74,6 +74,18 @@ class TenantDocumentChecklist
         'pagare' => 'Pagaré',
     ];
 
+    // Persona moral (empresa) — reemplaza DATOS_LABORALES + INGRESOS cuando el inquilino
+    // es una empresa (Client::is_company). La identificación oficial sigue siendo la del
+    // representante legal que firma (ver IDENTIFICACION); esto es lo que se le agrega.
+    // 2026-10-29, caso Andromeda Services / Aída Ornelas (Renta #10) — el checklist
+    // genérico le pedía nómina personal a la representante, que no aplica.
+    const PERSONA_MORAL = [
+        'acta_constitutiva' => 'Acta Constitutiva de la empresa',
+        'poder_representante_legal' => 'Poder Notarial del representante legal que firma',
+        'constancia_situacion_fiscal_empresa' => 'Constancia de Situación Fiscal de la empresa (RFC)',
+        'comprobante_domicilio_fiscal' => 'Comprobante de Domicilio Fiscal de la empresa',
+    ];
+
     // Cuota de investigación — requisito general del expediente, no depende
     // del tipo de garantía (lista oficial, 2026-09-22): $3,500 MXN CDMX, no
     // reembolsables. 2026-09-24: ya no la sube el cliente — el asesor
@@ -83,9 +95,16 @@ class TenantDocumentChecklist
         'pago_investigacion' => 'Pago de la investigación de arrendamiento ($3,500 MXN en CDMX, no reembolsable)',
     ];
 
-    /** Documentos e información que se le piden al inquilino, sin importar el tipo de garantía. */
-    public static function clientFacing(): array
+    /**
+     * Documentos e información que se le piden al inquilino, sin importar el tipo de
+     * garantía. $isCompany = true cuando el inquilino es una empresa (Client::is_company):
+     * cambia DATOS_LABORALES + INGRESOS + REFERENCIAS (de persona física) por PERSONA_MORAL.
+     */
+    public static function clientFacing(bool $isCompany = false): array
     {
+        if ($isCompany) {
+            return self::IDENTIFICACION + self::PERSONA_MORAL + self::CREDITO + self::PAGO_INVESTIGACION;
+        }
         return self::IDENTIFICACION + self::DATOS_LABORALES + self::INGRESOS + self::REFERENCIAS + self::CREDITO + self::PAGO_INVESTIGACION;
     }
 

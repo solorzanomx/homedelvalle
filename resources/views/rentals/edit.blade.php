@@ -242,7 +242,7 @@
                         <div class="form-group">
                             <label class="form-label">Tipo de garantía</label>
                             <select name="guarantee_type" class="form-select">
-                                <option value="">Seleccionar...</option>
+                                <option value="">Seleccionar... (Depósito si no eliges)</option>
                                 @foreach(\App\Models\RentalProcess::GUARANTEE_TYPES as $val => $label)
                                 <option value="{{ $val }}" {{ old('guarantee_type', $rental->guarantee_type) === $val ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach

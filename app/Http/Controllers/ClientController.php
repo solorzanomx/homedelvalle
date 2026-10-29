@@ -107,6 +107,9 @@ class ClientController extends Controller
             'financing_preauth_amount' => 'nullable|numeric|min:0',
             'nss'               => 'nullable|string|max:20',
             'infonavit_balance' => 'nullable|numeric|min:0',
+            // Persona moral (empresa) — 2026-10-29, ver docs/funcionalidades/clientes-persona-moral.md
+            'is_company'        => 'nullable|boolean',
+            'company_name'      => 'nullable|string|max:255',
             // Datos legales
             'first_name'        => 'nullable|string|max:100',
             'last_name_paterno' => 'nullable|string|max:100',
@@ -561,6 +564,9 @@ class ClientController extends Controller
             'marketing_channel_id'  => 'nullable|exists:marketing_channels,id',
             'marketing_campaign_id' => 'nullable|exists:marketing_campaigns,id',
             'acquisition_cost' => 'nullable|numeric|min:0',
+            // Persona moral (empresa) — 2026-10-29, ver docs/funcionalidades/clientes-persona-moral.md
+            'is_company'        => 'nullable|boolean',
+            'company_name'      => 'nullable|string|max:255',
             // Datos legales
             'first_name'        => 'nullable|string|max:100',
             'last_name_paterno' => 'nullable|string|max:100',
@@ -599,6 +605,9 @@ class ClientController extends Controller
         if (!$request->has('interest_types')) {
             $validated['interest_types'] = [];
         }
+
+        // Mismo patrón que interest_types: un checkbox desmarcado no llega en el POST.
+        $validated['is_company'] = $request->boolean('is_company');
 
         // Re-derivar client_type al editar interest_types — antes quedaba
         // desactualizado (bug real, auditoría 2026-07-04). El form de edición

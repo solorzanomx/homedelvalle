@@ -52,6 +52,12 @@ class Document extends Model
         'inventario_entrega' => 'Inventario de Entrega',
         'recibo_comision' => 'Recibo de Comisión',
         'adendum_comision' => 'Adéndum de Comisión Mercantil',
+        // Persona moral (empresa) — arrendatario/propietario que es una empresa, no una
+        // persona física (2026-10-29, ver docs/funcionalidades/clientes-persona-moral.md)
+        'acta_constitutiva' => 'Acta Constitutiva',
+        'poder_representante_legal' => 'Poder Notarial del Representante Legal',
+        'constancia_situacion_fiscal_empresa' => 'Constancia de Situación Fiscal (Empresa)',
+        'comprobante_domicilio_fiscal' => 'Comprobante de Domicilio Fiscal (Empresa)',
         // Expediente del cliente
         'ine_frente'            => 'INE — Frente',
         'ine_reverso'           => 'INE — Reverso',

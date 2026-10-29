@@ -28,6 +28,9 @@ class Client extends Model
         'marketing_channel_id', 'marketing_campaign_id',
         'acquisition_cost', 'utm_source', 'utm_medium', 'utm_campaign',
         'client_type', 'lead_source',
+        // Persona moral (empresa) — el resto del registro (name, email, rfc, etc.) sigue
+        // siendo del representante legal; ver docs/funcionalidades/clientes-persona-moral.md
+        'is_company', 'company_name',
         // Datos legales — nombre desglosado
         'first_name', 'last_name_paterno', 'last_name_materno',
         // Datos personales
@@ -90,6 +93,7 @@ class Client extends Model
         'acquisition_cost' => 'decimal:2',
         'interest_types'   => 'array',
         'client_type'  => 'string',
+        'is_company'   => 'boolean',
         'birth_date'   => 'date',
         'id_expiry'    => 'date',
         'curp_verified_at'        => 'datetime',
@@ -221,9 +225,12 @@ class Client extends Model
 
     // ── Accessors de nombre legal ─────────────────────────────
 
-    /** Nombre completo para contratos: APELLIDO PATERNO APELLIDO MATERNO NOMBRE(S) */
+    /** Nombre completo para contratos: APELLIDO PATERNO APELLIDO MATERNO NOMBRE(S). Si es persona moral, la razón social. */
     public function getFullNameLegalAttribute(): string
     {
+        if ($this->is_company && $this->company_name) {
+            return strtoupper($this->company_name);
+        }
         if ($this->first_name && $this->last_name_paterno) {
             return strtoupper(trim(
                 ($this->last_name_paterno ?? '') . ' ' .
@@ -234,9 +241,12 @@ class Client extends Model
         return strtoupper($this->name ?? '');
     }
 
-    /** Nombre completo natural: Nombre(s) Apellido Paterno Apellido Materno */
+    /** Nombre completo natural: Nombre(s) Apellido Paterno Apellido Materno. Si es persona moral, la razón social. */
     public function getFullNameAttribute(): string
     {
+        if ($this->is_company && $this->company_name) {
+            return $this->company_name;
+        }
         if ($this->first_name && $this->last_name_paterno) {
             return trim(
                 ($this->first_name ?? '') . ' ' .
@@ -247,9 +257,38 @@ class Client extends Model
         return $this->name ?? '';
     }
 
+    /**
+     * Para contratos: "RAZÓN SOCIAL, representada por NOMBRE DEL REPRESENTANTE" si es
+     * persona moral, o el nombre legal normal si es persona física.
+     */
+    public function getContractPartyNameAttribute(): string
+    {
+        if ($this->is_company && $this->company_name) {
+            $rep = $this->first_name && $this->last_name_paterno
+                ? trim($this->first_name . ' ' . $this->last_name_paterno . ' ' . $this->last_name_materno)
+                : $this->name;
+            return trim($this->company_name) . ($rep ? ', representada por ' . $rep : '');
+        }
+        return $this->full_name_legal;
+    }
+
     /** Calcula % de completitud de ficha legal (0-100) */
     public function getLegalCompletenessAttribute(): int
     {
+        // Persona moral: la ficha legal relevante es la de la EMPRESA (razón social, RFC,
+        // domicilio fiscal) más la identificación del representante que firma — nada de
+        // estado civil, CURP propia o datos de empleo, que son de persona física.
+        if ($this->is_company) {
+            $fields = [
+                'company_name', 'rfc',
+                'first_name', 'last_name_paterno', // nombre del representante
+                'id_type', 'id_number', 'id_expiry_month', 'id_expiry_year',
+                'address_street', 'address_colony', 'address_municipality', 'address_state', 'address_zip',
+            ];
+            $filled = collect($fields)->filter(fn($f) => !empty($this->$f))->count();
+            return (int) round(($filled / count($fields)) * 100);
+        }
+
         $fields = [
             'first_name', 'last_name_paterno', 'last_name_materno',
             'birth_date', 'birth_state', 'gender', 'nationality', 'marital_status',
