@@ -36,7 +36,7 @@ class ContractService
      */
     public function buildVariables(RentalProcess $rental): array
     {
-        $rental->loadMissing(['property', 'ownerClient', 'tenantClient', 'coTenant', 'broker']);
+        $rental->loadMissing(['property', 'ownerClient', 'tenantClient', 'coTenant', 'obligado', 'broker']);
         $settings = SiteSetting::first();
 
         // Co-arrendatario (2026-11-02, caso Renta #11 — Alejandro Villalobos + Fernanda
@@ -54,13 +54,28 @@ class ContractService
             '{{propietario_nombre}}' => $rental->ownerClient->name ?? '',
             '{{propietario_email}}' => $rental->ownerClient->email ?? '',
             '{{propietario_telefono}}' => $rental->ownerClient->phone ?? '',
+            '{{propietario_domicilio}}' => $rental->ownerClient?->legal_address ?? '',
             '{{inquilino_nombre}}' => $inquilinoNombre,
             '{{inquilino_email}}' => $rental->tenantClient->email ?? '',
             '{{inquilino_telefono}}' => $rental->tenantClient->phone ?? '',
+            '{{inquilino_domicilio}}' => $rental->tenantClient?->legal_address ?? '',
             '{{coarrendatario_nombre}}' => $rental->coTenant->name ?? '',
             '{{coarrendatario_telefono}}' => $rental->coTenant->phone ?? '',
+            // Obligado solidario (fiador) — opcional, distinto del co-arrendatario (ver
+            // docs/funcionalidades/obligado-solidario.md). Vacío si el trato no tiene uno.
+            '{{obligado_nombre}}' => $rental->obligado->name ?? '',
+            '{{obligado_telefono}}' => $rental->obligado->phone ?? '',
+            '{{obligado_domicilio}}' => $rental->obligado?->legal_address ?? '',
             '{{propiedad_titulo}}' => $rental->property->title ?? '',
             '{{propiedad_direccion}}' => $rental->property->address ?? '',
+            '{{propiedad_uso}}' => match ($rental->property->property_type ?? null) {
+                'House', 'Apartment' => 'Habitacional',
+                'Office' => 'Oficina',
+                'Commercial' => 'Comercial',
+                'Warehouse' => 'Bodega/Almacén',
+                'Building' => 'Mixto',
+                default => '',
+            },
             '{{renta_mensual}}' => $rental->monthly_rent ? number_format($rental->monthly_rent, 2) : '',
             '{{moneda}}' => $rental->currency ?? 'MXN',
             '{{deposito}}' => $rental->deposit_amount ? number_format($rental->deposit_amount, 2) : '',
