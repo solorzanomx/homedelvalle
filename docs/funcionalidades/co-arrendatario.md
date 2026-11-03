@@ -100,3 +100,14 @@ Al querer generar el Contrato de Arrendamiento de esta renta se descubrieron dos
      (que tampoco existía para renta).
    - Verificado con datos desechables (transacción con rollback): con y sin co-arrendatario, `{{inquilino_nombre}}`,
      `{{comprador_nombre}}` (alias) y `{{precio_texto}}` salen correctos. Suite completa sin regresiones.
+3. **El "camino legacy" de contratos (`ContractService::generatePdf()`) no tenía identidad de marca.** Hasta este
+   hallazgo, un contrato generado desde una plantilla de texto libre (`uses_clauses = false` — el camino que usa
+   "⚡ Generar contrato automáticamente" cuando la plantilla NO usa cláusulas estructuradas) se renderizaba con
+   Dompdf y un wrapper HTML genérico (sans-serif cualquiera, sin header/footer, sin navy/acento) — el único
+   documento del sistema sin la identidad de Home del Valle. Se unificó con el mecanismo que ya existía para el
+   camino de cláusulas estructuradas (`generateVersion()`): ahora también usa Browsershot + `headerHtml()`/
+   `footerHtml()` de la misma clase (navy `#1e1b4b` / acento `#2563eb`, mismo que `_brand_data.php`). De paso se
+   corrigió que `footerHtml()` siempre decía "Rúbrica Vendedor/Comprador(a)" aunque el contrato fuera de renta —
+   ahora es dinámico (`Arrendador/Arrendatario(a)` vs `Vendedor/Comprador(a)` según `contract->type`). Ya no se usa
+   Dompdf en este archivo (import removido). Verificado con un Contract desechable (rollback): PDF de 89KB con
+   header/footer de marca, acentos correctos, folio y rúbricas dinámicas.

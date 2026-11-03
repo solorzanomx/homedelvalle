@@ -7,8 +7,6 @@ use App\Models\ContractTemplate;
 use App\Models\ContractVersion;
 use App\Models\RentalProcess;
 use App\Models\SiteSetting;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Browsershot\Browsershot;
@@ -92,26 +90,45 @@ class ContractService
     }
 
     /**
-     * Generate PDF from HTML content, store it, return path.
+     * Genera el PDF del contrato "camino legacy" (plantilla de texto libre, sin cláusulas
+     * estructuradas — generateFromTemplate()/str_replace, no generateVersion()).
+     *
+     * Hallazgo 2026-11-02: hasta aquí este método usaba Dompdf con un wrapper genérico sin
+     * marca (fuente sans-serif cualquiera, sin header/footer, sin navy/acento) — el único
+     * documento del sistema sin la identidad de Home del Valle que sí llevan Acuerdo de
+     * Representación, Acta de Entrega, Recibo de Comisión, etc. Se unifica usando el mismo
+     * mecanismo que ya existía en generateVersion() (Browsershot + headerHtml()/footerHtml()
+     * de esta misma clase, navy #1e1b4b / acento #2563eb — ver _brand_data.php).
      */
     public function generatePdf(Contract $contract): string
     {
-        $options = new Options();
-        $options->set('isHtml5ParserEnabled', true);
-        $options->set('isRemoteEnabled', true);
-        $options->set('defaultFont', 'sans-serif');
-
-        $dompdf = new Dompdf($options);
+        $isSale = $contract->type === 'sale';
+        $folio = $contract->folio ?? ('CT-' . str_pad((string) $contract->id, 5, '0', STR_PAD_LEFT));
 
         $html = $this->wrapHtmlForPdf($contract->generated_html, $contract->title);
-        $dompdf->loadHtml($html);
-        $dompdf->setPaper('letter', 'portrait');
-        $dompdf->render();
+
+        $tmpPath = storage_path('app/tmp-' . uniqid('contract_') . '.pdf');
+
+        Browsershot::html($html)
+            ->setNodeBinary(config('browsershot.node_path', '/usr/bin/node'))
+            ->setChromePath(config('browsershot.chrome_path', '/usr/bin/google-chrome'))
+            ->noSandbox()
+            ->addChromiumArguments(['--disable-gpu', '--disable-dev-shm-usage', '--disable-extensions'])
+            ->showBackground()
+            ->emulateMedia('screen')
+            ->paperSize(215.9, 279.4)
+            ->margins(18, 11, 16, 11)
+            ->showBrowserHeaderAndFooter()
+            ->headerHtml($this->headerHtml($folio))
+            ->footerHtml($this->footerHtml($folio, $isSale))
+            ->timeout(90)
+            ->savePdf($tmpPath);
 
         $filename = 'contracts/contract-' . $contract->id . '-' . time() . '.pdf';
-        \App\Support\SecureFiles::put($filename, $dompdf->output());
+        \App\Support\SecureFiles::put($filename, file_get_contents($tmpPath));
+        @unlink($tmpPath);
 
-        $contract->update(['pdf_path' => $filename]);
+        $contract->update(['pdf_path' => $filename, 'folio' => $folio]);
 
         return $filename;
     }
@@ -227,7 +244,7 @@ class ContractService
             ->margins(18, 11, 16, 11)
             ->showBrowserHeaderAndFooter()
             ->headerHtml($this->headerHtml($folio))
-            ->footerHtml($this->footerHtml($folio))
+            ->footerHtml($this->footerHtml($folio, $isSale))
             ->timeout(90)
             ->savePdf($tmpPath);
 
@@ -257,12 +274,15 @@ class ContractService
         </div>';
     }
 
-    protected function footerHtml(string $folio): string
+    protected function footerHtml(string $folio, bool $isSale = true): string
     {
+        $label1 = $isSale ? 'Vendedor' : 'Arrendador';
+        $label2 = $isSale ? 'Comprador(a)' : 'Arrendatario(a)';
+
         return '<div style="width:100%; box-sizing:border-box; font-family:Arial,sans-serif; color:#94a3b8;">
             <div style="display:flex; justify-content:flex-end; gap:20px; padding:0 11mm 3px;">
-                <span style="font-size:6.3px; display:flex; align-items:center; gap:4px;">R&uacute;brica Vendedor <i style="display:inline-block;width:46px;border-bottom:1px solid #cbd5e1;font-style:normal;">&nbsp;</i></span>
-                <span style="font-size:6.3px; display:flex; align-items:center; gap:4px;">R&uacute;brica Comprador(a) <i style="display:inline-block;width:46px;border-bottom:1px solid #cbd5e1;font-style:normal;">&nbsp;</i></span>
+                <span style="font-size:6.3px; display:flex; align-items:center; gap:4px;">R&uacute;brica ' . e($label1) . ' <i style="display:inline-block;width:46px;border-bottom:1px solid #cbd5e1;font-style:normal;">&nbsp;</i></span>
+                <span style="font-size:6.3px; display:flex; align-items:center; gap:4px;">R&uacute;brica ' . e($label2) . ' <i style="display:inline-block;width:46px;border-bottom:1px solid #cbd5e1;font-style:normal;">&nbsp;</i></span>
             </div>
             <div style="border-top:1px solid #e2e8f0; padding:4px 11mm 6px; display:flex; justify-content:space-between; align-items:center; font-size:7.5px;">
                 <strong style="color:#1e1b4b; font-weight:600;">Home del Valle</strong>
@@ -295,19 +315,24 @@ class ContractService
     }
 
     /**
-     * Wrap contract HTML in a full document for PDF rendering.
+     * Wrap contract HTML in a full document for PDF rendering — tipografía e identidad de
+     * marca (navy #1e1b4b / acento #2563eb, misma paleta que _brand_data.php), consistente
+     * con el resto de documentos legales del sistema. El header/footer de marca los pone
+     * Browsershot por fuera (ver headerHtml()/footerHtml()); esto solo viste el cuerpo.
      */
     protected function wrapHtmlForPdf(string $body, string $title): string
     {
         return '<!DOCTYPE html><html><head><meta charset="UTF-8">
             <title>' . e($title) . '</title>
             <style>
-                body { font-family: sans-serif; font-size: 12px; line-height: 1.6; color: #333; margin: 40px; }
-                h1 { font-size: 18px; text-align: center; margin-bottom: 20px; }
-                h2 { font-size: 14px; margin-top: 16px; }
-                p { margin: 8px 0; }
+                * { box-sizing: border-box; }
+                body { font-family: Arial, sans-serif; font-size: 11px; line-height: 1.6; color: #1e293b; margin: 0; padding: 6px 11mm 0; }
+                h1 { font-size: 15px; font-weight: 800; text-align: center; color: #1e1b4b; text-transform: uppercase; letter-spacing: .5px; margin: 10px 0 18px; }
+                h2 { font-size: 12px; font-weight: 800; text-align: center; color: #1e1b4b; margin: 18px 0 10px; }
+                p { margin: 0 0 9px; text-align: justify; }
+                strong { color: #0f172a; }
                 table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-                td, th { padding: 6px 8px; border: 1px solid #ddd; font-size: 11px; }
+                td, th { padding: 6px 8px; border: 1px solid #e2e8f0; font-size: 10.5px; }
                 .signature-block { margin-top: 60px; display: flex; }
                 .signature-line { border-top: 1px solid #333; width: 200px; margin-top: 40px; text-align: center; font-size: 10px; padding-top: 4px; }
             </style>
