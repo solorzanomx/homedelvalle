@@ -802,6 +802,47 @@
                 </div>
             </div>
 
+            @if(in_array($rental->guarantee_type, ['pagares', 'aval_pagares'], true))
+            @php $pagDocs = $rental->documents->where('category', 'pagare')->sortByDesc('created_at'); @endphp
+            <div class="card" style="margin-bottom:1rem;">
+                <div class="card-body" style="padding:0.85rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;{{ $pagDocs->isEmpty() ? '' : 'margin-bottom:.75rem;' }}">
+                        <span style="font-size:0.82rem;font-weight:600;">&#128220; Pagarés</span>
+                        @if($rental->tenantClient && $rental->ownerClient)
+                        <form method="POST" action="{{ route('rentals.pagares.generar', $rental->id) }}" onsubmit="return confirm('¿Generar la serie completa de {{ $rental->lease_duration_months ?: 12 }} Pagarés? Se crea un PDF nuevo, uno por mes de la renta.')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-primary">+ Generar Pagarés</button>
+                        </form>
+                        @endif
+                    </div>
+
+                    @if(!$rental->tenantClient || !$rental->ownerClient)
+                    <p style="font-size:0.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;">
+                        Falta vincular {{ !$rental->tenantClient ? 'inquilino' : 'propietario' }} a esta Renta — no se pueden generar los Pagarés.
+                    </p>
+                    @elseif(!$rental->lease_duration_months || !$rental->monthly_rent)
+                    <p style="font-size:0.78rem;color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:.5rem .7rem;">
+                        Falta la duración (meses) o la renta mensual del trato para calcular la serie.
+                    </p>
+                    @endif
+
+                    @if($pagDocs->isNotEmpty())
+                    <div style="display:flex;flex-direction:column;gap:.4rem;">
+                        @foreach($pagDocs as $doc)
+                        <div style="padding:.5rem .7rem;background:var(--bg,#f8fafc);border-radius:8px;font-size:.78rem;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div><strong>{{ $doc->label }}</strong> <span style="color:var(--text-muted);"> &middot; {{ $doc->created_at->format('d/m/Y') }}</span></div>
+                                <a href="{{ route('rentals.pagares.pdf', [$rental->id, $doc->id]) }}" target="_blank" class="btn btn-sm btn-outline">Ver PDF</a>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
+                    <p class="form-hint" style="margin-top:.5rem;">Un pagaré por cada mes de la renta, a tamaño media carta, listo para imprimir y firmar. Vencen el día {{ $rental->payment_day ?: ($rental->lease_start_date?->day ?: '—') }} de cada mes, por ${{ number_format((float) $rental->monthly_rent, 2) }}. Firma(n) {{ $rental->tenantClient?->name }}{{ $rental->coTenant?->name ? ' y ' . $rental->coTenant->name : '' }} a favor de {{ $rental->ownerClient?->name }}.</p>
+                </div>
+            </div>
+            @endif
+
             {{-- Upload Form --}}
             <div class="card" style="margin-bottom:1rem;">
                 <div class="card-body" style="padding:1rem;">
