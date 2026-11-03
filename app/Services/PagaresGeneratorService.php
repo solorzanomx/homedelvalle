@@ -17,9 +17,11 @@ use Spatie\Browsershot\Browsershot;
  * Flores Luna como suscriptores mancomunados, a favor del propietario Marcelino Rodríguez León).
  *
  * Un pagaré por mes, vencimiento el `payment_day` del trato (o el día del mes de
- * `lease_start_date` si no está capturado), por el monto de `monthly_rent`. Se generan TODOS los
- * de la serie de una vez, en un solo PDF a tamaño media carta (uno por página) listo para imprimir
- * y firmar — así se hizo siempre en papel, no se generan de uno en uno.
+ * `lease_start_date` si no está capturado) + 5 días naturales de prórroga (ver PRORROGA_DIAS —
+ * instrucción de Alejandro, 2026-11-02: si la renta se paga el día 1, el pagaré vence el día 6,
+ * no el día 1), por el monto de `monthly_rent`. Se generan TODOS los de la serie de una vez, en
+ * un solo PDF a tamaño media carta (uno por página) listo para imprimir y firmar — así se hizo
+ * siempre en papel, no se generan de uno en uno.
  */
 class PagaresGeneratorService
 {
@@ -36,6 +38,12 @@ class PagaresGeneratorService
         'jurisdiccion' => 'Jurisdicción',
         'protesto' => 'Sin protesto',
     ];
+
+    /**
+     * Prórroga de 5 días naturales sobre el día de pago pactado (instrucción de Alejandro,
+     * 2026-11-02): si la renta se paga el día 1, el pagaré vence el día 6, no el día 1.
+     */
+    const PRORROGA_DIAS = 5;
 
     public static function clause(string $clauseKey, array $tokens = []): string
     {
@@ -73,6 +81,9 @@ class PagaresGeneratorService
         for ($i = 1; $i <= $total; $i++) {
             $due = $start->copy()->startOfMonth()->addMonthsNoOverflow($i - 1);
             $due->day(min($day, $due->daysInMonth));
+            // addDays(), no se fija el día directo — así corre bien al mes siguiente si el día
+            // de pago + la prórroga ya no cabe en el mes (ej. día 28 + 5 → 2 del mes siguiente).
+            $due->addDays(self::PRORROGA_DIAS);
             $pagares[] = [
                 'numero' => $i,
                 'fechaVencimiento' => $due->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),

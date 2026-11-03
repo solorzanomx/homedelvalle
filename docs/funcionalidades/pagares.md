@@ -15,7 +15,11 @@ Rodríguez León, Calle Indiana 53-301-A).
 
 - Un pagaré por cada mes de `lease_duration_months`, por el monto de `monthly_rent`, vence el
   `payment_day` de cada mes (o el día del mes de `lease_start_date` si `payment_day` no está
-  capturado).
+  capturado) **+ 5 días naturales de prórroga** (`PagaresGeneratorService::PRORROGA_DIAS` —
+  instrucción de Alejandro, 2026-11-02: si la renta se paga el día 1, el pagaré vence el día 6).
+  Se suma con `addDays()`, no fijando el día directo, para que corra bien el mes si el día de pago
+  + la prórroga ya no cabe en el mes (ej. día 28 + 5 → día 2 o 3 del mes siguiente, según los días
+  del mes).
 - Si hay co-arrendatario (`co_tenant_client_id`), firman **ambos** — "DEBEMOS Y PAGAREMOS...
   MANCOMUNADAMENTE" (plural). Sin co-arrendatario, un solo firmante — "DEBO Y PAGARÉ
   INCONDICIONALMENTE" (singular). Reutiliza `RentalProcess::coTenant()`, mismo patrón que

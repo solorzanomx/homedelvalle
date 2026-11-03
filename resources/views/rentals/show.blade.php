@@ -838,7 +838,8 @@
                         @endforeach
                     </div>
                     @endif
-                    <p class="form-hint" style="margin-top:.5rem;">Un pagaré por cada mes de la renta, a tamaño media carta, listo para imprimir y firmar. Vencen el día {{ $rental->payment_day ?: ($rental->lease_start_date?->day ?: '—') }} de cada mes, por ${{ number_format((float) $rental->monthly_rent, 2) }}. Firma(n) {{ $rental->tenantClient?->name }}{{ $rental->coTenant?->name ? ' y ' . $rental->coTenant->name : '' }} a favor de {{ $rental->ownerClient?->name }}.</p>
+                    @php $pagDiaPago = $rental->payment_day ?: ($rental->lease_start_date?->day ?: null); @endphp
+                    <p class="form-hint" style="margin-top:.5rem;">Un pagaré por cada mes de la renta, a tamaño media carta, listo para imprimir y firmar. Vencen {{ \App\Services\PagaresGeneratorService::PRORROGA_DIAS }} días naturales después del día de pago (día {{ $pagDiaPago ?: '—' }}), por ${{ number_format((float) $rental->monthly_rent, 2) }}. Firma(n) {{ $rental->tenantClient?->name }}{{ $rental->coTenant?->name ? ' y ' . $rental->coTenant->name : '' }} a favor de {{ $rental->ownerClient?->name }}.</p>
                 </div>
             </div>
             @endif
