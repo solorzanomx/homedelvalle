@@ -48,6 +48,7 @@ el titular).
 | CRM: captura rápida al **crear** el trato (checkbox + nombre/celular) | `rentals/create.blade.php` (checkbox `has_co_tenant` junto a Arrendatario), `RentalProcessController::store()` (llama a `CoTenantService::register(..., 'advisor')` tras crear el `RentalProcess`) |
 | CRM: comisión de medio mes (quick-pick) | `rentals/create.blade.php` — `setCommission(0.5)` junto al botón de 1 mes (no es parte del co-arrendatario, pedido en la misma sesión) |
 | Referencias y arrendador anterior del co-arrendatario | `RentalProcessController::saveReference/savePreviousLandlord/rejectReference/rentalReference` — `who` ahora acepta `tenant|obligado|co_tenant` |
+| **Contrato de Arrendamiento (generado)**: nombre del co-arrendatario en el documento | `ContractService::buildVariables()` — `{{inquilino_nombre}}` combina titular+co-arrendatario ("Fulano y Zutano") cuando existe; `{{coarrendatario_nombre}}`/`{{coarrendatario_telefono}}` nuevos, solo del co-arrendatario |
 
 ## INVARIANTES — no romper
 - **Toda acción "a nombre del co-arrendatario" pasa por `CoTenantService::tenantMayActFor($cliente, $coTenantId)`**:
@@ -78,3 +79,24 @@ el titular).
    hay un "+ Agregar co-arrendatario" visible en el Portal antes de que exista).
 3. Si en el futuro se necesita un tercer co-arrendatario (3+ personas en el contrato), este diseño (una sola
    columna `co_tenant_client_id`) no escala — habría que pasar a una tabla pivote.
+
+## Hallazgo 2026-11-02 (Renta #11, Alejandro Villalobos + Fernanda Ponce de León) — Contrato de Arrendamiento
+
+Al querer generar el Contrato de Arrendamiento de esta renta se descubrieron dos cosas:
+
+1. **No hay ninguna `ContractTemplate` tipo `rental` activa en producción todavía** — `/admin/contract-templates`
+   solo tiene plantillas de Compraventa y de Presentación Inicial. El botón "⚡ Generar contrato automáticamente" de
+   `rentals/show.blade.php` fallaría con "No hay una plantilla de contrato de arrendamiento activa". Pendiente:
+   Alejandro va a compartir el contrato real que ya usan para crear esa plantilla.
+2. **El motor de variables no sabía que podía haber co-arrendatario** (corregido en esta misma sesión):
+   - `ContractService::buildVariables()` — `{{inquilino_nombre}}` ahora combina titular + co-arrendatario.
+   - `ContractClauseVariableResolver::resolveForRental()` — bug aparte encontrado: `ensureCaratulaClause()` y
+     `generateVersion()` (el camino de **cláusulas estructuradas**, mismo sistema que usa Compraventa, activable por
+     plantilla vía `ContractTemplate.uses_clauses`) leen `{{comprador_nombre}}`/`{{vendedor_nombre}}` sin importar si
+     es venta o renta. Para renta esos tokens **nunca existían** (`resolveForRental()` solo devolvía los tokens de
+     `buildVariables()`, que usan nombres distintos: `{{propietario_nombre}}`/`{{inquilino_nombre}}`) — la carátula
+     de cualquier Contrato de Arrendamiento generado con cláusulas estructuradas habría salido con el nombre del
+     arrendatario en blanco. Se agregaron como alias dentro de `resolveForRental()`, junto con `{{precio_texto}}`
+     (que tampoco existía para renta).
+   - Verificado con datos desechables (transacción con rollback): con y sin co-arrendatario, `{{inquilino_nombre}}`,
+     `{{comprador_nombre}}` (alias) y `{{precio_texto}}` salen correctos. Suite completa sin regresiones.

@@ -36,16 +36,29 @@ class ContractService
      */
     public function buildVariables(RentalProcess $rental): array
     {
-        $rental->loadMissing(['property', 'ownerClient', 'tenantClient', 'broker']);
+        $rental->loadMissing(['property', 'ownerClient', 'tenantClient', 'coTenant', 'broker']);
         $settings = SiteSetting::first();
+
+        // Co-arrendatario (2026-11-02, caso Renta #11 — Alejandro Villalobos + Fernanda
+        // Ponce de León): el contrato queda a nombre de AMBOS por igual, no solo del
+        // titular. {{inquilino_nombre}} combina los dos nombres cuando hay co-arrendatario,
+        // así cualquier plantilla que ya use esa variable sale correcta sin tocarla.
+        // email/teléfono quedan solo del titular (el co-arrendatario no siempre tiene
+        // correo propio — ver CoTenantService).
+        $inquilinoNombre = $rental->tenantClient->name ?? '';
+        if ($rental->coTenant?->name) {
+            $inquilinoNombre = trim($inquilinoNombre . ' y ' . $rental->coTenant->name);
+        }
 
         return [
             '{{propietario_nombre}}' => $rental->ownerClient->name ?? '',
             '{{propietario_email}}' => $rental->ownerClient->email ?? '',
             '{{propietario_telefono}}' => $rental->ownerClient->phone ?? '',
-            '{{inquilino_nombre}}' => $rental->tenantClient->name ?? '',
+            '{{inquilino_nombre}}' => $inquilinoNombre,
             '{{inquilino_email}}' => $rental->tenantClient->email ?? '',
             '{{inquilino_telefono}}' => $rental->tenantClient->phone ?? '',
+            '{{coarrendatario_nombre}}' => $rental->coTenant->name ?? '',
+            '{{coarrendatario_telefono}}' => $rental->coTenant->phone ?? '',
             '{{propiedad_titulo}}' => $rental->property->title ?? '',
             '{{propiedad_direccion}}' => $rental->property->address ?? '',
             '{{renta_mensual}}' => $rental->monthly_rent ? number_format($rental->monthly_rent, 2) : '',

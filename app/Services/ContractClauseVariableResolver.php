@@ -42,9 +42,25 @@ class ContractClauseVariableResolver
     /**
      * Conserva el conjunto de tokens de renta ya existente en ContractService,
      * sin cambios — solo se centraliza la firma para uso uniforme.
+     *
+     * Hallazgo 2026-11-02 (Renta #11, co-arrendatarios): ensureCaratulaClause() y
+     * generateVersion() leen {{vendedor_nombre}}/{{comprador_nombre}} sin importar si es
+     * venta o renta (son los nombres genéricos de "las partes" en la carátula). Para
+     * venta esos tokens sí existen (resolveForOperation); para renta NUNCA existían — la
+     * carátula de un Contrato de Arrendamiento generado con cláusulas estructuradas salía
+     * con el nombre del arrendatario en blanco. Se agregan aquí como alias de los tokens
+     * de renta reales (que SÍ incluyen al co-arrendatario, ver ContractService::buildVariables).
      */
     public function resolveForRental(RentalProcess $rental): array
     {
-        return app(ContractService::class)->buildVariables($rental);
+        $tokens = app(ContractService::class)->buildVariables($rental);
+
+        $tokens['{{vendedor_nombre}}'] = $tokens['{{propietario_nombre}}'] ?? '';
+        $tokens['{{comprador_nombre}}'] = $tokens['{{inquilino_nombre}}'] ?? '';
+        $tokens['{{precio_texto}}'] = isset($tokens['{{renta_mensual}}']) && $tokens['{{renta_mensual}}'] !== ''
+            ? '$' . $tokens['{{renta_mensual}}'] . ' ' . ($tokens['{{moneda}}'] ?? 'MXN') . ' mensuales'
+            : '';
+
+        return $tokens;
     }
 }
