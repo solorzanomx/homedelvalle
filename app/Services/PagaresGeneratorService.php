@@ -114,6 +114,10 @@ class PagaresGeneratorService
             'deudorEsPlural' => $esPlural,
             'inmuebleDireccion' => $inmuebleDireccion ?: ($rental->property?->title ?? '—'),
             'firmantes' => $firmantes,
+            // Aval (2026-11-03) — texto libre, rental_processes.aval_nombre, distinto del
+            // obligado solidario (ese es solo para la ruta de póliza). Solo se muestra la línea
+            // de firma si hay nombre capturado.
+            'avalNombre' => $rental->aval_nombre ?: null,
             'pagares' => $pagares,
         ];
     }

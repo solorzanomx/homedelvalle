@@ -37,6 +37,14 @@ Rodríguez León, Calle Indiana 53-301-A).
 - Cláusulas (aceleración + intereses moratorios 5% mensual, jurisdicción CDMX, sin protesto) vía
   `DocumentClause::text('pagares', ...)` — editables desde `/admin/documentos` como cualquier otro
   documento de marca, si el abogado quiere ajustar el texto.
+- **Aval** (hallazgo 2026-11-03, serie real "PAGARÉS NIÑOS HÉROES"): `rental_processes.aval_nombre`
+  (texto libre) — firma como "AVAL" al final del pagaré si está capturado. Es un concepto
+  **distinto** de "obligado solidario" (`ObligadoSolidarioService`, que por diseño solo aplica a
+  la ruta de garantía `poliza`). La ruta `aval`/`aval_pagares`/`pagares`
+  (`TenantRoadmap::ROUTE_AVAL`) no tenía NINGÚN lugar en el sistema para registrar quién es el
+  aval antes de este hallazgo. Se modela como texto libre, no como `Client` con Portal/expediente
+  propio — en los pagarés reales el aval solo aparece con su nombre, sin domicilio ni documentos.
+  Se captura directo en `rentals/edit.blade.php`, sección "Garantía y depósito".
 
 ## Mapa de archivos
 
@@ -51,6 +59,11 @@ Rodríguez León, Calle Indiana 53-301-A).
 
 ## Pendiente / límites conocidos
 
+- El Contrato de Arrendamiento (ver [[co-arrendatario]]) solo tiene declaración y firma para
+  "EL OBLIGADO SOLIDARIO" (`obligado_client_id`), no para "EL AVAL" (`aval_nombre`) — si un trato
+  tiene aval pero no obligado solidario, el contrato no lo menciona. No se mezclaron los dos
+  conceptos a propósito (son roles legales distintos); si hace falta, el Contrato necesitaría su
+  propia declaración/firma de aval, separada.
 - No hay un campo distinto de "número de unidad" en `Property` — el pagaré dice "LA RENTA DEL
   INMUEBLE UBICADO EN {{dirección completa}}" en vez de "...DE SU PROPIEDAD NÚMERO 301-A UBICADO
   EN...". Si se necesita ese formato exacto con el número de unidad resaltado aparte, hay que

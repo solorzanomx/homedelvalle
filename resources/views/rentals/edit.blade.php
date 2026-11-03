@@ -249,6 +249,11 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Nombre del aval</label>
+                            <input type="text" name="aval_nombre" class="form-input" value="{{ old('aval_nombre', $rental->aval_nombre) }}" placeholder="Solo si la garantía es Aval o Aval + Pagarés">
+                            <p class="form-hint">Distinto del obligado solidario — firma como "AVAL" en los Pagarés. Solo texto, no tiene Portal ni documentos propios.</p>
+                        </div>
+                        <div class="form-group">
                             <label class="form-label">Monto de depósito</label>
                             <input type="number" name="deposit_amount" x-model.number="depositAmount"
                                    class="form-input" step="0.01" min="0" placeholder="0.00">

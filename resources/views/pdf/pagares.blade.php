@@ -68,7 +68,9 @@ strong { color: #0f172a; }
 
 .fecha-firma { font-size: 7.8px; text-align: center; margin: 4px 0 6px; color: #334155; }
 
-.sign-row { display: flex; justify-content: center; gap: 24px; margin-top: auto; padding-bottom: 8px; }
+.sign-block { margin-top: auto; padding-bottom: 8px; }
+.sign-row { display: flex; justify-content: center; gap: 24px; }
+.sign-row + .sign-row { margin-top: 6px; }
 .sign-col { width: 260px; text-align: center; }
 .sign-line { border-top: 1px solid #0f172a; padding-top: 3px; margin-top: 14px; font-size: 6.8px; color: #475569; }
 .sign-name { font-size: 8px; font-weight: 700; color: #0f172a; }
@@ -110,16 +112,29 @@ strong { color: #0f172a; }
 
     <div class="fecha-firma">Ciudad de México, a {{ $fechaFirma }}.</div>
 
-    <div class="sign-row">
-      @foreach($firmantes as $f)
-      <div class="sign-col">
-        <div class="sign-line">
-          <div class="sign-name">{{ $f['nombre'] }}</div>
-          SUSCRIPTOR(A)
-          <div class="sign-addr">{{ $inmuebleDireccion }}</div>
+    <div class="sign-block">
+      <div class="sign-row">
+        @foreach($firmantes as $f)
+        <div class="sign-col">
+          <div class="sign-line">
+            <div class="sign-name">{{ $f['nombre'] }}</div>
+            SUSCRIPTOR(A)
+            <div class="sign-addr">{{ $inmuebleDireccion }}</div>
+          </div>
+        </div>
+        @endforeach
+      </div>
+
+      @if(!empty($avalNombre))
+      <div class="sign-row">
+        <div class="sign-col">
+          <div class="sign-line">
+            <div class="sign-name">{{ $avalNombre }}</div>
+            AVAL
+          </div>
         </div>
       </div>
-      @endforeach
+      @endif
     </div>
 
   </div>
