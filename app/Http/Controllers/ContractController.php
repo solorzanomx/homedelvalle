@@ -416,7 +416,8 @@ class ContractController extends Controller
             return back()->with('error', 'Este contrato no tiene vista previa HTML.');
         }
 
-        return response($this->wrapPreviewHtml($html))
+        $folio = $contract->folio ?? ('CT-' . $contract->id);
+        return response($this->wrapPreviewHtml($html, $folio, $contract->type === 'sale'))
             ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
@@ -427,10 +428,27 @@ class ContractController extends Controller
      * no fija `width` en `body` A PROPÓSITO (también lo usa contracts/edit.blade.php, el editor en
      * pantalla, que sí necesita ancho completo) — así que el ajuste va aquí, solo para esta vista de
      * solo-lectura, sin tocar el HTML guardado ni el que usa el editor.
+     *
+     * Segundo hallazgo, mismo día: tampoco traía el header/footer navy ni los márgenes de página —
+     * esos los pone Browsershot de forma NATIVA al exportar a PDF (showBrowserHeaderAndFooter() +
+     * headerHtml()/footerHtml(), ver generateVersion()), no son parte del generated_html guardado.
+     * Se simulan aquí para la vista previa, reutilizando los mismos ContractService::headerHtml()/
+     * footerHtml() (ahora públicos) — el PDF real ya se veía bien, esto es solo para que la vista
+     * previa en el navegador se parezca.
      */
-    protected function wrapPreviewHtml(string $html): string
+    protected function wrapPreviewHtml(string $html, string $folio = 'CT', bool $isSale = true): string
     {
-        return $html . '<style>html{background:#e2e8f0;}body{max-width:215.9mm;margin:12px auto;box-shadow:0 0 16px rgba(0,0,0,.15);}</style>';
+        // $html es un documento COMPLETO (<!DOCTYPE>...<body>...</body></html>, ver
+        // pdf.contract.blade.php) — no se envuelve en uno nuevo, se inyecta dentro del <body>
+        // existente (str_replace, no concatenación) para no anidar <html> dentro de <html>.
+        $header = $this->contractService->headerHtml($folio);
+        $footer = $this->contractService->footerHtml($folio, $isSale);
+        $style = '<style>html{background:#e2e8f0;}body{max-width:215.9mm;margin:12px auto 32px;box-shadow:0 0 16px rgba(0,0,0,.15);}.preview-body{padding:18mm 11mm 16mm;}</style>';
+
+        $html = str_replace('<body>', '<body>' . $style . $header . '<div class="preview-body">', $html);
+        $html = str_replace('</body>', '</div>' . $footer . '</body>', $html);
+
+        return $html;
     }
 
     /**
@@ -525,13 +543,14 @@ class ContractController extends Controller
      */
     public function previewVersion(string $contractId, string $versionId)
     {
-        $version = ContractVersion::where('contract_id', $contractId)->findOrFail($versionId);
+        $version = ContractVersion::with('contract')->where('contract_id', $contractId)->findOrFail($versionId);
 
         if (!$version->generated_html) {
             return back()->with('error', 'Esta versión no tiene vista previa HTML.');
         }
 
-        return response($this->wrapPreviewHtml($version->generated_html))
+        $folio = $version->contract->folio ?? ('CT-' . $version->contract_id);
+        return response($this->wrapPreviewHtml($version->generated_html, $folio, $version->contract->type === 'sale'))
             ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 

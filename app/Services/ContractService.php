@@ -309,7 +309,7 @@ class ContractService
         return $version;
     }
 
-    protected function headerHtml(string $folio): string
+    public function headerHtml(string $folio): string
     {
         return '<div style="width:100%; box-sizing:border-box; background:#1e1b4b; border-bottom:4px solid #2563eb; padding:8px 11mm; display:flex; align-items:center; justify-content:space-between; -webkit-print-color-adjust:exact;">
             <span style="font-size:11px; font-weight:800; color:#fff; font-family:Arial,sans-serif;">Home del Valle</span>
@@ -317,7 +317,7 @@ class ContractService
         </div>';
     }
 
-    protected function footerHtml(string $folio, bool $isSale = true): string
+    public function footerHtml(string $folio, bool $isSale = true): string
     {
         $label1 = $isSale ? 'Vendedor' : 'Arrendador';
         $label2 = $isSale ? 'Comprador(a)' : 'Arrendatario(a)';
