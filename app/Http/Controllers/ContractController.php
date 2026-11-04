@@ -97,7 +97,14 @@ class ContractController extends Controller
     }
 
     /**
-     * Generate a contract from a template.
+     * Generate (o versiona) un contrato desde una plantilla, para una renta.
+     *
+     * Hallazgo 2026-11-03: el camino de cláusulas estructuradas + carátula automática
+     * (`uses_clauses` → `cloneClausesInto()` + `ensureCaratulaClause()` + `generateVersion()`)
+     * solo estaba conectado para Operación (venta) — `generateForOperation()` lo tiene,
+     * este método no. Una plantilla de renta con "Usar cláusulas estructuradas" activado
+     * generaba igual por el camino legacy (sin carátula, sin versiones). Se mirror
+     * `generateForOperation()` aquí.
      */
     public function generate(Request $request, string $rentalId)
     {
@@ -110,6 +117,31 @@ class ContractController extends Controller
         ]);
 
         $template = ContractTemplate::findOrFail($validated['contract_template_id']);
+
+        $contract = Contract::where('rental_process_id', $rental->id)
+            ->where('contract_template_id', $template->id)
+            ->first();
+
+        if ($template->uses_clauses) {
+            if (!$contract) {
+                $contract = Contract::create([
+                    'rental_process_id' => $rental->id,
+                    'contract_template_id' => $template->id,
+                    'type' => $template->type,
+                    'title' => $validated['title'],
+                    'source' => 'generated',
+                    'notes' => $validated['notes'] ?? null,
+                ]);
+                $template->cloneClausesInto($contract);
+                $this->contractService->ensureCaratulaClause($contract);
+            }
+
+            $this->contractService->generateVersion($contract);
+
+            return redirect()->route('rentals.show', $rental->id)->with('success', 'Contrato generado — versión ' . $contract->fresh()->currentVersion->version_number . '.');
+        }
+
+        // Camino legacy (plantilla de texto libre, sin cláusulas estructuradas).
         $html = $this->contractService->generateFromTemplate($template, $rental);
 
         $contract = Contract::create([
@@ -122,7 +154,6 @@ class ContractController extends Controller
             'notes' => $validated['notes'] ?? null,
         ]);
 
-        // Auto-generate PDF
         $this->contractService->generatePdf($contract);
 
         return redirect()->route('rentals.show', $rental->id)->with('success', 'Contrato generado exitosamente.');
@@ -132,6 +163,9 @@ class ContractController extends Controller
      * Genera el contrato de arrendamiento con UN clic usando la plantilla activa
      * que corresponda (sin elegir plantilla ni escribir título). Para rentas con
      * póliza el contrato lo emite el proveedor: se sube, no se genera.
+     *
+     * Igual que generate(): si la plantilla usa cláusulas estructuradas, genera por
+     * ese camino (con carátula y versión), no por el legacy.
      */
     public function autoGenerate(string $rentalId)
     {
@@ -146,6 +180,30 @@ class ContractController extends Controller
         }
 
         $title = 'Contrato de Arrendamiento — ' . ($rental->property->title ?? ('Renta #' . $rental->id));
+
+        if ($template->uses_clauses) {
+            $contract = Contract::where('rental_process_id', $rental->id)
+                ->where('contract_template_id', $template->id)
+                ->first();
+
+            if (!$contract) {
+                $contract = Contract::create([
+                    'rental_process_id' => $rental->id,
+                    'contract_template_id' => $template->id,
+                    'type' => $template->type,
+                    'title' => $title,
+                    'source' => 'generated',
+                    'notes' => 'Generado automáticamente con la plantilla "' . $template->name . '".',
+                ]);
+                $template->cloneClausesInto($contract);
+                $this->contractService->ensureCaratulaClause($contract);
+            }
+
+            $this->contractService->generateVersion($contract);
+
+            return back()->with('success', 'Contrato generado con la plantilla "' . $template->name . '" — versión ' . $contract->fresh()->currentVersion->version_number . '. Revísalo antes de enviarlo a firma.');
+        }
+
         $contract = Contract::create([
             'rental_process_id' => $rental->id,
             'contract_template_id' => $template->id,
