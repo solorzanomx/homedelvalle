@@ -1322,11 +1322,18 @@
 
                         {{-- Actions --}}
                         <div style="display:flex; gap:0.5rem; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid var(--border); flex-wrap:wrap;">
+                            {{-- Contrato con cláusulas estructuradas (carátula): el PDF vive en la versión
+                                 actual, no en generated_html/pdf_path del Contract (2026-11-03). --}}
+                            @if($contract->currentVersion)
+                            <a href="{{ route('contracts.versions.preview', [$contract->id, $contract->currentVersion->id]) }}" class="btn btn-sm btn-outline" target="_blank">Vista Previa (v{{ $contract->currentVersion->version_number }})</a>
+                            <a href="{{ route('contracts.versions.download', [$contract->id, $contract->currentVersion->id]) }}" class="btn btn-sm btn-outline">&#8615; Descargar PDF</a>
+                            @else
                             @if($contract->generated_html)
                             <a href="{{ route('contracts.preview', $contract->id) }}" class="btn btn-sm btn-outline" target="_blank">Vista Previa</a>
                             @endif
                             @if($contract->pdf_path)
                             <a href="{{ route('contracts.download', $contract->id) }}" class="btn btn-sm btn-outline">&#8615; Descargar PDF</a>
+                            @endif
                             @endif
 
                             @if(!$contract->is_signed)
