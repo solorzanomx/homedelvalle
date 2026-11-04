@@ -416,8 +416,21 @@ class ContractController extends Controller
             return back()->with('error', 'Este contrato no tiene vista previa HTML.');
         }
 
-        return response($html)
+        return response($this->wrapPreviewHtml($html))
             ->header('Content-Type', 'text/html; charset=UTF-8');
+    }
+
+    /**
+     * Hallazgo 2026-11-03 (Alejandro, Renta #11): "Vista Previa" sirve el HTML guardado tal cual
+     * en el navegador, sin el ancho de página que Browsershot sí aplica al generar el PDF real
+     * (vía paperSize()) — se veía estirado a todo el ancho de la pantalla. _contract_style.blade.php
+     * no fija `width` en `body` A PROPÓSITO (también lo usa contracts/edit.blade.php, el editor en
+     * pantalla, que sí necesita ancho completo) — así que el ajuste va aquí, solo para esta vista de
+     * solo-lectura, sin tocar el HTML guardado ni el que usa el editor.
+     */
+    protected function wrapPreviewHtml(string $html): string
+    {
+        return $html . '<style>html{background:#e2e8f0;}body{max-width:215.9mm;margin:12px auto;box-shadow:0 0 16px rgba(0,0,0,.15);}</style>';
     }
 
     /**
@@ -518,7 +531,7 @@ class ContractController extends Controller
             return back()->with('error', 'Esta versión no tiene vista previa HTML.');
         }
 
-        return response($version->generated_html)
+        return response($this->wrapPreviewHtml($version->generated_html))
             ->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
