@@ -118,8 +118,14 @@ class ContractController extends Controller
 
         $template = ContractTemplate::findOrFail($validated['contract_template_id']);
 
+        // whereHas('clauses'): si la plantilla se convirtió a cláusulas estructuradas DESPUÉS
+        // de que ya existía un Contract legacy (generated_html, sin cláusulas propias) para este
+        // mismo trato+plantilla, no hay que reutilizar ese Contract viejo — generateVersion()
+        // renderizaría con $contract->clauses vacío (solo carátula y firma, sin declaraciones ni
+        // cláusulas). Mejor crear uno nuevo y dejar el legacy como está en el historial.
         $contract = Contract::where('rental_process_id', $rental->id)
             ->where('contract_template_id', $template->id)
+            ->whereHas('clauses')
             ->first();
 
         if ($template->uses_clauses) {
@@ -182,8 +188,10 @@ class ContractController extends Controller
         $title = 'Contrato de Arrendamiento — ' . ($rental->property->title ?? ('Renta #' . $rental->id));
 
         if ($template->uses_clauses) {
+            // Mismo cuidado que en generate(): ignorar un Contract legacy sin cláusulas propias.
             $contract = Contract::where('rental_process_id', $rental->id)
                 ->where('contract_template_id', $template->id)
+                ->whereHas('clauses')
                 ->first();
 
             if (!$contract) {
@@ -265,8 +273,11 @@ class ContractController extends Controller
 
         $template = ContractTemplate::findOrFail($validated['contract_template_id']);
 
+        // whereHas('clauses'): mismo cuidado que en generate() (renta) — no reutilizar un
+        // Contract legacy sin cláusulas propias si la plantilla se convirtió después.
         $contract = Contract::where('operation_id', $operation->id)
             ->where('contract_template_id', $template->id)
+            ->whereHas('clauses')
             ->first();
 
         if ($template->uses_clauses) {

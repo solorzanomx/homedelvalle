@@ -64,6 +64,8 @@ class ContractService
             '{{obligado_nombre}}' => $rental->obligado->name ?? '',
             '{{obligado_telefono}}' => $rental->obligado->phone ?? '',
             '{{obligado_domicilio}}' => $rental->obligado?->legal_address ?? '',
+            // Aval — texto libre, distinto del obligado solidario (ver docs/funcionalidades/pagares.md).
+            '{{aval_nombre}}' => $rental->aval_nombre ?: '',
             '{{propiedad_titulo}}' => $rental->property->title ?? '',
             '{{propiedad_direccion}}' => $rental->property->address ?? '',
             '{{propiedad_uso}}' => match ($rental->property->property_type ?? null) {
@@ -211,6 +213,22 @@ class ContractService
         $folio = $contract->folio ?? ($tokens['{{folio}}'] ?? ('CT-' . $contract->id));
         $isSale = $contract->type === 'sale';
 
+        // Tercer firmante (2026-11-03) — solo aplica a renta: obligado solidario o aval, lo que
+        // haya. Son roles distintos (ver docs/funcionalidades/pagares.md) pero un contrato no
+        // tiene ambos a la vez en la práctica, así que una sola columna extra alcanza. En venta
+        // no hay tercer firmante — $terceroNombre queda null.
+        $terceroLabel = null;
+        $terceroNombre = null;
+        if (!$isSale) {
+            if (!empty($tokens['{{obligado_nombre}}'])) {
+                $terceroLabel = 'OBLIGADO SOLIDARIO';
+                $terceroNombre = $tokens['{{obligado_nombre}}'];
+            } elseif (!empty($tokens['{{aval_nombre}}'])) {
+                $terceroLabel = 'AVAL';
+                $terceroNombre = $tokens['{{aval_nombre}}'];
+            }
+        }
+
         $html = view('pdf.contract', [
             'contract' => $contract,
             'clauses' => $clauses,
@@ -223,6 +241,8 @@ class ContractService
             'propiedadDireccion' => $tokens['{{propiedad_direccion}}'] ?? '',
             'precioTexto' => $tokens['{{precio_texto}}'] ?? '',
             'plazoEscrituracion' => $tokens['{{fecha_limite_escrituracion}}'] ?? '',
+            'terceroLabel' => $terceroLabel,
+            'terceroNombre' => $terceroNombre,
         ])->render();
 
         $versionNumber = $contract->nextVersionNumber();

@@ -67,6 +67,12 @@
         <div class="sign-heading">{{ $compradorLabel }}</div>
         <div class="sign-line"><div class="sign-name">{{ $compradorNombre }}</div></div>
     </div>
+    @if(!empty($terceroNombre))
+    <div class="sign-col">
+        <div class="sign-heading">{{ $terceroLabel }}</div>
+        <div class="sign-line"><div class="sign-name">{{ $terceroNombre }}</div></div>
+    </div>
+    @endif
 </div>
 </div>
 

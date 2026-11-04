@@ -40,6 +40,7 @@ class ContractTemplate extends Model
         '{{obligado_nombre}}' => 'Nombre del obligado solidario / fiador (vacio si no hay)',
         '{{obligado_telefono}}' => 'Telefono del obligado solidario (vacio si no hay)',
         '{{obligado_domicilio}}' => 'Domicilio legal del obligado solidario (vacio si no hay)',
+        '{{aval_nombre}}' => 'Nombre del aval, distinto del obligado solidario (vacio si no hay)',
         '{{propiedad_titulo}}' => 'Titulo de la propiedad',
         '{{propiedad_direccion}}' => 'Direccion de la propiedad',
         '{{propiedad_uso}}' => 'Uso del inmueble: Habitacional/Oficina/Comercial/etc, segun el tipo',
