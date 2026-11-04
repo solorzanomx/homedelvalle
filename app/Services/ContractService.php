@@ -159,23 +159,46 @@ class ContractService
         $precioTexto = $tokens['{{precio_texto}}'] ?? '';
         $plazoEscrituracion = $tokens['{{fecha_limite_escrituracion}}'] ?? '';
 
-        $rows = "<tr><td>{$vendedorLabel}</td><td>{$vendedorNombre}</td></tr>"
-            . "<tr><td>{$compradorLabel}</td><td>{$compradorNombre}</td></tr>";
-        if ($propiedadDireccion !== '') {
-            $rows .= "<tr><td>Inmueble</td><td>{$propiedadDireccion}</td></tr>";
-        }
-        if ($precioTexto !== '') {
-            $precioLabel = $isSale ? 'Precio' : 'Renta mensual';
-            $rows .= "<tr><td>{$precioLabel}</td><td>{$precioTexto}</td></tr>";
-        }
-        if ($isSale && $plazoEscrituracion !== '') {
-            $rows .= "<tr><td>Plazo para escriturar</td><td>{$plazoEscrituracion}</td></tr>";
+        // Tercera parte (solo renta): obligado solidario o aval, lo que haya — mismo criterio
+        // que generateVersion() (2026-11-03, ver docs/funcionalidades/pagares.md).
+        $terceroLabel = null;
+        $terceroNombre = null;
+        if (!$isSale) {
+            if (!empty($tokens['{{obligado_nombre}}'])) {
+                $terceroLabel = 'Obligado Solidario';
+                $terceroNombre = $tokens['{{obligado_nombre}}'];
+            } elseif (!empty($tokens['{{aval_nombre}}'])) {
+                $terceroLabel = 'Aval';
+                $terceroNombre = $tokens['{{aval_nombre}}'];
+            }
         }
 
         $partyLabel1 = $isSale ? 'EL PROMITENTE VENDEDOR' : 'ARRENDADOR';
         $partyLabel2 = $isSale ? 'LA/EL PROMITENTE COMPRADOR(A)' : 'ARRENDATARIA/O';
 
-        $body = "<table class=\"caratula-table\">{$rows}</table>"
+        // Cajas de partes (2026-11-03: mismo "look" que Contrato de Compraventa —
+        // ContratoCompraventaGeneratorService/pdf/contrato-compraventa.blade.php — en vez de la
+        // tabla vertical genérica que traía antes. Hasta 3 cajas si hay tercera parte.
+        $partyBoxes = "<div class=\"party-box\"><div class=\"role\">{$vendedorLabel}</div><div class=\"row\"><span class=\"val\">{$vendedorNombre}</span></div></div>"
+            . "<div class=\"party-box\"><div class=\"role\">{$compradorLabel}</div><div class=\"row\"><span class=\"val\">{$compradorNombre}</span></div></div>";
+        if ($terceroNombre) {
+            $partyBoxes .= "<div class=\"party-box\"><div class=\"role\">{$terceroLabel}</div><div class=\"row\"><span class=\"val\">{$terceroNombre}</span></div></div>";
+        }
+
+        $termRows = '';
+        if ($propiedadDireccion !== '') {
+            $termRows .= "<tr><td>Inmueble</td><td>{$propiedadDireccion}</td></tr>";
+        }
+        if ($precioTexto !== '') {
+            $precioLabel = $isSale ? 'Precio' : 'Renta mensual';
+            $termRows .= "<tr><td>{$precioLabel}</td><td>{$precioTexto}</td></tr>";
+        }
+        if ($isSale && $plazoEscrituracion !== '') {
+            $termRows .= "<tr><td>Plazo para escriturar</td><td>{$plazoEscrituracion}</td></tr>";
+        }
+
+        $body = "<div class=\"parties-row\">{$partyBoxes}</div>"
+            . ($termRows !== '' ? "<table class=\"terms-table\">{$termRows}</table>" : '')
             . "<p>{$contract->title} que celebran, por una parte, {$vendedorNombre}, por su propio derecho, a quien en lo sucesivo se le denominará &ldquo;{$partyLabel1}&rdquo;; y por la otra parte, {$compradorNombre}, por su propio derecho, a quien en lo sucesivo se le denominará &ldquo;{$partyLabel2}&rdquo;; y a ambos conjuntamente como &ldquo;LAS PARTES&rdquo;, quienes manifiestan su voluntad de obligarse y sujetan el presente contrato al tenor de las declaraciones y cláusulas contenidas en las páginas siguientes.</p>";
 
         $contract->clauses()->create([

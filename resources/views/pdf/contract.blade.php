@@ -18,9 +18,15 @@
         @if($caratulaClause)
             {!! $caratulaClause['body'] !!}
         @else
-        <table class="caratula-table">
-            <tr><td>{{ $isSale ? 'Promitente Vendedor' : 'Arrendador' }}</td><td>{{ $vendedorNombre }}</td></tr>
-            <tr><td>{{ $isSale ? 'Promitente Compradora' : 'Arrendataria' }}</td><td>{{ $compradorNombre }}</td></tr>
+        <div class="parties-row">
+            <div class="party-box"><div class="role">{{ $isSale ? 'Promitente Vendedor' : 'Arrendador' }}</div><div class="row"><span class="val">{{ $vendedorNombre }}</span></div></div>
+            <div class="party-box"><div class="role">{{ $isSale ? 'Promitente Compradora' : 'Arrendataria' }}</div><div class="row"><span class="val">{{ $compradorNombre }}</span></div></div>
+            @if(!empty($terceroNombre))
+            <div class="party-box"><div class="role">{{ $terceroLabel }}</div><div class="row"><span class="val">{{ $terceroNombre }}</span></div></div>
+            @endif
+        </div>
+        @if(!empty($propiedadDireccion) || !empty($precioTexto) || ($isSale && !empty($plazoEscrituracion)))
+        <table class="terms-table">
             @if(!empty($propiedadDireccion))
             <tr><td>Inmueble</td><td>{{ $propiedadDireccion }}</td></tr>
             @endif
@@ -31,6 +37,7 @@
             <tr><td>Plazo para escriturar</td><td>{{ $plazoEscrituracion }}</td></tr>
             @endif
         </table>
+        @endif
         <p>{{ $contract->title }} que celebran, por una parte, {{ $vendedorNombre }}, por su propio derecho, a quien en lo sucesivo se le denominará &ldquo;{{ $vendedorLabel }}&rdquo;; y por la otra parte, {{ $compradorNombre }}, por su propio derecho, a quien en lo sucesivo se le denominará &ldquo;{{ $compradorLabel }}&rdquo;; y a ambos conjuntamente como &ldquo;LAS PARTES&rdquo;, quienes manifiestan su voluntad de obligarse y sujetan el presente contrato al tenor de las declaraciones y cláusulas contenidas en las páginas siguientes.</p>
         @endif
     </div>
